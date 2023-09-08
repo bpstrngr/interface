@@ -363,41 +363,4 @@
       }}
     }
   ],
-  "Biotia_2023_portal_host.js": [
-    "host.js",
-    {
-      "input": {
-        "external": [
-          "fsevents"
-        ]
-      },
-      "output": {
-        "inlineDynamicImports": true
-      },
-      "@rollup/plugin-json": {},
-      "@rollup/plugin-node-resolve": {},
-      "@rollup/plugin-commonjs": {}
-    }
-  ],
-  "Biotia_2023_portal_peer.js": [
-    "peer.js",
-    {
-      "input": {
-        "external": [
-          "fsevents"
-        ]
-      },
-      "output": {
-        "inlineDynamicImports": true
-      },
-      "@rollup/plugin-json": {},
-      "@rollup/plugin-node-resolve": {
-        "browser": true
-      },
-      "@rollup/plugin-replace": {
-        "process.env.NODE_ENV": "'development'"
-      },
-      "@rollup/plugin-commonjs": {}
-    }
-  ]
 }
