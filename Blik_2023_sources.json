@@ -1,0 +1,403 @@
+{
+  "haverbeke_2012_acorn.js": {
+    "https://github.com/acornjs/acorn": {
+      "8.9.0": [
+        "acorn/src/index.js"
+      ]
+    }
+  },
+  "haverbeke_2012_acorn_walk.js":{"https://github.com/acornjs/acorn/acorn-walk":{"8.9.0":"acorn-walk/src/index.js"}},
+  "davidbonnet_2015_astring.js": {
+    "https://github.com/davidbonnet/astring": {
+      "v1.8.6": [
+        "src/astring.js"
+      ]
+    }
+  },
+  "xtuc_2020_acorn_importattributes.js": {"https://github.com/xtuc/acorn-import-attributes/tarball/v1.9.2": ["src/index.js",{"output": {"paths": {"acorn": "./haverbeke_2012_acorn.js"}}}]},
+  "xtuc_2020_acorn_importassertions.js": {"https://github.com/xtuc/acorn-import-assertions/tarball/v1.7.6": ["src/index.js",{"output": {"paths": {"acorn": "./haverbeke_2012_acorn.js"}}}]},
+  "eslint_2019_typescript_estree.js":{"https://github.com/typescript-eslint/typescript-eslint/packages/typescript-estree":{"v6.4.1":["src/parser.ts"]}},
+  "microsoft_2014_typescript.js":{"https://github.com/microsoft/TypeScript":{"v5.1.6":["src/compiler/_namespaces/ts.ts"]}},
+  "substack_2015_commondir.js":{"https://registry.npmjs.org/commondir/-/commondir-1.0.1.tgz":["index.js"]},
+  "rich_harris_2014_magic_string.js":{"https://github.com/rich-harris/magic-string":{"v0.27.0":["index.js"]}},
+  "rich_harris_2016_is_reference.js":{"https://github.com/Rich-Harris/is-reference":{"v1.2.1":["src/index.ts"]}},
+  "rich_harris_2015_estree_walker.js":{"https://github.com/Rich-Harris/estree-walker":{"v2.0.2":["src/index.js"]}},
+  "rich_harris_2016_locate_character.js":{"https://github.com/Rich-Harris/locate-character":{"v3.0.0":["src/index.js"]}},
+  "lukeed_2019_flru.js":{"https://github.com/lukeed/flru":{"v1.0.2":["src/index.js"]}},
+  "rollup_2022_rollup.js":{"https://github.com/rollup/rollup/tarball/v3.28.1":["src/rollup/rollup.ts",{"output":{"paths":{
+    "package.json":"./rollup_2022_rollup/0/package.json",
+    "acorn":"./haverbeke_2012_acorn.js",
+    "locate-character":"./rich_harris_2016_locate_character.js",
+    "acorn-import-assertions":"./xtuc_2020_acorn_importassertions.js",
+    "@rollup/pluginutils":"./rollup_2022_pluginutils.js",
+    "magic-string":"./rich_harris_2014_magic_string.js",
+    "acorn-walk":"./haverbeke_2012_acorn_walk.js",
+    "flru":"./lukeed_2019_flru.js"
+  }}}]},
+  "rollup_2022_pluginutils.js":{"https://github.com/rollup/plugins/packages/pluginutils":["src/index.ts"]},
+  "rollup_2022_alias.js":{"https://github.com/rollup/plugins/tarball/master":["packages/alias/dist/index.js"]},
+  "rollup_2022_multientry.js":{"https://github.com/rollup/plugins/tarball/master":["packages/multi-entry/dist/index.js"]},
+  "rollup_2022_noderesolve.js":{"https://github.com/rollup/plugins/tarball/master":["packages/node-resolve/dist/es/index.js"]},
+  "rollup_2022_commonjs.js":{"https://github.com/rollup/plugins/tarball/commonjs-v25.0.4":["packages/commonjs/src/index.js",{
+    "output":{"paths":{
+      "@rollup/pluginutils": "./rollup_2022_pluginutils.js","commondir":"./substack_2015_commondir.js","glob":"./isaacs_2010_glob.js",
+      "estree-walker":"./rich_harris_2015_estree_walker.js","magic-string":"./rich_harris_2014_magic_string.js",
+      "is-reference":"./rich_harris_2016_is_reference.js"
+    }}
+  }]},
+  "rollup_2022_json.js":{"https://github.com/rollup/plugins/tarball/master":["packages/json/dist/index.js"]},
+  "isaacs_2011_rimraf.js": {
+    "https://github.com/isaacs/rimraf": {
+      "v4.4.0": [
+        "src/index.ts",
+        {"@rollup/plugin-commonjs": {},
+          "@rollup/plugin-alias": {"entries": [{"find": "^(.*)\\.js$", "replacement": "$1.ts"}]},
+          "@rollup/plugin-node-resolve":{}
+        }
+      ]
+    }
+  },
+  "lupomontero_2019_psl.js":{"https://github.com/lupomontero/psl":{"v1.1.33":["index.js",{"dialect":"commonjs","output":{"paths": {"punycode": "./punycode_2011_punycode.js"}}}]}},
+  "ryanzim_2017_universalify.js":{"https://github.com/RyanZim/universalify":{"v0.2.0":["index.js",{"dialect":"commonjs"}]}},
+  "unshiftio_2014_querystringify.js":{"https://github.com/unshiftio/querystringify":{"2.1.1":["index.js",{"dialect":"commonjs"}]}},
+  "unshiftio_2015_port_requisite.js":{"https://github.com/unshiftio/requires-port":{"1.0.0":["index.js",{"dialect":"commonjs"}]}},
+  "unshiftio_2014_urlparse.js":{"https://github.com/unshiftio/url-parse/":{"1.5.3":[
+    "index.js",{"dialect":"commonjs","output":{"paths":{
+      "requires-port":"./unshiftio_2015_port_requisite.js",
+      "querystringify":"./unshiftio_2014_querystringify.js"
+    }}}
+  ]}},
+  "punycode_2011_punycode.js":{"https://github.com/mathiasbynens/punycode.js":{"v2.1.1":["punycode.js"]}},
+  "salesforce_2011_toughcookie.js": {
+    "https://github.com/salesforce/tough-cookie": {
+      "v4.1.2": [
+        "lib/cookie.js",
+        {"./rollup_2022_commonjs.js":{},
+          "@rollup/plugin-json": {},
+          "@rollup/plugin-node-resolve": {},
+          "output":{"paths": {
+            "punycode/": "./punycode_2011_punycode.js","url-parse":"./unshiftio_2014_urlparse.js","universalify":"./ryanzim_2017_universalify.js",
+            "psl":"./lupomontero_2019_psl.js"
+          }},
+          "dialect": "commonjs"
+        }
+      ]
+    }
+  },
+  "domenic_2014_webidl.js": {
+    "https://github.com/jsdom/webidl-conversions": {
+      "v7.0.0": [
+        "lib/index.js", {
+          "@rollup/plugin-commonjs": {},
+          "@rollup/plugin-node-resolve": {}
+        }
+      ]
+    }
+  },
+  "domenic_2016_html_encodingsniffer.js": {
+    "https://github.com/jsdom/html-encoding-sniffer": {
+      "v3.0.0": [
+        "lib/html-encoding-sniffer.js"
+      ]
+    }
+  },
+  "isaacs_2017_minipass.js":{"https://github.com/isaacs/minipass": {"v3.1.0": ["index.js", {
+    "@rollup/plugin-commonjs": {},
+    "@rollup/plugin-node-resolve": {}
+  }]}},
+  "isaacs_2019_minipass_sized.js":{
+    "https://github.com/isaacs/minipass-sized":{
+      "v1.0.3":["index.js", {
+        "input": {"external": ["minipass"]},
+        "@rollup/plugin-commonjs": {"requireReturnsDefault": true, "esmExternals": true},
+        "output": {"paths": {"minipass": "./isaacs_2017_minipass.js"}},
+        "@rollup/plugin-node-resolve": {}
+      }]
+    }
+  },
+  "isaacs_2017_minizlib.js":{"https://github.com/isaacs/minizlib": {"v2.0.0": ["index.js", {
+    "input": {"external": ["minipass"]},
+    "@rollup/plugin-commonjs": {"requireReturnsDefault": true, "esmExternals": true},
+    "output": {"paths": {"minipass": "./isaacs_2017_minipass.js"}},
+    "@rollup/plugin-node-resolve": {}
+  }]}},
+  "isaacs_2019_minipass_fetch.js":{"https://github.com/npm/minipass-fetch": {"v1.4.1": [
+    "lib/index.js",
+    {
+      "input": {"external": ["minizlib", "minipass", "minipass-sized"]},
+      "@rollup/plugin-commonjs": {"requireReturnsDefault": true, "esmExternals": true},
+      "@rollup/plugin-json": {},
+      "output": {"paths": {
+        "minizlib": "./isaacs_2017_minizlib.js",
+        "minipass": "./isaacs_2017_minipass.js",
+        "minipass-sized": "./isaacs_2019_minipass_sized.js"
+      }},
+      "@rollup/plugin-node-resolve": {}
+    }
+  ]}},
+  "isaacs_2010_glob.js":{"https://github.com/isaacs/node-glob":{"v8.0.3":["glob.js"]}},
+  "w3c_2016_webidl2.js": {
+    "https://github.com/w3c/webidl2.js": {
+      "v24.4.0": [
+        "index.js", {
+          "@rollup/plugin-node-resolve": {}
+        }
+      ]
+    }
+  },
+  "domenic_2022_jsdom_webidl2js.js": {
+    "https://github.com/jsdom/webidl2js": {
+      "v17.1.0": [
+        "lib/transformer.js",
+        {
+          "scripts": "./domenic_2022_jsdom_webidl2js_output_utils.js",
+          "input": { "external": ["prettier", "webidl2", "webidl-conversions"] },
+          "@rollup/plugin-commonjs": {},
+          "output": {
+            "paths": {
+              "webidl2": "./w3c_2016_webidl2.js",
+              "webidl-conversions": "./domenic_2014_webidl.js"
+            }
+          },
+          "@rollup/plugin-json": {},
+          "@rollup/plugin-node-resolve": {},
+          "transform": {
+            "domenic_2022_jsdom_webidl2js/0/lib/transformer.js":{
+              "__dirname, \"output/utils\\.js\"":
+              "path.dirname(new URL(import.meta.url).pathname),'domenic_2022_jsdom_webidl2js_output_utils.js'"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "domenic_2022_jsdom_webidl2js_output_utils.js": [
+    "bundle/domenic_2022_jsdom_webidl2js/0/lib/output/utils.js", {
+      "@rollup/plugin-commonjs": {},
+      "output": {"format": "commonjs"},
+      "comment": "preserved during webidl2js bundling as a static part of scripts written by its Transformer (used by eg. whatwg_url's transform and jsdom's convert script to produce webidl modules)."
+    }
+  ],
+  "domenic_2015_whatwg_url.js": {
+    "https://github.com/jsdom/whatwg-url": {
+      "v12.0.0": [
+        "index.js",
+        {"scripts": ["./domenic_2015_whatwg_url_transform.js", "./domenic_2015_whatwg_url_webidl_wrapper.js"],
+          "@rollup/plugin-commonjs":{"dynamicRequireTargets": ["./utils.js"]},
+          "@rollup/plugin-json": {},
+          "@rollup/plugin-node-resolve": {}
+        }
+      ]
+    }
+  },
+  "domenic_2015_whatwg_url_webidl_wrapper.js": [
+    "bundle/domenic_2015_whatwg_url/0/webidl2js-wrapper.js", {
+      "@rollup/plugin-commonjs": {}
+    }
+  ],
+  "domenic_2015_whatwg_url_transform.js": [
+    "bundle/domenic_2015_whatwg_url/0/scripts/transform.js", {
+      "input": { "external": [
+        "prettier", "rimraf", "webidl-conversions", "webidl2js"
+      ] },
+      "input": {"external": ["minipass-fetch"]},
+      "@rollup/plugin-commonjs": {},
+      "output": {
+        "paths": {
+          "rimraf": "./isaacs_2011_rimraf.js",
+          "webidl-conversions": "./domenic_2014_webidl.js",
+          "webidl2js": "./domenic_2022_jsdom_webidl2js.js"
+        }
+      },
+      "@rollup/plugin-json": {},
+      "@rollup/plugin-node-resolve": {},
+      "@rollup/plugin-replace": {"(__dirname":"(path.dirname(new URL(import.meta.url).pathname), './domenic_2015_whatwg_url/0/scripts'"},
+      "transform": {"domenic_2015_whatwg_url/0/scripts/transform.js": {
+        "transformer\\.generate": "module.exports=transformer.generate"
+      }}
+    }
+  ],
+  "domenic_2016_whatwg_encoding.js": {
+    "https://github.com/jsdom/whatwg-encoding": {
+      "v2.0.0": [
+        "lib/whatwg-encoding.js",
+        { "scripts": "./domenic_2016_whatwg_encoding_update.js",
+          "@rollup/plugin-commonjs":{"requireReturnsDefault": true},
+          "@rollup/plugin-json": {},
+          "input": {"external": ["minipass-fetch"]},
+          "output": {"paths": {
+            "minipass-fetch": "./isaacs_2019_minipass_fetch.js"
+          }},
+          "@rollup/plugin-node-resolve": {}
+        }
+      ]
+    }
+  },
+  "domenic_2016_whatwg_encoding_update.js":[
+    "bundle/domenic_2016_whatwg_encoding/0/scripts/update.js", {
+      "input": {"external": ["minipass-fetch"]},
+      "output": {"paths": {
+        "minipass-fetch": "./isaacs_2019_minipass_fetch.js"
+      }},
+      "@rollup/plugin-commonjs":{"requireReturnsDefault": true, "esmExternals": true},
+      "@rollup/plugin-replace": {"(__dirname":"(path.dirname(new URL(import.meta.url).pathname), './domenic_2016_whatwg_encoding/0/scripts'"},
+      "@rollup/plugin-json": {},
+      "@rollup/plugin-node-resolve": {}
+    }
+  ],
+  "domenic_2016_whatwg_mimetype.js": {
+    "https://github.com/jsdom/whatwg-mimetype": {
+      "v3.0.0": [
+        "lib/mime-type.js"
+      ]
+    }
+  },
+  "rrweb_2010_cssom.js": {
+    "https://github.com/NV/CSSOM": {
+      "v0.3.1": [
+        "lib/", {
+          "@rollup/plugin-replace": {"exports.":"module.exports."},
+          "@rollup/plugin-commonjs": {}
+        }
+      ]
+    }
+  },
+  "domenic_2018_cssstyle.js": {"https://github.com/jsdom/cssstyle": {
+    "v3.0.0": [
+      "lib/CSSStyleDeclaration.js", {
+        "scripts": "./domenic_2018_cssstyle_properties.js",
+        "input": {"external": ["rrweb-cssom"]},
+        "output": {"paths": {"rrweb-cssom": "./rrweb_2010_cssom.js"}},
+        "@rollup/plugin-commonjs": {}
+      }
+    ]
+  }},
+  "babel_2014_types.js": {
+    "https://github.com/babel/babel/packages/babel-types": {
+      "v6.13.0": [
+        "src/index.js",
+        {"dialect": "typescript"}
+      ]
+    }
+  },
+  "domenic_2018_cssstyle_properties.js": [
+    "bundle/domenic_2018_cssstyle/0/scripts/generate_properties.js", {
+      "input": {"external":["babel-types"]},
+      "output": {"paths": {"babel-types": "./babel_2014_types.js"}},
+      "@rollup/plugin-commonjs": {},
+      "@rollup/plugin-json": {},
+      "transform": {
+        "domenic_2018_cssstyle_properties/0/scripts/generate_properties.js": {
+          "out_file.end(function (err) {":"out_file.end(function (err) {resolve(err)",
+          "^((?:.*[\n$])*)": "module.exports=new Promise(()=>{$1}"
+        }
+      }
+    }
+  ],
+  "domenic_2022_jsdom_rollup.js": {
+    "https://github.com/jsdom/jsdom": {"22.1.0": [
+      "lib/api.js",
+      {
+        "scripts": ["./domenic_2022_jsdom_webidl_convert.js", "./domenic_2022_jsdom_jsglobals.js"],
+        "input": {"external": [
+          "tough-cookie",
+          "webidl-conversions",
+          "html-encoding-sniffer",
+          "whatwg-url/webidl2js-wrapper",
+          "whatwg-url",
+          "whatwg-encoding",
+          "whatwg-mimetype",
+          "cssstyle"
+        ]},
+        "output": {
+          "paths": {
+            "tough-cookie": "./salesforce_2011_toughcookie.js",
+            "webidl-conversions": "./domenic_2014_webidl.js",
+            "html-encoding-sniffer": "./domenic_2016_html_encodingsniffer.js",
+            "whatwg-url/webidl2js-wrapper": "./domenic_2015_whatwg_url_webidl_wrapper.js",
+            "whatwg-url": "./domenic_2015_whatwg_url.js",
+            "whatwg-encoding": "./domenic_2016_whatwg_encoding.js",
+            "whatwg-mimetype": "./domenic_2016_whatwg_mimetype.js",
+            "cssstyle": "./domenic_2018_cssstyle.js"
+          }
+        },
+        "@rollup/plugin-commonjs": {},
+        "@rollup/plugin-json": {},
+        "@rollup/plugin-node-resolve": {},
+        "dialect": "commonjs"
+      }
+    ]}
+  },
+  "domenic_2022_jsdom_jsglobals.js": [
+    "bundle/domenic_2022_jsdom_rollup/0/scripts/generate-js-globals.js", {
+      "@rollup/plugin-commonjs": {},
+      "@rollup/plugin-json": {},
+      "@rollup/plugin-replace": {
+        "(__dirname":"(path.dirname(new URL(import.meta.url).pathname), './domenic_2022_jsdom_rollup/0/scripts'"
+      },
+      "transform": {"domenic_2022_jsdom_rollup/0/scripts/generate-js-globals.js": {
+        "fs\\.writeFileSync": "module.exports=fs.writeFileSync"
+      }}
+    }
+  ],
+  "domenic_2022_jsdom_webidl_convert.js": [
+    "bundle/domenic_2022_jsdom_rollup/0/scripts/webidl/convert.js",
+    {
+      "input": { "external": ["prettier", "webidl-conversions", "webidl2js", "rimraf"] },
+      "@rollup/plugin-commonjs": {},
+      "@rollup/plugin-json": {},
+      "output": {
+        "paths": {
+          "rimraf": "./isaacs_2011_rimraf.js",
+          "webidl-conversions": "./domenic_2014_webidl.js",
+          "webidl2js": "./domenic_2022_jsdom_webidl2js.js"
+        }
+      },
+      "@rollup/plugin-node-resolve": {},
+      "@rollup/plugin-replace": {
+        "(__dirname":"(path.dirname(new URL(import.meta.url).pathname), './domenic_2022_jsdom_rollup/0/scripts/webidl'",
+        "addDir(\"../..": "addDir(\"domenic_2022_jsdom_rollup/0"
+      },
+      "transform": {"domenic_2022_jsdom_rollup/0/scripts/webidl/convert.js": {
+        "transformer\\.generate": "module.exports=transformer.generate"
+      }}
+    }
+  ],
+  "Biotia_2023_portal_host.js": [
+    "host.js",
+    {
+      "input": {
+        "external": [
+          "fsevents"
+        ]
+      },
+      "output": {
+        "inlineDynamicImports": true
+      },
+      "@rollup/plugin-json": {},
+      "@rollup/plugin-node-resolve": {},
+      "@rollup/plugin-commonjs": {}
+    }
+  ],
+  "Biotia_2023_portal_peer.js": [
+    "peer.js",
+    {
+      "input": {
+        "external": [
+          "fsevents"
+        ]
+      },
+      "output": {
+        "inlineDynamicImports": true
+      },
+      "@rollup/plugin-json": {},
+      "@rollup/plugin-node-resolve": {
+        "browser": true
+      },
+      "@rollup/plugin-replace": {
+        "process.env.NODE_ENV": "'development'"
+      },
+      "@rollup/plugin-commonjs": {}
+    }
+  ]
+}

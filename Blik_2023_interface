@@ -1,0 +1,91 @@
+Ecmascript module interface for clients/imports/functions. 
+
+Using modules requires 3 steps: 
+ resolve (download and bundle if not found despite source entry),
+ read (+interpret and serialize if foreign dialect recognised or specified, exposed together as "load" to nodejs),
+ modularise (shortcircuitting "load" with an implementation using "vm" module is a pending feature). 
+ (+ test if the namespace exposes cases for itself).
+
+It is advised to keep modules Modular, ie. not pollute their scope with Procedures*. 
+Doing so leaves us without access to invoke their functions, hence this module 
+extends the 3 steps with an inference of arguments provided by a client (shell/function). 
+
+Examples: 
+ node --loader=./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3;
+ node ./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3;
+ import("./Blik_2023_interface.js").then(({resolve})=>resolve("./Blik_2023_search.js","sum",1,2,3));
+ http.on("request",({path,query},response)=>resolve(path,...query).then(body=>response.send({body})));
+
+Due to lack of loader, git or vm modules, browser clients can only control interpretation and serialization: 
+ let resolve=either(import(module),compose(file,{method:"get"},fetch,"text",interpret,options,serialize,"body",describe,{method:"post"},merge,infer.bind(module),fetch,import));
+ resolve(module);
+
+The first usage extends the interface to every import call (flag to expose import stages available from nodejs 17). 
+For the other cases, external modules can be resolved in advance: 
+ for file in $(echo sources.json | jq .keys --raw-output);do node ./Blik_2023_interface.js ./Blik_2023_interface.js resolve $file;done;
+ for file in $(git ls-tree --full-tree --name-only -r HEAD);do node ./Blik_2023_interface.js ./Blik_2023_interface.js resolve $file;done;
+
+External dependencies are not reliable for good practice, and package managers even obscure their dependency graphs. 
+Distributing source definitions for them instead of reducing your control to simple version tracking in package.json 
+enables moderating their content, restoring transparency, reclaiming primacy of platorm standards and saving storage space. 
+
+Source definitions map files to entry points (local or remote address and version, supporting sparse-checkout of monorepos), patches and 
+dialect specifications (currently supporting rollup plugins, but options for a modular parser/serializer are evolving, such as dialect and output): 
+ {"module.js":"path/index.js"};
+ {"module.js":["path/index.js",{plugin:{option:"setting"},dialect:"commonjs",output:{paths:{specifier:"path"}}}]};
+ {"module.js":{"protocol://domain/author/module":["index.js","index2.js"]}};
+ {"module.js":{"protocol://domain/author/module/tarball/branch":["path/index.js"]}};
+ {"module.js":{"protocol://domain/author/module":{"branch or tag":["path/index.js","../../module.patch"]}}};
+ {"module.js":{"protocol://domain/author/module/sparse/checkout/path":{"branch or tag":["path/index.js"]}}};
+Locally available modules (self-hosted or checked out remotes) are loaded in memory, remotes get bundled and erased. 
+
+Modules get tested upon modularisation if they expose a "tests" object: 
+ export var tests=
+ {member:{in:{namespace:{description:{context:[],terms:[],condition:[]}}}}
+ };
+
+To test manually: 
+ node ./Blik_2023_interface.js ./Blik_2023_meta.js test "module.ts";
+
+To format/compile between different dialects, substitute modularisation with persistence: 
+ compose(access,"typescript",parse,"prettier",serialize,tether("module.ts"),persist)("module.ts");
+ node ./Blik_2023_interface.js ./Blik_2023_interface.js access "module.ts" | xargs -0multiline \
+ node ./Blik_2023_interface.js ./Blik_2023_interface.js parse $multiline "typescript" | xargs -0multiline\
+ node ./Blik_2023_interface.js ./Blik_2023_interface.js serialize $multiline "prettier" |\
+ node ./Blik_2023_interface.js ./Blik_2023_interface.js access "module.ts";
+
+Copy pre-commit hook to format and test staged modules before each commit: 
+ cp git_hook_pre-commit .git/hooks/pre-commit;
+
+Copy post-commit hook to restage your local formatting stashed by pre-commit: 
+ cp git_hook_post-commit .git/hooks/post-commit;
+
+Uninstall dependencies: 
+ for file in $(git check-ignore *);do rm $file;done;
+
+Installing Node.js: 
+ which node;
+if [ $? -eq 1 ];then 
+ version="20.5.1";
+ release=node-v$version-$(uname|tr '[:upper:]' '[:lower:]')-$([[ $(uname -m) -eq aarch64 ]] && echo "arm64" || uname -m );
+ curl -O https://nodejs.org/download/release/v$version/$release.tar.gz;
+ tar xf $release.tar.gz -C . --strip-components=2 $release/bin/node;
+ rm $release;
+for command in node;do 
+ alias $command=$(pwd)/$command;
+done;
+fi;
+
+Uninstall Node.js: 
+ rm node;
+
+*
+(One conditional procedure is an exception in "interface.js" 
+ to support backward compatibility before loader modules, 
+ but it remains idle without arguments from the client.) 
+
+Issues: 
+ expose modularisation of sources to support module loading without nodejs's native loader module. update references to it in this readme after. 
+ make composition monadic (only execute on dynamic or bound context). 
+ compress code with monadic combinators (infer, compose, either, wether, combine etc.)
+ make decompress function more declarative (concise). 
