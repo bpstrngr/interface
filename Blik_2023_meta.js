@@ -3,15 +3,15 @@ import { access, note } from "./Blik_2023_interface.js";
 import { compose, record, provide } from "./Blik_2023_inference.js";
 import { search, merge, prune, route, random } from "./Blik_2023_search.js";
 
-export async function parse(source, dialect = "javascript", options = {}) {
+export async function parse(source, syntax = "javascript", options = {}) {
   // interpret language syntax.
   if(typeof source!=="string")
   return Error("can't parse "+typeof source);
   if(source instanceof Buffer)
   source=source.toString();
-  if (dialect === "json") return JSON.parse(source);
+  if (syntax === "json") return JSON.parse(source);
   let { Parser } = await import("./haverbeke_2012_acorn.js");
-  if(dialect=="typescript")
+  if(syntax=="typescript")
   Parser=await import("./tyrealhu_2023_acorn_typescript.js").then(({default:plugin})=>
   Parser.extend(plugin({dts:options.source.endsWith(".d.ts")})));
   else if(!/xtuc_2020_acorn_importattributes/.test(options.source))
@@ -22,7 +22,7 @@ export async function parse(source, dialect = "javascript", options = {}) {
     ecmaVersion: 2022,
     sourceType: "module",
     onComment: comments,
-    locations: dialect === "typescript",
+    locations: syntax === "typescript",
   });
   comments
     .map((comment) => Object.assign(comment, { type: comment.type + "Comment" }))
@@ -46,41 +46,41 @@ export async function parse(source, dialect = "javascript", options = {}) {
   }
 }
 
- export async function sanitize(syntax,format)
+ export async function sanitize(grammar,format)
 {if(!Object.keys(format||{}).length)
- return syntax;
- let {url,alias,output,dialect,scripts}=format;
+ return grammar;
+ let {url,alias,output,syntax,scripts}=format;
  alias=[alias?.entries,output?.paths].reduce(merge,{});
  let path=await import("path");
  let location=path.dirname(new URL(url).pathname);
  let relative=path.dirname(new URL(import.meta.url).pathname);
- let disjunction=estree[dialect];
+ let disjunction=estree[syntax];
  if(disjunction)
- syntax=prune(syntax,function([field,value])
+ grammar=prune(grammar,function([field,value])
 {let term=Object.values(disjunction).find(({condition})=>condition.call(this,value,field));
  return term?term.ecma.call(this,value):value;
 });
- if(dialect==="commonjs"&&!syntax.body.some(({type})=>type==="ExportDefaultDeclaration"))
- syntax.body.push(
+ if(syntax==="commonjs"&&!grammar.body.some(({type})=>type==="ExportDefaultDeclaration"))
+ grammar.body.push(
  {type:"ExportDefaultDeclaration",declaration:
  {type:"ObjectPattern"
- ,properties:Object.values(search.call(syntax,([field,value])=>
+ ,properties:Object.values(search.call(grammar,([field,value])=>
  value?.type==="ExportNamedDeclaration")).flatMap(({specifiers,declaration})=>
  specifiers?.map(({local})=>local)||declaration.declarations.map(({id})=>id))
  }
  });
  if(Object.keys(alias).length)
- prune(syntax,([field,value])=>value?.type==="ImportDeclaration"
+ prune(grammar,([field,value])=>value?.type==="ImportDeclaration"
 ?[alias[value.source.value],value.source].reduce((alias,source)=>
  !alias?value:["value","raw"].map(field=>(
- {[field]:source[field].replace(source.value,path.relative(location,path.resolve(relative,alias)))
+ {[field]:source[field].replace(source.value,/^\./.test(alias)?path.relative(location,path.resolve(relative,alias)):alias)
  })).reduce(merge,source)
  )
 :value);
  if(/\.d\.ts$/.test(url))
- syntax=prune(syntax,({1:value})=>value?.type==="ExportNamedDeclaration"&&value.declaration?.kind==="const"&&!value.declaration.declarations.some(({init})=>init)?undefined:value);
+ grammar=prune(grammar,({1:value})=>value?.type==="ExportNamedDeclaration"&&value.declaration?.kind==="const"&&!value.declaration.declarations.some(({init})=>init)?undefined:value);
  //prune(syntax,([field,value])=>field==="left"&&value.operator==="??"?:value)
- return syntax;
+ return grammar;
 };
 
  var estree=

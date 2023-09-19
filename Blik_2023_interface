@@ -1,12 +1,25 @@
 Ecmascript module interface for clients/imports/functions. 
 
-Using modules requires 3 steps: 
- resolve (download and bundle if not found despite source entry),
- read (+interpret and serialize if foreign dialect recognised or specified, exposed together as "load" to nodejs),
- modularise (shortcircuitting "load" with an implementation using "vm" module is a pending feature). 
- (+ test if the namespace exposes cases for itself).
+Loading modules requires 3 steps: 
+ 1. locate (download, bundle and delete source if not found despite entry, or just redirect if bundling in progress), 
+ 2. access (+interpret and serialize if foreign dialect recognised or specified), 
+ 3. modularise (splitting "load" into access + modularise with an implementation using "vm" module is a pending feature). 
+ (4. test, if the namespace exposes cases for itself). 
+ (5. infer arguments if provided by client). 
 
-It is advised to keep modules Modular, ie. not pollute their scope with Procedures*. 
+The semantically flexible javascript platform has been subdued by several 
+syntactic/semantic variations in its ecosystem (commonjs, flow, typescript, jsx, purescript etc.) 
+that has required growing amounts of configuration and compilation to manage. 
+
+To compound this, package managers (npm, yarn etc.) obscure the dependency graphs of external libraries too. 
+Distributing source format definitions for them instead of reducing your control to simple version tracking in package.json 
+enables moderating their content, restoring transparency, integrity, re-enforcing standards and saving workspace. 
+
+With the advent of a modular loader interface in the node.js implementation, 
+these dialects can finally be compiled (and tested) dynamically and deterministically, 
+without a need for volatile configurations or a new platform bloated by heterogeneity (deno, bun). 
+
+Although ecmascript allows polluting modules with procedures, it is advised to keep them Modular. 
 Doing so leaves us without access to invoke their functions, hence this module 
 extends the 3 steps with an inference of arguments provided by a client (shell/function). 
 
@@ -24,10 +37,6 @@ The first usage extends the interface to every import call (flag to expose impor
 For the other cases, external modules can be resolved in advance: 
  for file in $(echo sources.json | jq .keys --raw-output);do node ./Blik_2023_interface.js ./Blik_2023_interface.js resolve $file;done;
  for file in $(git ls-tree --full-tree --name-only -r HEAD);do node ./Blik_2023_interface.js ./Blik_2023_interface.js resolve $file;done;
-
-External dependencies are not reliable for good practice, and package managers even obscure their dependency graphs. 
-Distributing source definitions for them instead of reducing your control to simple version tracking in package.json 
-enables moderating their content, restoring transparency, reclaiming primacy of platorm standards and saving storage space. 
 
 Source definitions map files to entry points (local or remote address and version, supporting sparse-checkout of monorepos), patches and 
 dialect specifications (currently supporting rollup plugins, but options for a modular parser/serializer are evolving, such as dialect and output): 

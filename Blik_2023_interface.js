@@ -13,6 +13,7 @@
  if(!process.execArgv.some(flag=>new RegExp("^--loader[= ][^ ]*"+file).test(flag)))
  compose(...process.argv.slice(2),resolve,console.log);
 
+ var colors={steady:"\x1b[0m",alarm:"\x1b[31m",ready:"\x1b[32m",busy:"\x1b[33m"};
 
  export function note(...context)
 {// console.log with return value.
@@ -21,10 +22,15 @@
   if(/^ *at infer /.test(location))
   location = stack[5];
   location = location.replace(/^ */, "");
-  console.log("\x1b[36m" + location + ":\x1b[0m");
-  console.log(...context);
+  let stream=console[this?"warn":"log"];
+  stream("\x1b[36m" + location + ":\x1b[0m");
+  let steady=colors.steady;
+  let phase=colors[this]||Object.values(colors)[this]||steady;
+  process.stdout.write(phase);
+  stream(...context);
+  process.stdout.write(steady);
   return provide(...context);
-}
+} 
 
  export async function prompt(...context)
 {// request context from client interface, 
@@ -120,170 +126,175 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
 // https://nodejs.org/api/esm.html#esm_loaders 
 
  export async function resolve(source,context,next)
-{// import module from route, bundle if not found despite source entry, 
- // load source if already downloaded for bundling (eg. imported by bundler/interpretter), 
- // infer context if provided. 
+{// import module from source, infer context if provided. 
  // use as --loader module to do for each import. 
  // (https://nodejs.org/api/esm.html#esm_loaders).
  if(Array.isArray(source))
  return source.reduce(record(source=>resolve(source,context,next)),[]);
  if(typeof source==="object")
  return source;
+ let internal=context?.parentURL;
  let loading=next?.name==="nextResolve";
- let command=!context?.parentURL;
- let module=(!loading||command?import(source):next(source,context)).catch(fail=>
- contextualize(fail,source,context,next).then(context=>context.format==="commonjs"
- // don't trust default assumption from nearest package.json as it often refers to inaccessable build outputs. 
-?require(new URL(context.url).pathname).then(commonjs=>context).catch(fail=>
- upgrade(fail,context))
-:context));
- if(loading&&!command)
+ let command=!loading||!internal;
+ let module=command?import(source):next(source,context).catch(async function recover(fail)
+{let path=await import("path");
+ let relation=context?.parentURL?path.dirname(decodeURI(new URL(context?.parentURL).pathname)):location;
+ let absolute=/^file:/.test(source)?new URL(source).pathname:/^\//.test(source)?source:path.resolve(relation,source);
+ let immediate=fail.message.match("'"+absolute+"'");
+ let recovery=
+ {ERR_MODULE_NOT_FOUND:immediate?retrieve:redirect
+ ,ERR_UNSUPPORTED_DIR_IMPORT:immediate
+?absolute=>["js","ts","d.ts"].map(extension=>
+ path.join(absolute,"index."+extension)).reduce((file,source)=>
+ file.catch(fail=>access(source).then(file=>source))
+,Promise.reject())
+:exit
+ }[fail.code];
+ if(!recovery)throw fail;
+ return recovery(absolute,relation).catch(fail=>
+ exit(console.warn(fail))).then(source=>
+ resolve(source,context,next)).catch(
+ exit.bind(null,fail));
+});
+ if(loading&&internal)
  return module;
- let client=loading&&command;
+ let client=loading&&!internal;
  [source,...context]=client?process.argv.slice(1):Array.from(arguments);
  let term=context.length?[context.shift(),Reflect.get]:[];
  return compose(module,...term,infer.bind(null,provide(...context)),term=>term).then(terms=>
  client?compose(terms,note,wait.bind(0,10*60*1000*0),process.exit):terms);
 };
 
- async function contextualize(fail,source,context,next)
-{let [notfound,directory]=["MODULE_NOT_FOUND","UNSUPPORTED_DIR_IMPORT"].map(code=>
- fail.code?.endsWith(code));
- if(![notfound,directory].some(Boolean))
- throw fail;
- let path=await import("path");
- let relation=context?.parentURL?path.dirname(decodeURI(new URL(context?.parentURL).pathname)):location;
- let address=/^file:/.test(source)?new URL(source).pathname:path.join(relation,source);
- let absolute=path.resolve(relation,path.relative(relation,address));
- let relative=path.relative(location, absolute);
- if(directory)
- return resolve(path.resolve(relative,"index.js"),context,next).catch(a=>note(a)&&exit.call(null,fail));
- let immediate=fail.message.match("'"+absolute+"'");
+ var retrieve=async function(absolute)
+{// bundle if not found despite source entry, 
+ // load source if source entry already downloaded for bundling (eg. imported by bundler/parser/serializer). 
  let {default:modules}=await import("./Blik_2023_sources.json", {assert:{type:"json"}});
- if(!immediate)
- return [Object.entries(modules).find(([target,definition])=>
- Object.values(typeof definition==="object"?definition:[definition]).some((source,index)=>
- relation.startsWith(path.join(location,target.replace(/\.js$/,""),String(index)))))?.reduce((target,definition)=>
- Object.values(typeof definition==="object"?definition:[definition]).flat().find(entry=>entry.output))?.output.paths[source]
-,fail
-].reduce(function(alias,fail){if(alias)return resolve("file://"+path.resolve(location,alias),context,next);throw fail});
- let target = relative.replace(/\.js$/, "/");
+ let target=absolute.replace(/\.js$/, "/");
+ let relative=path.relative(location,absolute);
  let definition=modules[relative];
- let entries=Object.entries(Array.isArray(definition)?[definition]:definition||{});
- entries=entries.map(function sortentry([source, input], index)
-{source=source == index ? undefined : source,
- input=typeof input === "string" || Array.isArray(input)
-?{branch:undefined,input}
-:Object.entries(input).map(([branch, input]) => ({branch,input})).reduce(merge);
- return {source,...input,target:target+index+"/"};
+ let entry=typeof definition!=="object"||Array.isArray(definition);
+ let sources=Object.entries(definition?entry?[definition]:definition:{}).flatMap(function sortentry([remote,input],index)
+{if(remote==index)remote=undefined;
+ if(typeof input!=="object"||Array.isArray(input))
+ return {remote,input:[input].flat()};
+ return Object.entries(input).map(([branch,input])=>({remote,branch,input:[input].flat()}));
 });
- let format=entries.flatMap(({input})=>input).some(entry=>typeof entry==="object")&&{format:relative};
- if(entries.length)
- return compose(resolve(path.resolve(target,"0",entries[0].input[0]),context,next),format,Object.assign).catch(async fail=>
-{await persist({},target);
- let input = await entries.reduce(record(async function prepare({ source, target, branch, input }, index, {length})
-{let [protocol, host, author, name, ...route] = source?.match(/(.*:\/\/)(.*)/).slice(1).reduce((protocol, address) =>
+ if(sources.length)
+ return compose(sources[0],({remote,input})=>
+ // presence of first source entry indicates in-progress assembly. 
+ path.resolve(location,...remote?[target,"0"]:[],input[0])
+,file=>access(file).then(present=>(
+ this.includes(file)||(note.call(3,"Using source entry point for \""+relative+"\":\n"+file+"\n(bundling already in progress or interrupted before purge)"),this.push(file))
+,file))).catch(async fail=>
+ assemble(sources,absolute));
+ let sloppy=!/\.(js|json)$/.test(absolute)&&
+ await ["js","ts","d.ts"].map(extension=>absolute+"."+extension).reduce((module,file)=>
+ module.catch(fail=>access(file).then(present=>file))
+,Promise.reject()).catch(fail=>false);
+ return sloppy||exit(Error("no source entry for "+absolute));
+}.bind([])
+
+ async function redirect(absolute,relation=location)
+{// find potential alias in bundle definition. 
+ let {default:modules}=await import("./Blik_2023_sources.json");
+ let source=path.relative(relation,absolute);
+ let definition=Object.entries(modules).find(([target,definition])=>
+ Object.values(typeof definition!=="object"||Array.isArray(definition)?[definition]:definition).some((source,index)=>
+ absolute.startsWith(path.join(location,target.replace(/\.js$/,""),String(index)))));
+ let namespace=definition?.reduce((target,definition)=>
+ Object.values(search.call([definition],({1:entry})=>Array.isArray(entry)||typeof entry==="string")).flat().find(entry=>entry.output));
+ let alias=namespace?.output.paths[source];
+ return alias?path.resolve(location,alias):exit(Error("no alias for "+source+" in "+relation));
+};
+
+ async function assemble(sources,target)
+{let deposit=target.replace(/\.js$/,"/")
+ await persist({},deposit);
+ let input = await sources.reduce(record(async function({ remote, branch, input }, index, {length}={})
+{if(!remote)return input.map(input=>path.join(deposit,input));
+ let depot=path.join(deposit,String(index))+"/";
+ let [protocol, host, author, name, ...route] = remote?.match(/(.*:\/\/)(.*)/).slice(1).reduce((protocol, address) =>
  [protocol, ...address.split("/")])||[];
  let compressed=route[0]==="tarball"||!["github.com"].some(host.includes.bind(host));
- let remote = protocol + [host, author, name, ...compressed?route:[]].join("/");
- let asset=target.replace(/\/$/,".tar.gz");
- let local=await access(target, false).catch(fail=>false);
- if(source&&!local)
+ let address = protocol + [host, author, name, ...compressed?route:[]].join("/");
+ let asset=depot.replace(/\/$/,".tar.gz");
+ let local=await access(depot, false).catch(fail=>false);
+ if(!local&&remote)
+ // download. 
  compressed
 ?await access(asset).catch(fail=>
- compose(source,fetch,response=>response.status===200
+ compose(remote,fetch,response=>response.status===200
 ?response.arrayBuffer().then(buffer=>persist(Buffer.from(buffer),asset))
 :exit(response.status))).then(compressed=>
- compose({},target,persist).then(ready=>
- compose(asset,decompress,target,decompress)).then(ready=>
+ compose({},depot,persist).then(ready=>
+ compose(asset,decompress,depot,decompress)).then(ready=>
  compose(asset,purge)))
-:await checkout(remote, target, branch, route);
- local = source ? path.join(target, ...compressed?[]:route) : location;
- let entries = await [input].flat().reduce(record((entry)=>typeof entry === "string"
-?Promise.resolve(/\/$/.test(entry)
-?access(path.join(local, entry), true).then(files=>
- files.map(({name})=>path.join(entry,name)).filter(name=>/\.js$/.test(name)))
-:[entry]).then(entries=>entries.map(entry=>path.join(local, entry)))
-:entry)
+:await checkout(address, depot, branch, route).catch(provide).then(done=>
+ access(depot,false).then(done=>note.call(2,"Source downloaded:",address,"->",depot)));
+ let relation=remote?path.join(depot,...compressed?[]:route):location;
+ let entries=await [input].flat().reduce(record(input=>typeof input==="string"
+?Promise.resolve(/\/$/.test(input)
+?access(path.join(relation, input), true).then(files=>
+ files.map(({name})=>path.join(input,name)).filter(name=>/\.js$/.test(name)))
+:[input]).then(input=>input.map(input=>path.join(relation, input)))
+:input)
 ,[]);
  entries=entries.flat();
- let part = length > 1 ? path.dirname(target) + "_" + index + ".js" : file;
- return bundle(entries, part).finally((done) =>
- source && purge(target));
-})
-,[]);
- await purge(target);
- if(input.length > 1)
- await bundle(input, file).finally(file=>input.reduce(record(purge), []));
- return resolve(source,context,next).catch(note);
-});
- let sloppy=!/\.(js|json)$/.test(source)&&
- await [Promise.reject(),"js","ts","d.ts"].reduce((module,extension)=>
- module.catch(fail=>next(source+"."+extension,context))).catch(fail=>false);
- if(sloppy)
- return sloppy;
- throw fail;
+ let part = length > 1 ? path.dirname(depot) + "_" + index + ".js" : target;
+ return bundle(entries, part);
+}),[]).catch(fail=>purge(deposit).finally(exit.bind(null,fail)));
+ return Promise.resolve(input.length>1
+?bundle(input.flat(),target)
+:target).finally(target=>purge(deposit));
 }
 
- async function upgrade(fail,context)
-{let syntax=fail.constructor.name==="SyntaxError";
- let modular=syntax&&["import","export"].some(token=>RegExp(token).test(fail.message));
- if(modular)
- return Object.assign(context,{format:"module"});
- let notfound=fail.message.startsWith("Cannot find");
- let [definition]=notfound&&await import("./Blik_2023_sources.json").then(({default:modules})=>
- Object.entries(modules).find(([target,definition])=>
- Object.values(typeof definition==="object"?definition:[definition]).some((source,index)=>
- new URL(context.url).pathname.startsWith(path.join(location,target.replace(/\.js$/,""),String(index))))))||[];
- //note(fail,modular,notfound,definition,context.url)
- if(definition)
- return Object.assign(context,{format:definition});
- throw fail;
-}
-
- export async function load(url,context,next)
+ export async function load(source,context,next)
 {// access source as module specifier, ie. 
  // compose(true,access,interpret,format,sanitize,serialize,modularize). 
- if(url==="file:///mnt/chromeos/GoogleDrive/MyDrive/blik/lupomontero_2019_psl/0/index.js")context.format="lupomontero_2019_psl.js"
  let version=process.versions.node.split(".")[0];
  let {importAssertions:assertion,format}=context||{};
- if(/^node:/.test(url)&&!format)
- // trace builtin format losses in resolve. 
- format="builtin";
- let foreign=!["json","commonjs","module","builtin"].includes(format);
- let dialect=assertion?.type||mime(url).replace(/.*\//,"");
- if(foreign)
- format=await resolve("./Blik_2023_sources.json").then(({default:sources})=>
- Object.values(sources[format]||{}).reduce(function flat(entries,source)
-{return [entries,Array.isArray(source)?source:Object.values(source).reduce(flat,[])].flat();
-},[{url,dialect}]).filter(entry=>typeof entry==="object").reduce(merge));
- if(foreign||!next)
- // foreign syntaxes may be defined in a sources.json entry of modules, 
- // and may have respective interpretters. 
- // without native interpretter to call (next), all modules are foreign. 
- foreign=await compose
-(url,true,access,format.dialect,{source:url},parse,format,sanitize,serialize
-// use acorn's Parser methods (parse) until interpret reducer is complete. 
-).catch(fail=>{note(fail,url);throw fail});
- if(!next)
- return foreign;
- if(foreign)
- return {source:foreign,shortCircuit:true,format:"module"};
- if(dialect==="module")
- // dispatch new import thread to test until modularise halts on self-referential imports. 
- //await read(source).then(resource=>
- //modularise(resource,source)).then(({namespace:module})=>)
- import(url).then(module=>
- module.proof&&prove.call(module,module.proof).then(proof=>
- console.log(url+"\n"+proof)));
- if(dialect==="json")
+ if(format==="commonjs")
+ // don't trust default assumption from nearest package.json as it often refers to inaccessible build outputs. 
+ await require(new URL(source).pathname).catch(fail=>Object.assign(context,{format:"module"}));
+ if(format==="json"&&assertion.type!==format)
  // bypasses need for static import assertions. 
- Object.assign(assertion,{type:dialect});
- return next(...arguments);
+ Object.assign(assertion,{type:format});
+ let module=next?await next(source,context,next).catch(fail=>fail):Error();
+ let fail=module instanceof Error;
+ if(!fail)
+ return (module.format==="module"||typeof module==="string"&&
+ //read(source).then(module=>modularise(module,source)).then(({namespace:module})=>prove.call(module,module.proof))
+ // dispatch new import thread for tests until modularization halts on self-referential imports. 
+ import(source).then(module=>prove.call(module,module.proof).then(proof=>console.log(url+"\n"+proof)))
+,module);
+ let syntactic=module.constructor.name==="SyntaxError";
+ let modular=syntactic&&["import","export"].some(term=>RegExp(term).test(module.message));
+ if(modular)
+ return load(source,Object.assign(context,{format:"module"}),next);
+ let notfound=module.message.startsWith("Cannot find");
+ let foreign=!["commonjs","module","builtin"].includes(format);
+ let syntax=assertion?.type||mime(source).replace(/.*\//,"");
+ let relative=path.relative(location,source);
+ let {default:sources}=await import("./Blik_2023_sources.json");
+ let definition=notfound
+?Object.entries(sources).find(([target,definition])=>
+ Object.values(typeof definition==="object"?definition:[definition]).some((source,index)=>
+ new URL(source).pathname.startsWith(path.join(location,target.replace(/\.js$/,""),String(index)))))?.[1]
+:Object.values(sources[relative]||{}).reduce(function flat(entries,source)
+{return [entries,typeof source!=="object"||Array.isArray(source)?source:Object.values(source).reduce(flat,[])].flat();
+},[{url:source,syntax}]).filter(entry=>typeof entry==="object").reduce(merge);
+ if(definition||!next)
+ // parse foreign to serialize standard syntax. without native interpretter to call (next), all syntax are foreign. 
+ source=await compose
+ // use acorn's Parser methods (parse) until interpret reducer is complete. 
+(source,true,access,definition.syntax,{source},parse,definition,sanitize,serialize
+).catch(fail=>note.call(1,"Failed to patriate "+definition.syntax+" \""+source+"\" due to",fail)&&exit(fail));
+ return next?{source,shortCircuit:true,format:"module"}:source;
 };
 
  export async function require(path)
-{let instance=globalThis.require||require.instance;
+{// to be deprecated in favor of commonjs compilation. 
+ let instance=globalThis.require||require.instance;
  //path=new URL(note(path)).pathname;
  if(instance)
  return instance(path);
@@ -307,7 +318,7 @@ export async function bundle(source, target) {
     .reduce(merge, {});
   await patch(path.dirname(include[0]), patches);
   let multientry = include.length > 1 && { "@rollup/plugin-multi-entry": {} };
-  let { input, output, dialect, typescript, scripts, transform, comment, ...plugins } = rules.reduce(merge, { ...multientry });
+  let { input, output, syntax, typescript, scripts, transform, comment, ...plugins } = rules.reduce(merge, { ...multientry });
   if(scripts)
   await [scripts].flat().reduce(record(
     script=>resolve(path.resolve(path.dirname(target),script)).then(({default: module})=>module).catch(note)
@@ -339,7 +350,7 @@ export async function bundle(source, target) {
       };
     }}]
   );
-  note("bundling " + include + "...");
+  note.call(3,"bundling " + include + "...");
   let { rollup } = await import("./rollup_2022_rollup.js");
   let bundle = await rollup({ input: multientry ? { include } : include[0], plugins, ...input });
   if (target)
@@ -357,8 +368,8 @@ export async function checkout(remote, target, branch, path) {
     "git",
     "clone",
     "--depth=1",
-    ...(path.length?["-n","--sparse","--filter=tree:0"]:[]),
-    ...(branch ? ["--single-branch", "--branch", branch] : []),
+    ...(path.length?["--no-checkout","--sparse","--filter=tree:0"]:[]),
+    ...(branch?["--single-branch","--branch",branch]:[]),
     remote,
     target
   );
@@ -425,7 +436,7 @@ export function patch(repository, patch) {
 };
 
 export async function spawn(command, ...context) {
-  note(command, ...context, "...");
+  note.call(3,command, ...context, "...");
   let process = await resolve("child_process", "spawn", command, context);
   let streams = ["out", "err"].map((stream) => process["std" + stream]);
   streams.forEach((stream,index,[out]) => stream.on(
