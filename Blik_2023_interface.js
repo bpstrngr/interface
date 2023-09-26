@@ -334,7 +334,7 @@ export async function bundle(source, target) {
   let multientry = include.length > 1 && { "./rollup_2022_multientry.js": {} };
   let { input, output, syntax, replace, typescript, scripts, transform, comment, ...plugins } = rules.reduce(merge, { ...multientry });
   if(syntax==="commonjs")
-  plugins.unshift({"./rollup_2022_commonjs.js":{}});
+  plugins={"./rollup_2022_commonjs.js":{},...plugins};
   if(scripts)
   await [scripts].flat().reduce(record(
     script=>resolve(path.resolve(path.dirname(target),script)).then(({default: module})=>module).catch(note)
@@ -367,7 +367,7 @@ export async function bundle(source, target) {
     }}]
   );
   note.call(3,"bundling " + include + "...");
-  let { default: rollup } = await import("./rollup_2022_rollup.js");
+  let { rollup } = await import("./rollup_2022_rollup.js");
   let bundle = await rollup({ input: multientry ? { include } : include[0], plugins, ...input });
   if (target)
     await bundle.write({ file: target, format: "module", inlineDynamicImports: true, ...output });

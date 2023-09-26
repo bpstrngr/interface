@@ -79,14 +79,26 @@ export async function parse(source, syntax = "javascript", options = {}) {
  )
 :value);
  grammar=prune(grammar,function jsonnamespace({1:value})
-{let json=value?.type==="ImportDeclaration"&&/\.json$/.test(value.source.value);
- let namespace=json&&value.specifiers.some(({type})=>type!=="ImportDefaultSpecifier");
+{let boundary=["Import","ExportNamed","ExportAll"].map(type=>type+"Declaration").find(type=>type===value?.type);
+ let json=boundary&&/\.json$/.test(value.source?.value);
+ let namespace=json&&(boundary==="ExportAllDeclaration"||value.specifiers.some(({type,local})=>
+ /^Import/.test(boundary)?type!=="ImportDefaultSpecifier":local.name!=="default"));
  if(!namespace)return value;
- let local={type:"Identifier",name:value.source.value.replace(/[^a-zA-Z]/g,"")+"_object"};
- let properties=value.specifiers.map(specifier=>({type:"Property",kind:"init",key:specifier.imported,value:specifier.local}));
- let destructuring={type:"VariableDeclaration",kind:"const",declarations:[{type:"VariableDeclarator",id:{type:"ObjectPattern",properties},init:local}]};
- value.specifiers=[{type:"ImportDefaultSpecifier",local}];
- return provide(value,destructuring);
+ let specifier=value.properties?.find(({type})=>type==="ImportNamespaceSpecifier")?.local;
+ let local=specifier||{type:"Identifier",name:!value.specifiers?value.exported:value.source.value.replace(/[^a-zA-Z]/g,"")+"_object"};
+ let statements=[{type:"ImportDeclaration",source:value.source,specifiers:[{type:"ImportDefaultSpecifier",local}]}];
+ if(value.specifiers)
+ statements.push({type:"VariableDeclaration",kind:"const",declarations:[{type:"VariableDeclarator",id:
+ {type:"ObjectPattern",properties:value.specifiers?.map(specifier=>(
+ {type:"Property",kind:"init"
+ ,key:specifier.exported?specifier.local:specifier.imported
+ ,value:specifier.exported||specifier.local
+ }))
+ },init:local}]});
+ if(/^Export/.test(boundary))
+ statements.push({type:"ExportNamedDeclaration",specifiers:value.specifiers?.map(specifier=>({...specifier,local:specifier.exported}))||
+ [{type:"ExportSpecifier",local,exported:local}]});
+ return provide(...statements);
 });
  if(/\.d\.ts$/.test(grammar.meta.url.pathname))
  grammar=prune(grammar,function initialized({1:value})
@@ -198,6 +210,8 @@ export async function parse(source, syntax = "javascript", options = {}) {
  {condition(value){return value?.type==="ImportDeclaration"&&value.importKind==="type"}
  ,ecma(){return undefined;}
  }
+ ,genericinstance:{condition(value){return value?.type==="TSInstantiationExpression";},ecma(value){return value.expression;}}
+ ,declaredproperty:{condition(value){return value?.type==="PropertyDefinition"&&value.declare;},ecma(){return undefined;}}
  ,implicitproperty:{condition(value,field)
 {return value?.type==="ClassDeclaration"&&
  value.body.body.find(({kind})=>kind==="constructor")?.value.params.some(({type})=>type==="TSParameterProperty");
