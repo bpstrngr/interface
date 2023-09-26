@@ -1,5 +1,5 @@
 import path from "path";
-import { access, note } from "./Blik_2023_interface.js";
+import { access, resolve, note } from "./Blik_2023_interface.js";
 import { compose, record, provide } from "./Blik_2023_inference.js";
 import { search, merge, prune, route, random } from "./Blik_2023_search.js";
 
@@ -18,6 +18,7 @@ export async function parse(source, syntax = "javascript", options = {}) {
   Parser=await import("./xtuc_2020_acorn_importattributes.js"). then(({importAttributes:plugin})=>
   Parser.extend(plugin));
   let comments = [];
+ //(syntax==="typescript")note(Parser.parse("export default class Graph{constructor(private readonly options: NormalizedInputOptions){}}",{ecmaVersion:2022, sourceType:'module'}).body[0].declaration)//.body.body[0]. value.params[0])
   let scope = Parser.parse(source, {
     ecmaVersion: 2022,
     sourceType: "module",
@@ -49,10 +50,10 @@ export async function parse(source, syntax = "javascript", options = {}) {
  export async function sanitize(grammar,format)
 {if(!Object.keys(format||{}).length)
  return grammar;
- let {url,alias,output,syntax,scripts}=format;
- alias=[alias?.entries,output?.paths].reduce(merge,{});
+ let {alias,replace,output,syntax,scripts}=format;
+ alias=[alias?.entries,output?.paths,{}].reduce(merge,{});
  let path=await import("path");
- let location=path.dirname(new URL(url).pathname);
+ let location=path.dirname(grammar.meta.url.pathname);
  let relative=path.dirname(new URL(import.meta.url).pathname);
  let disjunction=estree[syntax];
  if(disjunction)
@@ -77,9 +78,34 @@ export async function parse(source, syntax = "javascript", options = {}) {
  })).reduce(merge,source)
  )
 :value);
- if(/\.d\.ts$/.test(url))
- grammar=prune(grammar,({1:value})=>value?.type==="ExportNamedDeclaration"&&value.declaration?.kind==="const"&&!value.declaration.declarations.some(({init})=>init)?undefined:value);
- //prune(syntax,([field,value])=>field==="left"&&value.operator==="??"?:value)
+ grammar=prune(grammar,function jsonnamespace({1:value})
+{let json=value?.type==="ImportDeclaration"&&/\.json$/.test(value.source.value);
+ let namespace=json&&value.specifiers.some(({type})=>type!=="ImportDefaultSpecifier");
+ if(!namespace)return value;
+ let local={type:"Identifier",name:value.source.value.replace(/[^a-zA-Z]/g,"")+"_object"};
+ let properties=value.specifiers.map(specifier=>({type:"Property",kind:"init",key:specifier.imported,value:specifier.local}));
+ let destructuring={type:"VariableDeclaration",kind:"const",declarations:[{type:"VariableDeclarator",id:{type:"ObjectPattern",properties},init:local}]};
+ value.specifiers=[{type:"ImportDefaultSpecifier",local}];
+ return provide(value,destructuring);
+});
+ if(/\.d\.ts$/.test(grammar.meta.url.pathname))
+ grammar=prune(grammar,function initialized({1:value})
+{// typescript ambiguates uninitialized const as type declarations. 
+ let declaration=value?.type==="ExportNamedDeclaration"?value.declaration:value;
+ let uninitialized=declaration?.type==="VariableDeclaration"&&declaration.kind==="const"&&!declaration.declarations.some(({init})=>init);
+ return uninitialized?undefined:value;
+});
+ await ["banner","footer"].map(extension=>
+ output?.[extension]).reduce(record((extension,index)=>
+ extension&&compose(extension,parse,({body})=>
+ grammar.body[index?"push":"unshift"](...body)))
+,[]);
+ if(replace)
+ grammar=prune(grammar,function({1:value})
+{let names=replace[value?.type];
+ let name=names?.hasOwnProperty(value.name)&&names[value.name];
+ return name?{...value,name}:value;
+});
  return grammar;
 };
 
@@ -92,10 +118,11 @@ export async function parse(source, syntax = "javascript", options = {}) {
  return values.some(value=>(value?.callee?.name||value?.callee?.object?.callee?.name)==="require");
 },ecma(value)
 {let declarations=(value.declarations||[value.expression]).flatMap(expression=>expression.right
+ // expression
 ?[[expression.right.callee.object||expression.right.callee,"arguments","0"].reduce(Reflect.get)
-,value=>value.replace(/[^a-zA-Z]/g,"")+"_default_interface"
+,value=>value.replace(/[^a-zA-Z]/g,"")+"_exports"
 ].reduce((source,id)=>
-[{type:"ImportDeclaration",source,specifiers:[{type:"ImportDefaultSpecifier",local:{type:"Identifier",name:id(source.value)}}]},
+[{type:"ImportDeclaration",source,specifiers:["ImportDefaultSpecifier",{type:"Identifier",name:id(source.value)}].reduce((type,local)=>[{type,local,imported:local}])},
 [value
 ,{expression:
  {right:value.expression.right.callee.object
@@ -106,18 +133,21 @@ export async function parse(source, syntax = "javascript", options = {}) {
 ].reduce(merge,{})
 ])
 :(expression.init?.callee?.name||expression.init?.object?.callee?.name)==="require"
-?{type:"ImportDeclaration"
- ,source:(expression.init.object||expression.init).arguments[0]
- ,specifiers:
-[["Literal","Identifier"].includes(expression.id?.type)&&{type:"ImportDefaultSpecifier",local:expression.id}
-,expression.init.property
-].reduce((namespace,property)=>
-[!property&&namespace||[]
- // destructuring a namespace with an ObjectLiteral id.properties after also with a MemberExpression init.property can only be done in a new declaration! 
-,[property&&{key:property,value:expression.id}||[],!property&&expression.id.properties||[]].flat().map(({key,value})=>(
- {type:"ImportSpecifier",imported:key,local:value||key})),
-].flat())
+?// declaration
+[[expression.init.object||expression.init,"arguments","0"].reduce(Reflect.get)
+,[expression.init.object||expression.init,"arguments","0","value"].reduce(Reflect.get).replace(/[^a-zA-Z]/g,"")+"_exports"
+].reduce((source,local)=>
+[{type:"ImportDeclaration",source,specifiers:["ImportDefaultSpecifier",expression.id.name&&!expression.init.property?expression.id:{type:"Identifier",name:local}].reduce((type,local)=>[{type,local,imported:local}])}
+,expression.init.property||expression.id.properties
+?{...value,declarations:
+[{type:"VariableDeclarator",id:expression.id,init:expression.init.property
+?{type:"MemberExpression",object:{type:"Identifier",name:local},property:expression.init.property}
+:{type:"Identifier",name:local}
  }
+]}
+:[]
+]).flat()
+ // statement
 :{...value,declarations:[expression]});
  return provide(...declarations);
 }}
@@ -150,6 +180,45 @@ export async function parse(source, syntax = "javascript", options = {}) {
  delete value.expression;
  return expression?{...value,...expression}:value;
 }}
+ ,interface:
+ {condition(value){return value?.type==="ExportNamedDeclaration"&&["TSInterfaceDeclaration","TSTypeAliasDeclaration","TSEnumDeclaration"].includes(value.declaration?.type);}
+ ,ecma({type,start,end,loc,declaration})
+{let enumtype=declaration.type==="TSEnumDeclaration";
+ let init=enumtype
+?{type:"ObjectExpression"
+ ,properties:declaration.members.map(member=>(
+ {type:"Property",kind:"init",key:member.id
+ ,value:member.initializer||{type:"Literal",value:member.id.name,raw:"'"+member.id.name+"'"}
+ }))
+ }
+:{type:"Literal",kind:"undefined"};
+ return {type,start,end,loc,declaration:{type:"VariableDeclaration",kind:"const",declarations:[{id:declaration.id,init}]}};
+}}
+ ,typeimport:
+ {condition(value){return value?.type==="ImportDeclaration"&&value.importKind==="type"}
+ ,ecma(){return undefined;}
+ }
+ ,implicitproperty:{condition(value,field)
+{return value?.type==="ClassDeclaration"&&
+ value.body.body.find(({kind})=>kind==="constructor")?.value.params.some(({type})=>type==="TSParameterProperty");
+},ecma(value)
+{let {body:structure}=value.body;
+ let index=structure.findIndex(({kind})=>kind==="constructor");
+ let method=structure[index];
+ let {value:{params,body:{body}}}=method;
+ let properties=params.filter(({type})=>type==="TSParameterProperty").map(({parameter})=>({type:"PropertyDefinition",key:parameter,value:null}));
+ let assignments=properties.map(({key})=>({type:"ExpressionStatement",expression:
+ {type:"AssignmentExpression", operator:"="
+ ,left:{type:"MemberExpression",object:{type:"ThisExpression"},property:key.left||key}
+ ,right:key.left||key
+ }}));
+ let inheritence=body.findIndex(statement=>statement.expression?.callee?.type==="Super")+1;
+ params=[Array(params.length).fill(undefined),params.map(param=>param.type==="TSParameterProperty"?param.parameter:param)].flat();
+ body=[Array(body.length).fill(undefined),body.slice(0,inheritence),assignments,body.slice(inheritence)].flat();
+ method=[method,{value:{params,body:{body}}}].reduce(merge,{});
+ structure={...[Array(structure.length).fill(undefined),properties,structure].flat(),[index+structure.length+properties.length]:method};
+ return [value,{body:{body:structure}}].reduce(merge,{});
+}}
  ,annotation:{condition(value){return value?.type?.startsWith("TS");},ecma(){return undefined;}}
  ,bindtype:{condition(value,field){return field==="params"&&value[0]?.name==="this";},ecma(value){return value.slice(1);}}
  }
@@ -164,6 +233,33 @@ export async function serialize(syntax, format = "astring", options) {
   }[format] || [format];
   return import(module).then(module=>module[term](syntax, options));
 }
+
+ export async function modularise(resource,identifier,context={})
+{// uses --experimental-vm-modules 
+ let {SourceTextModule,createContext,isContext}=await import("vm");
+ let {default:{resolve}}=await import("path");
+ if(!isContext(context))
+ context=createContext(
+ {cache:new Map(),imports:new Map()
+ ,importModuleDynamically:identifer=>({})
+ ,initializeImportMeta:meta=>Object.assign(meta,{url:identifier})
+ })
+ let module=new SourceTextModule(resource||"",{identifier,context});
+ context.cache.set(identifier,module);
+ await module.link((identifier,{context})=>
+ context.cache.has(identifier)
+?context.cache.get(identifier)
+:import(identifier).then(module=>
+ context.imports.set(identifier,module)&&
+ modularise(Object.getOwnPropertyNames(module).sort(name=>
+ name!="default"||-1).map((name,index,exports)=>name=="default"
+?"export default imports.get(\""+identifier+"\").default;"
+:"export const {"+exports.splice(index).join(",")+`}=
+ imports.get("`+identifier+"\");").join("\n")
+,identifier,context)));
+ await module.evaluate();
+ return module;
+};
 
  function set(options, namespace)
 {return Object.entries(namespace).reduce(
@@ -243,19 +339,17 @@ export async function compile(address, dialect = "prettier", options = {}) {
   return output;
 }
 
-export async function imports(source) {
-  if (typeof source !== "string") return;
-  let dialect = extensions[source.match(/[^\.]*?$/)?.shift()];
-  let syntax = await compose(source, access, dialect, parse);
-  let terms = prune(syntax, ([field, scope]) =>
-    ["Declaration", "Expression"].map((type) => "Import" + type).includes(scope?.type) ? scope : undefined
-  );
+export async function imports(syntax,format={}) {
+  if(typeof syntax==="string")
+  syntax=await compose(syntax,true,access,format.syntax,{...format,source:await resolve("url","pathToFileURL",syntax)},parse);
+  let terms = search.call(syntax,([field,scope])=>["Declaration", "Expression"].map((type) => "Import" + type).includes(scope?.type));
   let sources = Object.values(terms)
     .map(({ source }) => source.value)
     .filter((source) => source?.startsWith("."))
-    .map((peer) => "./" + path.join(path.dirname(source), peer));
-  sources = await sources.reduce(record(imports), []);
-  return { [source]: sources.reduce(merge, {}) };
+    .map((peer) => path.resolve(path.dirname(syntax.meta.url.pathname), peer));
+  sources = await sources.reduce(record(async source=>
+  compose(source,format,imports)), []);
+  return { [syntax.meta.url.pathname]: sources.reduce(merge, {}) };
 }
 
 export async function exports(source) {

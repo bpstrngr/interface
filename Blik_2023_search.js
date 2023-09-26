@@ -85,7 +85,9 @@ export function route(scope, term, path) {
  export function prune(scope,term,collapse)
 {// map entries recursively.
  if(typeof scope!=="object"||scope===null)return scope;
- let entries=Object.entries(scope).flatMap
+ let entries=Object.entries(scope);
+ if(!entries.length)for(let field in scope)entries.push([field,scope[field]]);
+ entries=entries.flatMap
 (function([field,scope],index,entries)
 {let value=term.call(Object.fromEntries(entries),[field,scope]);
  let pluck=!defined(value);
@@ -110,22 +112,31 @@ export function route(scope, term, path) {
  return array?Object.assign(Array(0),scope):scope;
 };
 
-export function merge(target = {}, source = {}, overwrite = 1) {
-  // unite scopes.
-  if (typeof target !== "object") return [].concat(target, source);
-  if (Array.isArray(target)) return target.concat(source);
+export function merge(target, source, override = 1) {
+  // unite scopes (assign if path specified to override).
+  let path=[override].flat();
+  if (path.some((path) => typeof path === 'string'))
+    return [target, ...path, source].reduce((scope, field, index, route) =>
+      route.length - index - 1
+        ? (scope[field] = route.length - index > 2 ? scope[field] || {} : route[index + 1])
+        : route[0],
+    );
+  let index=Number(Boolean(override));
+  let primitive=typeof target !== "object";
+  if (primitive) return [target, source][index];
   let Group = [Map, Set].find((group) => [target, source].every((part) => part instanceof group));
-  if (Group) return new Group([source, target].flatMap((part) => Array.from(part)));
-  return Object.keys(source).reduce(function (target, key) {
-    let previous = target.hasOwnProperty ? target.hasOwnProperty(key) : target[key];
-    let value =
-      previous && source[key]
-        ? typeof target[key] === "object"
-          ? merge(target[key], source[key] || {}, overwrite)
-          : [target[key], source[key]][Number(Boolean(overwrite))]
-        : source[key];
-    // mutation warning - merge in reduce with an empty target to keep pure.
-    return Object.assign(target, { [key]: value });
+  if (Group) return override?source:new Group([source, target].flatMap((part) => Array.from(part)));
+  let extensible=Array.isArray(target)&&!override;
+  if (extensible) return target.concat(source);
+  if (!assert(source)) return [target, source][index];
+  return Object.entries(source).reduce(function (target, [field, next]) {
+    const last = target[field];
+    const value = assert(last) ? merge(last, next, override) : next;
+    // mutation warning - reduce on an empty target to copy.
+    if(value!==undefined)
+    return Object.assign(target, { [field]: value });
+    delete target[field];
+    return target;
   }, target);
 }
 
@@ -169,3 +180,7 @@ export function search(term, recursive = false) {
   );
   return Object.fromEntries([range, subrange].flat());
 }
+
+ export const tests=
+ {merge:{context:[{a:1},{b:2}],terms:[{a:1,b:2}],condition:["deepEqual"]}
+ };

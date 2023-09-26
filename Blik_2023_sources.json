@@ -20,20 +20,22 @@
   "microsoft_2014_typescript.js":{"https://github.com/microsoft/TypeScript":{"v5.1.6":["src/compiler/_namespaces/ts.ts"]}},
   "substack_2015_commondir.js":{"https://registry.npmjs.org/commondir/-/commondir-1.0.1.tgz":["index.js"]},
   "jridgewell_2015_sourcemap_codec.js":{"https://github.com/jridgewell/sourcemap-codec":{"v1.4.13":["src/sourcemap-codec.ts"]}},
-  "rich_harris_2014_magic_string.js":{"https://github.com/rich-harris/magic-string":{"v0.27.0":[
-    "src/index.js",
-    {"output":{"paths":{"@jridgewell/sourcemap-codec":"./jridgewell_2015_sourcemap_codec.js"}}}
+  "rich_harris_2014_magic_string.js":{"https://github.com/rich-harris/magic-string":{"v0.27.0":["src/index.js",{"replace":{"Identifier":{"DEBUG":"false"}},"output":{
+    "paths":{"@jridgewell/sourcemap-codec":"./jridgewell_2015_sourcemap_codec.js"},
+    "footer":"export const DecodedSourceMap=undefined;"}}
   ]}},
-  "rich_harris_2016_is_reference.js":{"https://github.com/Rich-Harris/is-reference":{"v3.0.1":["src/index.js"]}},
+  "rich_harris_2016_is_reference.js":{"https://github.com/Rich-Harris/is-reference":{"v3.0.1":["src/index.js",{"output":{"footer":"export const NodeWithFieldDefinition=undefined;"}}]}},
   "rich_harris_2016_is_reference_1.js":{"https://github.com/Rich-Harris/is-reference":{"v1.2.1":[
-    "src/index.ts",{"output":{"paths":{"estree":"./definitely_2015_estree.js"}},"comment":"estree is a type package namespace, path defuses having to define it"}
+    "src/index.ts",{"output":{"paths":{"estree":"./definitely_2015_estree.js"}}}
   ]}},
   "rich_harris_2015_estree_walker.js":{"https://github.com/Rich-Harris/estree-walker":{"v2.0.2":["src/index.js"]}},
-  "rich_harris_2016_locate_character.js":{"https://github.com/Rich-Harris/locate-character":{"v3.0.0":["src/index.js"]}},
+  "rich_harris_2016_locate_character.js":{"https://github.com/Rich-Harris/locate-character":{"v3.0.0":[
+      "src/index.js",{"output":{"footer":"export const Location=undefined;"},"comment":"Typescript sometimes ambiguates type imports with lexical imports. Without dts files present, it's impossible to tell if they need to be discarded."}
+  ]}},
   "lukeed_2019_flru.js":{"https://github.com/lukeed/flru":{"v1.0.2":["src/index.js"]}},
-  "sindresorhus_2015_builtin_modules_static.js":{"https://github.com/sindresorhus/builtin-modules":{"v3.3.0":["static.js"]}},
+  "sindresorhus_2015_builtin_modules_static.js":{"https://github.com/sindresorhus/builtin-modules":{"v3.3.0":["index.js",{"syntax":"commonjs"}]}},
   "micromatch_2018_picomatch.js":{"https://github.com/micromatch/picomatch":{"2.3.0":["lib/picomatch.js",{"syntax":"commonjs"}]}},
-  "definitely_2015_estree.js":{"https://github.com/DefinitelyTyped/DefinitelyTyped/types/estree":{"ts4.2":["types/estree/index.d.ts"]}},
+  "definitely_2015_estree.js":{"https://registry.npmjs.org/@types/estree/-/estree-1.0.0.tgz":["index.d.ts"]},
   "rollup_2022_rollup.js":{"https://github.com/rollup/rollup/tarball/v3.28.1":["src/rollup/rollup.ts",{"output":{"paths":{
     "package.json":"./rollup_2022_rollup/0/package.json",
     "acorn":"./haverbeke_2012_acorn.js",
@@ -70,7 +72,8 @@
     "https://github.com/isaacs/rimraf": {
       "v4.4.0": [
         "src/index.ts",
-        {"./rollup_2022_commonjs.js": {},
+        {
+          "syntax":"commonjs",
           "./rollup_2022_alias.js": {"entries": [{"find": "^(.*)\\.js$", "replacement": "$1.ts"}]},
           "./rollup_2022_noderesolve.js":{}
         }
@@ -239,8 +242,11 @@
   ],
   "facebook_2014_flow_parser.js":{"https://registry.npmjs.org/flow-parser/-/flow-parser-0.216.1.tgz":["flow_parser.js"]},
   "facebook_2013_react.js":{"https://github.com/facebook/react/packages/react":{"v18.2.0":["index.js",{}]}},
+  "facebook_2013_react_dom_client.js":{"https://github.com/facebook/react/packages/react-dom":{"v18.2.0":["client.js"]}},
   "facebook_2013_react_dom_server.js":{"https://github.com/facebook/react/packages/react-dom":{"v18.2.0":["server.node.js"]}},
+  "remix_2014_react_router_dom.js":{"https://github.com/remix-run/react-router/packages/react-router-dom":{"v6.15.0":["index.tsx"]}},
   "remix_2014_react_router_dom_server.js":{"https://github.com/remix-run/react-router/packages/react-router-dom":{"v6.15.0":["server.tsx"]}},
+  "mui_2014_material.js":{"https://github.com/mui/material-ui/packages/mui-material":{"v5.14.10":["src/index.js"]}},
   "domenic_2016_whatwg_encoding.js": {
     "https://github.com/jsdom/whatwg-encoding": {
       "v2.0.0": [

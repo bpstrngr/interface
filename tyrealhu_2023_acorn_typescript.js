@@ -102,6 +102,7 @@ function generateTsTokenType() {
 }
 function generateTsKwTokenType() {
     return {
+        assert: kwLike('assert', { startsExpr }),
         asserts: kwLike('asserts', { startsExpr }),
         global: kwLike('global', { startsExpr }),
         keyof: kwLike('keyof', { startsExpr }),
@@ -928,6 +929,62 @@ function generateJsxParser(acorn, acornTypeScript, Parser, jsxOptions) {
     };
 }
 
+function generateParseImportAssertions(Parse, acornTypeScript, acorn) {
+    const { tokTypes } = acornTypeScript;
+    const { tokTypes: tt } = acorn;
+    return class ImportAttributes extends Parse {
+        parseMaybeImportAttributes(node) {
+            // import assertions
+            if (this.type === tt._with || this.type === tokTypes.assert) {
+                this.next();
+                const attributes = this.parseImportAttributes();
+                if (attributes) {
+                    node.attributes = attributes;
+                }
+            }
+        }
+        parseImportAttributes() {
+            this.expect(tt.braceL);
+            const attrs = this.parseWithEntries();
+            this.expect(tt.braceR);
+            return attrs;
+        }
+        parseWithEntries() {
+            const attrs = [];
+            const attrNames = new Set();
+            do {
+                if (this.type === tt.braceR) {
+                    break;
+                }
+                const node = this.startNode();
+                // parse withionKey : IdentifierName, StringLiteral
+                let withionKeyNode;
+                if (this.type === tt.string) {
+                    withionKeyNode = this.parseLiteral(this.value);
+                }
+                else {
+                    withionKeyNode = this.parseIdent(true);
+                }
+                this.next();
+                node.key = withionKeyNode;
+                // check if we already have an entry for an attribute
+                // if a duplicate entry is found, throw an error
+                // for now this logic will come into play only when someone declares `type` twice
+                if (attrNames.has(node.key.name)) {
+                    this.raise(this.pos, 'Duplicated key in attributes');
+                }
+                attrNames.add(node.key.name);
+                if (this.type !== tt.string) {
+                    this.raise(this.pos, 'Only string is supported as an attribute value');
+                }
+                node.value = this.parseLiteral(this.value);
+                attrs.push(this.finishNode(node, 'ImportAttribute'));
+            } while (this.eat(tt.comma));
+            return attrs;
+        }
+    };
+}
+
 const skipWhiteSpace = /(?:\s|\/\/.*|\/\*[^]*?\*\/)*/g;
 function assert(x) {
     if (!x) {
@@ -1049,6 +1106,8 @@ function tsPlugin(options) {
         Parser = generateParseDecorators(Parser, acornTypeScript, _acorn);
         // extend jsx
         Parser = generateJsxParser(_acorn, acornTypeScript, Parser, options === null || options === void 0 ? void 0 : options.jsx);
+        // extend import asset
+        Parser = generateParseImportAssertions(Parser, acornTypeScript, _acorn);
         class TypeScriptParser extends Parser {
             constructor(options, input, startPos) {
                 super(options, input, startPos);
@@ -1060,7 +1119,6 @@ function tsPlugin(options) {
                 this.inType = false;
                 this.inDisallowConditionalTypesContext = false;
                 this.maybeInArrowParameters = false;
-                this.canStartJSXElement = false;
                 this.shouldParseArrowReturnType = undefined;
                 this.shouldParseAsyncArrowReturnType = undefined;
                 this.decoratorStack = [[]];
@@ -3312,17 +3370,33 @@ function tsPlugin(options) {
                         return importNode;
                     }
                 }
-                const importNode = super.parseImport(node);
+                // parse import start
+                this.next();
+                // import '...'
+                if (this.type === tt.string) {
+                    node.specifiers = [];
+                    node.source = this.parseExprAtom();
+                }
+                else {
+                    node.specifiers = this.parseImportSpecifiers();
+                    this.expectContextual('from');
+                    node.source = this.type === tt.string ? this.parseExprAtom() : this.unexpected();
+                }
+                // import assertions
+                this.parseMaybeImportAttributes(node);
+                this.semicolon();
+                this.finishNode(node, 'ImportDeclaration');
+                // end
                 this.importOrExportOuterKind = 'value';
                 /*:: invariant(importNode.type !== "TSImportEqualsDeclaration") */
                 // `import type` can only be used on imports with named imports or with a
                 // default import - but not both
-                if (importNode.importKind === 'type' &&
-                    importNode.specifiers.length > 1 &&
-                    importNode.specifiers[0].type === 'ImportDefaultSpecifier') {
-                    this.raise(importNode.start, TypeScriptError.TypeImportCannotSpecifyDefaultAndNamed);
+                if (node.importKind === 'type' &&
+                    node.specifiers.length > 1 &&
+                    node.specifiers[0].type === 'ImportDefaultSpecifier') {
+                    this.raise(node.start, TypeScriptError.TypeImportCannotSpecifyDefaultAndNamed);
                 }
-                return importNode;
+                return node;
             }
             parseExportDefaultDeclaration() {
                 // ---start ts extension
@@ -3341,6 +3415,44 @@ function tsPlugin(options) {
                 }
                 // ---end
                 return super.parseExportDefaultDeclaration();
+            }
+            parseExportAllDeclaration(node, exports) {
+                if (this.options.ecmaVersion >= 11) {
+                    if (this.eatContextual("as")) {
+                        node.exported = this.parseModuleExportName();
+                        this.checkExport(exports, node.exported, this.lastTokStart);
+                    }
+                    else {
+                        node.exported = null;
+                    }
+                }
+                this.expectContextual("from");
+                if (this.type !== tt.string)
+                    this.unexpected();
+                node.source = this.parseExprAtom();
+                this.parseMaybeImportAttributes(node);
+                this.semicolon();
+                return this.finishNode(node, "ExportAllDeclaration");
+            }
+            parseDynamicImport(node) {
+                this.next(); // skip `(`
+                // Parse node.source.
+                node.source = this.parseMaybeAssign();
+                if (this.eat(tt.comma)) {
+                    const expr = this.parseExpression();
+                    node.arguments = [expr];
+                }
+                // Verify ending.
+                if (!this.eat(tt.parenR)) {
+                    const errorPos = this.start;
+                    if (this.eat(tt.comma) && this.eat(tt.parenR)) {
+                        this.raiseRecoverable(errorPos, "Trailing comma is not allowed in import()");
+                    }
+                    else {
+                        this.unexpected(errorPos);
+                    }
+                }
+                return this.finishNode(node, "ImportExpression");
             }
             parseExport(node, exports) {
                 let enterHead = this.lookahead();
@@ -3389,15 +3501,60 @@ function tsPlugin(options) {
                         this.importOrExportOuterKind = 'value';
                         node.exportKind = 'value';
                     }
-                    return super.parseExport(node, exports);
+                    // start parse export
+                    this.next();
+                    // export * from '...'
+                    if (this.eat(tt.star)) {
+                        return this.parseExportAllDeclaration(node, exports);
+                    }
+                    if (this.eat(tt._default)) { // export default ...
+                        this.checkExport(exports, "default", this.lastTokStart);
+                        node.declaration = this.parseExportDefaultDeclaration();
+                        return this.finishNode(node, "ExportDefaultDeclaration");
+                    }
+                    // export var|const|let|function|class ...
+                    if (this.shouldParseExportStatement()) {
+                        node.declaration = this.parseExportDeclaration(node);
+                        if (node.declaration.type === "VariableDeclaration")
+                            this.checkVariableExport(exports, node.declaration.declarations);
+                        else
+                            this.checkExport(exports, node.declaration.id, node.declaration.id.start);
+                        node.specifiers = [];
+                        node.source = null;
+                    }
+                    else { // export { x, y as z } [from '...']
+                        node.declaration = null;
+                        node.specifiers = this.parseExportSpecifiers(exports);
+                        if (this.eatContextual("from")) {
+                            if (this.type !== tt.string)
+                                this.unexpected();
+                            node.source = this.parseExprAtom();
+                            this.parseMaybeImportAttributes(node);
+                        }
+                        else {
+                            for (let spec of node.specifiers) {
+                                // check for keywords used as local names
+                                this.checkUnreserved(spec.local);
+                                // check if export is defined
+                                this.checkLocalExport(spec.local);
+                                if (spec.local.type === "Literal") {
+                                    this.raise(spec.local.start, "A string literal cannot be used as an exported binding without `from`.");
+                                }
+                            }
+                            node.source = null;
+                        }
+                        this.semicolon();
+                    }
+                    return this.finishNode(node, "ExportNamedDeclaration");
+                    // end
                 }
             }
             checkExport(exports, name, _) {
                 if (!exports) {
                     return;
                 }
-                if (typeof name !== "string") {
-                    name = name.type === "Identifier" ? name.name : name.value;
+                if (typeof name !== 'string') {
+                    name = name.type === 'Identifier' ? name.name : name.value;
                 }
                 // we won't check export in ts file
                 // if (Object.hasOwnProperty.call(exports, name)) {
@@ -4034,7 +4191,7 @@ function tsPlugin(options) {
                     let node = this.startNodeAt(startPos, startLoc);
                     node.operator = this.value;
                     if (this.type === tt.eq)
-                        left = this.toAssignable(left, false, refDestructuringErrors);
+                        left = this.toAssignable(left, true, refDestructuringErrors);
                     if (!ownDestructuringErrors) {
                         refDestructuringErrors.parenthesizedAssign = refDestructuringErrors.trailingComma = refDestructuringErrors.doubleProto = -1;
                     }
@@ -4294,6 +4451,9 @@ function tsPlugin(options) {
                             this.raise(node.start, TypeScriptError.UnexpectedTypeCastInParameter);
                         }
                         return this.toAssignable(node.expression, isBinding, refDestructuringErrors);
+                    case 'MemberExpression':
+                        // we just break member expression check here
+                        break;
                     case 'AssignmentExpression':
                         if (!isBinding && node.left.type === 'TSTypeCastExpression') {
                             node.left = this.typeCastToParameter(node.left);
@@ -4305,6 +4465,7 @@ function tsPlugin(options) {
                     default:
                         return super.toAssignable(node, isBinding, refDestructuringErrors);
                 }
+                return node;
             }
             toAssignableParenthesizedExpression(node, isBinding, refDestructuringErrors) {
                 switch (node.expression.type) {
@@ -4529,7 +4690,7 @@ function tsPlugin(options) {
                     // When ! is consumed as a postfix operator (non-null assertion),
                     // disallow JSX tag forming after. e.g. When parsing `p! < n.p!`
                     // `<n.p` can not be a start of JSX tag
-                    this.canStartJSXElement = false;
+                    this.exprAllowed = false;
                     this.next();
                     const nonNullExpression = this.startNodeAt(startPos, startLoc);
                     nonNullExpression.expression = base;
@@ -5014,7 +5175,8 @@ function tsPlugin(options) {
                 return this.raiseCommonCheck(pos, message, true);
             }
             updateContext(prevType) {
-                if (this.type == tt.braceL) {
+                const { type } = this;
+                if (type == tt.braceL) {
                     var curContext = this.curContext();
                     if (curContext == tsTokContexts.tc_oTag)
                         this.context.push(tokContexts.b_expr);
@@ -5024,7 +5186,7 @@ function tsPlugin(options) {
                         super.updateContext(prevType);
                     this.exprAllowed = true;
                 }
-                else if (this.type === tt.slash && prevType === tokTypes.jsxTagStart) {
+                else if (type === tt.slash && prevType === tokTypes.jsxTagStart) {
                     this.context.length -= 2; // do not consider JSX expr -> JSX open tag -> ... anymore
                     this.context.push(tsTokContexts.tc_cTag); // reconsider as closing
                     // tag context

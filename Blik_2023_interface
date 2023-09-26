@@ -24,7 +24,9 @@ Doing so leaves us without access to invoke their functions, hence this module
 extends the 3 steps with an inference of arguments provided by a client (shell/function). 
 
 Examples: 
- node --loader=./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3;
+ node --loader=./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3; (node.js 16)
+ node --import=./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3; (node.js 20.7.0)
+ node --import 'data:text/javascript;import("module").then(({register})=>register("./Blik_2023_interface.js",{parentURL:pathToFileURL("./")}));' ./Blik_2023_search.js sum 1 2 3; (node.js 20.7.0)
  node ./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3;
  import("./Blik_2023_interface.js").then(({resolve})=>resolve("./Blik_2023_search.js","sum",1,2,3));
  http.on("request",({path,query},response)=>resolve(path,...query).then(body=>response.send({body})));
@@ -39,16 +41,16 @@ For the other cases, external modules can be resolved in advance:
  for file in $(git ls-tree --full-tree --name-only -r HEAD);do node ./Blik_2023_interface.js ./Blik_2023_interface.js resolve $file;done;
 
 Source definitions map files to entry points (local or remote address and version, supporting sparse-checkout of monorepos), patches and 
-dialect specifications (currently supporting rollup plugins, but options for a modular parser/serializer are evolving, such as dialect and output): 
+format specifications (currently supporting rollup plugins, but options for a modular parser/serializer are evolving, such as syntax and output): 
  {"module.js":"path/index.js"};
- {"module.js":["path/index.js",{plugin:{option:"setting"},dialect:"commonjs",output:{paths:{specifier:"path"}}}]};
+ {"module.js":["path/index.js",{plugin:{option:"setting"},syntax:"commonjs",output:{paths:{specifier:"path"}}}]};
  {"module.js":{"protocol://domain/author/module":["index.js","index2.js"]}};
  {"module.js":{"protocol://domain/author/module/tarball/branch":["path/index.js"]}};
  {"module.js":{"protocol://domain/author/module":{"branch or tag":["path/index.js","../../module.patch"]}}};
  {"module.js":{"protocol://domain/author/module/sparse/checkout/path":{"branch or tag":["path/index.js"]}}};
 Locally available modules (self-hosted or checked out remotes) are loaded in memory, remotes get bundled and erased. 
 
-Modules get tested upon modularisation if they expose a "tests" object: 
+Modules get tested (composed with context, terms and a condition) after modularisation if they expose a "tests" object: 
  export var tests=
  {member:{in:{namespace:{description:{context:[],terms:[],condition:[]}}}}
  };
@@ -88,9 +90,15 @@ fi;
 Uninstall Node.js: 
  rm node;
 
+Install git: 
+ ...
+
+Uninstall git: 
+ ...
+
 *
 (One conditional procedure is an exception in "interface.js" 
- to support backward compatibility before loader modules, 
+ to support backward compatibility of client command inference before loader modules, 
  but it remains idle without arguments from the client.) 
 
 Issues: 
@@ -98,3 +106,6 @@ Issues:
  make composition monadic (only execute on dynamic or bound context). 
  compress code with monadic combinators (infer, compose, either, wether, combine etc.)
  make decompress function more declarative (concise). 
+ swap Acorn's plugin-system for a composable parser to release acorn-typescript plugin dependency (compilers written in the language it compiles constitute a new platform. No native compiler exists for typescript). 
+ define typescript semantics for that new parser so it can be merged in its composition as needed (as well as for jsx, flow, etc.). 
+ establish functional type assertion convention to check types at runtime and lint them without heterogenous syntax. 
