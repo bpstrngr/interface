@@ -50,11 +50,10 @@ export async function parse(source, syntax = "javascript", options = {}) {
  export async function sanitize(grammar,format)
 {if(!Object.keys(format||{}).length)
  return grammar;
- let {alias,replace,output,syntax,scripts}=format;
- alias=[alias?.entries,output?.paths,{}].reduce(merge,{});
+ let {alias={},replace,output,syntax,scripts}=format;
  let path=await import("path");
- let location=path.dirname(grammar.meta.url.pathname);
- let relative=path.dirname(new URL(import.meta.url).pathname);
+ let location=path.dirname(new URL(import.meta.url).pathname);
+ let relation=path.dirname(grammar.meta.url.pathname);
  let disjunction=estree[syntax];
  if(disjunction)
  grammar=prune(grammar,function([field,value])
@@ -74,7 +73,7 @@ export async function parse(source, syntax = "javascript", options = {}) {
  prune(grammar,([field,value])=>value?.type==="ImportDeclaration"
 ?[alias[value.source.value],value.source].reduce((alias,source)=>
  !alias?value:["value","raw"].map(field=>(
- {[field]:source[field].replace(source.value,/^\./.test(alias)?path.relative(location,path.resolve(relative,alias)):alias)
+ {[field]:source[field].replace(source.value,/^\./.test(alias)?"./"+path.relative(relation,path.resolve(location,alias)):alias)
  })).reduce(merge,source)
  )
 :value);
@@ -112,11 +111,16 @@ export async function parse(source, syntax = "javascript", options = {}) {
  extension&&compose(extension,parse,({body})=>
  grammar.body[index?"push":"unshift"](...body)))
 ,[]);
+ let fields={Literal:"value",Identifier:"name"};
+ let generic=Object.keys(replace||{}).some(type=>fields[type]);
+ if(!generic)
+ replace=replace?.[Object.keys(replace).find(field=>grammar.meta.url.pathname.endsWith(field))];
  if(replace)
  grammar=prune(grammar,function({1:value})
-{let names=replace[value?.type];
- let name=names?.hasOwnProperty(value.name)&&names[value.name];
- return name?{...value,name}:value;
+{let values=replace[value?.type];
+ let field=fields[value?.type];
+ let replacement=values?.hasOwnProperty(value?.[field])&&values[value[field]];
+ return replacement?{...value,[field]:replacement,...value?.type==="Literal"&&{raw:"\""+replacement+"\""}}:value;
 });
  return grammar;
 };
@@ -180,6 +184,23 @@ export async function parse(source, syntax = "javascript", options = {}) {
  if(!specifier&&estree.commonjs.require.condition(exported.declaration))
  return Object.assign(estree.commonjs.require.ecma(exported.declaration),{type:"ExportNamedDeclaration"});
  return Object.assign(value,{type: "ExportNamedDeclaration",expression: undefined,...exported});
+}}
+ ,dirname:
+ {condition(value){return value?.type==="Identifier"&&value.name==="__dirname";}
+ ,ecma()
+{return {type:"CallExpression",callee:
+ {type:"MemberExpression"
+ ,object:{type:"Identifier",name:"path"},property:{type:"Identifier",name:"dirname"},computed:false,optional:false
+ },arguments:
+[{type:"MemberExpression",object:
+ {type:"NewExpression",callee:{type:"Identifier",name:"URL"},arguments:
+[{type:"MemberExpression"
+ ,object:{type:"MetaProperty",meta:{type:"Identifier", name:"import"}, property: {type:"Identifier", name:"meta"}}
+ ,property:{type:"Identifier",name:"url"},computed:false,optional:false
+ }
+]},property:{type:"Identifier",name:"pathname"},computed:false,optional:false
+ }
+]};
 }}
  }
  ,typescript:

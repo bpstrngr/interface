@@ -129,6 +129,16 @@ export async function list(file, recursive = true, exclude = []) {
 
 export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => path);
 
+ export async function require(path)
+{// to be deprecated in favor of commonjs compilation. 
+ let instance=globalThis.require||require.instance;
+ //path=new URL(note(path)).pathname;
+ if(instance)
+ return instance(path);
+ require.instance=await import("module").then(({createRequire})=>createRequire(import.meta.url));
+ return require.instance(path);
+};
+
 // https://nodejs.org/api/esm.html#esm_loaders 
 
  export async function initialize({socket}){socket.postMessage("Module interface ready.");}
@@ -220,8 +230,8 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
  Object.values(typeof definition!=="object"||Array.isArray(definition)?[definition]:definition).some((source,index)=>
  absolute.startsWith(path.join(location,target.replace(/\.js$/,""),String(index)))))||[];
  let namespace=definition&&Object.values(search.call([definition],({1:entry})=>
- Array.isArray(entry)||typeof entry==="string")).flat().find(entry=>entry.output);
- let alias=namespace?.output.paths[source];
+ Array.isArray(entry)||typeof entry==="string")).flat().find(entry=>entry.alias);
+ let alias=namespace?.alias[source];
  return alias?path.resolve(location,alias):exit(Error("no alias for "+source+" in "+target));
 };
 
@@ -229,7 +239,7 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
 {let deposit=target.replace(/\.js$/,"/")
  await persist({},deposit);
  let input = await sources.reduce(record(async function({ remote, branch, input }, index, {length}={})
-{if(!remote)return note(input,deposit)&&input.map(input=>path.join(deposit,input));
+{if(!remote)return input.map(input=>string(input)?path.join(deposit,input):input);
  let depot=path.join(deposit,String(index))+"/";
  let [protocol, host, author, name, ...route] = remote?.match(/(.*:\/\/)(.*)/).slice(1).reduce((protocol, address) =>
  [protocol, ...address.split("/")])||[];
@@ -249,7 +259,7 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
  compose(asset,purge)))
 :await checkout(address, depot, branch, route).catch(fail=>fail).then(done=>
  access(depot,false).then(done=>note.call(2,"Source downloaded:",address,"->",depot)).catch(fail=>exit(done)));
- let relation=remote?path.join(depot,...compressed?[]:route):location;
+ let relation=remote?depot:location;
  let entries=await [input].flat().reduce(record(input=>typeof input==="string"
 ?Promise.resolve(/\/$/.test(input)
 ?access(path.join(relation, input), true).then(files=>
@@ -258,11 +268,20 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
 :input)
 ,[]);
  entries=entries.flat();
- let part = length > 1 ? path.dirname(depot) + "_" + index + ".js" : target;
- return bundle(entries, part);
+ let {source = [], format = [],patches = []} = [entries].flat().map(function sort(part)
+{let field =typeof part == "string" ? (/\.patch$/.test(part) ? "patches" : "source") : "format";
+ return { [field]: [part] };
+}).reduce(merge, {});
+ format=format.reduce(merge,{});
+ await patch(path.dirname(source[0]), patches);
+ await [format.scripts].filter(Boolean).flat().reduce(record(script=>
+ resolve(path.resolve(path.dirname(target),script)).then(({default:module})=>module).catch(note))
+,[]);
+ let part=await bundle(source,format);
+ return access(length > 1 ? path.dirname(depot) + "_" + index + ".js" : target,part,true);
 }),[]).catch(fail=>purge(deposit).finally(exit.bind(null,fail)));
  return Promise.resolve(input.length>1
-?bundle(input.flat(),target)
+?bundle(input.flat()).then(content=>access(target,content,true))
 :target).finally(target=>purge(deposit));
 }
 
@@ -270,7 +289,7 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
 {// access source as module specifier, ie. 
  // compose(source,true,access,interpret,format,sanitize,serialize,modularize). 
  let version=process.versions.node.split(".")[0];
- let {importAssertions:assertion,format}=context||{};
+ let {importAssertions:assertion={},format}=context||{};
  let syntax=assertion?.type||mime(source)?.replace(/.*\//,"");
  if(syntax==="json"&&format!==syntax)
  Object.assign(context,{format:format=syntax});
@@ -291,13 +310,12 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
  // dispatch new import thread for tests until modularization halts on self-referential imports. 
 ?import(source).then(module=>module.tests&&test(source).then(result=>console.log(url+"\n"+result)))&&module
 :module);
- let {default:sources}=await import("./Blik_2023_sources.json");
- let {comment,...definition}=
- Object.values(sources[format]||{}).reduce(function flat(entries,source)
+ let {comment,...definition}=[{syntax},typeof format==="object"?format:await import("./Blik_2023_sources.json").then(sources=>
+ Object.values(sources.default[format]||{}).reduce(function flat(entries,source)
 {return [entries,typeof source!=="object"||Array.isArray(source)?source:Object.values(source).reduce(flat,[])].flat();
-},[{syntax}]).filter(entry=>typeof entry==="object").reduce(merge);
+},[]).filter(entry=>typeof entry==="object"))].flat().reduce(merge);
  syntax=definition.syntax;
- let foreign="javascript"!==syntax||Object.keys(definition).length>1;
+ let foreign=!["javascript","json"].includes(syntax)||Object.keys(definition).length>1;
  // parse foreign to serialize standard syntax. without native interpretter to call (next), all syntax are foreign. 
  // using acorn's Parser methods (parse) until interpretation reducer is complete. 
  let transform=foreign?[syntax,{source},parse,definition,sanitize,serialize]:[];
@@ -306,72 +324,39 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
  return next?{source,format:{json:"json"}[syntax]||"module",shortCircuit:true}:source;
 };
 
- export async function require(path)
-{// to be deprecated in favor of commonjs compilation. 
- let instance=globalThis.require||require.instance;
- //path=new URL(note(path)).pathname;
- if(instance)
- return instance(path);
- require.instance=await import("module").then(({createRequire})=>createRequire(import.meta.url));
- return require.instance(path);
-};
-
-export async function bundle(source, target) {
-  if (!source) return;
-  let {
-    include = [],
-    rules = [],
-    patches = [],
-  } = [source]
-    .flat()
-    .map(function sort(part) {
-      let field =
-        typeof part == "string" ? (/\.patch$/.test(part) ? "patches" : "include") : "rules";
-      return { [field]: [part] };
-    })
-    .reduce(merge, {});
-  await patch(path.dirname(include[0]), patches);
-  let multientry = include.length > 1 && { "./rollup_2022_multientry.js": {} };
-  let { input, output, syntax, replace, typescript, scripts, transform, comment, ...plugins } = rules.reduce(merge, { ...multientry });
-  if(syntax==="commonjs")
-  plugins={"./rollup_2022_commonjs.js":{},...plugins};
-  if(scripts)
-  await [scripts].flat().reduce(record(
-    script=>resolve(path.resolve(path.dirname(target),script)).then(({default: module})=>module).catch(note)
-  ),[]);
-  plugins = await Object.entries(plugins).reduce(
-    record(([plugin, settings]) => resolve(
-      plugin, "default", plugin==="@rollup/plugin-alias" && Array.isArray(settings.entries)
-        ? settings.entries.map(entry=>entry.find=new RegExp(entry.find)) && settings
-        : settings
-    )),
-    [{async transform(source,address){
-      if(/\.ts$/.test(address) && !include.includes(address))
-        source = await compile(address, "typescript", typescript);
-      let origin = path.relative(path.dirname(target), address);
-      source = Object.entries(transform||{}).flatMap(
-            ([field, value]) => typeof value === "string" ? [[field, value]] : field === origin ? Object.entries(value) : []
-          ).reduce(
-            (source, [field,value]) => source.replace(
-              new RegExp(field,"g"),
-              (match, ...groups) => [value, ...groups.slice(0,-2)].reduce(
-                (value, group, index) => value.replace("$"+index, JSON.stringify(group))
-              )
-            ),
-            source
-          );
-      return {
-        code: source,
-        map: {mappings: ''}
-      };
-    }}]
-  );
-  note.call(3,"bundling " + include + "...");
-  let { rollup } = await import("./rollup_2022_rollup.js");
-  let bundle = await rollup({ input: multientry ? { include } : include[0], plugins, ...input });
-  if (target)
-    await bundle.write({ file: target, format: "module", inlineDynamicImports: true, ...output });
-  return target || bundle;
+ export async function bundle(source, format)
+{if(!source)return;
+ source=[source].flat();
+ let multientry=source.length > 1;
+ if(multientry) format["./rollup_2022_multientry.js"]={};
+ let plugins = await Object.entries(format).filter(([field])=>
+ /^\./. test(field)).reduce(record(([plugin,settings])=>resolve(plugin, "default", settings)),
+[{name:"interface"
+ ,resolveId:(source,client)=>client
+?Object.values(format.alias).includes(source)
+?false
+:/^\./.test(source)
+?["",".js",".ts"].map(extension=>
+ path.resolve(path.dirname(client),source+extension)).reduce((source,alias)=>
+ source.then(source=>source||access(alias).then(file=>alias).catch(fail=>null))
+,Promise.resolve(null))
+:null
+:null
+ ,transform:(source,address)=>
+ compose("url","pathToFileURL",address,resolve,"href",Reflect.get
+,{format:merge(
+ {alias:Object.fromEntries(Object.entries(format.alias||{}).map(([source,alias])=>
+ [source,/^\./.test(alias)?"./"+path.relative(location,path.resolve(path.dirname(address),alias)):alias]))
+ },format,false)
+ }
+,load,code=>({code,map:{mappings:''}}))
+ }
+]);
+ note.call(3,"bundling " + source + "...");
+ let { rollup } = await import("./rollup_2022_rollup.js");
+ let bundle = await rollup({ input: multientry ? { include: source } : source[0], plugins, ...format.input });
+ let {output:[{code}]}=await bundle.generate({ format: "module", inlineDynamicImports: true });
+ return code;
 }
 
 export async function checkout(remote, target, branch, path) {
@@ -396,7 +381,6 @@ export async function checkout(remote, target, branch, path) {
   clone=await spawn("git","-C", target, "checkout", branch);
   return clone;
 }
-
 
 export function patch(repository, patch) {
   return [patch].flat().reduce(
