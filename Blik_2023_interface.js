@@ -19,7 +19,7 @@
  // nodejs 16 backwards compatibility. 
  compose(...process.argv.slice(2),resolve,console.log);
 
- var colors={steady:"\x1b[0m",alarm:"\x1b[31m",ready:"\x1b[32m",busy:"\x1b[33m"};
+ var colors={steady:"\x1b[0m",alarm:"\x1b[31m",ready:"\x1b[32m",busy:"\x1b[33m",bright:"\x1b[1m",dim:"\x1b[2m",underscore:"\x1b[4m", blink:"\x1b[5m", reverse:"\x1b[7m",invisible:"\x1b[8m", black:"\x1b[30m", red:"\x1b[31m", green:"\x1b[32m",yellow:"\x1b[33m",blue:"\x1b[34m", magenta:"\x1b[35m",cyan:"\x1b[36m", white:"\x1b[37m",gray:"\x1b[90m",night:"\x1b[40m",fire:"\x1b[41m",grass:"\x1b[42m",sun:"\x1b[43m",sea:"\x1b[44m",club:"\x1b[45m",sky:"\x1b[46m",milk:"\x1b[47m",fog:"\x1b[100m"};
 
  export function note(...context)
 {// console.log with return value.
@@ -327,13 +327,23 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
  export async function bundle(source, format)
 {if(!source)return;
  source=[source].flat();
+ let relation=path.dirname(source[0])
  let multientry=source.length > 1;
  if(multientry) format["./rollup_2022_multientry.js"]={};
  let plugins = await Object.entries(format).filter(([field])=>
  /^\./. test(field)).reduce(record(([plugin,settings])=>resolve(plugin, "default", settings)),
 [{name:"interface"
+ ,transform:(source,address)=>
+ compose("url","pathToFileURL",address,resolve,"href",Reflect.get
+,{format:merge(
+ {alias:Object.fromEntries(Object.entries(format.alias||{}).map(([source,alias])=>
+ // aliases are relative to location, so offset them at the entry to resolve statically in the bundle. 
+ [source,/^\./.test(alias)?"./"+path.relative(location,path.resolve(relation,alias)):alias]))
+ },format,false)
+ }
+,load,code=>({code,map:{mappings:''}}))
  ,resolveId:(source,client)=>client
-?Object.values(format.alias).includes(source)
+?Object.values(format.alias||{}).includes("./"+path.relative(relation,path.resolve(path.dirname(client),source)))
 ?false
 :/^\./.test(source)
 ?["",".js",".ts"].map(extension=>
@@ -342,19 +352,12 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
 ,Promise.resolve(null))
 :null
 :null
- ,transform:(source,address)=>
- compose("url","pathToFileURL",address,resolve,"href",Reflect.get
-,{format:merge(
- {alias:Object.fromEntries(Object.entries(format.alias||{}).map(([source,alias])=>
- [source,/^\./.test(alias)?"./"+path.relative(location,path.resolve(path.dirname(address),alias)):alias]))
- },format,false)
- }
-,load,code=>({code,map:{mappings:''}}))
  }
 ]);
  note.call(3,"bundling " + source + "...");
  let { rollup } = await import("./rollup_2022_rollup.js");
- let bundle = await rollup({ input: multientry ? { include: source } : source[0], plugins, ...format.input });
+ let input=multientry ? { include: source } : source[0];
+ let bundle=await rollup({input,plugins,...format.input});
  let {output:[{code}]}=await bundle.generate({ format: "module", inlineDynamicImports: true });
  return code;
 }

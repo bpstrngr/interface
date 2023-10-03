@@ -41,7 +41,7 @@ For the other cases, external modules can be resolved in advance:
  for file in $(git ls-tree --full-tree --name-only -r HEAD);do node ./Blik_2023_interface.js ./Blik_2023_interface.js resolve $file;done;
 
 Source definitions map files to entry points (local or remote address and version, supporting sparse-checkout of monorepos), patches and 
-format specifications (currently supporting rollup plugins, but options for a modular parser/serializer are evolving, such as syntax and output): 
+format specifications (currently supporting rollup plugins, but options for a modular parser/serializer are evolving, such as syntax, alias, replace): 
  {"module.js":"path/index.js"};
  {"module.js":["path/index.js",{plugin:{option:"setting"},syntax:"commonjs",output:{paths:{specifier:"path"}}}]};
  {"module.js":{"protocol://domain/author/module":["index.js","index2.js"]}};

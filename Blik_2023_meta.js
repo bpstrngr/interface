@@ -135,7 +135,7 @@ export async function parse(source, syntax = "javascript", options = {}) {
 },ecma(value)
 {let declarations=(value.declarations||[value.expression]).flatMap(expression=>expression.right
  // expression
-?[[expression.right.callee.object||expression.right.callee,"arguments","0"].reduce(Reflect.get)
+?[[expression.right.callee.object||expression.right,"arguments","0"].reduce(Reflect.get)
 ,value=>value.replace(/[^a-zA-Z]/g,"")+"_exports"
 ].reduce((source,id)=>
 [{type:"ImportDeclaration",source,specifiers:["ImportDefaultSpecifier",{type:"Identifier",name:id(source.value)}].reduce((type,local)=>[{type,local,imported:local}])},

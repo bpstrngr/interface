@@ -34,10 +34,29 @@
       "src/index.js",{"output":{"footer":"export const Location=undefined;"},"comment":"Typescript sometimes ambiguates type imports with lexical imports. Without dts files present, it's impossible to tell if they need to be discarded."}
   ]}},
   "lukeed_2019_flru.js":{"https://github.com/lukeed/flru":{"v1.0.2":["src/index.js"]}},
-  "sindresorhus_2015_builtin_modules_static.js":{"https://github.com/sindresorhus/builtin-modules":{"v3.3.0":["index.js",{"syntax":"commonjs"}]}},
+  "sindresorhus_2015_builtin_modules_static.js":{"https://github.com/sindresorhus/builtin-modules":{"v3.3.0":["builtin-modules.json",{
+    "syntax":"commonjs",
+    "./rollup_2022_json.js":{}
+  }]}},
+  "sindresorhus_2015_builtin_modules.js":{"https://github.com/sindresorhus/builtin-modules":{"v3.3.0":["index.js",{"syntax":"commonjs","./rollup_2022_noderesolve.js":{}}]}},
+  "sindresorhus_2015_is-builtin-module.js":{"https://github.com/sindresorhus/is-builtin-module":{"v3.2.1":["index.js",{"syntax":"commonjs","alias":{"builtin-modules":"./sindresorhus_2015_builtin_modules.js"}}]}},
   "micromatch_2018_picomatch.js":{"https://github.com/micromatch/picomatch":{"2.3.0":["lib/picomatch.js",{"syntax":"commonjs"}]}},
   "definitely_2015_estree.js":{"https://registry.npmjs.org/@types/estree/-/estree-1.0.0.tgz":["index.d.ts"]},
+  "definitely_2015_resolve.js":{"https://registry.npmjs.org/@types/resolve/-/resolve-1.20.2.tgz":["index.d.ts"]},
   "jorgebucaran_2018_colorette.js":{"https://github.com/jorgebucaran/colorette":{"2.0.20":["index.js",{"syntax":"commonjs"}]}},
+  "browserify_2011_resolve.js":{"https://github.com/browserify/resolve":{"v1.22.1":["index.js",{"syntax":"commonjs","./rollup_2022_json.js":{},"alias":{
+    "path-parse":"./jbgutierrez_2021_path_parse.js",
+    "supports-preserve-symlinks-flag":"./ljharb_2022_preserve_symlinks_flag.js",
+    "is-core-module":"./ljharb_2014_is_core_module.js"
+  }}]}},
+  "Raynos_2014_function_bind.js":{"https://github.com/Raynos/function-bind":{"v1.1.1":["index.js",{"syntax":"commonjs"}]}},
+  "tarruda_2013_has.js":{"https://github.com/tarruda/has":{"v1.0.3":["src/index.js",{"syntax":"commonjs","alias":{"function-bind":"./Raynos_2014_function_bind.js"}}]}},
+  "ljharb_2014_is_core_module.js":{"https://github.com/inspect-js/is-core-module":{"v2.9.0":["index.js",{"syntax":"commonjs","alias":{"has":"./"},"./rollup_2022_json.js":{}}]}},
+  "ljharb_2022_preserve_symlinks_flag.js":{"https://github.com/inspect-js/node-supports-preserve-symlinks-flag":{"v1.0.0":["index.js",{"syntax":"commonjs"}]}},
+  "jbgutierrez_2021_path_parse.js":{"https://github.com/jbgutierrez/path-parse":{"v1.0.7":["index.js",{"syntax":"commonjs"}]}},
+  "timaschew_2014_is-module.js":{"https://github.com/component/is-module":{"1.0.0":["index.js",{"syntax":"commonjs"}]}},
+  "Fisher_2012_deepmerge.js":{"https://github.com/TehShrike/deepmerge":{"v4.2.2":["index.js",{"syntax":"commonjs","alias":{"is-mergeable-object":"./TehStrike_2017_is-mergeable-object.js"}}]}},
+  "TehStrike_2017_is-mergeable-object.js":{"https://github.com/TehShrike/is-mergeable-object":{"v1.1.0":["index.js",{"syntax":"commonjs"}]}},
   "rollup_2022_rollup.js":{"https://github.com/rollup/rollup/src cli browser":{"v3.28.1":["src/node-entry.ts",{"./rollup_2022_noderesolve.js":{},"alias":{
     "package.json":"./rollup_2022_rollup/0/package.json",
     "acorn":"./haverbeke_2012_acorn.js",
@@ -62,7 +81,17 @@
   ]}},
   "rollup_2022_alias.js":{"https://github.com/rollup/plugins/packages/alias":{"alias-v5.0.0":["packages/alias/src/index.js"]}},
   "rollup_2022_multientry.js":{"https://github.com/rollup/plugins/packages/multi-entry":{"multi-entry-v6.0.0":["packages/multi-entry/src/index.js"]}},
-  "rollup_2022_noderesolve.js":{"https://github.com/rollup/plugins/packages/node-resolve":{"node-resolve-v15.2.1":["packages/node-resolve/src/index.js",{"./rollup_2022_json.js":{}}]}},
+  "rollup_2022_noderesolve.js":{"https://github.com/rollup/plugins/packages/node-resolve":{"node-resolve-v15.2.1":["packages/node-resolve/src/index.js",{
+    "./rollup_2022_json.js":{},
+    "alias":{
+      "deepmerge":"./Fisher_2012_deepmerge.js",
+      "resolve":"./browserify_2011_resolve.js",
+      "is-module":"./timaschew_2014_is-module.js",
+      "is-builtin-module":"./sindresorhus_2015_is-builtin-module.js",
+      "@rollup/pluginutils":"./rollup_2022_pluginutils.js",
+      "@types/resolve":"./definitely_2015_resolve.js"
+    }
+  }]}},
   "rollup_2022_commonjs.js":{"https://github.com/rollup/plugins/packages/commonjs":{"commonjs-v25.0.4":["packages/commonjs/src/index.js",{
     "alias":{
       "@rollup/pluginutils": "./rollup_2022_pluginutils.js","commondir":"./substack_2015_commondir.js","glob":"./isaacs_2010_glob.js",
