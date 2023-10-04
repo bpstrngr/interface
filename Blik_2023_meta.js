@@ -69,14 +69,6 @@ export async function parse(source, syntax = "javascript", options = {}) {
  specifiers?.map(({local})=>local)||declaration.declarations.map(({id})=>id))
  }
  });
- if(Object.keys(alias).length)
- prune(grammar,([field,value])=>value?.type==="ImportDeclaration"
-?[alias[value.source.value],value.source].reduce((alias,source)=>
- !alias?value:["value","raw"].map(field=>(
- {[field]:source[field].replace(source.value,/^\./.test(alias)?"./"+path.relative(relation,path.resolve(location,alias)):alias)
- })).reduce(merge,source)
- )
-:value);
  grammar=prune(grammar,function jsonnamespace({1:value})
 {let boundary=["Import","ExportNamed","ExportAll"].map(type=>type+"Declaration").find(type=>type===value?.type);
  let json=boundary&&/\.json$/.test(value.source?.value);
@@ -106,11 +98,14 @@ export async function parse(source, syntax = "javascript", options = {}) {
  let uninitialized=declaration?.type==="VariableDeclaration"&&declaration.kind==="const"&&!declaration.declarations.some(({init})=>init);
  return uninitialized?undefined:value;
 });
- await ["banner","footer"].map(extension=>
- output?.[extension]).reduce(record((extension,index)=>
- extension&&compose(extension,parse,({body})=>
- grammar.body[index?"push":"unshift"](...body)))
-,[]);
+ if(Object.keys(alias).length)
+ prune(grammar,([field,value])=>value?.type==="ImportDeclaration"
+?[alias[value.source.value],value.source].reduce((alias,source)=>
+ !alias?value:["value","raw"].map(field=>(
+ {[field]:source[field].replace(source.value,/^\./.test(alias)?"./"+path.relative(relation,path.resolve(location,alias)):alias)
+ })).reduce(merge,source)
+ )
+:value);
  let fields={Literal:"value",Identifier:"name"};
  let generic=Object.keys(replace||{}).some(type=>fields[type]);
  if(!generic)
@@ -122,6 +117,11 @@ export async function parse(source, syntax = "javascript", options = {}) {
  let replacement=values?.hasOwnProperty(value?.[field])&&values[value[field]];
  return replacement?{...value,[field]:replacement,...value?.type==="Literal"&&{raw:"\""+replacement+"\""}}:value;
 });
+ await ["banner","footer"].map(extension=>
+ output?.[extension]).reduce(record((extension,index)=>
+ extension&&compose(extension,parse,({body})=>
+ grammar.body[index?"push":"unshift"](...body)))
+,[]);
  return grammar;
 };
 

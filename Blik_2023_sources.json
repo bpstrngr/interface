@@ -51,13 +51,13 @@
   }}]}},
   "Raynos_2014_function_bind.js":{"https://github.com/Raynos/function-bind":{"v1.1.1":["index.js",{"syntax":"commonjs"}]}},
   "tarruda_2013_has.js":{"https://github.com/tarruda/has":{"v1.0.3":["src/index.js",{"syntax":"commonjs","alias":{"function-bind":"./Raynos_2014_function_bind.js"}}]}},
-  "ljharb_2014_is_core_module.js":{"https://github.com/inspect-js/is-core-module":{"v2.9.0":["index.js",{"syntax":"commonjs","alias":{"has":"./"},"./rollup_2022_json.js":{}}]}},
+  "ljharb_2014_is_core_module.js":{"https://github.com/inspect-js/is-core-module":{"v2.9.0":["index.js",{"syntax":"commonjs","alias":{"has":"./tarruda_2013_has.js"},"./rollup_2022_json.js":{}}]}},
   "ljharb_2022_preserve_symlinks_flag.js":{"https://github.com/inspect-js/node-supports-preserve-symlinks-flag":{"v1.0.0":["index.js",{"syntax":"commonjs"}]}},
   "jbgutierrez_2021_path_parse.js":{"https://github.com/jbgutierrez/path-parse":{"v1.0.7":["index.js",{"syntax":"commonjs"}]}},
   "timaschew_2014_is-module.js":{"https://github.com/component/is-module":{"1.0.0":["index.js",{"syntax":"commonjs"}]}},
   "Fisher_2012_deepmerge.js":{"https://github.com/TehShrike/deepmerge":{"v4.2.2":["index.js",{"syntax":"commonjs","alias":{"is-mergeable-object":"./TehStrike_2017_is-mergeable-object.js"}}]}},
   "TehStrike_2017_is-mergeable-object.js":{"https://github.com/TehShrike/is-mergeable-object":{"v1.1.0":["index.js",{"syntax":"commonjs"}]}},
-  "rollup_2022_rollup.js":{"https://github.com/rollup/rollup/src cli browser":{"v3.28.1":["src/node-entry.ts",{"./rollup_2022_noderesolve.js":{},"alias":{
+  "rollup_2022_rollup.js":{"https://github.com/rollup/rollup/src cli browser":{"v3.28.1":["src/node-entry.ts",{"./rollup_2022_noderesolve.js":{},"./rollup_2022_json.js":{},"alias":{
     "package.json":"./rollup_2022_rollup/0/package.json",
     "acorn":"./haverbeke_2012_acorn.js",
     "locate-character":"./rich_harris_2016_locate_character.js",

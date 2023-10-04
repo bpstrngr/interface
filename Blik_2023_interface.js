@@ -158,20 +158,17 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
  let relation=path.dirname(target);
  let absolute=/^file:/.test(source)?new URL(source).pathname:/^\//.test(source)?source:path.resolve(relation,source);
  let module=command?import(source):next(source,context).catch(async function recover(fail)
-{let immediate=fail.message.match("'"+absolute+"'");
+{let index={ERR_MODULE_NOT_FOUND:0,ERR_UNSUPPORTED_DIR_IMPORT:1}[fail.code];
+ let immediate=fail.message.includes("'"+absolute+"'");
  let recovery=
- {ERR_MODULE_NOT_FOUND:immediate?retrieve.bind(unbundled):redirect
- ,ERR_UNSUPPORTED_DIR_IMPORT:immediate
-?function enter(absolute)
+[immediate?retrieve.bind(unbundled):redirect
+,immediate&&function enter(absolute)
 {return ["js","ts","d.ts"].map(extension=>
  path.join(absolute,"index."+extension)).reduce((file,source)=>
  file.catch(fail=>access(source).then(file=>source))
 ,Promise.reject());
 }
-:exit
- }[fail.code];
- if(!recovery)
- throw fail;
+][index]||Promise.reject.bind(Promise,fail);
  return recovery(absolute,target).then(source=>
  string(source)?resolve(source,context,next):source).catch(reason=>
  note.call(1,recovery.name,"failed for",absolute+":\n",reason)&&
@@ -179,7 +176,7 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
 });
  let bundle=unbundled.find(depot=>absolute.startsWith(depot));
  if(bundle)
- module=await compose(module,{format:path.basename(bundle.replace(/\/$/,".js"))},1,merge);
+ module=compose(module,{format:path.basename(bundle.replace(/\/$/,".js"))},1,merge).catch(exit);
  if(loading&&internal)
  return module;
  let client=loading&&!internal;
@@ -278,7 +275,8 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
  resolve(path.resolve(path.dirname(target),script)).then(({default:module})=>module).catch(note))
 ,[]);
  let part=await bundle(source,format);
- return access(length > 1 ? path.dirname(depot) + "_" + index + ".js" : target,part,true);
+ return access(length > 1 ? path.dirname(depot) + "_" + index + ".js" : target,part,true).then(file=>
+ note.call(2,file,"bundle ready.")&&file);
 }),[]).catch(fail=>purge(deposit).finally(exit.bind(null,fail)));
  return Promise.resolve(input.length>1
 ?bundle(input.flat()).then(content=>access(target,content,true))
@@ -337,8 +335,12 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
  compose("url","pathToFileURL",address,resolve,"href",Reflect.get
 ,{format:merge(
  {alias:Object.fromEntries(Object.entries(format.alias||{}).map(([source,alias])=>
- // aliases are relative to location, so offset them at the entry to resolve statically in the bundle. 
- [source,/^\./.test(alias)?"./"+path.relative(location,path.resolve(relation,alias)):alias]))
+ [source,/^\./.test(alias)
+?[relation,path.resolve(location,alias)].map(address=>
+ path.relative(location,address).split("/")).reduce(([bundle],[route])=>
+ // aliases are relative to location, so offset them to resolve statically from the bundle entry, unless they resolve internally. 
+ route!==bundle?"./"+path.relative(location,path.resolve(relation,alias)):alias)
+:alias]))
  },format,false)
  }
 ,load,code=>({code,map:{mappings:''}}))
@@ -346,9 +348,9 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
 ?Object.values(format.alias||{}).includes("./"+path.relative(relation,path.resolve(path.dirname(client),source)))
 ?false
 :/^\./.test(source)
-?["",".js",".ts"].map(extension=>
- path.resolve(path.dirname(client),source+extension)).reduce((source,alias)=>
- source.then(source=>source||access(alias).then(file=>alias).catch(fail=>null))
+?["",".ts","/index.ts"].map(extension=>
+ path.resolve(path.dirname(client),source.replace(/\/$/,"")+extension)).reduce((source,alias)=>
+ source.then(source=>source||access(alias).then(file=>file.isDirectory()?exit():alias).catch(fail=>null))
 ,Promise.resolve(null))
 :null
 :null
