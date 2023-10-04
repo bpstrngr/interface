@@ -69,7 +69,8 @@
     "is-reference":"./rich_harris_2016_is_reference.js",
     "@jridgewell/sourcemap-codec":"./jridgewell_2015_sourcemap_codec.js",
     "builtin-modules/static":"./sindresorhus_2015_builtin_modules_static.js",
-    "colorette":"./jorgebucaran_2018_colorette.js"
+    "colorette":"./jorgebucaran_2018_colorette.js",
+    "chokidar":"./paulmillr_2012_chokidar.js"
   }}]}},
   "rollup_2022_pluginutils.js":{"https://github.com/rollup/plugins/packages/pluginutils":{"pluginutils-v5.0.4":[
     "packages/pluginutils/src/index.ts",
@@ -429,5 +430,26 @@
         "transformer\\.generate": "module.exports=transformer.generate"
       }}
     }
-  ]
+  ],
+  "jonschlinkert_2015_is_number.js":{"https://github.com/jonschlinkert/is-number":{"7.0.0":["index.js",{"syntax":"commonjs"}]}},
+  "jonschlinkert_2015_regex_range.js":{"https://github.com/micromatch/to-regex-range":{"5.0.1":["index.js",{"syntax":"commonjs","alias":{"is-number":"./jonschlinkert_2015_is_number.js"}}]}},
+  "jonschlinkert_2014_fill_range.js":{"https://github.com/jonschlinkert/fill-range":{"7.0":["index.js",{"syntax":"commonjs","alias":{"to-regex-range":"./jonschlinkert_2015_regex_range.js"}}]}},
+  "paulmillr_2013_anymatch.js":{"https://github.com/micromatch/anymatch":{"3.1.2":["index.js",{"syntax":"commonjs","alias":{"picomatch":"./micromatch_2018_picomatch.js"}}]}},
+  "jonschlinkert_2014_braces.js":{"https://github.com/micromatch/braces":{"3.0.2":["index.js",{"syntax":"commonjs","alias":{"fill-range":"./jonschlinkert_2014_fill_range.js"}}]}},
+  "phated_2021_glob_parent.js":{"https://github.com/gulpjs/glob-parent":{"v5.1.2":["index.js",{"syntax":"commonjs","alias":{"is-glob":"./jonschlinkert_2015_is_glob.js"}}]}},
+  "sindresorhus_2015_binary_extensions.js":{"https://github.com/sindresorhus/binary-extensions":{"v2.0.0":["index.js",{"syntax":"commonjs","./rollup_2022_json.js":{}}]}},
+  "sindresorhus_2015_is_binary_path.js":{"https://github.com/sindresorhus/is-binary-path":{"v2.1.0":["index.js",{"syntax":"commonjs","alias":{"binary-extensions":"./sindresorhus_2015_binary_extensions.js"}}]}},
+  "jonschlinkert_2015_is_extglob.js":{"https://github.com/micromatch/is-extglob":{"2.1.1":["index.js",{"syntax":"commonjs"}]}},
+  "jonschlinkert_2015_is_glob.js":{"https://github.com/micromatch/is-glob":{"4.0.1":["index.js",{"syntax":"commonjs","alias":{"is-extglob":"./jonschlinkert_2015_is_extglob.js"}}]}},
+  "jonschlinkert_2015_normalize_path.js":{"https://github.com/jonschlinkert/normalize-path":{"3.0.0":["index.js",{"syntax":"commonjs"}]}},
+  "paulmillr_2012_readdirp.js":{"https://github.com/paulmillr/readdirp":{"3.6.0":["index.js",{"syntax":"commonjs","alias":{"picomatch":"./micromatch_2018_picomatch.js"}}]}},
+  "paulmillr_2012_chokidar.js":{"https://github.com/paulmillr/chokidar":{"3.5.3":["index.js",{"syntax":"commonjs","alias":{
+    "anymatch":"./paulmillr_2013_anymatch.js",
+    "braces":"./jonschlinkert_2014_braces.js",
+    "glob-parent":"./phated_2021_glob_parent.js",
+    "is-binary-path":"./sindresorhus_2015_is_binary_path.js",
+    "is-glob":"./jonschlinkert_2015_is_glob.js",
+    "normalize-path":"./jonschlinkert_2015_normalize_path.js",
+    "readdirp":"./paulmillr_2012_readdirp.js"
+  }}]}}
 }
