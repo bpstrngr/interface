@@ -324,7 +324,7 @@
   "domenic_2016_whatwg_mimetype.js": {
     "https://github.com/jsdom/whatwg-mimetype": {
       "v3.0.0": [
-        "lib/mime-type.js"
+        "lib/mime-type.js",{"syntax":"commonjs"}
       ]
     }
   },
@@ -346,7 +346,8 @@
       ]
     }
   },
-  "dataurls.js":{"https://github.com/jsdom/data-urls":{"v4.0.0":["lib/parser.js",{
+  "domenic_2018_dataurls.js":{"https://github.com/jsdom/data-urls":{"v4.0.0":["lib/parser.js",{
+    "syntax":"commonjs",
     "whatwg-url": "./domenic_2015_whatwg_url.js",
     "whatwg-mimetype": "./domenic_2016_whatwg_mimetype.js",
     "abab":"./Carpenter_2015_abab.js"
@@ -366,6 +367,44 @@
       }
     }
   ],
+  "domenic_2017_domexception_webidl2js-wrapper.js":{"":{"v4.0.0":["webidl2js-wrapper.js",{
+    "syntax":"commonjs",
+    "scripts":"./domenic_2017_domexception_webidl2js-wrapper_generate.js",
+    "alias":{"webidl-conversions":"./domenic_2014_webidl.js"}
+  }]}},
+  "jonathanong_2014_mimedb.js":{"https://github.com/jshttp/mime-db":{"v1.24.0":["index.js",{"syntax":"commonjs","./rollup_2022_json.js":{}}]}},
+  "felixge_2011_delayedstream.js":{"https://github.com/felixge/node-delayed-stream":{"1.0.0":["lib/delayed_stream.js",{"syntax":"commonjs"}]}},
+  "jonathanong_2014_mimetypes.js":{"https://github.com/jshttp/mime-types":{"2.1.12":["index.js",{"syntax":"commonjs","alias":{"mime-db":"./jonathanong_2014_mimedb.js"}}]}},
+  "felixge_2015_combined_stream.js":{"https://github.com/felixge/node-combined-stream":{"v1.0.8":["lib/combined_stream.js",{"syntax":"commonjs","alias":{"delayed-stream":"./felixge_2011_delayedstream.js"}}]}},
+  "alexindigo_2016_asynckit.js":{"https://github.com/alexindigo/asynckit":{"v0.4.0":["index.js",{"syntax":"commonjs"}]}},
+  "alexindigo_2013_formdata.js":{"https://github.com/form-data/form-data":{"v4.0.0":["lib/form_data.js",{"syntax":"commonjs","alias":{
+    "asynckit":"./alexindigo_2016_asynckit.js","combined-stream":"./felixge_2015_combined_stream.js","mime-types":"./jonathanong_2014_mimetypes.js"
+  }}]}},
+  "domenic_2017_domexception_webidl2js-wrapper_generate.js":["domenic_2017_domexception_webidl2js-wrapper/0/scripts/generate.js",{
+    "syntax":"commonjs","alias":{"webidl2js":"./domenic_2022_jsdom_webidl2js.js"},
+    "comment":"called during domexception/webidl2js-wrapper bundling, so will be available from source: no need to adjust __dirname locations."
+  }],
+  "rauchg_2012_ms.js":{"https://github.com/vercel/ms":{"2.1.2":["index.js",{"syntax":"commonjs"}]}},
+  "MikeMcl_2014_decimal.js":{"https://github.com/MikeMcl/decimal.js":{"v10.4.3":["decimal.mjs"]}},
+  "Holowaychuk_2011_debug.js":{"https://github.com/debug-js/debug":{"4.3.4":["src/node.js",{"syntax":"commonjs","alias":{"ms":"./rauchg_2012_ms.js"}}]}},
+  "TooTallNate_2015_agent_base.js":{"https://github.com/TooTallNate/proxy-agents/TooTallNate_2015_agent_base":{"agent-base@7.1.0":["TooTallNate_2015_agent_base/src/index.ts",{"alias":{"debug":"./Holowaychuk_2011_debug.js"}}]}},
+  "TooTallNate_2015_http_proxy_agent.js":{"https://github.com/TooTallNate/proxy-agents/packages/http-proxy-agent":{"5.0.0":["packages/http-proxy-agent/src/index.ts",{"alias":{"agent-base":"./TooTallNate_2015_agent_base.js","debug":"./Holowaychuk_2011_debug.js"}}]}},
+  "TooTallNate_2015_https_proxy_agent.js":{"https://github.com/TooTallNate/proxy-agents/packages/https-proxy-agent":{"5.0.1":["packages/https-proxy-agent/src/index.ts",{"alias":{"agent-base":"./TooTallNate_2015_agent_base.js","debug":"./Holowaychuk_2011_debug.js"}}]}},
+  "Bynens_2016_potential_customelementname.js":{"https://github.com/mathiasbynens/is-potential-custom-element-name":{"v1.0.1":["index.js",{"syntax":"commonjs"}]}},
+  "dperini_2017_nwsapi.js":{"https://github.com/dperini/nwsapi":{"8d71cdfcdeb85800d7c0578476e8bca31d36285b":["src/nwsapi.js",{"syntax":"commonjs"}]}},
+  "Boehm_2014_entities.js":{"https://github.com/fb55/entities":{"v4.4.0":["src/index.ts",{"edit":{"from \"(.*?)\\.js\"":"from \"$1.ts\""}}]}},
+  "inikulin_2013_parse5.js":{"https://github.com/inikulin/parse5/packages/parse5":{"v7.1.2":["packages/parse5/src/index.js",{"alias":{"entities":"./Boehm_2014_entities.js"}}]}},
+  "Dubeau_2018_xmlns1_ed3_chars.js":{"https://github.com/lddubeau/xmlchars/xmlns/1.0":{"v2.2.0":["xmlns/1.0/ed3.ts"]}},
+  "Dubeau_2018_xml1_ed5_chars.js":{"https://github.com/lddubeau/xmlchars/xml/1.0":{"v2.2.0":["xml/1.0/ed5.ts"]}},
+  "Dubeau_2018_xml1_2ed2_chars.js":{"https://github.com/lddubeau/xmlchars/xml/1.0":{"v2.2.0":["xml/1.1/ed2.ts"]}},
+  "isaacs_2011_saxes.js":{"https://github.com/lddubeau/saxes":{"v6.0.0":["src/saxes.ts",{"alias":{
+    "xmlchars/xmlns/1.0/ed3":"./Dubeau_2018_xmlns1_ed3_chars.js",
+    "xmlchars/xml/1.0/ed5":"./Dubeau_2018_xml1_ed5_chars.js",
+    "xmlchars/xml/1.1/ed2":"./Dubeau_2018_xml1_2ed2_chars.js"
+  }}]}},
+  "einaros_2011_ws.js":{"https://github.com/websockets/ws":{"8.13.0":["index.js",{"syntax":"commonjs"}]}},
+  "Mayr_2018_w3c_xmlserializer.js":{"https://github.com/jsdom/w3c-xmlserializer":{"v4.0.0":["lib/serialize.js",{"syntax":"commonjs","alias":{"xml-name-validator":"./domenic_2014_xml_name_validator.js"}}]}},
+  "domenic_2014_xml_name_validator.js":{"https://github.com/jsdom/xml-name-validator":{"v4.0.0":["lib/xml-name-validator.js",{"syntax":"commonjs"}]}},
   "domenic_2022_jsdom_rollup.js": {
     "https://github.com/jsdom/jsdom": {"22.1.0": [
       "lib/api.js",
@@ -384,7 +423,19 @@
           "rrweb-cssom":"./rrweb_2010_cssom.js",
           "symbol-tree":"./wel_2015_symbol_tree.js",
           "abab":"./Carpenter_2015_abab.js",
-          "data-urls":"./"
+          "data-urls":"./domenic_2018_dataurls.js",
+          "xml-name-validator":"./domenic_2014_xml_name_validator.js",
+          "decimal.js":"./MikeMcl_2014_decimal.js",
+          "domexception/webidl2js-wrapper":"./domenic_2017_domexception_webidl2js-wrapper.js",
+          "form-data":"./alexindigo_2013_formdata.js",
+          "http-proxy-agent":"./TooTallNate_2015_http_proxy_agent.js",
+          "https-proxy-agent":"./TooTallNate_2015_https_proxy_agent.js",
+          "is-potential-custom-element-name": "./Bynens_2016_potential_customelementname.js",
+          "nwsapi": "./dperini_2017_nwsapi.js",
+          "parse5": "./inikulin_2013_parse5.js",
+          "saxes": "./isaacs_2011_saxes.js",
+          "ws": "./einaros_2011_ws.js",
+          "w3c-xmlserializer":"./Mayr_2018_w3c_xmlserializer.js"
         },
         "./rollup_2022_json.js": {},
         "./rollup_2022_noderesolve.js": {}
@@ -397,7 +448,8 @@
       "./rollup_2022_json.js": {},
       "edit": {"domenic_2022_jsdom_rollup/0/scripts/generate-js-globals.js": {
         "fs\\.writeFileSync": "module.exports=fs.writeFileSync"
-      }}
+      }},
+      "comment":"called during jsdom bundling, so will be available from source: no need to adjust __dirname locations."
     }
   ],
   "domenic_2022_jsdom_webidl_convert.js": [

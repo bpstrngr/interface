@@ -380,19 +380,22 @@ export async function checkout(remote, target, branch, path) {
     return fs
       .cp(remote, target, { dereference: true, recursive: true })
       .then((copy) => branch && spawn("git", "-C", target, "checkout", branch));
+  let commit=branch.length===40&&!/[^a-z0-9]/.test(branch);
   let clone = await spawn(
     "git",
     "clone",
     "--depth=1",
-    ...(path.length?["--no-checkout","--sparse","--filter=tree:0"]:[]),
-    ...(branch?["--single-branch","--branch",branch]:[]),
+    ...path.length?["--no-checkout","--sparse","--filter=tree:0"]:[],
+    ...commit?["--no-checkout","-c","remote.origin.fetch=+"+branch+":refs/remotes/origin/"+branch]:branch?["--single-branch","--branch",branch]:[],
     remote,
     target
   );
+  if(commit)
+  clone=await spawn("git","-C",target,"checkout",branch);
   if(!path.length)
   return clone;
   clone=await spawn("git","-C", target, "sparse-checkout", "add", path.join("/"));
-  if(branch)
+  if(!commit&&branch)
   clone=await spawn("git","-C", target, "checkout", branch);
   return clone;
 }
