@@ -211,7 +211,9 @@
     "https://github.com/w3c/webidl2.js": {
       "v24.4.0": [
         "index.js", {
-          "./rollup_2022_noderesolve.js": {}
+          "./rollup_2022_noderesolve.js": {},
+          "edit":{"w3c_2016_webidl2/0/index.js":{"export":"import","^((?:.*[\n$])*)": "$1\nexport default {parse,write,validate,WebIDLParseError};"}},
+          "comment":"webidl2js requires (aka default-imports) this module, despite it only re-exports namespaces. re-exported namespaces can't be default exported, hence the conversion to imports before the new default export."
         }
       ]
     }
@@ -222,16 +224,17 @@
         "lib/transformer.js",
         {
           "scripts": "./domenic_2022_jsdom_webidl2js_output_utils.js",
-          "input": { "external": ["prettier", "webidl2", "webidl-conversions"] },
           "syntax":"commonjs",
-          "output": {
-            "paths": {
-              "webidl2": "./w3c_2016_webidl2.js",
-              "webidl-conversions": "./domenic_2014_webidl.js"
-            }
+          "alias": {
+            "webidl2": "./w3c_2016_webidl2.js",
+            "webidl-conversions": "./domenic_2014_webidl.js"
           },
           "./rollup_2022_json.js": {},
           "./rollup_2022_noderesolve.js": {},
+          "detach":["prettier"],
+          "edit":{"domenic_2022_jsdom_webidl2js/0/lib/transformer.js":{
+            "_prettify\\(source\\) \\{": "_prettify(source){return source;"
+          }},
           "replace": {
             "domenic_2022_jsdom_webidl2js/0/lib/transformer.js":{"Literal":{"output/utils.js":"domenic_2022_jsdom_webidl2js_output_utils.js"}}
           }
@@ -239,13 +242,16 @@
       ]
     }
   },
-  "domenic_2022_jsdom_webidl2js_output_utils.js": [
-    "domenic_2022_jsdom_webidl2js/0/lib/output/utils.js", {
-      "syntax":"commonjs",
-      "output": {"format": "commonjs"},
-      "comment": "preserved during webidl2js bundling as a static part of scripts written by its Transformer (used by eg. whatwg_url's transform and jsdom's convert script to produce webidl modules)."
+  "domenic_2022_jsdom_webidl2js_output_utils.js": {
+    "https://github.com/jsdom/webidl2js/lib/output/utils/utils.js": {
+      "v17.1.0": [
+        "lib/output/utils.js",{
+          "syntax":"commonjs",
+          "comment": "preserved during webidl2js bundling as a static part of scripts written by its Transformer (used by eg. whatwg_url's transform and jsdom's convert script to produce webidl modules)."
+        }
+      ]
     }
-  ],
+  },
   "domenic_2015_whatwg_url.js": {
     "https://github.com/jsdom/whatwg-url": {
       "v12.0.0": [
@@ -294,7 +300,6 @@
         { "scripts": "./domenic_2016_whatwg_encoding_update.js",
           "./rollup_2022_commonjs.js":{"requireReturnsDefault": true},
           "./rollup_2022_json.js": {},
-          "input": {"external": ["minipass-fetch"]},
           "alias": {
             "minipass-fetch": "./isaacs_2019_minipass_fetch.js"
           },
@@ -305,12 +310,13 @@
   },
   "domenic_2016_whatwg_encoding_update.js":[
     "domenic_2016_whatwg_encoding/0/scripts/update.js", {
-      "input": {"external": ["minipass-fetch"]},
       "alias": {
         "minipass-fetch": "./isaacs_2019_minipass_fetch.js"
       },
       "./rollup_2022_commonjs.js":{"requireReturnsDefault": true, "esmExternals": true},
-      "@rollup/plugin-replace": {"(__dirname":"(path.dirname(new URL(import.meta.url).pathname), './domenic_2016_whatwg_encoding/0/scripts'"},
+      "edit": {
+        "\\(__dirname":"(path.dirname(new URL(import.meta.url).pathname), './domenic_2016_whatwg_encoding/0/scripts'"
+      },
       "./rollup_2022_json.js": {},
       "./rollup_2022_noderesolve.js": {}
     }
@@ -322,22 +328,12 @@
       ]
     }
   },
-  "rrweb_2010_cssom.js": {
-    "https://github.com/NV/CSSOM": {
-      "v0.3.1": [
-        "lib/", {
-          "@rollup/plugin-replace": {"exports.":"module.exports."},
-          "syntax":"commonjs"
-        }
-      ]
-    }
-  },
+  "rrweb_2010_cssom.js": {"https://github.com/rrweb-io/CSSOM": {"a469aae2f92e454e669aec821781626924f98d17": ["lib/index.js", {"scripts":["./rrweb_2010_cssom/0/build.js"],"syntax":"commonjs"}]}},
   "domenic_2018_cssstyle.js": {"https://github.com/jsdom/cssstyle": {
     "v3.0.0": [
       "lib/CSSStyleDeclaration.js", {
         "scripts": "./domenic_2018_cssstyle_properties.js",
-        "input": {"external": ["rrweb-cssom"]},
-        "alias": {"rrweb-cssom": "./rrweb_2010_cssom.js"},
+        "alias": {"cssom": "./rrweb_2010_cssom.js"},
         "syntax":"commonjs"
       }
     ]
@@ -350,13 +346,19 @@
       ]
     }
   },
+  "dataurls.js":{"https://github.com/jsdom/data-urls":{"v4.0.0":["lib/parser.js",{
+    "whatwg-url": "./domenic_2015_whatwg_url.js",
+    "whatwg-mimetype": "./domenic_2016_whatwg_mimetype.js",
+    "abab":"./Carpenter_2015_abab.js"
+  }]}},
+  "Carpenter_2015_abab.js":{"https://github.com/jsdom/abab":{"2.0.6":["index.js",{"syntax":"commonjs"}]}},
+  "wel_2015_symbol_tree.js":{"https://github.com/jsdom/js-symbol-tree":{"v3.2.4":["lib/SymbolTree.js",{"syntax":"commonjs"}]}},
   "domenic_2018_cssstyle_properties.js": [
     "domenic_2018_cssstyle/0/scripts/generate_properties.js", {
-      "input": {"external":["babel-types"]},
       "alias": {"babel-types": "./babel_2014_types.js"},
       "syntax":"commonjs",
       "./rollup_2022_json.js": {},
-      "transform": {
+      "edit": {
         "domenic_2018_cssstyle_properties/0/scripts/generate_properties.js": {
           "out_file.end(function (err) {":"out_file.end(function (err) {resolve(err)",
           "^((?:.*[\n$])*)": "module.exports=new Promise(()=>{$1}"
@@ -368,42 +370,32 @@
     "https://github.com/jsdom/jsdom": {"22.1.0": [
       "lib/api.js",
       {
+        "syntax": "commonjs",
         "scripts": ["./domenic_2022_jsdom_webidl_convert.js", "./domenic_2022_jsdom_jsglobals.js"],
-        "input": {"external": [
-          "tough-cookie",
-          "webidl-conversions",
-          "html-encoding-sniffer",
-          "whatwg-url/webidl2js-wrapper",
-          "whatwg-url",
-          "whatwg-encoding",
-          "whatwg-mimetype",
-          "cssstyle"
-        ]},
-        "output": {
-          "paths": {
-            "tough-cookie": "./salesforce_2011_toughcookie.js",
-            "webidl-conversions": "./domenic_2014_webidl.js",
-            "html-encoding-sniffer": "./domenic_2016_html_encodingsniffer.js",
-            "whatwg-url/webidl2js-wrapper": "./domenic_2015_whatwg_url_webidl_wrapper.js",
-            "whatwg-url": "./domenic_2015_whatwg_url.js",
-            "whatwg-encoding": "./domenic_2016_whatwg_encoding.js",
-            "whatwg-mimetype": "./domenic_2016_whatwg_mimetype.js",
-            "cssstyle": "./domenic_2018_cssstyle.js"
-          }
+        "alias": {
+          "tough-cookie": "./salesforce_2011_toughcookie.js",
+          "webidl-conversions": "./domenic_2014_webidl.js",
+          "html-encoding-sniffer": "./domenic_2016_html_encodingsniffer.js",
+          "whatwg-url/webidl2js-wrapper": "./domenic_2015_whatwg_url_webidl_wrapper.js",
+          "whatwg-url": "./domenic_2015_whatwg_url.js",
+          "whatwg-encoding": "./domenic_2016_whatwg_encoding.js",
+          "whatwg-mimetype": "./domenic_2016_whatwg_mimetype.js",
+          "cssstyle": "./domenic_2018_cssstyle.js",
+          "rrweb-cssom":"./rrweb_2010_cssom.js",
+          "symbol-tree":"./wel_2015_symbol_tree.js",
+          "abab":"./Carpenter_2015_abab.js",
+          "data-urls":"./"
         },
         "./rollup_2022_json.js": {},
-        "./rollup_2022_noderesolve.js": {},
-        "syntax": "commonjs"
+        "./rollup_2022_noderesolve.js": {}
       }
     ]}
   },
   "domenic_2022_jsdom_jsglobals.js": [
     "domenic_2022_jsdom_rollup/0/scripts/generate-js-globals.js", {
+      "syntax":"commonjs",
       "./rollup_2022_json.js": {},
-      "@rollup/plugin-replace": {
-        "(__dirname":"(path.dirname(new URL(import.meta.url).pathname), './domenic_2022_jsdom_rollup/0/scripts'"
-      },
-      "transform": {"domenic_2022_jsdom_rollup/0/scripts/generate-js-globals.js": {
+      "edit": {"domenic_2022_jsdom_rollup/0/scripts/generate-js-globals.js": {
         "fs\\.writeFileSync": "module.exports=fs.writeFileSync"
       }}
     }
@@ -412,21 +404,15 @@
     "domenic_2022_jsdom_rollup/0/scripts/webidl/convert.js",
     {
       "syntax": "commonjs",
-      "input": { "external": ["prettier", "webidl-conversions", "webidl2js", "rimraf"] },
+      "alias": {
+        "rimraf": "./isaacs_2011_rimraf.js",
+        "webidl-conversions": "./domenic_2014_webidl.js",
+        "webidl2js": "./domenic_2022_jsdom_webidl2js.js"
+      },
+      "input": { "external": ["prettier"] },
       "./rollup_2022_json.js": {},
-      "output": {
-        "paths": {
-          "rimraf": "./isaacs_2011_rimraf.js",
-          "webidl-conversions": "./domenic_2014_webidl.js",
-          "webidl2js": "./domenic_2022_jsdom_webidl2js.js"
-        }
-      },
       "./rollup_2022_noderesolve.js": {},
-      "@rollup/plugin-replace": {
-        "(__dirname":"(path.dirname(new URL(import.meta.url).pathname), './domenic_2022_jsdom_rollup/0/scripts/webidl'",
-        "addDir(\"../..": "addDir(\"domenic_2022_jsdom_rollup/0"
-      },
-      "transform": {"domenic_2022_jsdom_rollup/0/scripts/webidl/convert.js": {
+      "edit": {"domenic_2022_jsdom_rollup/0/scripts/webidl/convert.js": {
         "transformer\\.generate": "module.exports=transformer.generate"
       }}
     }

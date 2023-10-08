@@ -18,7 +18,6 @@ export async function parse(source, syntax = "javascript", options = {}) {
   Parser=await import("./xtuc_2020_acorn_importattributes.js"). then(({importAttributes:plugin})=>
   Parser.extend(plugin));
   let comments = [];
- //(syntax==="typescript")note(Parser.parse("export default class Graph{constructor(private readonly options: NormalizedInputOptions){}}",{ecmaVersion:2022, sourceType:'module'}).body[0].declaration)//.body.body[0]. value.params[0])
   let scope = Parser.parse(source, {
     ecmaVersion: 2022,
     sourceType: "module",
@@ -50,7 +49,9 @@ export async function parse(source, syntax = "javascript", options = {}) {
  export async function sanitize(grammar,format)
 {if(!Object.keys(format||{}).length)
  return grammar;
- let {alias={},replace,output,syntax,scripts}=format;
+ if(grammar.body[0]?.type==="ExpressionStatement"&&grammar.body[0].expression.value==="use strict")
+ grammar.body.shift();
+ let {alias={},detach,replace,output,syntax,scripts}=format;
  let path=await import("path");
  let location=path.dirname(new URL(import.meta.url).pathname);
  let relation=path.dirname(grammar.meta.url.pathname);
@@ -58,17 +59,34 @@ export async function parse(source, syntax = "javascript", options = {}) {
  if(disjunction)
  grammar=prune(grammar,function([field,value])
 {let term=Object.values(disjunction).find(({condition})=>condition.call(this,value,field));
- return term?term.ecma.call(this,value):value;
+ return term?term.ecma.call(this,value,field):value;
 });
- if(syntax==="commonjs"&&!grammar.body.some(({type})=>type==="ExportDefaultDeclaration"))
- grammar.body.push(
- {type:"ExportDefaultDeclaration",declaration:
- {type:"ObjectPattern"
- ,properties:Object.values(search.call(grammar,([field,value])=>
- value?.type==="ExportNamedDeclaration")).flatMap(({specifiers,declaration})=>
- specifiers?.map(({local})=>local)||declaration.declarations.map(({id})=>id))
+ if(syntax==="commonjs")
+ // expose commonjs module.exports as default export. 
+ [{type:"Identifier",name:"module"},{type:"Identifier",name:"exports"}].reduce((module,exports)=>
+ grammar.body.unshift(
+ grammar.body.find((statement,index,body)=>
+ statement?.kind==="let"&&
+ ["exports","module"].map((name,index)=>statement.declarations[index]?.id.name===name).every(Boolean)&&
+ delete body[index])||
+ {type:"VariableDeclaration",kind:"let",declarations:
+[{type:"VariableDeclarator",id:exports,init:{type:"ObjectExpression",properties:[]}}
+,{type:"VariableDeclarator",id:{type:"Identifier",name:"module"},init:{type:"ObjectExpression",properties:
+[{type:"Property",key:exports,value:exports,shorthand:true,kind:"init"}
+]}
  }
- });
+]})&&
+ grammar.body.some(statement=>statement?.type==="ExportNamedDeclaration"&&
+ statement.specifiers.some(({exported})=>exported?.name==="default"))||
+ grammar.body.push(
+ grammar.body.find((statement,index,body)=>statement?.type==="ExportDefaultDeclaration"&&
+ statement.declaration.object?.name==="module"&&
+ statement.declaration.property?.name==="exports"&&
+ delete body[index])||
+ {type:"ExportDefaultDeclaration"
+ ,exportKind:"value"
+ ,declaration:{type:"MemberExpression",object:module,property:exports}
+ }));
  grammar=prune(grammar,function jsonnamespace({1:value})
 {let boundary=["Import","ExportNamed","ExportAll"].map(type=>type+"Declaration").find(type=>type===value?.type);
  let json=boundary&&/\.json$/.test(value.source?.value);
@@ -117,6 +135,9 @@ export async function parse(source, syntax = "javascript", options = {}) {
  let replacement=values?.hasOwnProperty(value?.[field])&&values[value[field]];
  return replacement?{...value,[field]:replacement,...value?.type==="Literal"&&{raw:"\""+replacement+"\""}}:value;
 });
+ if(detach)
+ grammar=prune(grammar,({1:value})=>
+ value?.type==="ImportDeclaration"&&detach.includes(value.source.value)?undefined:value);
  await ["banner","footer"].map(extension=>
  output?.[extension]).reduce(record((extension,index)=>
  extension&&compose(extension,parse,({body})=>
@@ -132,9 +153,13 @@ export async function parse(source, syntax = "javascript", options = {}) {
  {condition(value,field)
 {let values=value?.type==="VariableDeclaration"?value.declarations.map(({init})=>init?.type==="MemberExpression"?init.object:init):[value?.expression?.right];
  return values.some(value=>(value?.callee?.name||value?.callee?.object?.callee?.name)==="require");
-},ecma(value)
+},ecma(value,field)
 {let declarations=(value.declarations||[value.expression]).flatMap(expression=>expression.type==="AssignmentExpression"
-?[value,{expression:{right:{type:"AwaitExpression",argument:{type:"ImportExpression",source:expression.right.arguments[0],callee:undefined,arguments:undefined}}}}].reduce(merge,{})
+?[value,{expression:{right:{type:"AwaitExpression",argument:
+ {type:"ImportExpression"
+ ,source:expression.right.arguments[0]
+ ,callee:undefined,arguments:undefined
+ }}}}].reduce(merge,{})
 :expression.right
  // expression
 ?[[expression.right.callee.object||expression.right,"arguments","0"].reduce(Reflect.get)
@@ -156,39 +181,51 @@ export async function parse(source, syntax = "javascript", options = {}) {
 ?// declaration
 [[expression.init.object||expression.init,"arguments","0"].reduce(Reflect.get)
 ,[expression.init.object||expression.init,"arguments","0","value"].reduce(Reflect.get).replace(/[^a-zA-Z]/g,"")+"_exports"
-].reduce((source,local)=>
-[{type:"ImportDeclaration",source,specifiers:["ImportDefaultSpecifier",expression.id.name&&!expression.init.property?expression.id:{type:"Identifier",name:local}].reduce((type,local)=>[{type,local,imported:local}])}
+].reduce((source,name)=>
+[Object.keys(this)
+,expression.id.name&&!expression.init.property?expression.id:{type:"Identifier",name}
+].reduce((fields,local)=>
+ // requires can be redundant, imports cannot. 
+[!fields.slice(0,fields.indexOf(field)).reverse().some(field=>
+ this[field]?.type==="VariableDeclaration"&&this[field].declarations.some(declaration=>
+ [declaration,expression].map(declaration=>
+ declaration.init.arguments?.[0]?.value).reduce(Object.is)))
+?{type:"ImportDeclaration",source
+ ,specifiers:[{type:"ImportDefaultSpecifier",local,imported:local}]
+ }
+:[]
 ,expression.init.property||expression.id.properties
 ?{...value,declarations:
 [{type:"VariableDeclarator",id:expression.id,init:expression.init.property
-?{type:"MemberExpression",object:{type:"Identifier",name:local},property:expression.init.property}
-:{type:"Identifier",name:local}
+?{type:"MemberExpression",object:{type:"Identifier",name},property:expression.init.property}
+:{type:"Identifier",name}
  }
 ]}
 :[]
-]).flat()
+])).flat()
  // statement
 :{...value,declarations:[expression]});
  return provide(...declarations);
 }}
- ,export:
- {condition(value)
-{if(value?.type!=="ExpressionStatement")return false;
- let named=value.expression.left?.object?.name==="exports";
- if(named)return true;
- let major=value.expression.left?.object?.name==="module"&&value.expression.left.property.name==="exports";
- if(major)return true;
-},ecma(value)
-{if(value.expression.left?.object?.name==="module")
- return {type:"ExportDefaultDeclaration",declaration:value.expression.right};
- let id=value.expression.left.property;
- let init=value.expression.right;
- let specifier=init.type==="Identifier";
- let exported=specifier?{specifiers:[{type:"ExportSpecifier",exported:id,local:init}]}:{declaration:{type: "VariableDeclaration", kind: "var", declarations:[{id,init}]}};
- if(!specifier&&estree.commonjs.require.condition(exported.declaration))
- return Object.assign(estree.commonjs.require.ecma(exported.declaration),{type:"ExportNamedDeclaration"});
- return Object.assign(value,{type: "ExportNamedDeclaration",expression: undefined,...exported});
-}}
+  // module.exports exportdefaultdeclaration prepended to scope instead. 
+//  ,export:
+//  {condition(value)
+// {if(value?.type!=="ExpressionStatement")return false;
+//  let named=value.expression.left?.object?.name==="exports";
+//  if(named)return true;
+//  let major=value.expression.left?.object?.name==="module"&&value.expression.left.property.name==="exports";
+//  if(major)return true;
+// },ecma(value)
+// {if(value.expression.left?.object?.name==="module")
+//  return {type:"ExportDefaultDeclaration",declaration:value.expression.right};
+//  let id=value.expression.left.property;
+//  let init=value.expression.right;
+//  let specifier=init.type==="Identifier";
+//  let exported=specifier?{specifiers:[{type:"ExportSpecifier",exported:id,local:init}]}:{declaration:{type:"VariableDeclaration",kind:"var",declarations:[{id,init}]}};
+//  if(!specifier&&estree.commonjs.require.condition(exported.declaration))
+//  return Object.assign(estree.commonjs.require.ecma(exported.declaration),{type:"ExportNamedDeclaration"});
+//  return Object.assign(value,{type: "ExportNamedDeclaration",expression: undefined,...exported});
+// }}
  ,dirname:
  {condition(value){return value?.type==="Identifier"&&value.name==="__dirname";}
  ,ecma()

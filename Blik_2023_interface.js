@@ -309,17 +309,27 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
 ?import(source).then(module=>module.tests&&test(source).then(result=>console.log(url+"\n"+result)))&&module
 :module);
  let {comment,...definition}=[{syntax},typeof format==="object"?format:await import("./Blik_2023_sources.json").then(sources=>
- Object.values(sources.default[format]||{}).reduce(function flat(entries,source)
+ [sources.default[format]||{}].reduce(function flat(entries,source)
 {return [entries,typeof source!=="object"||Array.isArray(source)?source:Object.values(source).reduce(flat,[])].flat();
 },[]).filter(entry=>typeof entry==="object"))].flat().reduce(merge);
  syntax=definition.syntax;
  let foreign=!["javascript","json"].includes(syntax)||Object.keys(definition).length>1;
  // parse foreign to serialize standard syntax. without native interpretter to call (next), all syntax are foreign. 
  // using acorn's Parser methods (parse) until interpretation reducer is complete. 
- let transform=foreign?[syntax,{source},parse,definition,sanitize,serialize]:[];
- source=await compose(source,true,access,...transform).catch(fail=>
+ let patriate=foreign?[syntax,{source},parse,definition,sanitize,serialize]:[];
+ let edits=Object.fromEntries(Object.entries(definition.edit||{}).flatMap(([field,value])=>
+ string(value)?[[field,value]]:source.endsWith(field)?Object.entries(value):[]));
+ source=await compose(source,true,access,edits,edit,...patriate).catch(fail=>
  note.call(1,"Failed to patriate "+syntax+" \""+source+"\" due to",fail)&&exit(fail));
  return next?{source,format:{json:"json"}[syntax]||"module",shortCircuit:true}:source;
+};
+
+ export function edit(source,edits)
+{return Object.entries(edits||{}).reduce((source, [field,value]) =>
+ source.replace(new RegExp(field,"g"),(match, ...groups) =>
+ [value, ...groups.slice(0,-2)].reduce((value, group, index) =>
+ value.replace("$"+index, group)))
+,source);
 };
 
  export async function bundle(source, format)
@@ -360,7 +370,7 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
  let { rollup } = await import("./rollup_2022_rollup.js");
  let input=multientry ? { include: source } : source[0];
  let bundle=await rollup({input,plugins,...format.input});
- let {output:[{code}]}=await bundle.generate({ format: "module", inlineDynamicImports: true });
+ let {output:[{code}]}=await bundle.generate({ format: "module", inlineDynamicImports: true, ...format.output });
  return code;
 }
 
