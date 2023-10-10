@@ -82,19 +82,19 @@ export function route(scope, term, path) {
   );
 }
 
- export function prune(scope,term,collapse)
+ export function prune(scope,term,collapse,path=[])
 {// map entries recursively.
  if(typeof scope!=="object"||scope===null)return scope;
  let entries=Object.entries(scope);
  if(!entries.length)for(let field in scope)entries.push([field,scope[field]]);
  entries=entries.flatMap
 (function([field,scope],index,entries)
-{let value=term.call(Object.fromEntries(entries),[field,scope]);
+{let value=term.call(Object.fromEntries(entries),[field,scope],path);
  let pluck=!defined(value);
  if(pluck&&!collapse)
  return [];
  let plant=pluck&&collapse;
- let plural=[...provide(plant?scope:value)].map(scope=>prune(scope,term,collapse));
+ let plural=[...provide(plant?scope:value)].map(scope=>prune(scope,term,collapse,path.concat(field)));
  return plural.flatMap(scope=>plant?Object.entries(scope):[[field, scope]]);
 });
  let array=!entries.some(([field],index,entries)=>isNaN(field)||[entries[index-1]?.[0],field].map(Number).reduce((past,next)=>next<past));
@@ -182,5 +182,8 @@ export function search(term, recursive = false) {
 }
 
  export const tests=
- {merge:{context:[{a:1},{b:2}],terms:[{a:1,b:2}],condition:["deepEqual"]}
+ {merge:
+[{context:[{a:1},{b:2}],terms:[{a:1,b:2}],condition:["deepEqual"]}
+,{context:[{a:{}},2,"a/b/c".split("/")],terms:[{a:{b:{c:2}}}],condition:["deepEqual"]}
+],search:{tether:{a:{b:2}},context:[({1:value})=>value===2],terms:[{"a/b":2}],condition:"deepEqual"}
  };

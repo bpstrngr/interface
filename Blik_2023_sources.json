@@ -7,18 +7,11 @@
     }
   },
   "haverbeke_2012_acorn_walk.js":{"https://github.com/acornjs/acorn/acorn-walk":{"8.9.0":"acorn-walk/src/index.js"}},
-  "davidbonnet_2015_astring.js": {
-    "https://github.com/davidbonnet/astring": {
-      "v1.8.6": [
-        "src/astring.js"
-      ]
-    }
-  },
+  "davidbonnet_2015_astring.js": {"https://github.com/davidbonnet/astring": {"v1.8.6": ["src/astring.js"]}},
   "xtuc_2020_acorn_importattributes.js": {"https://github.com/xtuc/acorn-import-attributes/tarball/v1.9.2": ["src/index.js",{"alias": {"acorn": "./haverbeke_2012_acorn.js"}}]},
   "xtuc_2020_acorn_importassertions.js": {"https://github.com/xtuc/acorn-import-attributes/tarball/v1.7.6": ["src/index.js",{"alias": {"acorn": "./haverbeke_2012_acorn.js"}}]},
   "eslint_2019_typescript_estree.js":{"https://github.com/typescript-eslint/typescript-eslint/packages/typescript-estree":{"v6.4.1":["src/parser.ts"]}},
   "microsoft_2014_typescript.js":{"https://github.com/microsoft/TypeScript":{"v5.1.6":["src/compiler/_namespaces/ts.ts",{"syntax":"typescript"}]}},
-  "substack_2015_commondir.js":{"https://registry.npmjs.org/commondir/-/commondir-1.0.1.tgz":["index.js",{"syntax":"commonjs"}]},
   "jridgewell_2015_sourcemap_codec.js":{"https://github.com/jridgewell/sourcemap-codec":{"v1.4.13":["src/sourcemap-codec.ts"]}},
   "rich_harris_2014_magic_string.js":{"https://github.com/rich-harris/magic-string":{"v0.27.0":["src/index.js",{
     "replace":{"Identifier":{"DEBUG":"false"}},
@@ -26,9 +19,6 @@
     "output":{"footer":"export const DecodedSourceMap=undefined;"}
   }]}},
   "rich_harris_2016_is_reference.js":{"https://github.com/Rich-Harris/is-reference":{"v3.0.1":["src/index.js",{"output":{"footer":"export const NodeWithFieldDefinition=undefined;"}}]}},
-  "rich_harris_2016_is_reference_1.js":{"https://github.com/Rich-Harris/is-reference":{"v1.2.1":[
-    "src/index.ts",{"alias":{"estree":"./definitely_2015_estree.js"}}
-  ]}},
   "rich_harris_2015_estree_walker.js":{"https://github.com/Rich-Harris/estree-walker":{"v2.0.2":["src/index.js"]}},
   "rich_harris_2016_locate_character.js":{"https://github.com/Rich-Harris/locate-character":{"v3.0.0":[
       "src/index.js",{"output":{"footer":"export const Location=undefined;"},"comment":"Typescript sometimes ambiguates type imports with lexical imports. Without dts files present, it's impossible to tell if they need to be discarded."}
@@ -93,13 +83,6 @@
       "@types/resolve":"./definitely_2015_resolve.js"
     }
   }]}},
-  "rollup_2022_commonjs.js":{"https://github.com/rollup/plugins/packages/commonjs":{"commonjs-v25.0.4":["packages/commonjs/src/index.js",{
-    "alias":{
-      "@rollup/pluginutils": "./rollup_2022_pluginutils.js","commondir":"./substack_2015_commondir.js","glob":"./isaacs_2010_glob.js",
-      "estree-walker":"./rich_harris_2015_estree_walker.js","magic-string":"./rich_harris_2014_magic_string.js",
-      "is-reference":"./rich_harris_2016_is_reference_1.js"
-    }
-  }]}},
   "rollup_2022_json.js":{"https://github.com/rollup/plugins/packages/json":{"json-v6.0.0":["packages/json/src/index.js",{"alias":{
     "@rollup/pluginutils":"./rollup_2022_pluginutils.js"
   }}]}},
@@ -125,7 +108,7 @@
       "querystringify":"./unshiftio_2014_querystringify.js"
     }}
   ]}},
-  "punycode_2011_punycode.js":{"https://github.com/mathiasbynens/punycode.js":{"v2.1.1":["punycode.js"]}},
+  "punycode_2011_punycode.js":{"https://github.com/mathiasbynens/punycode.js":{"v2.1.1":["punycode.js",{"syntax":"commonjs"}]}},
   "salesforce_2011_toughcookie.js": {
     "https://github.com/salesforce/tough-cookie": {
       "v4.1.2": [
@@ -151,22 +134,12 @@
       ]
     }
   },
-  "domenic_2016_html_encodingsniffer.js": {
-    "https://github.com/jsdom/html-encoding-sniffer": {
-      "v3.0.0": [
-        "lib/html-encoding-sniffer.js"
-      ]
-    }
-  },
-  "isaacs_2017_minipass.js":{"https://github.com/isaacs/minipass": {"v3.1.0": ["index.js", {
-    "syntax":"commonjs",
-    "./rollup_2022_noderesolve.js": {}
-  }]}},
+  "domenic_2016_html_encodingsniffer.js": {"https://github.com/jsdom/html-encoding-sniffer": {"v3.0.0": ["lib/html-encoding-sniffer.js",{"syntax":"commonjs","alias":{"whatwg-encoding":"./domenic_2016_whatwg_encoding.js"}}]}},
+  "isaacs_2017_minipass.js":{"https://github.com/isaacs/minipass": {"v3.1.0": ["index.js", {"syntax":"commonjs","./rollup_2022_noderesolve.js":{}}]}},
   "isaacs_2019_minipass_sized.js":{
     "https://github.com/isaacs/minipass-sized":{
       "v1.0.3":["index.js", {
         "input": {"external": ["minipass"]},
-        "./rollup_2022_commonjs.js": {"requireReturnsDefault": true, "esmExternals": true},
         "alias": {"minipass": "./isaacs_2017_minipass.js"},
         "./rollup_2022_noderesolve.js": {}
       }]
@@ -174,7 +147,6 @@
   },
   "isaacs_2017_minizlib.js":{"https://github.com/isaacs/minizlib": {"v2.0.0": ["index.js", {
     "input": {"external": ["minipass"]},
-    "./rollup_2022_commonjs.js": {"requireReturnsDefault": true, "esmExternals": true},
     "alias": {"minipass": "./isaacs_2017_minipass.js"},
     "./rollup_2022_noderesolve.js": {}
   }]}},
@@ -182,7 +154,6 @@
     "lib/index.js",
     {
       "input": {"external": ["minizlib", "minipass", "minipass-sized"]},
-      "./rollup_2022_commonjs.js": {"requireReturnsDefault": true, "esmExternals": true},
       "./rollup_2022_json.js": {},
       "alias": {
         "minizlib": "./isaacs_2017_minizlib.js",
@@ -257,7 +228,6 @@
       "v12.0.0": [
         "index.js",
         {"scripts": ["./domenic_2015_whatwg_url_transform.js", "./domenic_2015_whatwg_url_webidl_wrapper.js"],
-          "./rollup_2022_commonjs.js":{"dynamicRequireTargets": ["./utils.js"]},
           "./rollup_2022_json.js": {},
           "./rollup_2022_noderesolve.js": {}
         }
@@ -270,17 +240,14 @@
     }
   ],
   "domenic_2015_whatwg_url_transform.js": [
-    "domenic_2015_whatwg_url/0/scripts/transform.js", {"syntax":"commonjs",
-      "input": { "external": [
-        "prettier", "rimraf", "webidl-conversions", "webidl2js", "minipass-fetch"
-      ] },
-      "output": {
-        "paths": {
-          "rimraf": "./isaacs_2011_rimraf.js",
-          "webidl-conversions": "./domenic_2014_webidl.js",
-          "webidl2js": "./domenic_2022_jsdom_webidl2js.js",
-          "minipass-fetch": "./isaacs_2019_minipass_fetch.js"
-        }
+    "domenic_2015_whatwg_url/0/scripts/transform.js", {
+      "syntax":"commonjs",
+      "input": { "external": ["prettier"] },
+      "alias": {
+        "rimraf": "./isaacs_2011_rimraf.js",
+        "webidl-conversions": "./domenic_2014_webidl.js",
+        "webidl2js": "./domenic_2022_jsdom_webidl2js.js",
+        "minipass-fetch": "./isaacs_2019_minipass_fetch.js"
       },
       "./rollup_2022_json.js": {},
       "./rollup_2022_noderesolve.js": {}
@@ -298,7 +265,6 @@
       "v2.0.0": [
         "lib/whatwg-encoding.js",
         { "scripts": "./domenic_2016_whatwg_encoding_update.js",
-          "./rollup_2022_commonjs.js":{"requireReturnsDefault": true},
           "./rollup_2022_json.js": {},
           "alias": {
             "minipass-fetch": "./isaacs_2019_minipass_fetch.js"
@@ -310,12 +276,9 @@
   },
   "domenic_2016_whatwg_encoding_update.js":[
     "domenic_2016_whatwg_encoding/0/scripts/update.js", {
+      "syntax":"commonjs",
       "alias": {
         "minipass-fetch": "./isaacs_2019_minipass_fetch.js"
-      },
-      "./rollup_2022_commonjs.js":{"requireReturnsDefault": true, "esmExternals": true},
-      "edit": {
-        "\\(__dirname":"(path.dirname(new URL(import.meta.url).pathname), './domenic_2016_whatwg_encoding/0/scripts'"
       },
       "./rollup_2022_json.js": {},
       "./rollup_2022_noderesolve.js": {}
@@ -338,20 +301,12 @@
       }
     ]
   }},
-  "babel_2014_types.js": {
-    "https://github.com/babel/babel/packages/babel-types": {
-      "v6.13.0": [
-        "src/index.js",
-        {"syntax": "typescript"}
-      ]
-    }
-  },
-  "domenic_2018_dataurls.js":{"https://github.com/jsdom/data-urls":{"v4.0.0":["lib/parser.js",{
-    "syntax":"commonjs",
+  "babel_2014_types.js": {"https://github.com/babel/babel/packages/babel-types": {"v6.13.0": ["src/index.js",{"syntax": "typescript"}]}},
+  "domenic_2018_dataurls.js":{"https://github.com/jsdom/data-urls":{"v4.0.0":["lib/parser.js",{"syntax":"commonjs","alias":{
     "whatwg-url": "./domenic_2015_whatwg_url.js",
     "whatwg-mimetype": "./domenic_2016_whatwg_mimetype.js",
     "abab":"./Carpenter_2015_abab.js"
-  }]}},
+  }}]}},
   "Carpenter_2015_abab.js":{"https://github.com/jsdom/abab":{"2.0.6":["index.js",{"syntax":"commonjs"}]}},
   "wel_2015_symbol_tree.js":{"https://github.com/jsdom/js-symbol-tree":{"v3.2.4":["lib/SymbolTree.js",{"syntax":"commonjs"}]}},
   "domenic_2018_cssstyle_properties.js": [
@@ -386,18 +341,19 @@
   }],
   "rauchg_2012_ms.js":{"https://github.com/vercel/ms":{"2.1.2":["index.js",{"syntax":"commonjs"}]}},
   "MikeMcl_2014_decimal.js":{"https://github.com/MikeMcl/decimal.js":{"v10.4.3":["decimal.mjs"]}},
-  "Holowaychuk_2011_debug.js":{"https://github.com/debug-js/debug":{"4.3.4":["src/node.js",{"syntax":"commonjs","alias":{"ms":"./rauchg_2012_ms.js"}}]}},
-  "TooTallNate_2015_agent_base.js":{"https://github.com/TooTallNate/proxy-agents/TooTallNate_2015_agent_base":{"agent-base@7.1.0":["TooTallNate_2015_agent_base/src/index.ts",{"alias":{"debug":"./Holowaychuk_2011_debug.js"}}]}},
-  "TooTallNate_2015_http_proxy_agent.js":{"https://github.com/TooTallNate/proxy-agents/packages/http-proxy-agent":{"5.0.0":["packages/http-proxy-agent/src/index.ts",{"alias":{"agent-base":"./TooTallNate_2015_agent_base.js","debug":"./Holowaychuk_2011_debug.js"}}]}},
-  "TooTallNate_2015_https_proxy_agent.js":{"https://github.com/TooTallNate/proxy-agents/packages/https-proxy-agent":{"5.0.1":["packages/https-proxy-agent/src/index.ts",{"alias":{"agent-base":"./TooTallNate_2015_agent_base.js","debug":"./Holowaychuk_2011_debug.js"}}]}},
+  "Holowaychuk_2011_debug.js":{"https://github.com/debug-js/debug":{"4.3.4":["src/node.js",{"syntax":"commonjs","alias":{"ms":"./rauchg_2012_ms.js"},"edit":{"src/node.js":{"module\\.exports = require":"module.exports=await require"}}}]}},
+  "TooTallNate_2015_agent_base.js":{"https://github.com/TooTallNate/proxy-agents/packages/agent-base":{"agent-base@7.1.0":["packages/agent-base/src/index.ts",{"alias":{"debug":"./Holowaychuk_2011_debug.js"}}]}},
+  "TooTallNate_2015_http_proxy_agent.js":{"https://github.com/TooTallNate/proxy-agents/packages/http-proxy-agent":{"http-proxy-agent@6.0.1":["packages/http-proxy-agent/src/index.ts",{"alias":{"agent-base":"./TooTallNate_2015_agent_base.js","debug":"./Holowaychuk_2011_debug.js"}}]}},
+  "TooTallNate_2015_https_proxy_agent.js":{"https://github.com/TooTallNate/proxy-agents/packages/https-proxy-agent":{"https-proxy-agent@6.0.0":["packages/https-proxy-agent/src/index.ts",{"alias":{"agent-base":"./TooTallNate_2015_agent_base.js","debug":"./Holowaychuk_2011_debug.js"}}]}},
   "Bynens_2016_potential_customelementname.js":{"https://github.com/mathiasbynens/is-potential-custom-element-name":{"v1.0.1":["index.js",{"syntax":"commonjs"}]}},
   "dperini_2017_nwsapi.js":{"https://github.com/dperini/nwsapi":{"8d71cdfcdeb85800d7c0578476e8bca31d36285b":["src/nwsapi.js",{"syntax":"commonjs"}]}},
-  "Boehm_2014_entities.js":{"https://github.com/fb55/entities":{"v4.4.0":["src/index.ts",{"edit":{"from \"(.*?)\\.js\"":"from \"$1.ts\""}}]}},
-  "inikulin_2013_parse5.js":{"https://github.com/inikulin/parse5/packages/parse5":{"v7.1.2":["packages/parse5/src/index.js",{"alias":{"entities":"./Boehm_2014_entities.js"}}]}},
-  "Dubeau_2018_xmlns1_ed3_chars.js":{"https://github.com/lddubeau/xmlchars/xmlns/1.0":{"v2.2.0":["xmlns/1.0/ed3.ts"]}},
-  "Dubeau_2018_xml1_ed5_chars.js":{"https://github.com/lddubeau/xmlchars/xml/1.0":{"v2.2.0":["xml/1.0/ed5.ts"]}},
-  "Dubeau_2018_xml1_2ed2_chars.js":{"https://github.com/lddubeau/xmlchars/xml/1.0":{"v2.2.0":["xml/1.1/ed2.ts"]}},
-  "isaacs_2011_saxes.js":{"https://github.com/lddubeau/saxes":{"v6.0.0":["src/saxes.ts",{"alias":{
+  "Boehm_2014_entities_decode.js":{"https://github.com/fb55/entities/src":{"v4.4.0":["src/decode.ts",{"edit":{"from \"(.*?)\\.js\"":"from \"$1.ts\""}}]}},
+  "Boehm_2014_entities_escape.js":{"https://github.com/fb55/entities/src/escape.ts":{"v4.4.0":["src/escape.ts"]}},
+  "inikulin_2013_parse5.js":{"https://github.com/inikulin/parse5/packages/parse5":{"v7.1.2":["packages/parse5/lib/index.ts",{"alias":{"entities/lib/escape.js":"./Boehm_2014_entities_escape.js","entities/lib/decode.js":"./Boehm_2014_entities_decode.js"},"edit":{"from '\\.(.*?)\\.js'":"from '.$1.ts'"}}]}},
+  "Dubeau_2018_xmlns1_ed3_chars.js":{"https://github.com/lddubeau/xmlchars/src/xmlns/1.0":{"v2.2.0":["src/xmlns/1.0/ed3.ts"]}},
+  "Dubeau_2018_xml1_ed5_chars.js":{"https://github.com/lddubeau/xmlchars/src/xml/1.0":{"v2.2.0":["src/xml/1.0/ed5.ts"]}},
+  "Dubeau_2018_xml1_2ed2_chars.js":{"https://github.com/lddubeau/xmlchars/src/xml/1.1":{"v2.2.0":["src/xml/1.1/ed2.ts"]}},
+  "Dubeau_2011_saxes.js":{"https://github.com/lddubeau/saxes":{"v6.0.0":["src/saxes.ts",{"alias":{
     "xmlchars/xmlns/1.0/ed3":"./Dubeau_2018_xmlns1_ed3_chars.js",
     "xmlchars/xml/1.0/ed5":"./Dubeau_2018_xml1_ed5_chars.js",
     "xmlchars/xml/1.1/ed2":"./Dubeau_2018_xml1_2ed2_chars.js"
@@ -433,7 +389,7 @@
           "is-potential-custom-element-name": "./Bynens_2016_potential_customelementname.js",
           "nwsapi": "./dperini_2017_nwsapi.js",
           "parse5": "./inikulin_2013_parse5.js",
-          "saxes": "./isaacs_2011_saxes.js",
+          "saxes": "./Dubeau_2011_saxes.js",
           "ws": "./einaros_2011_ws.js",
           "w3c-xmlserializer":"./Mayr_2018_w3c_xmlserializer.js"
         },

@@ -209,7 +209,7 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
  path.resolve(location,...remote?[target,"0"]:[],input[0])
 ,file=>access(file).then(async present=>(
  this.includes(target)||this.push(target)&&
- note.call(3,"Using source entry point for \""+relative+"\":\n "+file+"\n (bundling already in progress or interrupted before purge)")
+ note.call(3,"Accessing source entry for \""+relative+"\":\n "+file+"\n (bundling already in progress or interrupted before purge)")
 ,resolve("url","pathToFileURL",file).then(({href:url})=>({url,format:relative,shortCircuit:true}))))).catch(async fail=>
  assemble(sources,absolute));
  let sloppy=!/\.(js|json)$/.test(absolute)&&
@@ -287,6 +287,7 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
 {// access source as module specifier, ie. 
  // compose(source,true,access,interpret,format,sanitize,serialize,modularize). 
  let version=process.versions.node.split(".")[0];
+ if(string(context))context={format:context};
  let {importAssertions:assertion={},format}=context||{};
  let syntax=assertion?.type||mime(source)?.replace(/.*\//,"");
  if(syntax==="json"&&format!==syntax)
@@ -306,7 +307,7 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
  return next(source,context).then(module=>module.format==="module"
  //read(source).then(module=>modularise(module,source)).then(({namespace:module})=>prove.call(module,module.proof))
  // dispatch new import thread for tests until modularization halts on self-referential imports. 
-?import(source).then(module=>module.tests&&test(source).then(result=>console.log(url+"\n"+result)))&&module
+?import(source).then(module=>module.tests&&test(source).then(result=>console.log(result)))&&module
 :module);
  let {comment,...definition}=[{syntax},typeof format==="object"?format:await import("./Blik_2023_sources.json").then(sources=>
  [sources.default[format]||{}].reduce(function flat(entries,source)
@@ -491,9 +492,13 @@ export function exit(fail) {
 }
 
 export var tests = {
-  access: {
+  access: [{
     context: [import.meta.url],
+    terms: [(value) => typeof value, "object"],
+    condition: "equal",
+  },{
+    context: [import.meta.url,true],
     terms: [(value) => typeof value, "string"],
     condition: "equal",
-  },
+  }],
 };

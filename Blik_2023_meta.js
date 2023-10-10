@@ -1,6 +1,6 @@
 import path from "path";
 import { access, resolve, note } from "./Blik_2023_interface.js";
-import { compose, record, provide } from "./Blik_2023_inference.js";
+import { compose, record, provide, compound } from "./Blik_2023_inference.js";
 import { search, merge, prune, route, random } from "./Blik_2023_search.js";
 
 export async function parse(source, syntax = "javascript", options = {}) {
@@ -27,7 +27,7 @@ export async function parse(source, syntax = "javascript", options = {}) {
   comments
     .map((comment) => Object.assign(comment, { type: comment.type + "Comment" }))
     .forEach((comment) => route(scope, comment, path));
-  if (options.source) scope.meta = { url: new URL(options.source) };
+  if (options.source) scope.meta = { url: options.source.startsWith("file:/")?new URL(options.source):await resolve("url","pathToFileURL",options.source)};
   return scope;
   function descendant(scope) {
     return scope.start < this.start && this.end < scope.end;
@@ -57,9 +57,9 @@ export async function parse(source, syntax = "javascript", options = {}) {
  let relation=path.dirname(grammar.meta.url.pathname);
  let disjunction=estree[syntax];
  if(disjunction)
- grammar=prune(grammar,function([field,value])
+ grammar=prune(grammar,function([field,value],path)
 {let term=Object.values(disjunction).find(({condition})=>condition.call(this,value,field));
- return term?term.ecma.call(this,value,field):value;
+ return term?term.ecma.call(this,value,field,path):value;
 });
  if(syntax==="commonjs")
  // expose commonjs module.exports as default export. 
@@ -117,12 +117,12 @@ export async function parse(source, syntax = "javascript", options = {}) {
  return uninitialized?undefined:value;
 });
  if(Object.keys(alias).length)
- prune(grammar,([field,value])=>value?.type==="ImportDeclaration"
-?[alias[value.source.value],value.source].reduce((alias,source)=>
- !alias?value:["value","raw"].map(field=>(
- {[field]:source[field].replace(source.value,/^\./.test(alias)?"./"+path.relative(relation,path.resolve(location,alias)):alias)
- })).reduce(merge,source)
- )
+ prune(grammar,function([field,value])
+{let candidate=["ImportDeclaration","ImportExpression"].includes(value?.type);
+ let source=candidate&&alias[value.source.value];
+ if(!source) return value;
+ !alias?value:["value","raw"].map(field=>
+ source[field].replace(source.value,/^\./.test(alias)?"./"+path.relative(relation,path.resolve(location,alias)):alias)).reduce((value,raw)=>({value,raw})))
 :value);
  let fields={Literal:"value",Identifier:"name"};
  let generic=Object.keys(replace||{}).some(type=>fields[type]);
@@ -146,38 +146,40 @@ export async function parse(source, syntax = "javascript", options = {}) {
  return grammar;
 };
 
- var estree=
+ export var estree=
  // sort by decreasing specificity for declarative disjunction (Object.values(estree.dialect)). 
  {commonjs:
  {require:
  {condition(value,field)
 {let values=value?.type==="VariableDeclaration"?value.declarations.map(({init})=>init?.type==="MemberExpression"?init.object:init):[value?.expression?.right];
- return values.some(value=>(value?.callee?.name||value?.callee?.object?.callee?.name)==="require");
-},ecma(value,field)
-{let declarations=(value.declarations||[value.expression]).flatMap(expression=>expression.type==="AssignmentExpression"
-?[value,{expression:{right:{type:"AwaitExpression",argument:
- {type:"ImportExpression"
- ,source:expression.right.arguments[0]
+ return values.some(value=>Object.keys(search.call({value},({1:value})=>value?.callee?.name==="require")).length);
+},ecma(value,field,path)
+{let declarations=(value.declarations||[value.expression]).flatMap(expression=>path?.length>1
+?compose({...expression,[expression.right?"right":"init"]:{type:"AwaitExpression",argument:
+[{type:"ImportExpression"
+ ,source:Object.values(search.call(expression,({1:value})=>value?.callee?.name==="require"))[0].arguments[0]
  ,callee:undefined,arguments:undefined
- }}}}].reduce(merge,{})
-:expression.right
- // expression
-?[[expression.right.callee.object||expression.right,"arguments","0"].reduce(Reflect.get)
+ }
+,expression.right||expression.init
+].reduce((object,operation)=>operation.callee.name!=="require"
+?{type:"CallExpression",callee:{type:"MemberExpression",object,property:{type:"Identifier",name:"then"}},arguments:
+[{type:"ArrowFunctionExpression",expression:true
+ ,params:[{type:"ObjectPattern",properties:[{type:"Property",kind:"init",key:{type:"Identifier",name:"default"},value:{type:"Identifier",name:"module"}}]}]
+ ,body:merge(operation,{type:"Identifier",name:"module"},Object.keys(search.call({operation},({1:value})=>value?.callee?.name==="require"))[0].split("/").slice(1))
+ }
+]}
+:object)}},expression=>Object.assign(value,value.expression?{expression}:{declarations:[expression]}))
+:expression?.right
+ // assignment
+?[Object.values(search.call(expression,({1:value})=>value?.callee?.name==="require"))[0].arguments[0]
 ,value=>value.replace(/[^a-zA-Z]/g,"")+"_exports"
 ].reduce((source,id)=>
 [{type:"ImportDeclaration",source
  ,specifiers:["ImportDefaultSpecifier",{type:"Identifier",name:id(source.value)}].reduce((type,local)=>[{type,local,imported:local}])
  },
-[value
-,{expression:
- {right:value.expression.right.callee.object
-?{callee:{object:{type:"Identifier",name:id(source.value)}}}
-:{type:"Identifier",name:id(source.value)}
- }
- }
-].reduce(merge,{})
+ merge(value,{type:"Identifier",name:id(source.value)},Object.keys(search.call({value},({1:value})=>value?.callee?.name==="require"))[0].split("/").slice(1))
 ])
-:(expression.init?.callee?.name||expression.init?.object?.callee?.name)==="require"
+:(expression?.init?.callee?.name||expression?.init?.object?.callee?.name)==="require"
 ?// declaration
 [[expression.init.object||expression.init,"arguments","0"].reduce(Reflect.get)
 ,[expression.init.object||expression.init,"arguments","0","value"].reduce(Reflect.get).replace(/[^a-zA-Z]/g,"")+"_exports"
@@ -226,6 +228,11 @@ export async function parse(source, syntax = "javascript", options = {}) {
 //  return Object.assign(estree.commonjs.require.ecma(exported.declaration),{type:"ExportNamedDeclaration"});
 //  return Object.assign(value,{type: "ExportNamedDeclaration",expression: undefined,...exported});
 // }}
+ ,dynamicblock:
+ {condition(value)
+{return value?.type==="FunctionDeclaration"&&(value.body.body||[value.body]).some(estree.commonjs.require.condition);
+},ecma(value){return {...value,async:true};}
+ }
  ,dirname:
  {condition(value){return value?.type==="Identifier"&&value.name==="__dirname";}
  ,ecma()
@@ -255,23 +262,30 @@ export async function parse(source, syntax = "javascript", options = {}) {
  return expression?{...value,...expression}:value;
 }}
  ,interface:
- {condition(value){return value?.type==="ExportNamedDeclaration"&&["TSInterfaceDeclaration","TSTypeAliasDeclaration","TSEnumDeclaration"].includes(value.declaration?.type);}
- ,ecma({type,start,end,loc,declaration})
-{let enumtype=declaration.type==="TSEnumDeclaration";
+ {condition(value){return ["TSInterfaceDeclaration","TSTypeAliasDeclaration","TSEnumDeclaration"].includes(value?.type);}
+ ,ecma(value)
+{let enumtype=value.type==="TSEnumDeclaration";
  let init=enumtype
 ?{type:"ObjectExpression"
- ,properties:declaration.members.map(member=>(
+ ,properties:value.members.map(member=>(
  {type:"Property",kind:"init",key:member.id
  ,value:member.initializer||{type:"Literal",value:member.id.name,raw:"'"+member.id.name+"'"}
  }))
  }
 :{type:"Literal",kind:"undefined"};
- return {type,start,end,loc,declaration:{type:"VariableDeclaration",kind:"const",declarations:[{id:declaration.id,init}]}};
+ return {type:"VariableDeclaration",kind:"const",declarations:[{id:value.id,init}]};
 }}
  ,typeimport:
  {condition(value){return value?.type==="ImportDeclaration"&&value.importKind==="type"}
  ,ecma(){return undefined;}
  }
+ ,importequals:
+ {condition(value){return value?.type==="TSImportEqualsDeclaration";}
+ ,ecma({id,moduleReference:{left:object,right:property}})
+{return {type:"VariableDeclaration",kind:"const",declarations:
+[{type:"VariableDeclarator",id,init:{type:"MemberExpression",object,property}}
+]};
+}}
  ,genericinstance:{condition(value){return value?.type==="TSInstantiationExpression";},ecma(value){return value.expression;}}
  ,declaredproperty:{condition(value){return value?.type==="PropertyDefinition"&&value.declare;},ecma(){return undefined;}}
  ,implicitproperty:{condition(value,field)
@@ -447,7 +461,7 @@ export function scope(module) {
 }
 
 export async function test(scope, tests, path = []) {
-  // compose tests defined in scope.
+  // compose tests defined in scope. 
   if(!path.length)
   console.log("\x1b[4m" + scope + "\x1b[0m:\n");
   let assert = await import("assert");
@@ -455,17 +469,19 @@ export async function test(scope, tests, path = []) {
   tests = tests || scope.tests || {};
   let fails = await Object.entries(tests).reduce(
     record(async ([term, value]) => {
-      if (!value.condition) return test(scope[term] ?? scope, value, path.concat(term));
-      let { context = [], terms = [], condition } = value;
+      let traverse=!value.condition||compound(value.condition)||value.condition?.some?.(condition=>condition.condition);
+      if (traverse) return test(scope[term] ?? scope, value, path.concat(term));
+      let { tether, context = [], terms = [], condition } = value;
       if(!context.length) context.push(undefined);
       try {
-        await compose(...[context].flat(), scope[term] ?? scope, ...[terms].flat(), assert[condition] || condition);
+        await compose(...[context].flat(), (scope[term] ?? scope).bind(tether), ...[terms].flat(), assert[condition] || condition);
       } catch (fail) {
         let field = path.concat(term).join("/");
         let { stack } = fail;
         console.log(field + ": \x1b[31m" + stack + "\x1b[0m");
         return { [field]: stack };
       }
+      return {};
     }),
     []
   );
@@ -501,6 +517,25 @@ export async function test(scope, tests, path = []) {
   return report;
 }
 
-export const tests = {
-  parse: { context: [import.meta.url, access], condition: "ok" },
+export const tests=
+{parse: { context: [import.meta.url, true,access],terms:["type",Reflect.get,"Program"], condition: "equal" },
+ estree:{commonjs:
+ {require:
+ {ecma:
+[{tether:{},context:["const a=require('');",parse,"body",Reflect.get,"0",Reflect.get,"0",["body"]],terms:[(...body)=>({type:"Program",body}),serialize,"import a from '';\n"],condition:"equal"}
+,{tether:{},context:["const a=require('');",parse,"body",Reflect.get,"0",Reflect.get,"0",["body","0","body"]],terms:[(...body)=>({type:"Program",body}),serialize,"const a = await import('');\n"],condition:"equal"}
+,{context:["a=require('')",parse,"body",Reflect.get,"0",Reflect.get,"0",["body","0","body"]],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('');\n"],condition:"equal"}
+,{context:["a=require('').map()",parse,"body",Reflect.get,"0",Reflect.get,"0",["body","0","body"]],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('').then(({default: module}) => module.map());\n"],condition:"equal"}
+,{context:["a=require('')()",parse,"body",Reflect.get,"0",Reflect.get,"0",["body","0","body"]],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('').then(({default: module}) => module());\n"],condition:"equal"}
+,{context:["a=require('')()",parse,"body",Reflect.get,"0",Reflect.get,"0",["body"]],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na = _exports();\n"],condition:"equal"}
+,{context:["a.b=require('')",parse,"body",Reflect.get,"0",Reflect.get,"0",["body","0","body"]],terms:[(...body)=>({type:"Program",body}),serialize,"a.b = await import('');\n"],condition:"equal"}
+,{context:["a.b=require('')",parse,"body",Reflect.get,"0",Reflect.get,"0",["body"]],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na.b = _exports;\n"],condition:"equal"}
+]}
+ ,dynamicblock:[[true],["async",Reflect.get,true]].map((terms)=>
+[{context:["function a(){const b=require('');}",parse,"body",Reflect.get,"0",Reflect.get],terms,condition:"equal"
+ }
+,{context:["function a(){b=require('');}",parse,"body",Reflect.get,"0",Reflect.get],terms,condition:"equal"
+ }
+]).reduce((condition,ecma)=>({condition,ecma}))
+ }}
 };
