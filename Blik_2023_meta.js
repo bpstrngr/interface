@@ -15,7 +15,7 @@ export async function parse(source, syntax = "javascript", options = {}) {
   Parser=await import("./tyrealhu_2023_acorn_typescript.js").then(({default:plugin})=>
   Parser.extend(plugin({dts:options.source.endsWith(".d.ts")})));
   else if(!/xtuc_2020_acorn_importattributes/.test(options.source))
-  Parser=await import("./xtuc_2020_acorn_importattributes.js"). then(({importAttributes:plugin})=>
+  Parser=await import("./xtuc_2020_acorn_importattributes.js").then(({importAttributes:plugin})=>
   Parser.extend(plugin));
   let comments = [];
   let scope = Parser.parse(source, {
@@ -57,12 +57,12 @@ export async function parse(source, syntax = "javascript", options = {}) {
  let relation=path.dirname(grammar.meta.url.pathname);
  let disjunction=estree[syntax];
  if(disjunction)
- grammar=prune(grammar,function([field,value],path)
-{let term=Object.values(disjunction).find(({condition})=>condition.call(this,value,field));
+ grammar=prune.call(grammar,function([field,value],path)
+{let term=Object.values(disjunction).find(({condition})=>condition.call(this,value,field,path));
  return term?term.ecma.call(this,value,field,path):value;
 });
  if(syntax==="commonjs")
- // expose commonjs module.exports as default export. 
+ // declare commonjs module.exports in module scope. 
  [{type:"Identifier",name:"module"},{type:"Identifier",name:"exports"}].reduce((module,exports)=>
  grammar.body.unshift(
  grammar.body.find((statement,index,body)=>
@@ -76,8 +76,9 @@ export async function parse(source, syntax = "javascript", options = {}) {
 ]}
  }
 ]})&&
+ // expose commonjs module.exports as default export. 
  grammar.body.some(statement=>statement?.type==="ExportNamedDeclaration"&&
- statement.specifiers.some(({exported})=>exported?.name==="default"))||
+ statement.specifiers.some?.(({exported})=>exported?.name==="default"))||
  grammar.body.push(
  grammar.body.find((statement,index,body)=>statement?.type==="ExportDefaultDeclaration"&&
  statement.declaration.object?.name==="module"&&
@@ -87,7 +88,7 @@ export async function parse(source, syntax = "javascript", options = {}) {
  ,exportKind:"value"
  ,declaration:{type:"MemberExpression",object:module,property:exports}
  }));
- grammar=prune(grammar,function jsonnamespace({1:value})
+ grammar=prune.call(grammar,function jsonnamespace({1:value})
 {let boundary=["Import","ExportNamed","ExportAll"].map(type=>type+"Declaration").find(type=>type===value?.type);
  let json=boundary&&/\.json$/.test(value.source?.value);
  let namespace=json&&(boundary==="ExportAllDeclaration"||value.specifiers.some(({type,local})=>
@@ -110,34 +111,41 @@ export async function parse(source, syntax = "javascript", options = {}) {
  return provide(...statements);
 });
  if(/\.d\.ts$/.test(grammar.meta.url.pathname))
- grammar=prune(grammar,function initialized({1:value})
+ grammar=prune.call(grammar,function initialized({1:value})
 {// typescript ambiguates uninitialized const as type declarations. 
  let declaration=value?.type==="ExportNamedDeclaration"?value.declaration:value;
  let uninitialized=declaration?.type==="VariableDeclaration"&&declaration.kind==="const"&&!declaration.declarations.some(({init})=>init);
  return uninitialized?undefined:value;
 });
  if(Object.keys(alias).length)
- prune(grammar,function([field,value])
+ grammar=prune.call(grammar,function({1:value})
 {let candidate=["ImportDeclaration","ImportExpression"].includes(value?.type);
  let source=candidate&&alias[value.source.value];
  if(!source) return value;
- !alias?value:["value","raw"].map(field=>
- source[field].replace(source.value,/^\./.test(alias)?"./"+path.relative(relation,path.resolve(location,alias)):alias)).reduce((value,raw)=>({value,raw})))
-:value);
+ source=/^\./.test(source)?"./"+path.relative(relation,path.resolve(location,source)):source;
+ source=["value","raw"].map(field=>
+ value.source[field].replace(value.source.value,source)).reduce((value,raw)=>(
+ {value,raw}));
+ return [value,{source}].reduce(merge,{});
+});
  let fields={Literal:"value",Identifier:"name"};
  let generic=Object.keys(replace||{}).some(type=>fields[type]);
  if(!generic)
  replace=replace?.[Object.keys(replace).find(field=>grammar.meta.url.pathname.endsWith(field))];
  if(replace)
- grammar=prune(grammar,function({1:value})
+ grammar=prune.call(grammar,function({1:value})
 {let values=replace[value?.type];
  let field=fields[value?.type];
  let replacement=values?.hasOwnProperty(value?.[field])&&values[value[field]];
  return replacement?{...value,[field]:replacement,...value?.type==="Literal"&&{raw:"\""+replacement+"\""}}:value;
 });
  if(detach)
- grammar=prune(grammar,({1:value})=>
- value?.type==="ImportDeclaration"&&detach.includes(value.source.value)?undefined:value);
+ // detach specified imports and their direct assignments - further usages are expected to be edited instead of sanitized. 
+ grammar=Object.values(search.call(grammar,({1:value})=>
+ value?.type==="ImportDeclaration"&&detach.includes(value.source.value))).reduce((grammar,declaration)=>
+ prune.call(grammar,({1:value})=>value===declaration||
+ (value?.declarations||[value||{}]).some(({init})=>
+ init?.name&&declaration.specifiers.some(({local})=>local.name===init.name))?undefined:value),grammar);
  await ["banner","footer"].map(extension=>
  output?.[extension]).reduce(record((extension,index)=>
  extension&&compose(extension,parse,({body})=>
@@ -150,64 +158,53 @@ export async function parse(source, syntax = "javascript", options = {}) {
  // sort by decreasing specificity for declarative disjunction (Object.values(estree.dialect)). 
  {commonjs:
  {require:
- {condition(value,field)
-{let values=value?.type==="VariableDeclaration"?value.declarations.map(({init})=>init?.type==="MemberExpression"?init.object:init):[value?.expression?.right];
- return values.some(value=>Object.keys(search.call({value},({1:value})=>value?.callee?.name==="require")).length);
+ {condition(value,field,path)
+{if(path?.length>1)return;
+ let values=value?.type==="VariableDeclaration"
+?value.declarations.map(({init})=>init?.type==="MemberExpression"?init.object:init)
+:value?.type==="AssignmentExpression"
+?[value.expression.right]
+:[];
+ return values.some(value=>Object.keys(search.call({value:prune.call(value,({1:value})=>
+ ["FunctionDeclaration","ArrowFunctionExpression"].includes(value?.type)?undefined:value)}
+,({1:value})=>value?.callee?.name==="require")).length);
 },ecma(value,field,path)
-{let declarations=(value.declarations||[value.expression]).flatMap(expression=>path?.length>1
-?compose({...expression,[expression.right?"right":"init"]:{type:"AwaitExpression",argument:
-[{type:"ImportExpression"
- ,source:Object.values(search.call(expression,({1:value})=>value?.callee?.name==="require"))[0].arguments[0]
- ,callee:undefined,arguments:undefined
- }
-,expression.right||expression.init
-].reduce((object,operation)=>operation.callee.name!=="require"
-?{type:"CallExpression",callee:{type:"MemberExpression",object,property:{type:"Identifier",name:"then"}},arguments:
+{let scope=prune.call(value,({1:value})=>
+ ["FunctionDeclaration","ArrowFunctionExpression"].includes(value?.type)?undefined:value);
+ let requires=search.call(scope,({1:value})=>value?.callee?.name==="require");
+ let id=value=>value.replace(/[^a-zA-Z]/g,"")+"_exports";
+ let imports=Object.values(requires).map(require=>(
+ {type:"ImportDeclaration",source:require.arguments[0]
+ ,specifiers:["ImportDefaultSpecifier",{type:"Identifier",name:id(require.arguments[0].value)}].reduce((type,local)=>
+[{type,local,imported:local}
+])}));
+ let statement=Object.keys(requires).reduce((value,path,index)=>
+ merge(value,imports[index].specifiers[0].local,path.split("/")),value);
+ return provide(...imports,statement);
+}}
+ ,dynamicrequire:
+ {condition(term,field,path)
+{if(path.length<2)return;
+ let fields={VariableDeclarator:"init",AssignmentExpression:"right",MemberExpression:"object"};
+ let value=term?.[fields[term?.type]]
+ return Object.keys(search.call({value},({1:value})=>value?.callee?.name==="require")).length;
+},ecma(value)
+{let [field,require]=Object.entries(search.call({value},({1:value})=>value?.callee?.name==="require"))[0];
+ let preservetype=value.type==="VariableDeclarator"
+ field=field.split("/").slice(1);
+ if(preservetype)
+ field=field.slice(1);
+ let dynamicimport={type:"AwaitExpression",argument:{type:"CallExpression",callee:
+ {type:"MemberExpression"
+ ,object:{type:"ImportExpression",source:require.arguments[0]}
+ ,property:{type:"Identifier",name:"then"}
+ },arguments:
 [{type:"ArrowFunctionExpression",expression:true
  ,params:[{type:"ObjectPattern",properties:[{type:"Property",kind:"init",key:{type:"Identifier",name:"default"},value:{type:"Identifier",name:"module"}}]}]
- ,body:merge(operation,{type:"Identifier",name:"module"},Object.keys(search.call({operation},({1:value})=>value?.callee?.name==="require"))[0].split("/").slice(1))
+ ,body:merge(preservetype?value.init:value,{type:"Identifier",name:"module"},field)
  }
-]}
-:object)}},expression=>Object.assign(value,value.expression?{expression}:{declarations:[expression]}))
-:expression?.right
- // assignment
-?[Object.values(search.call(expression,({1:value})=>value?.callee?.name==="require"))[0].arguments[0]
-,value=>value.replace(/[^a-zA-Z]/g,"")+"_exports"
-].reduce((source,id)=>
-[{type:"ImportDeclaration",source
- ,specifiers:["ImportDefaultSpecifier",{type:"Identifier",name:id(source.value)}].reduce((type,local)=>[{type,local,imported:local}])
- },
- merge(value,{type:"Identifier",name:id(source.value)},Object.keys(search.call({value},({1:value})=>value?.callee?.name==="require"))[0].split("/").slice(1))
-])
-:(expression?.init?.callee?.name||expression?.init?.object?.callee?.name)==="require"
-?// declaration
-[[expression.init.object||expression.init,"arguments","0"].reduce(Reflect.get)
-,[expression.init.object||expression.init,"arguments","0","value"].reduce(Reflect.get).replace(/[^a-zA-Z]/g,"")+"_exports"
-].reduce((source,name)=>
-[Object.keys(this)
-,expression.id.name&&!expression.init.property?expression.id:{type:"Identifier",name}
-].reduce((fields,local)=>
- // requires can be redundant, imports cannot. 
-[!fields.slice(0,fields.indexOf(field)).reverse().some(field=>
- this[field]?.type==="VariableDeclaration"&&this[field].declarations.some(declaration=>
- [declaration,expression].map(declaration=>
- declaration.init.arguments?.[0]?.value).reduce(Object.is)))
-?{type:"ImportDeclaration",source
- ,specifiers:[{type:"ImportDefaultSpecifier",local,imported:local}]
- }
-:[]
-,expression.init.property||expression.id.properties
-?{...value,declarations:
-[{type:"VariableDeclarator",id:expression.id,init:expression.init.property
-?{type:"MemberExpression",object:{type:"Identifier",name},property:expression.init.property}
-:{type:"Identifier",name}
- }
-]}
-:[]
-])).flat()
- // statement
-:{...value,declarations:[expression]});
- return provide(...declarations);
+]}};
+ return preservetype?{...value,init:dynamicimport}:dynamicimport;
 }}
   // module.exports exportdefaultdeclaration prepended to scope instead. 
 //  ,export:
@@ -445,7 +442,7 @@ export async function imports(syntax,format={}) {
 export async function exports(source) {
   let module = await resolve(source);
   let sources = await compose(imports(source), source, Reflect.get);
-  await prune(sources, ([path, term]) =>
+  await prune.call(sources, ([path, term]) =>
     exports(path).then((exports) => [term, exports].reduce(merge))
   );
   let scopes = scope(module);
@@ -462,8 +459,6 @@ export function scope(module) {
 
 export async function test(scope, tests, path = []) {
   // compose tests defined in scope. 
-  if(!path.length)
-  console.log("\x1b[4m" + scope + "\x1b[0m:\n");
   let assert = await import("assert");
   if (typeof scope === "string" && !path.length) scope = await import(scope);
   tests = tests || scope.tests || {};

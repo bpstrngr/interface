@@ -70,8 +70,10 @@
       "picomatch":"./micromatch_2018_picomatch.js"
     }}
   ]}},
+  "jonschlinkert_2015_matched.js":{"https://github.com/jonschlinkert/matched":{"v5.0.1":["index.js",{"syntax":"commonjs","alias":{"glob":"./isaacs_2010_glob.js","picomatch":"micromatch_2018_picomatch.js"}}]}},
   "rollup_2022_alias.js":{"https://github.com/rollup/plugins/packages/alias":{"alias-v5.0.0":["packages/alias/src/index.js"]}},
-  "rollup_2022_multientry.js":{"https://github.com/rollup/plugins/packages/multi-entry":{"multi-entry-v6.0.0":["packages/multi-entry/src/index.js"]}},
+  "rollup_2022_virtual.js":{"https://github.com/rollup/plugins/packages/virtual":{"virtual-v3.0.0":["packages/virtual/src/index.js"]}},
+  "rollup_2022_multientry.js":{"https://github.com/rollup/plugins/packages/multi-entry":{"multi-entry-v6.0.0":["packages/multi-entry/src/index.js",{"alias":{"matched":"./jonschlinkert_2015_matched.js","@rollup/plugin-virtual":"./rollup_2022_virtual.js"}}]}},
   "rollup_2022_noderesolve.js":{"https://github.com/rollup/plugins/packages/node-resolve":{"node-resolve-v15.2.1":["packages/node-resolve/src/index.js",{
     "./rollup_2022_json.js":{},
     "alias":{
@@ -278,7 +280,8 @@
     "domenic_2016_whatwg_encoding/0/scripts/update.js", {
       "syntax":"commonjs",
       "alias": {
-        "minipass-fetch": "./isaacs_2019_minipass_fetch.js"
+        "minipass-fetch": "./isaacs_2019_minipass_fetch.js",
+        "iconv-lite":"./ashtuchkin_2012_iconv_lite.js"
       },
       "./rollup_2022_json.js": {},
       "./rollup_2022_noderesolve.js": {}
@@ -291,17 +294,32 @@
       ]
     }
   },
+  "Skovoroda_2018_saferbuffer.js":{"https://github.com/ChALkeR/safer-buffer":{"v2.1.2":["safer.js",{"syntax":"commonjs"}]}},
+  "ashtuchkin_2012_iconv_lite.js":{"https://github.com/ashtuchkin/iconv-lite":{"v0.6.3":["lib/index.js",{"alias":{"safer-buffer":"./Skovoroda_2018_saferbuffer.js"}}]}},
   "rrweb_2010_cssom.js": {"https://github.com/rrweb-io/CSSOM": {"a469aae2f92e454e669aec821781626924f98d17": ["lib/index.js", {"scripts":["./rrweb_2010_cssom/0/build.js"],"syntax":"commonjs"}]}},
-  "domenic_2018_cssstyle.js": {"https://github.com/jsdom/cssstyle": {
+  "Sakas_2018_cssstyle.js": {"https://github.com/jsdom/cssstyle": {
     "v3.0.0": [
       "lib/CSSStyleDeclaration.js", {
-        "scripts": "./domenic_2018_cssstyle_properties.js",
-        "alias": {"cssom": "./rrweb_2010_cssom.js"},
-        "syntax":"commonjs"
+        "syntax":"commonjs",
+        "scripts": "./Sakas_2018_cssstyle_properties.js",
+        "alias": {"rrweb-cssom": "./rrweb_2010_cssom.js","./implementedProperties":"./Sakas_2018_cssstyle_propertyset.js"}
       }
     ]
   }},
-  "babel_2014_types.js": {"https://github.com/babel/babel/packages/babel-types": {"v6.13.0": ["src/index.js",{"syntax": "typescript"}]}},
+  "Sakas_2018_cssstyle_propertyset.js": {"https://github.com/jsdom/cssstyle/scripts": {"v3.0.0":[
+    "scripts/generate_implemented_properties.js",{
+      "edit":{"^((?:.*[\n$])*)":"export default await import('fs').then(({promises:{readdir:r}})=>r('./Sakas_2018_cssstyle/0/lib/properties').then(f=>new Set(...f.map(f=>f.replace(/[A-Z]/,'-$&').replace(/^([^-]+)-/,(m,g)=>['o','moz','ms','webkit'].includes(g)?'-'+m:m).toLowerCase().slice(0,-3)))));"},
+      "comment":"cssstyle generates this script from ast for some reason."
+    }
+  ]}},
+  "Sakas_2018_cssstyle_properties.js": {"https://github.com/jsdom/cssstyle/lib":{"v3.0.0":[
+    "lib/properties/", {
+      "syntax":"commonjs",
+      "./rollup_2022_json.js": {},
+      "comment": "parse property files listing dependencies, sort external dependencies above local, join namespace of exports and imports, export function to extend a prototype with property namespace entries, also in dashed form"
+    }
+  ]}},
+  "McKenzie_2014_babel_types.js": {"https://github.com/babel/babel/packages/babel-types": {"v6.13.0": ["src/index.js",{"syntax": "typescript"}]}},
   "domenic_2018_dataurls.js":{"https://github.com/jsdom/data-urls":{"v4.0.0":["lib/parser.js",{"syntax":"commonjs","alias":{
     "whatwg-url": "./domenic_2015_whatwg_url.js",
     "whatwg-mimetype": "./domenic_2016_whatwg_mimetype.js",
@@ -309,19 +327,6 @@
   }}]}},
   "Carpenter_2015_abab.js":{"https://github.com/jsdom/abab":{"2.0.6":["index.js",{"syntax":"commonjs"}]}},
   "wel_2015_symbol_tree.js":{"https://github.com/jsdom/js-symbol-tree":{"v3.2.4":["lib/SymbolTree.js",{"syntax":"commonjs"}]}},
-  "domenic_2018_cssstyle_properties.js": [
-    "domenic_2018_cssstyle/0/scripts/generate_properties.js", {
-      "alias": {"babel-types": "./babel_2014_types.js"},
-      "syntax":"commonjs",
-      "./rollup_2022_json.js": {},
-      "edit": {
-        "domenic_2018_cssstyle_properties/0/scripts/generate_properties.js": {
-          "out_file.end(function (err) {":"out_file.end(function (err) {resolve(err)",
-          "^((?:.*[\n$])*)": "module.exports=new Promise(()=>{$1}"
-        }
-      }
-    }
-  ],
   "domenic_2017_domexception_webidl2js-wrapper.js":{"":{"v4.0.0":["webidl2js-wrapper.js",{
     "syntax":"commonjs",
     "scripts":"./domenic_2017_domexception_webidl2js-wrapper_generate.js",
@@ -375,7 +380,7 @@
           "whatwg-url": "./domenic_2015_whatwg_url.js",
           "whatwg-encoding": "./domenic_2016_whatwg_encoding.js",
           "whatwg-mimetype": "./domenic_2016_whatwg_mimetype.js",
-          "cssstyle": "./domenic_2018_cssstyle.js",
+          "cssstyle": "./Sakas_2018_cssstyle.js",
           "rrweb-cssom":"./rrweb_2010_cssom.js",
           "symbol-tree":"./wel_2015_symbol_tree.js",
           "abab":"./Carpenter_2015_abab.js",

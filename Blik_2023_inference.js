@@ -2,6 +2,7 @@ import path from "path";
 
  export function defined(term){return term!==undefined;};
  export function string(term){return typeof term==="string";};
+ export function functor(term){return term instanceof Function;};
  export function compound(term){return typeof term==="object"&&!Array.isArray(term);};
 
 export function provide(...context) {

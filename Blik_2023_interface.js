@@ -264,11 +264,10 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
 :[input]).then(input=>input.map(input=>path.join(relation, input)))
 :input)
 ,[]);
- entries=entries.flat();
- let {source = [], format = [],patches = []} = [entries].flat().map(function sort(part)
+ let {source = [], format = [],patches = []} = [entries.flat()].flat().map(function sort(part)
 {let field =typeof part == "string" ? (/\.patch$/.test(part) ? "patches" : "source") : "format";
  return { [field]: [part] };
-}).reduce(merge, {});
+}).reduce((entries,entry)=>merge(entries,entry,0), {});
  format=format.reduce(merge,{});
  await patch(path.dirname(source[0]), patches);
  await [format.scripts].filter(Boolean).flat().reduce(record(script=>
@@ -307,7 +306,7 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
  return next(source,context).then(module=>module.format==="module"
  //read(source).then(module=>modularise(module,source)).then(({namespace:module})=>prove.call(module,module.proof))
  // dispatch new import thread for tests until modularization halts on self-referential imports. 
-?import(source).then(module=>module.tests&&test(source).then(result=>console.log(result)))&&module
+?import(source).then(module=>module.tests&&test(source).then(result=>console.log("\x1b[4m"+source+"\x1b[0m:\n"+result)))&&module
 :module);
  let {comment,...definition}=[{syntax},typeof format==="object"?format:await import("./Blik_2023_sources.json").then(sources=>
  [sources.default[format]||{}].reduce(function flat(entries,source)

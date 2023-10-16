@@ -1,4 +1,4 @@
-import {record, compose, provide, defined} from "./Blik_2023_inference.js";
+import {record, compose, provide, defined,string,functor} from "./Blik_2023_inference.js";
 
 export function random(length,domain="abcdefghijklmnopqrstuvwxyz_"){
   return Array(length).fill(domain).map(domain=>
@@ -82,11 +82,11 @@ export function route(scope, term, path) {
   );
 }
 
- export function prune(scope,term,collapse,path=[])
+ export function prune(term,collapse,path=[])
 {// map entries recursively.
- if(typeof scope!=="object"||scope===null)return scope;
- let entries=Object.entries(scope);
- if(!entries.length)for(let field in scope)entries.push([field,scope[field]]);
+ if(typeof this!=="object"||this===null)return this;
+ let entries=Object.entries(this);
+ if(!entries.length)for(let field in this)entries.push([field,this[field]]);
  entries=entries.flatMap
 (function([field,scope],index,entries)
 {let value=term.call(Object.fromEntries(entries),[field,scope],path);
@@ -94,10 +94,10 @@ export function route(scope, term, path) {
  if(pluck&&!collapse)
  return [];
  let plant=pluck&&collapse;
- let plural=[...provide(plant?scope:value)].map(scope=>prune(scope,term,collapse,path.concat(field)));
+ let plural=[...provide(plant?scope:value)].map(scope=>prune.call(scope,term,collapse,plant?path:path.concat(field)));
  return plural.flatMap(scope=>plant?Object.entries(scope):[[field, scope]]);
 });
- let array=!entries.some(([field],index,entries)=>isNaN(field)||[entries[index-1]?.[0],field].map(Number).reduce((past,next)=>next<past));
+ let array=entries.length&&!entries.some(([field],index,entries)=>isNaN(field)||[entries[index-1]?.[0],field].map(Number).reduce((past,next)=>next<past));
  if(array)
  entries.forEach(function([field],index,entries)
 {if(!index)
@@ -108,7 +108,7 @@ export function route(scope, term, path) {
  // spread plural indexes. 
  entries.slice(index).forEach((entry)=>entry[0]=Number(entry[0])+leap);
 });
- scope=Object.fromEntries(entries);
+ let scope=Object.fromEntries(entries);
  return array?Object.assign(Array(0),scope):scope;
 };
 
@@ -141,7 +141,9 @@ export function merge(target, source, override = 1) {
 }
 
 export function describe(scope, field) {
-  // ember scope in an object path.
+  // embed scope in an object path.
+  if(functor(scope)&&string(field))
+  return Object.defineProperty(scope,"name",{value:field});
   return [field]
     .flat()
     .reverse()
@@ -157,7 +159,7 @@ export function isolate(path) {
   return describe(search.call(this, path), path);
 }
 
-export function search(term, recursive = false) {
+export function search(term, recursive = false,path=[]) {
   // traverse scope for entries satisfying a term (condition or singular path).
   // recursive search includes ranges in recursion domain.
   const scope = this;
@@ -166,14 +168,14 @@ export function search(term, recursive = false) {
   if (!condition) return [term].flat().reduce((scope, field) => scope?.[field], scope);
   let [domain, range] = Object.entries(this).reduce(
     function sort(group, entry) {
-      group[term(entry) ? 1 : 0].push(entry);
+      group[term(entry,path) ? 1 : 0].push(entry);
       return group;
     },
     [[], []],
   );
   if (recursive) domain = [domain, range].flat();
   const subrange = domain.flatMap(([field, value]) =>
-    Object.entries(search.call(value, term, recursive)).map(([path, value]) => [
+    Object.entries(search.call(value, term, recursive, path.concat(field))).map(([path, value]) => [
       [field, path].join('/'),
       value,
     ]),
@@ -186,4 +188,8 @@ export function search(term, recursive = false) {
 [{context:[{a:1},{b:2}],terms:[{a:1,b:2}],condition:["deepEqual"]}
 ,{context:[{a:{}},2,"a/b/c".split("/")],terms:[{a:{b:{c:2}}}],condition:["deepEqual"]}
 ],search:{tether:{a:{b:2}},context:[({1:value})=>value===2],terms:[{"a/b":2}],condition:"deepEqual"}
- };
+ ,prune:
+[{tether:{a:{b:{c:3}}},context:[([field,value])=>field!=='b'?value:undefined],terms:[{a:{}}],condition:"deepEqual"}
+,{tether:{a:{b:{b:2,c:3}}},context:[([field,value])=>field!=='b'?value:undefined,true],terms:[{a:{c:3}}],condition:"deepEqual"}
+,{tether:{a:{b:{c:{d:1},f:2}},e:3},context:[([field,value],path)=>path.length<2?value:undefined],terms:[{a:{b:{}},e:3}],condition:"deepEqual"}
+]};
