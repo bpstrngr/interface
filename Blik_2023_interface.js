@@ -1,7 +1,7 @@
  import path from "path";
  import { promises as fs } from "fs";
  import {Parser} from "./isaacs_2011_node-tar.js";
- import { infer, compose, record, provide, wait, string, defined } from "./Blik_2023_inference.js";
+ import { infer, compose, record, provide, wait, string, defined, parallel } from "./Blik_2023_inference.js";
  import { merge, stringify, search } from "./Blik_2023_search.js";
  import {parse,sanitize,serialize,modularise,compile,test} from "./Blik_2023_meta.js";
  export const address=new URL(import.meta.url).pathname;
@@ -15,7 +15,7 @@
  import(module))).then(([{register},{MessageChannel}])=>
  [new MessageChannel(),import.meta.url].reduce(({port1,port2},parentURL)=>
  register(address,{parentURL,data:{socket:port2},transferList:[port2]})));
- if(!process.execArgv.some(flag=>new RegExp("^--loader[= ][^ ]*"+file).test(flag)))
+ else if(!process.execArgv.some(flag=>new RegExp("^--loader[= ][^ ]*"+file).test(flag)))
  // nodejs 16 backwards compatibility. 
  compose(...process.argv.slice(2),resolve,console.log);
 
@@ -174,7 +174,7 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
  note.call(1,recovery.name,"failed for",absolute+":\n",reason)&&
  exit(fail));
 });
- let bundle=unbundled.find(depot=>absolute.startsWith(depot));
+ let bundle=Object.keys(unbundled).find(depot=>absolute.startsWith(depot));
  if(bundle)
  module=compose(module,{format:path.basename(bundle.replace(/\/$/,".js"))},1,merge).catch(exit);
  if(loading&&internal)
@@ -182,11 +182,13 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
  let client=loading&&!internal;
  [source,...context]=client?process.argv.slice(1):Array.from(arguments);
  let term=context.length?[context.shift(),Reflect.get]:[];
+ // --watch flag is omitted from execArgv for unknown reason.
+ let suspense=client/*&&process.execArgv.includes("--watch")*/?10*60*1000:0;
  return compose(module,...term,infer.bind(null,provide(...context)),terms=>
- client?compose(terms,note,wait.bind(0,10*60*1000*0),process.exit):terms);
+ client?compose(terms,note,wait.bind(0,suspense),term=>0,process.exit):terms);
 };
 
- var unbundled=[];
+ var unbundled={};
 
  async function retrieve(absolute)
 {// bundle if not found despite source entry, 
@@ -206,12 +208,13 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
  if(sources.length)
  return compose(sources[0],({remote,input})=>
  // presence of first source entry indicates in-progress assembly. 
+ // Has a low probability to be invalid in the final purge stage of bundling. A simple restart will resolve the available bundle at that point.
  path.resolve(location,...remote?[target,"0"]:[],input[0])
-,file=>access(file).then(async present=>(
- this.includes(target)||this.push(target)&&
- note.call(3,"Accessing source entry for \""+relative+"\":\n "+file+"\n (bundling already in progress or interrupted before purge)")
-,resolve("url","pathToFileURL",file).then(({href:url})=>({url,format:relative,shortCircuit:true}))))).catch(async fail=>
- assemble(sources,absolute));
+,file=>access(file).then(async present=>!this[target]?.shortCircuit
+?note.call(3,"Accessing source entry for \""+relative+"\":\n "+file+"\n (bundling already in progress or interrupted before purge)")&&
+ resolve("url","pathToFileURL",file).then(({href:url})=>this[target]={url,format:relative,shortCircuit:true})
+:this[target]).catch(async fail=>
+ this[target]=this[target]||assemble(sources,absolute).then(bundle=>delete this[target]&&bundle)));
  let sloppy=!/\.(js|json)$/.test(absolute)&&
  await ["js","ts","d.ts"].map(extension=>absolute+"."+extension).reduce((module,file)=>
  module.catch(fail=>access(file).then(present=>file))
@@ -233,7 +236,7 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
 };
 
  async function assemble(sources,target)
-{let deposit=target.replace(/\.js$/,"/")
+{let deposit=target.replace(/\.js$/,"/");
  await persist({},deposit);
  let input = await sources.reduce(record(async function({ remote, branch, input }, index, {length}={})
 {if(!remote)return input.map(input=>string(input)?path.join(deposit,input):input);
@@ -303,10 +306,12 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
  Object.assign(context,{format:format="module"}));
  let native=["json","module","wasm","builtin","commonjs"].includes(format);
  if(native&&next)
- return next(source,context).then(module=>module.format==="module"
+ return compose(source,context,next,module=>module.format==="module"
  //read(source).then(module=>modularise(module,source)).then(({namespace:module})=>prove.call(module,module.proof))
  // dispatch new import thread for tests until modularization halts on self-referential imports. 
-?import(source).then(module=>module.tests&&test(source).then(result=>console.log("\x1b[4m"+source+"\x1b[0m:\n"+result)))&&module
+?import(source).then(module=>module.tests&&
+ test(source).catch(fail=>fail).then(result=>
+ console.log("\x1b[4m"+source+"\x1b[0m:\n"+result)))&&module
 :module);
  let {comment,...definition}=[{syntax},typeof format==="object"?format:await import("./Blik_2023_sources.json").then(sources=>
  [sources.default[format]||{}].reduce(function flat(entries,source)

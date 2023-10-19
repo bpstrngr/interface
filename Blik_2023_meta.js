@@ -1,6 +1,6 @@
 import path from "path";
 import { access, resolve, note } from "./Blik_2023_interface.js";
-import { compose, record, provide, compound } from "./Blik_2023_inference.js";
+import { compose, record, provide, compound, tether } from "./Blik_2023_inference.js";
 import { search, merge, prune, route, random } from "./Blik_2023_search.js";
 
 export async function parse(source, syntax = "javascript", options = {}) {
@@ -61,6 +61,12 @@ export async function parse(source, syntax = "javascript", options = {}) {
 {let term=Object.values(disjunction).find(({condition})=>condition.call(this,value,field,path));
  return term?term.ecma.call(this,value,field,path):value;
 });
+ let imports=grammar.body.filter(value=>value?.type==="ImportDeclaration");
+ let namespaces=imports.flatMap(value=>value.specifiers.map(({local})=>[local.name,value.source.name]));
+ let [duplicates]=namespaces.reduce((groups,[name,source])=>(groups[groups[1][name]===source?"0":"1"][name]=source,groups),[{},{}]);
+ duplicates=Object.entries(duplicates).flatMap(([name,source])=>imports.filter(value=>
+ value.specifiers.some(({local})=>local.name===name)&&value.source.name===source).slice(1));
+ duplicates.map(value=>grammar.body.indexOf(value)).sort().reverse().forEach(index=>delete grammar.body[index]);
  if(syntax==="commonjs")
  // declare commonjs module.exports in module scope. 
  [{type:"Identifier",name:"module"},{type:"Identifier",name:"exports"}].reduce((module,exports)=>
@@ -140,7 +146,7 @@ export async function parse(source, syntax = "javascript", options = {}) {
  return replacement?{...value,[field]:replacement,...value?.type==="Literal"&&{raw:"\""+replacement+"\""}}:value;
 });
  if(detach)
- // detach specified imports and their direct assignments - further usages are expected to be edited instead of sanitized. 
+ // detach imports and their direct assignments - further usages are expected to be edited instead of sanitized. 
  grammar=Object.values(search.call(grammar,({1:value})=>
  value?.type==="ImportDeclaration"&&detach.includes(value.source.value))).reduce((grammar,declaration)=>
  prune.call(grammar,({1:value})=>value===declaration||
@@ -157,7 +163,13 @@ export async function parse(source, syntax = "javascript", options = {}) {
  export var estree=
  // sort by decreasing specificity for declarative disjunction (Object.values(estree.dialect)). 
  {commonjs:
- {require:
+ {dynamicblock:
+ {condition(value,field,path)
+{return value?.type==="FunctionDeclaration"&&(value.body.body||[value.body]).some((value,index)=>
+ estree.commonjs.dynamicrequire.condition(value,index,[path,"body"].flat()));
+},ecma(value){return {...value,async:true};}
+ }
+ ,require:
  {condition(value,field,path)
 {if(path?.length>1)return;
  let values=value?.type==="VariableDeclaration"
@@ -185,26 +197,33 @@ export async function parse(source, syntax = "javascript", options = {}) {
  ,dynamicrequire:
  {condition(term,field,path)
 {if(path.length<2)return;
- let fields={VariableDeclarator:"init",AssignmentExpression:"right",MemberExpression:"object"};
- let value=term?.[fields[term?.type]]
- return Object.keys(search.call({value},({1:value})=>value?.callee?.name==="require")).length;
+ path={VariableDeclaration:"declarations",ExpressionStatement:["expression","right"],AssignmentExpression:"right",MemberExpression:"object"}[term?.type];
+ let value=[search.call(term,path)].flat();
+ return value.some(value=>Object.keys(search.call({value},({1:value})=>value?.callee?.name==="require")).length);
 },ecma(value)
-{let [field,require]=Object.entries(search.call({value},({1:value})=>value?.callee?.name==="require"))[0];
- let preservetype=value.type==="VariableDeclarator"
- field=field.split("/").slice(1);
- if(preservetype)
- field=field.slice(1);
- let dynamicimport={type:"AwaitExpression",argument:{type:"CallExpression",callee:
+{let depth={VariableDeclaration:3,ExpressionStatement:2}[value.type]||1;
+ let statements=Object.entries(search.call({value},({1:value})=>value?.callee?.name==="require")).map(function([field,require])
+{let path=field.split("/").slice(1);
+ let expressionpath=path.slice(0,depth);
+ let expression=search.call(value,expressionpath);
+ let properties=[{type:"Property",kind:"init",key:{type:"Identifier",name:"default"},value:{type:"Identifier",name:"module"}}];
+ let importexpression={type:"ImportExpression",source:require.arguments[0]};
+ let requirepath=path.slice(depth);
+ let argument=expression!==require
+?{type:"CallExpression",callee:
  {type:"MemberExpression"
- ,object:{type:"ImportExpression",source:require.arguments[0]}
+ ,object:importexpression
  ,property:{type:"Identifier",name:"then"}
  },arguments:
 [{type:"ArrowFunctionExpression",expression:true
- ,params:[{type:"ObjectPattern",properties:[{type:"Property",kind:"init",key:{type:"Identifier",name:"default"},value:{type:"Identifier",name:"module"}}]}]
- ,body:merge(preservetype?value.init:value,{type:"Identifier",name:"module"},field)
+ ,params:[{type:"ObjectPattern",properties}]
+ ,body:merge(expression,{type:"Identifier",name:"module"},requirepath)
  }
-]}};
- return preservetype?{...value,init:dynamicimport}:dynamicimport;
+]}
+:importexpression;
+ return [expressionpath,{type:"AwaitExpression",argument}];
+});
+ return statements.reduce((value,[path,expression])=>merge(value,expression,path),value);
 }}
   // module.exports exportdefaultdeclaration prepended to scope instead. 
 //  ,export:
@@ -225,11 +244,6 @@ export async function parse(source, syntax = "javascript", options = {}) {
 //  return Object.assign(estree.commonjs.require.ecma(exported.declaration),{type:"ExportNamedDeclaration"});
 //  return Object.assign(value,{type: "ExportNamedDeclaration",expression: undefined,...exported});
 // }}
- ,dynamicblock:
- {condition(value)
-{return value?.type==="FunctionDeclaration"&&(value.body.body||[value.body]).some(estree.commonjs.require.condition);
-},ecma(value){return {...value,async:true};}
- }
  ,dirname:
  {condition(value){return value?.type==="Identifier"&&value.name==="__dirname";}
  ,ecma()
@@ -506,30 +520,33 @@ export async function test(scope, tests, path = []) {
           .concat(subject.length < 16 ? (!subject.length ? "-" : []) : "...")
           .map(format)
           .join("")
-      )
+      ).filter(subject=>subject.length>11)
       .join("\n") + "\x1b[0m\n";
   if (Object.keys(fails).length) throw report;
   return report;
 }
 
 export const tests=
-{parse: { context: [import.meta.url, true,access],terms:["type",Reflect.get,"Program"], condition: "equal" },
- estree:{commonjs:
+ {parse:{context:[import.meta.url,true,access],terms:["type",Reflect.get,"Program"],condition:"equal"}
+ ,estree:{commonjs:
  {require:
  {ecma:
-[{tether:{},context:["const a=require('');",parse,"body",Reflect.get,"0",Reflect.get,"0",["body"]],terms:[(...body)=>({type:"Program",body}),serialize,"import a from '';\n"],condition:"equal"}
-,{tether:{},context:["const a=require('');",parse,"body",Reflect.get,"0",Reflect.get,"0",["body","0","body"]],terms:[(...body)=>({type:"Program",body}),serialize,"const a = await import('');\n"],condition:"equal"}
-,{context:["a=require('')",parse,"body",Reflect.get,"0",Reflect.get,"0",["body","0","body"]],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('');\n"],condition:"equal"}
-,{context:["a=require('').map()",parse,"body",Reflect.get,"0",Reflect.get,"0",["body","0","body"]],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('').then(({default: module}) => module.map());\n"],condition:"equal"}
-,{context:["a=require('')()",parse,"body",Reflect.get,"0",Reflect.get,"0",["body","0","body"]],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('').then(({default: module}) => module());\n"],condition:"equal"}
-,{context:["a=require('')()",parse,"body",Reflect.get,"0",Reflect.get,"0",["body"]],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na = _exports();\n"],condition:"equal"}
-,{context:["a.b=require('')",parse,"body",Reflect.get,"0",Reflect.get,"0",["body","0","body"]],terms:[(...body)=>({type:"Program",body}),serialize,"a.b = await import('');\n"],condition:"equal"}
-,{context:["a.b=require('')",parse,"body",Reflect.get,"0",Reflect.get,"0",["body"]],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na.b = _exports;\n"],condition:"equal"}
+[{context:["const a=require('');",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\nconst a = _exports;\n"],condition:"equal"}
+,{context:["a=require('')()",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na = _exports();\n"],condition:"equal"}
+,{context:["a.b=require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na.b = _exports;\n"],condition:"equal"}
+]}
+ ,dynamicrequire:
+ {ecma:
+[{context:["const a=require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"const a = await import('');\n"],condition:"equal"}
+,{context:["a=require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('');\n"],condition:"equal"}
+,{context:["a=require('')()",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('').then(({default: module}) => module());\n"],condition:"equal"}
+,{context:["a=require('').map()",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('').then(({default: module}) => module.map());\n"],condition:"equal"}
+,{context:["a.b=require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a.b = await import('');\n"],condition:"equal"}
 ]}
  ,dynamicblock:[[true],["async",Reflect.get,true]].map((terms)=>
-[{context:["function a(){const b=require('');}",parse,"body",Reflect.get,"0",Reflect.get],terms,condition:"equal"
+[{context:["function a(){const b=require('');}",parse,["body",0],tether(search)],terms,condition:"equal"
  }
-,{context:["function a(){b=require('');}",parse,"body",Reflect.get,"0",Reflect.get],terms,condition:"equal"
+,{context:["function a(){b=require('');}",parse,["body",0],tether(search)],terms,condition:"equal"
  }
 ]).reduce((condition,ecma)=>({condition,ecma}))
  }}

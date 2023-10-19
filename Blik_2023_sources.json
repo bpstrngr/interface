@@ -346,7 +346,12 @@
   }],
   "rauchg_2012_ms.js":{"https://github.com/vercel/ms":{"2.1.2":["index.js",{"syntax":"commonjs"}]}},
   "MikeMcl_2014_decimal.js":{"https://github.com/MikeMcl/decimal.js":{"v10.4.3":["decimal.mjs"]}},
-  "Holowaychuk_2011_debug.js":{"https://github.com/debug-js/debug":{"4.3.4":["src/node.js",{"syntax":"commonjs","alias":{"ms":"./rauchg_2012_ms.js"},"edit":{"src/node.js":{"module\\.exports = require":"module.exports=await require"}}}]}},
+  "Holowaychuk_2011_debug.js":{"https://github.com/debug-js/debug":{"4.3.4":["src/node.js",{
+    "syntax":"commonjs",
+    "alias":{"ms":"./rauchg_2012_ms.js"},
+    "edit":{"src/node.js":{"module\\.exports = require":"module.exports=await require"}},
+    "comment":"support-color is an optional dependency, its failed resolution is handled by the module."
+  }]}},
   "TooTallNate_2015_agent_base.js":{"https://github.com/TooTallNate/proxy-agents/packages/agent-base":{"agent-base@7.1.0":["packages/agent-base/src/index.ts",{"alias":{"debug":"./Holowaychuk_2011_debug.js"}}]}},
   "TooTallNate_2015_http_proxy_agent.js":{"https://github.com/TooTallNate/proxy-agents/packages/http-proxy-agent":{"http-proxy-agent@6.0.1":["packages/http-proxy-agent/src/index.ts",{"alias":{"agent-base":"./TooTallNate_2015_agent_base.js","debug":"./Holowaychuk_2011_debug.js"}}]}},
   "TooTallNate_2015_https_proxy_agent.js":{"https://github.com/TooTallNate/proxy-agents/packages/https-proxy-agent":{"https-proxy-agent@6.0.0":["packages/https-proxy-agent/src/index.ts",{"alias":{"agent-base":"./TooTallNate_2015_agent_base.js","debug":"./Holowaychuk_2011_debug.js"}}]}},

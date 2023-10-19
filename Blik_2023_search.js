@@ -1,4 +1,4 @@
-import {record, compose, provide, defined,string,functor} from "./Blik_2023_inference.js";
+import {record, compose, provide, defined,string,functor, describe} from "./Blik_2023_inference.js";
 
 export function random(length,domain="abcdefghijklmnopqrstuvwxyz_"){
   return Array(length).fill(domain).map(domain=>
@@ -20,6 +20,30 @@ export function sum(...context) {
     .flat()
     .map((term) => Number(term) || 0)
     .reduce((sum, value) => sum + value, 0);
+}
+
+export function search(term, recursive = false,path=[]) {
+  // traverse scope for entries satisfying a term (condition or singular path).
+  // recursive search includes ranges in recursion domain.
+  const scope = this;
+  if (typeof scope !== 'object' || scope === null) return [];
+  const condition = term instanceof Function;
+  if (!condition) return [term].flat().reduce((scope, field) => scope?.[field], scope);
+  let [domain, range] = Object.entries(this).reduce(
+    function sort(group, entry) {
+      group[term(entry,path) ? 1 : 0].push(entry);
+      return group;
+    },
+    [[], []],
+  );
+  if (recursive) domain = [domain, range].flat();
+  const subrange = domain.flatMap(([field, value]) =>
+    Object.entries(search.call(value, term, recursive, path.concat(field))).map(([path, value]) => [
+      [field, path].join('/'),
+      value,
+    ]),
+  );
+  return Object.fromEntries([range, subrange].flat());
 }
 
 export function trace(term, path = []) {
@@ -115,6 +139,7 @@ export function route(scope, term, path) {
 export function merge(target, source, override = 1) {
   // unite scopes (assign if path specified to override).
   let path=[override].flat();
+  if(!path.length)return source;
   if (path.some((path) => typeof path === 'string'))
     return [target, ...path, source].reduce((scope, field, index, route) =>
       route.length - index - 1
@@ -140,16 +165,6 @@ export function merge(target, source, override = 1) {
   }, target);
 }
 
-export function describe(scope, field) {
-  // embed scope in an object path.
-  if(functor(scope)&&string(field))
-  return Object.defineProperty(scope,"name",{value:field});
-  return [field]
-    .flat()
-    .reverse()
-    .reduce((scope, field) => ({ [field]: scope }), scope);
-}
-
 export function clone(scope) {
   return merge(JSON.parse(JSON.stringify(scope)), scope);
 }
@@ -159,34 +174,12 @@ export function isolate(path) {
   return describe(search.call(this, path), path);
 }
 
-export function search(term, recursive = false,path=[]) {
-  // traverse scope for entries satisfying a term (condition or singular path).
-  // recursive search includes ranges in recursion domain.
-  const scope = this;
-  if (typeof scope !== 'object' || scope === null) return [];
-  const condition = term instanceof Function;
-  if (!condition) return [term].flat().reduce((scope, field) => scope?.[field], scope);
-  let [domain, range] = Object.entries(this).reduce(
-    function sort(group, entry) {
-      group[term(entry,path) ? 1 : 0].push(entry);
-      return group;
-    },
-    [[], []],
-  );
-  if (recursive) domain = [domain, range].flat();
-  const subrange = domain.flatMap(([field, value]) =>
-    Object.entries(search.call(value, term, recursive, path.concat(field))).map(([path, value]) => [
-      [field, path].join('/'),
-      value,
-    ]),
-  );
-  return Object.fromEntries([range, subrange].flat());
-}
-
  export const tests=
  {merge:
 [{context:[{a:1},{b:2}],terms:[{a:1,b:2}],condition:["deepEqual"]}
 ,{context:[{a:{}},2,"a/b/c".split("/")],terms:[{a:{b:{c:2}}}],condition:["deepEqual"]}
+,{context:[undefined,{b:2}],terms:[{b:2}],condition:["deepEqual"]}
+,{context:[undefined,{b:2},true],terms:[{b:2}],condition:["deepEqual"]}
 ],search:{tether:{a:{b:2}},context:[({1:value})=>value===2],terms:[{"a/b":2}],condition:"deepEqual"}
  ,prune:
 [{tether:{a:{b:{c:3}}},context:[([field,value])=>field!=='b'?value:undefined],terms:[{a:{}}],condition:"deepEqual"}
