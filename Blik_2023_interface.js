@@ -273,8 +273,9 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
 }).reduce((entries,entry)=>merge(entries,entry,0), {});
  format=format.reduce(merge,{});
  await patch(path.dirname(source[0]), patches);
- await [format.scripts].filter(Boolean).flat().reduce(record(script=>
- resolve(path.resolve(path.dirname(target),script)).then(({default:module})=>module).catch(note))
+ await [format.scripts].flat().filter(Boolean).reduce(record(script=>
+ note.call(3,"running "+script+" for "+target+"...")&&
+ resolve(path.resolve(path.dirname(target),script)).then(({default:module})=>module).then(module=>note.call(2,script,"for",target+":",module)))
 ,[]);
  let part=await bundle(source,format);
  return access(length > 1 ? path.dirname(depot) + "_" + index + ".js" : target,part,true).then(file=>

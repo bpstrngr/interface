@@ -174,7 +174,7 @@ export async function parse(source, syntax = "javascript", options = {}) {
 {if(path?.length>1)return;
  let values=value?.type==="VariableDeclaration"
 ?value.declarations.map(({init})=>init?.type==="MemberExpression"?init.object:init)
-:value?.type==="AssignmentExpression"
+:value?.type==="ExpressionStatement"
 ?[value.expression.right]
 :[];
  return values.some(value=>Object.keys(search.call({value:prune.call(value,({1:value})=>
@@ -197,20 +197,23 @@ export async function parse(source, syntax = "javascript", options = {}) {
  ,dynamicrequire:
  {condition(term,field,path)
 {if(path.length<2)return;
- path={VariableDeclaration:"declarations",ExpressionStatement:["expression","right"],AssignmentExpression:"right",MemberExpression:"object"}[term?.type];
+ path={VariableDeclaration:"declarations",ExpressionStatement:["expression","right"],AssignmentExpression:"right",MemberExpression:"object",Property:[]}[term?.type];
  let value=[search.call(term,path)].flat();
  return value.some(value=>Object.keys(search.call({value},({1:value})=>value?.callee?.name==="require")).length);
 },ecma(value)
-{let depth={VariableDeclaration:3,ExpressionStatement:2}[value.type]||1;
+{let depth={VariableDeclaration:3,ExpressionStatement:2,Property:0}[value.type]||1;
  let statements=Object.entries(search.call({value},({1:value})=>value?.callee?.name==="require")).map(function([field,require])
 {let path=field.split("/").slice(1);
  let expressionpath=path.slice(0,depth);
  let expression=search.call(value,expressionpath);
+ if(expression.type==="ObjectExpression")
+ // Properties should be found individually. 
+ return [expressionpath,expression];
  let properties=[{type:"Property",kind:"init",key:{type:"Identifier",name:"default"},value:{type:"Identifier",name:"module"}}];
  let importexpression={type:"ImportExpression",source:require.arguments[0]};
  let requirepath=path.slice(depth);
- let argument=expression!==require
-?{type:"CallExpression",callee:
+ let argument=
+ {type:"CallExpression",callee:
  {type:"MemberExpression"
  ,object:importexpression
  ,property:{type:"Identifier",name:"then"}
@@ -219,8 +222,7 @@ export async function parse(source, syntax = "javascript", options = {}) {
  ,params:[{type:"ObjectPattern",properties}]
  ,body:merge(expression,{type:"Identifier",name:"module"},requirepath)
  }
-]}
-:importexpression;
+]};
  return [expressionpath,{type:"AwaitExpression",argument}];
 });
  return statements.reduce((value,[path,expression])=>merge(value,expression,path),value);
@@ -530,18 +532,22 @@ export const tests=
  {parse:{context:[import.meta.url,true,access],terms:["type",Reflect.get,"Program"],condition:"equal"}
  ,estree:{commonjs:
  {require:
- {ecma:
+ {condition:
+[{context:["a.b=require('')",parse,["body",0],tether(search),"0",["body"]],terms:[true],condition:"equal"}
+],ecma:
 [{context:["const a=require('');",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\nconst a = _exports;\n"],condition:"equal"}
 ,{context:["a=require('')()",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na = _exports();\n"],condition:"equal"}
 ,{context:["a.b=require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na.b = _exports;\n"],condition:"equal"}
 ]}
  ,dynamicrequire:
  {ecma:
-[{context:["const a=require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"const a = await import('');\n"],condition:"equal"}
-,{context:["a=require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('');\n"],condition:"equal"}
+[{context:["const a=require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"const a = await import('').then(({default: module}) => module);\n"],condition:"equal"}
+,{context:["a=require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('').then(({default: module}) => module);\n"],condition:"equal"}
 ,{context:["a=require('')()",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('').then(({default: module}) => module());\n"],condition:"equal"}
 ,{context:["a=require('').map()",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('').then(({default: module}) => module.map());\n"],condition:"equal"}
-,{context:["a.b=require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a.b = await import('');\n"],condition:"equal"}
+,{context:["a.b=require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a.b = await import('').then(({default: module}) => module);\n"],condition:"equal"}
+,{context:["a={a:require('')}",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = {\n  a: require('')\n};\n"],condition:"equal"}
+,{context:["a={a:require('')}",parse,["body",0,"expression","right","properties",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a: await import('').then(({default: module}) => module)\n"],condition:"equal"}
 ]}
  ,dynamicblock:[[true],["async",Reflect.get,true]].map((terms)=>
 [{context:["function a(){const b=require('');}",parse,["body",0],tether(search)],terms,condition:"equal"

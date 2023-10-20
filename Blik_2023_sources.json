@@ -100,7 +100,7 @@
       ]
     }
   },
-  "lupomontero_2019_psl.js":{"https://github.com/lupomontero/psl":{"v1.1.33":["index.js",{"syntax":"commonjs","alias": {"punycode": "./punycode_2011_punycode.js"}}]}},
+  "lupomontero_2019_psl.js":{"https://github.com/lupomontero/psl":{"v1.1.33":["index.js",{"syntax":"commonjs","alias": {"punycode":"./Bynens_2011_punycode.js"}}]}},
   "ryanzim_2017_universalify.js":{"https://github.com/RyanZim/universalify":{"v0.2.0":["index.js",{"syntax":"commonjs"}]}},
   "unshiftio_2014_querystringify.js":{"https://github.com/unshiftio/querystringify":{"2.1.1":["index.js",{"syntax":"commonjs"}]}},
   "unshiftio_2015_port_requisite.js":{"https://github.com/unshiftio/requires-port":{"1.0.0":["index.js",{"syntax":"commonjs"}]}},
@@ -110,7 +110,7 @@
       "querystringify":"./unshiftio_2014_querystringify.js"
     }}
   ]}},
-  "punycode_2011_punycode.js":{"https://github.com/mathiasbynens/punycode.js":{"v2.1.1":["punycode.js",{"syntax":"commonjs"}]}},
+  "Bynens_2011_punycode.js":{"https://github.com/mathiasbynens/punycode.js":{"v2.1.1":["punycode.js",{"syntax":"commonjs"}]}},
   "salesforce_2011_toughcookie.js": {
     "https://github.com/salesforce/tough-cookie": {
       "v4.1.2": [
@@ -118,10 +118,10 @@
           "./rollup_2022_json.js": {},
           "./rollup_2022_noderesolve.js": {},
           "alias": {
-            "punycode/": "./punycode_2011_punycode.js","url-parse":"./unshiftio_2014_urlparse.js","universalify":"./ryanzim_2017_universalify.js",
+            "punycode/": "./Bynens_2011_punycode.js","url-parse":"./unshiftio_2014_urlparse.js","universalify":"./ryanzim_2017_universalify.js",
             "psl":"./lupomontero_2019_psl.js"
           },
-          "syntax": "commonjs"
+          "syntax":"commonjs"
         }
       ]
     }
@@ -137,32 +137,38 @@
     }
   },
   "domenic_2016_html_encodingsniffer.js": {"https://github.com/jsdom/html-encoding-sniffer": {"v3.0.0": ["lib/html-encoding-sniffer.js",{"syntax":"commonjs","alias":{"whatwg-encoding":"./domenic_2016_whatwg_encoding.js"}}]}},
-  "isaacs_2017_minipass.js":{"https://github.com/isaacs/minipass": {"v3.1.0": ["index.js", {"syntax":"commonjs","./rollup_2022_noderesolve.js":{}}]}},
+  "isaacs_2015_yallist.js":{"https://github.com/isaacs/yallist":{"v4.0.0":["yallist.js",{"syntax":"commonjs"}]}},
+  "isaacs_2017_minipass.js":{"https://github.com/isaacs/minipass": {"v3.1.0": ["index.js", {
+    "syntax":"commonjs",
+    "alias":{"yallist":"./isaacs_2015_yallist.js"},
+    "./rollup_2022_noderesolve.js":{}
+  }]}},
   "isaacs_2019_minipass_sized.js":{
     "https://github.com/isaacs/minipass-sized":{
       "v1.0.3":["index.js", {
-        "input": {"external": ["minipass"]},
+        "syntax":"commonjs",
         "alias": {"minipass": "./isaacs_2017_minipass.js"},
         "./rollup_2022_noderesolve.js": {}
       }]
     }
   },
   "isaacs_2017_minizlib.js":{"https://github.com/isaacs/minizlib": {"v2.0.0": ["index.js", {
-    "input": {"external": ["minipass"]},
+    "syntax":"commonjs",
     "alias": {"minipass": "./isaacs_2017_minipass.js"},
     "./rollup_2022_noderesolve.js": {}
   }]}},
   "isaacs_2019_minipass_fetch.js":{"https://github.com/npm/minipass-fetch": {"v1.4.1": [
     "lib/index.js",
     {
-      "input": {"external": ["minizlib", "minipass", "minipass-sized"]},
-      "./rollup_2022_json.js": {},
+      "syntax":"commonjs",
       "alias": {
         "minizlib": "./isaacs_2017_minizlib.js",
         "minipass": "./isaacs_2017_minipass.js",
         "minipass-sized": "./isaacs_2019_minipass_sized.js"
       },
-      "./rollup_2022_noderesolve.js": {}
+      "./rollup_2022_json.js": {},
+      "./rollup_2022_noderesolve.js": {},
+      "comment":"encoding is an optional dependency, its failed resolution is handled by the module"
     }
   ]}},
   "isaacs_2011_minimatch.js":{"https://github.com/isaacs/minimatch":{"v5.0.1":["minimatch.js",{"alias":{"brace-expansion":"./isaacs_2014_brace_expansion.js"},"syntax":"commonjs"}]}},
@@ -202,15 +208,15 @@
             "webidl2": "./w3c_2016_webidl2.js",
             "webidl-conversions": "./domenic_2014_webidl.js"
           },
-          "./rollup_2022_json.js": {},
-          "./rollup_2022_noderesolve.js": {},
           "detach":["prettier"],
           "edit":{"domenic_2022_jsdom_webidl2js/0/lib/transformer.js":{
             "_prettify\\(source\\) \\{": "_prettify(source){return source;"
           }},
           "replace": {
             "domenic_2022_jsdom_webidl2js/0/lib/transformer.js":{"Literal":{"output/utils.js":"domenic_2022_jsdom_webidl2js_output_utils.js"}}
-          }
+          },
+          "./rollup_2022_json.js": {},
+          "./rollup_2022_noderesolve.js": {}
         }
       ]
     }
@@ -225,11 +231,57 @@
       ]
     }
   },
+  "Mayr_2017_tr46.js":{"https://github.com/jsdom/tr46":{"v4.1.1":["index.js",{
+    "syntax":"commonjs",
+    "scripts":["Mayr_2017_tr46_generateMappingTable.js","Mayr_2017_tr46_generateRegexes.js"],
+    "alias":{
+      "punycode/":"./Bynens_2011_punycode.js",
+      "minipass-fetch":"./isaacs_2019_minipass_fetch.js",
+      "regenerate":"./Bynens_2013_regenerate.js",
+      "@unicode/unicode-15.0.0/General_Category/Mark/code-points.js":"./Bynens_2022_unicode_Mark.js",
+      "@unicode/unicode-15.0.0/Bidi_Class/Left_To_Right/code-points.js":"./Bynens_2022_unicode_LTR.js",
+      "@unicode/unicode-15.0.0/Bidi_Class/Right_To_Left/code-points.js":"./Bynens_2022_unicode_RTL.js",
+      "@unicode/unicode-15.0.0/Bidi_Class/Arabic_Letter/code-points.js":"./Bynens_2022_unicode_Arabic.js",
+      "@unicode/unicode-15.0.0/Bidi_Class/European_Number/code-points.js":"./Bynens_2022_unicode_EU_number.js",
+      "@unicode/unicode-15.0.0/Bidi_Class/European_Separator/code-points.js":"./Bynens_2022_unicode_EU_separator.js",
+      "@unicode/unicode-15.0.0/Bidi_Class/European_Terminator/code-points.js":"./Bynens_2022_unicode_EU_terminator.js",
+      "@unicode/unicode-15.0.0/Bidi_Class/Common_Separator/code-points.js":"./Bynens_2022_unicode_Common_separator.js",
+      "@unicode/unicode-15.0.0/Bidi_Class/Nonspacing_Mark/code-points.js":"./Bynens_2022_unicode_Nonspacing_mark.js",
+      "@unicode/unicode-15.0.0/Bidi_Class/Boundary_Neutral/code-points.js":"./Bynens_2022_unicode_Neutral_Boundary.js",
+      "@unicode/unicode-15.0.0/Bidi_Class/Other_Neutral/code-points.js":"./Bynens_2022_unicode_Neutral.js",
+      "@unicode/unicode-15.0.0/Bidi_Class/Arabic_Number/code-points.js":"./Bynens_2022_unicode_Arabic_number.js"
+    },
+    "./rollup_2022_json.js": {}
+  }]}},
+  "Mayr_2017_tr46_generateMappingTable.js":["Mayr_2017_tr46/0/scripts/generateMappingTable.js",{
+    "syntax":"commonjs",
+    "alias":{"minipass-fetch":"./isaacs_2019_minipass_fetch.js"},
+    "edit":{"main\\(\\)\\.catch":"module.exports=main().catch"}
+  }],
+  "Mayr_2017_tr46_generateRegexes.js":["Mayr_2017_tr46/0/scripts/generateRegexes.js",{
+    "syntax":"commonjs",
+    "edit":{"main\\(\\)\\.catch":"module.exports=main().catch","(`.*)\\${unicodeVersion}(.*`)":"$115.0.0$2"}
+  }],
+  "Bynens_2022_unicode_Mark.js":{"https://github.com/node-unicode/unicode-15.0.0/General_Category/Mark/code-points.js":{"v1.3.1":["General_Category/Mark/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_LTR.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Left_To_Right/code-points.js":{"v1.3.1":["Bidi_Class/Left_To_Right/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_RTL.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Right_To_Left/code-points.js":{"v1.3.1":["Bidi_Class/Right_To_Left/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_Arabic.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Arabic_Letter/code-points.js":{"v1.3.1":["Bidi_Class/Arabic_Letter/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_EU_number.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/European_Number/code-points.js":{"v1.3.1":["Bidi_Class/European_Number/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_EU_separator.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/European_Separator/code-points.js":{"v1.3.1":["Bidi_Class/European_Separator/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_EU_terminator.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/European_Terminator/code-points.js":{"v1.3.1":["Bidi_Class/European_Terminator/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_Common_separator.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Common_Separator/code-points.js":{"v1.3.1":["Bidi_Class/Common_Separator/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_Nonspacing_mark.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Nonspacing_Mark/code-points.js":{"v1.3.1":["Bidi_Class/Nonspacing_Mark/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_Neutral_Boundary.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Boundary_Neutral/code-points.js":{"v1.3.1":["Bidi_Class/Boundary_Neutral/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_Neutral.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Other_Neutral/code-points.js":{"v1.3.1":["Bidi_Class/Other_Neutral/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_Arabic_number.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Arabic_Number/code-points.js":{"v1.3.1":["Bidi_Class/Arabic_Number/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2013_regenerate.js":{"https://github.com/mathiasbynens/regenerate":{"v1.4.2":["regenerate.js",{"syntax":"commonjs"}]}},
   "domenic_2015_whatwg_url.js": {
     "https://github.com/jsdom/whatwg-url": {
       "v12.0.0": [
         "index.js",
         {"scripts": ["./domenic_2015_whatwg_url_transform.js", "./domenic_2015_whatwg_url_webidl_wrapper.js"],
+          "syntax":"commonjs",
+          "alias":{"webidl-conversions":"./domenic_2014_webidl.js","tr46":"./Mayr_2017_tr46.js"},
           "./rollup_2022_json.js": {},
           "./rollup_2022_noderesolve.js": {}
         }
@@ -251,6 +303,10 @@
         "webidl2js": "./domenic_2022_jsdom_webidl2js.js",
         "minipass-fetch": "./isaacs_2019_minipass_fetch.js"
       },
+      "edit": {"domenic_2015_whatwg_url/0/scripts/transform.js": {
+        "transformer\\.generate": "module.exports=transformer.generate"
+      }},
+      "comment":"commonjs executes synchronously, so its thread needs to be exported to track after modularization.",
       "./rollup_2022_json.js": {},
       "./rollup_2022_noderesolve.js": {}
     }
@@ -267,10 +323,12 @@
       "v2.0.0": [
         "lib/whatwg-encoding.js",
         { "scripts": "./domenic_2016_whatwg_encoding_update.js",
-          "./rollup_2022_json.js": {},
+          "syntax":"commonjs",
           "alias": {
-            "minipass-fetch": "./isaacs_2019_minipass_fetch.js"
+            "minipass-fetch": "./isaacs_2019_minipass_fetch.js",
+            "iconv-lite":"./ashtuchkin_2012_iconv_lite.js"
           },
+          "./rollup_2022_json.js": {},
           "./rollup_2022_noderesolve.js": {}
         }
       ]
@@ -283,6 +341,9 @@
         "minipass-fetch": "./isaacs_2019_minipass_fetch.js",
         "iconv-lite":"./ashtuchkin_2012_iconv_lite.js"
       },
+      "edit": {"domenic_2016_whatwg_encoding/0/scripts/update.js": {
+        "main\\(\\)\\.catch":"module.exports=main().catch"
+      }},
       "./rollup_2022_json.js": {},
       "./rollup_2022_noderesolve.js": {}
     }
@@ -295,7 +356,14 @@
     }
   },
   "Skovoroda_2018_saferbuffer.js":{"https://github.com/ChALkeR/safer-buffer":{"v2.1.2":["safer.js",{"syntax":"commonjs"}]}},
-  "ashtuchkin_2012_iconv_lite.js":{"https://github.com/ashtuchkin/iconv-lite":{"v0.6.3":["lib/index.js",{"alias":{"safer-buffer":"./Skovoroda_2018_saferbuffer.js"}}]}},
+  "ashtuchkin_2012_iconv_lite.js":{"https://github.com/ashtuchkin/iconv-lite":{"v0.6.3":["lib/index.js",{
+    "syntax":"commonjs",
+    "alias":{"safer-buffer":"./Skovoroda_2018_saferbuffer.js"},
+    "edit":{"ashtuchkin_2012_iconv_lite/0/encodings/index.js":{"var module = modules":"let module=modules"}},
+     "./rollup_2022_json.js": {},
+    "./rollup_2022_noderesolve.js": {},
+    "comment":"hoisted commonjs variable named 'module' edited to local scope to not conflict with inserted module variable in module scope after standardization."
+  }]}},
   "rrweb_2010_cssom.js": {"https://github.com/rrweb-io/CSSOM": {"a469aae2f92e454e669aec821781626924f98d17": ["lib/index.js", {"scripts":["./rrweb_2010_cssom/0/build.js"],"syntax":"commonjs"}]}},
   "Sakas_2018_cssstyle.js": {"https://github.com/jsdom/cssstyle": {
     "v3.0.0": [
@@ -342,7 +410,7 @@
   }}]}},
   "domenic_2017_domexception_webidl2js-wrapper_generate.js":["domenic_2017_domexception_webidl2js-wrapper/0/scripts/generate.js",{
     "syntax":"commonjs","alias":{"webidl2js":"./domenic_2022_jsdom_webidl2js.js"},
-    "comment":"called during domexception/webidl2js-wrapper bundling, so will be available from source: no need to adjust __dirname locations."
+    "comment":"called during domexception/webidl2js-wrapper bundling, so will be resolved from source: no need to adjust __dirname locations for persistent bundle."
   }],
   "rauchg_2012_ms.js":{"https://github.com/vercel/ms":{"2.1.2":["index.js",{"syntax":"commonjs"}]}},
   "MikeMcl_2014_decimal.js":{"https://github.com/MikeMcl/decimal.js":{"v10.4.3":["decimal.mjs"]}},
