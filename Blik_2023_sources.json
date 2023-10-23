@@ -100,7 +100,11 @@
       ]
     }
   },
-  "lupomontero_2019_psl.js":{"https://github.com/lupomontero/psl":{"v1.1.33":["index.js",{"syntax":"commonjs","alias": {"punycode":"./Bynens_2011_punycode.js"}}]}},
+  "lupomontero_2019_psl.js":{"https://github.com/lupomontero/psl":{"v1.1.33":["index.js",{
+    "syntax":"commonjs",
+    "alias":{"punycode":"./Bynens_2011_punycode.js"},
+    "./rollup_2022_json.js": {}
+  }]}},
   "ryanzim_2017_universalify.js":{"https://github.com/RyanZim/universalify":{"v0.2.0":["index.js",{"syntax":"commonjs"}]}},
   "unshiftio_2014_querystringify.js":{"https://github.com/unshiftio/querystringify":{"2.1.1":["index.js",{"syntax":"commonjs"}]}},
   "unshiftio_2015_port_requisite.js":{"https://github.com/unshiftio/requires-port":{"1.0.0":["index.js",{"syntax":"commonjs"}]}},
@@ -364,7 +368,26 @@
     "./rollup_2022_noderesolve.js": {},
     "comment":"hoisted commonjs variable named 'module' edited to local scope to not conflict with inserted module variable in module scope after standardization."
   }]}},
-  "rrweb_2010_cssom.js": {"https://github.com/rrweb-io/CSSOM": {"a469aae2f92e454e669aec821781626924f98d17": ["lib/index.js", {"scripts":["./rrweb_2010_cssom/0/build.js"],"syntax":"commonjs"}]}},
+  "rrweb_2010_cssom.js": {"https://github.com/rrweb-io/CSSOM": {"a469aae2f92e454e669aec821781626924f98d17": ["lib/index.js", {
+    "scripts":["./rrweb_2010_cssom_build.js"],
+    "syntax":"commonjs",
+    "edit":{
+      "lib/parse.js":{"(CSSOM\\.CSSStyleDeclaration = require\\('\\.\\/CSSStyleDeclaration'\\).CSSStyleDeclaration)":"!function(){$1}()"},
+      "lib/CSSStyleSheet.js":{
+        "CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSStyleSheet.prototype =(?:.*\n)*)(exports.CSSStyleSheet =)":"CSSOM={};!function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4",
+        "(CSSOM\\.parse = require\\('\\.\\/parse'\\).parse)":"!function(){$1}()"
+      },
+      "lib/CSSStyleRule.js":{"var CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSStyleRule.prototype =(?:.*\n)*)(CSSOM.CSSStyleRule.parse =)":"var CSSOM={};\n!function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4"},
+      "lib/CSSFontFaceRule.js":{"var CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSFontFaceRule.prototype =(?:.*\n)*)(exports.CSSFontFaceRule =)":"var CSSOM={};\n!function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4"},
+      "lib/CSSKeyframeRule.js":{"var CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSKeyframeRule.prototype =(?:.*\n)*)(exports.CSSKeyframeRule =)":"var CSSOM={};\n!function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4"}
+    },
+    "comment":"circular requires made dynamic to resolve horrific circular dependency. there must be a generic way to modularize synchronous circular imports without these edits (rollup's commonjs plugin may have hints). This way, some throttling is expected before the module is ready to use. Hopefully not many commonjs dependencies have such an insane structure for this to need general support."
+  }]}},
+  "rrweb_2010_cssom_build.js":["rrweb_2010_cssom/0/build.js",{"syntax":"commonjs","edit":{
+    "__dirname":"PATH.dirname(new URL(import.meta.url).pathname)",
+    "process.stdout":"module.exports=process.stdout",
+    ", 0755":""
+  }}],
   "Sakas_2018_cssstyle.js": {"https://github.com/jsdom/cssstyle": {
     "v3.0.0": [
       "lib/CSSStyleDeclaration.js", {
@@ -395,11 +418,17 @@
   }}]}},
   "Carpenter_2015_abab.js":{"https://github.com/jsdom/abab":{"2.0.6":["index.js",{"syntax":"commonjs"}]}},
   "wel_2015_symbol_tree.js":{"https://github.com/jsdom/js-symbol-tree":{"v3.2.4":["lib/SymbolTree.js",{"syntax":"commonjs"}]}},
-  "domenic_2017_domexception_webidl2js-wrapper.js":{"":{"v4.0.0":["webidl2js-wrapper.js",{
+  "domenic_2017_domexception_webidl2js-wrapper.js":{"https://github.com/jsdom/domexception":{"v4.0.0":["webidl2js-wrapper.js",{
     "syntax":"commonjs",
     "scripts":"./domenic_2017_domexception_webidl2js-wrapper_generate.js",
-    "alias":{"webidl-conversions":"./domenic_2014_webidl.js"}
+    "alias":{"webidl-conversions":"./domenic_2014_webidl.js"},
+    "./rollup_2022_json.js": {}
   }]}},
+  "domenic_2017_domexception_webidl2js-wrapper_generate.js":["domenic_2017_domexception_webidl2js-wrapper/0/scripts/generate.js",{
+    "syntax":"commonjs",
+    "alias":{"webidl2js":"./domenic_2022_jsdom_webidl2js.js"},
+    "comment":"called during domexception/webidl2js-wrapper bundling, so will be resolved from source: no need to adjust __dirname locations for persistent bundle."
+  }],
   "jonathanong_2014_mimedb.js":{"https://github.com/jshttp/mime-db":{"v1.24.0":["index.js",{"syntax":"commonjs","./rollup_2022_json.js":{}}]}},
   "felixge_2011_delayedstream.js":{"https://github.com/felixge/node-delayed-stream":{"1.0.0":["lib/delayed_stream.js",{"syntax":"commonjs"}]}},
   "jonathanong_2014_mimetypes.js":{"https://github.com/jshttp/mime-types":{"2.1.12":["index.js",{"syntax":"commonjs","alias":{"mime-db":"./jonathanong_2014_mimedb.js"}}]}},
@@ -408,10 +437,6 @@
   "alexindigo_2013_formdata.js":{"https://github.com/form-data/form-data":{"v4.0.0":["lib/form_data.js",{"syntax":"commonjs","alias":{
     "asynckit":"./alexindigo_2016_asynckit.js","combined-stream":"./felixge_2015_combined_stream.js","mime-types":"./jonathanong_2014_mimetypes.js"
   }}]}},
-  "domenic_2017_domexception_webidl2js-wrapper_generate.js":["domenic_2017_domexception_webidl2js-wrapper/0/scripts/generate.js",{
-    "syntax":"commonjs","alias":{"webidl2js":"./domenic_2022_jsdom_webidl2js.js"},
-    "comment":"called during domexception/webidl2js-wrapper bundling, so will be resolved from source: no need to adjust __dirname locations for persistent bundle."
-  }],
   "rauchg_2012_ms.js":{"https://github.com/vercel/ms":{"2.1.2":["index.js",{"syntax":"commonjs"}]}},
   "MikeMcl_2014_decimal.js":{"https://github.com/MikeMcl/decimal.js":{"v10.4.3":["decimal.mjs"]}},
   "Holowaychuk_2011_debug.js":{"https://github.com/debug-js/debug":{"4.3.4":["src/node.js",{
@@ -421,21 +446,46 @@
     "comment":"support-color is an optional dependency, its failed resolution is handled by the module."
   }]}},
   "TooTallNate_2015_agent_base.js":{"https://github.com/TooTallNate/proxy-agents/packages/agent-base":{"agent-base@7.1.0":["packages/agent-base/src/index.ts",{"alias":{"debug":"./Holowaychuk_2011_debug.js"}}]}},
-  "TooTallNate_2015_http_proxy_agent.js":{"https://github.com/TooTallNate/proxy-agents/packages/http-proxy-agent":{"http-proxy-agent@6.0.1":["packages/http-proxy-agent/src/index.ts",{"alias":{"agent-base":"./TooTallNate_2015_agent_base.js","debug":"./Holowaychuk_2011_debug.js"}}]}},
-  "TooTallNate_2015_https_proxy_agent.js":{"https://github.com/TooTallNate/proxy-agents/packages/https-proxy-agent":{"https-proxy-agent@6.0.0":["packages/https-proxy-agent/src/index.ts",{"alias":{"agent-base":"./TooTallNate_2015_agent_base.js","debug":"./Holowaychuk_2011_debug.js"}}]}},
+  "TooTallNate_2015_http_proxy_agent.js":{"https://github.com/TooTallNate/proxy-agents/packages/http-proxy-agent":{"http-proxy-agent@6.0.1":["packages/http-proxy-agent/src/index.ts",{
+    "alias":{"agent-base":"./TooTallNate_2015_agent_base.js","debug":"./Holowaychuk_2011_debug.js"},
+    "edit":{"src/index.ts":{"export class HttpProxyAgent":"export default class HttpProxyAgent"}},
+    "comment":"JSDOM default imports version 5.0.0 with ambiguous type/namespace import of 'http' module (import name AND import type {type} from 'http'!). Upgraded to namespace import of 6.2.0 where this was fixed. Otherwise this would require much excess handling."
+  }]}},
+  "TooTallNate_2015_https_proxy_agent.js":{"https://github.com/TooTallNate/proxy-agents/packages/https-proxy-agent":{"https-proxy-agent@6.2.0":["packages/https-proxy-agent/src/index.ts",{
+    "alias":{"agent-base":"./TooTallNate_2015_agent_base.js","debug":"./Holowaychuk_2011_debug.js"},
+    "edit":{"src/index.ts":{"export class HttpsProxyAgent":"export default class HttpsProxyAgent"}},
+    "comment":"JSDOM default imports version 5.0.0 with ambiguous type/namespace import of 'http' module (import name AND import type {type} from 'http'!). Upgraded to namespace import of 6.2.0 where this was fixed. Otherwise this would require much excess handling."
+  }]}},
   "Bynens_2016_potential_customelementname.js":{"https://github.com/mathiasbynens/is-potential-custom-element-name":{"v1.0.1":["index.js",{"syntax":"commonjs"}]}},
   "dperini_2017_nwsapi.js":{"https://github.com/dperini/nwsapi":{"8d71cdfcdeb85800d7c0578476e8bca31d36285b":["src/nwsapi.js",{"syntax":"commonjs"}]}},
   "Boehm_2014_entities_decode.js":{"https://github.com/fb55/entities/src":{"v4.4.0":["src/decode.ts",{"edit":{"from \"(.*?)\\.js\"":"from \"$1.ts\""}}]}},
   "Boehm_2014_entities_escape.js":{"https://github.com/fb55/entities/src/escape.ts":{"v4.4.0":["src/escape.ts"]}},
-  "inikulin_2013_parse5.js":{"https://github.com/inikulin/parse5/packages/parse5":{"v7.1.2":["packages/parse5/lib/index.ts",{"alias":{"entities/lib/escape.js":"./Boehm_2014_entities_escape.js","entities/lib/decode.js":"./Boehm_2014_entities_decode.js"},"edit":{"from '\\.(.*?)\\.js'":"from '.$1.ts'"}}]}},
+  "inikulin_2013_parse5.js":{"https://github.com/inikulin/parse5/packages/parse5":{"v7.1.2":["packages/parse5/lib/index.ts",{
+    "alias":{
+      "entities/lib/escape.js":"./Boehm_2014_entities_escape.js",
+      "entities/lib/decode.js":"./Boehm_2014_entities_decode.js"
+    },
+    "edit":{"from '\\.(.*?)\\.js'":"from '.$1.ts'","lib/index.ts":{
+      "import { Parser, type ParserOptions } from '.\\/parser\\/index.ts';\\n":"",
+      "import type { DefaultTreeAdapterMap } from '.\\/tree-adapters\\/default.ts';\\n":"",
+      "import type { TreeAdapterTypeMap } from '.\\/tree-adapters\\/interface.ts';\\n":"",
+      "export ([*{])":"import $1",
+      "^((?:.*[\n$])*)": "$1\nexport default {defaultTreeAdapter,serialize,serializeOuter,ErrorCodes,foreignContent,html,Token,Tokenizer,TokenizerMode,parse,parseFragment};"
+    }},
+    "comment":"jsdom requires (aka default-imports) this module. re-exported namespaces can't be default exported, hence the conversion to imports before the added default export."
+  }]}},
   "Dubeau_2018_xmlns1_ed3_chars.js":{"https://github.com/lddubeau/xmlchars/src/xmlns/1.0":{"v2.2.0":["src/xmlns/1.0/ed3.ts"]}},
   "Dubeau_2018_xml1_ed5_chars.js":{"https://github.com/lddubeau/xmlchars/src/xml/1.0":{"v2.2.0":["src/xml/1.0/ed5.ts"]}},
   "Dubeau_2018_xml1_2ed2_chars.js":{"https://github.com/lddubeau/xmlchars/src/xml/1.1":{"v2.2.0":["src/xml/1.1/ed2.ts"]}},
-  "Dubeau_2011_saxes.js":{"https://github.com/lddubeau/saxes":{"v6.0.0":["src/saxes.ts",{"alias":{
-    "xmlchars/xmlns/1.0/ed3":"./Dubeau_2018_xmlns1_ed3_chars.js",
-    "xmlchars/xml/1.0/ed5":"./Dubeau_2018_xml1_ed5_chars.js",
-    "xmlchars/xml/1.1/ed2":"./Dubeau_2018_xml1_2ed2_chars.js"
-  }}]}},
+  "Dubeau_2011_saxes.js":{"https://github.com/lddubeau/saxes":{"v6.0.0":["src/saxes.ts",{
+    "alias":{
+      "xmlchars/xmlns/1.0/ed3":"./Dubeau_2018_xmlns1_ed3_chars.js",
+      "xmlchars/xml/1.0/ed5":"./Dubeau_2018_xml1_ed5_chars.js",
+      "xmlchars/xml/1.1/ed2":"./Dubeau_2018_xml1_2ed2_chars.js"
+    },
+    "edit":{"src/saxes.ts":{"^((?:.*[\n$])*)": "$1\nexport default {SaxesParser};"}},
+    "comment":"jsdom requires (aka default-imports) this module despite it's a namespace."
+  }]}},
   "einaros_2011_ws.js":{"https://github.com/websockets/ws":{"8.13.0":["index.js",{"syntax":"commonjs"}]}},
   "Mayr_2018_w3c_xmlserializer.js":{"https://github.com/jsdom/w3c-xmlserializer":{"v4.0.0":["lib/serialize.js",{"syntax":"commonjs","alias":{"xml-name-validator":"./domenic_2014_xml_name_validator.js"}}]}},
   "domenic_2014_xml_name_validator.js":{"https://github.com/jsdom/xml-name-validator":{"v4.0.0":["lib/xml-name-validator.js",{"syntax":"commonjs"}]}},
