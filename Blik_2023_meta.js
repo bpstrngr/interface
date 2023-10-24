@@ -87,8 +87,8 @@ export async function parse(source, syntax = "javascript", options = {}) {
  statement.specifiers.some?.(({exported})=>exported?.name==="default"))||
  grammar.body.push(
  grammar.body.find((statement,index,body)=>statement?.type==="ExportDefaultDeclaration"&&
- statement.declaration.object?.name==="module"&&
- statement.declaration.property?.name==="exports"&&
+ // statement.declaration.object?.name==="module"&&
+ // statement.declaration.property?.name==="exports"&&
  delete body[index])||
  {type:"ExportDefaultDeclaration"
  ,exportKind:"value"
@@ -190,7 +190,7 @@ export async function parse(source, syntax = "javascript", options = {}) {
  let values=value?.type==="VariableDeclaration"
 ?value.declarations.map(({init})=>init?.type==="MemberExpression"?init.object:init)
 :value?.type==="ExpressionStatement"
-?[value.expression.right]
+?[value.expression]
 :[];
  return values.some(value=>Object.keys(search.call({value:prune.call(value,({1:value})=>
  ["FunctionDeclaration","ArrowFunctionExpression"].includes(value?.type)?undefined:value)}
@@ -555,10 +555,13 @@ export const tests=
  {require:
  {condition:
 [{context:["a.b=require('')",parse,["body",0],tether(search),"0",["body"]],terms:[true],condition:"equal"}
+,{context:["require('')",parse,["body",0],tether(search),"0",["body"]],terms:[true],condition:"equal"}
 ],ecma:
-[{context:["const a=require('');",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\nconst a = _exports;\n"],condition:"equal"}
+[{context:["require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\n_exports;\n"],condition:"equal"}
+,{context:["require('')()",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\n_exports();\n"],condition:"equal"}
 ,{context:["a=require('')()",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na = _exports();\n"],condition:"equal"}
 ,{context:["a.b=require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na.b = _exports;\n"],condition:"equal"}
+,{context:["const a=require('');",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\nconst a = _exports;\n"],condition:"equal"}
 ]}
  ,dynamicrequire:
  {ecma:

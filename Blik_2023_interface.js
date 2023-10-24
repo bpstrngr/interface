@@ -190,7 +190,7 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
 
  var unbundled={};
 
- async function retrieve(absolute)
+ async function retrieve(absolute,dependent)
 {// bundle if not found despite source entry, 
  // load source if source entry already downloaded for bundling (eg. imported by bundler/parser/serializer). 
  if(!defined(this))exit([retrieve.name,"requires bound array to track unbundled source imports."].join(" "));
@@ -214,7 +214,9 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
 ?note.call(3,"Accessing source entry for \""+relative+"\":\n "+file+"\n (bundling already in progress or interrupted before purge)")&&
  resolve("url","pathToFileURL",file).then(({href:url})=>this[target]={url,format:relative,shortCircuit:true})
 :this[target]).catch(async fail=>
- this[target]=this[target]||assemble(sources,absolute).then(bundle=>delete this[target]&&bundle)));
+ this[target]=this[target]||
+ note.call(2,"Found source of \""+relative+"\" for",dependent+"...")&&
+ assemble(sources,absolute).then(bundle=>delete this[target]&&bundle)));
  let sloppy=!/\.(js|json)$/.test(absolute)&&
  await ["js","ts","d.ts"].map(extension=>absolute+"."+extension).reduce((module,file)=>
  module.catch(fail=>access(file).then(present=>file))
@@ -343,12 +345,14 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
  source=[source].flat();
  let relation=path.dirname(source[0])
  let multientry=source.length > 1;
- if(multientry) format["./rollup_2022_multientry.js"]={};
+ if(multientry) format["./Harris_2015_multientry.js"]={};
  let plugins = await Object.entries(format).filter(([field])=>
  /^\./. test(field)).reduce(record(([plugin,settings])=>resolve(plugin, "default", settings)),
 [{name:"interface"
  ,transform:(source,address)=>
- compose("url","pathToFileURL",address,resolve,"href",Reflect.get
+ multientry&&address.endsWith("virtual:multi-entry.js")
+?false
+:compose("url","pathToFileURL",address,resolve,"href",Reflect.get
 ,{format:merge(
  {alias:Object.fromEntries(Object.entries(format.alias||{}).map(([source,alias])=>
  [source,/^\./.test(alias)
@@ -361,7 +365,8 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
  }
 ,load,code=>({code,map:{mappings:''}}))
  ,resolveId:(source,client)=>client
-?Object.values(format.alias||{}).includes("./"+path.relative(relation,path.resolve(path.dirname(client),source)))
+?Object.values(format.alias||{}).includes("./"+path.relative(relation,path.resolve(path.dirname(client),source)))||
+ multientry&&source.endsWith("virtual:multi-entry.js")
 ?false
 :/^\./.test(source)
 ?["",".ts","/index.ts"].map(extension=>
@@ -373,7 +378,7 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
  }
 ]);
  note.call(3,"bundling " + source + "...");
- let { rollup } = await import("./rollup_2022_rollup.js");
+ let { rollup } = await import("./Harris_2015_rollup.js");
  let input=multientry ? { include: source } : source[0];
  let bundle=await rollup({input,plugins,...format.input});
  let {output:[{code}]}=await bundle.generate({ format: "module", inlineDynamicImports: true, ...format.output });

@@ -405,33 +405,34 @@
       "lib/CSSStyleDeclaration.js", {
         "syntax":"commonjs",
         "scripts": ["./Sakas_2018_cssstyle_allproperties.js","./Sakas_2018_cssstyle_someproperties.js","./Sakas_2018_cssstyle_properties.js"],
-        "alias": {
-          "rrweb-cssom": "./rrweb_2010_cssom.js",
-          "./properties":"./Sakas_2018_cssstyle_properties.js"
-        },
+        "alias": {"rrweb-cssom": "./rrweb_2010_cssom.js"},
         "./Harris_2015_json.js": {}
       }
     ]
   }},
   "Sakas_2018_cssstyle_allproperties.js": [
     "Sakas_2018_cssstyle/0/scripts/download_latest_properties.js",{
-      "edit":{"^((?:.*[\n$])*)":"import {get} from 'https';import {promises:p} from 'fs';let {writeFile:w}=p;let f='';f=await new Promise(resolve=>get('https://www.w3.org/Style/CSS/all-properties.en.json',r=>(r.on('data',s=>f+=s),r.on('end',n=>resolve(JSON.parse(f))))));f=f.flatMap(({status:s,property:p})=>!['ED','FPWD'].includes(s)&&p!=='--*'?p.replace(/-([a-z])/g,({1:g})=>g.toUpperCase()):[]);export default w('./Sakas_2018_cssstyle/0/lib/allProperties.js','export default new Set('+JSON.stringify(Array.from(new Set(pp)).map(p=>p.replace(/[A-Z]/,'-$&').replace(/^([^-]+)-/,(m,g)=>['o','moz','ms','webkit'].includes(g)?'-'+m:m)))+')');"},
-      "comment":"camelcase css property set"
+      "syntax":"commonjs",
+      "edit":{
+        "main\\(\\)\\.catch":"module.exports=main().catch",
+        "(out_file.end\\(function \\(err\\) {)":"return new Promise(resolve=>$1resolve(err);",
+        "(ties.\\'\\);\n  }\\))":"$1)"
+      },
+      "alias":{"minipass-fetch":"./isaacs_2019_minipass_fetch.js"}
     }
   ],
   "Sakas_2018_cssstyle_someproperties.js": [
     "Sakas_2018_cssstyle/0/scripts/generate_implemented_properties.js",{
-      "edit":{"^((?:.*[\n$])*)":"import {promises as p} from 'fs';const {readdir:r}=p;export default r('./Sakas_2018_cssstyle/0/lib/properties').then(f=>new Set(...f.map(f=>f.replace(/[A-Z]/,'-$&').replace(/^([^-]+)-/,(m,g)=>['o','moz','ms','webkit'].includes(g)?'-'+m:m).toLowerCase().slice(0,-3)))));"},
-      "comment":"the file originally generates an imperative script from ast instead of simply iterating directly, for some reason...."
+      "edit":{"^((?:.*[\n$])*)":" let [{promises:{readdir:r,writeFile:w}},{dirname:d,basename:b}]=await Promise.all(['fs','path'].map(m=>import(m)))\n,l=d(new URL(import.meta.url).pathname)\n,f=await r(l+'/../lib/properties').then(f=>\n new Set(f.flatMap(f=>/\\.js$/.test(f)?b(f,'.js').replace(/[A-Z]/,'-$&').replace(/^([^-]+)-/,(m,g)=>\n ['o','moz','ms','webkit'].includes(g)?'-'+m:m).toLowerCase():[])));\n export default w(l+'/../lib/implementedProperties.js','module.exports=new Set('+JSON.stringify(Array.from(f))+')');"},
+      "comment":"the file originally generates an imperative script from ast (with babel!) instead of simply iterating directly...."
     }
   ],
-  "Sakas_2018_cssstyle_properties.js": {"https://github.com/jsdom/cssstyle/lib":{"v3.0.0":[
-    "lib/properties/", {
-      "syntax":"commonjs",
-      "./Harris_2015_json.js": {},
-      "comment": "scripts/generate_properties.js is a simple bundler: parse property files listing their dependencies, sort external dependencies above local, reconcile namespace of exports and imports, export function to extend a prototype with property namespace entries, in dashed and camel case."
+  "Sakas_2018_cssstyle_properties.js": [
+    "Sakas_2018_cssstyle/0/scripts/generate_properties.js", {
+      "edit":{"^((?:.*[\n$])*)":"let [{promises:{readdir:r,writeFile:w}},{dirname:d,basename:b}]=await Promise.all(['fs','path'].map(m=>import(m)))\n,l=d(new URL(import.meta.url).pathname)\n,f=await r(l+'/../lib/properties').then(f=>\n Array.from(new Set(f.flatMap((f,n)=>[n=b(f,'.js'),n.replace(/[A-Z]/,'-$&').replace(/^([^-]+)-/,(m,g)=>\n ['o','moz','ms','webkit'].includes(g)?'-'+m:m).toLowerCase()].map(n=>'\"'+n+'\":require(\"./properties/'+f+'\").definition')))));\n f='const properties={'+f+'};module.exports=function(prototype){Object.defineProperties(prototype,properties);}';\n export default w(l+'/../lib/properties.js',f)"},
+      "comment": "this file is a simple bundler: parses property files listing their dependencies, sorts external dependencies above local, reconciles namespace of exports and imports, exports function to extend a prototype with property namespace entries, in dashed and camel case. the last step is sufficient input for an external bundler."
     }
-  ]}},
+  ],
   "McKenzie_2014_babel_types.js": {"https://github.com/babel/babel/packages/babel-types": {"v6.13.0": ["src/index.js",{"syntax": "typescript"}]}},
   "domenic_2018_dataurls.js":{"https://github.com/jsdom/data-urls":{"v4.0.0":["lib/parser.js",{"syntax":"commonjs","alias":{
     "whatwg-url": "./domenic_2015_whatwg_url.js",
@@ -509,7 +510,8 @@
     "comment":"jsdom requires (aka default-imports) this module despite it's a namespace."
   }]}},
   "einaros_2011_ws.js":{"https://github.com/websockets/ws":{"8.13.0":["index.js",{
-    "syntax":"commonjs"
+    "syntax":"commonjs",
+    "comment":"bufferutil and utf8-validate are optional dependencies. resolution errors can be ignored."
   }]}},
   "Mayr_2018_w3c_xmlserializer.js":{"https://github.com/jsdom/w3c-xmlserializer":{"v4.0.0":["lib/serialize.js",{"syntax":"commonjs","alias":{"xml-name-validator":"./domenic_2014_xml_name_validator.js"}}]}},
   "domenic_2014_xml_name_validator.js":{"https://github.com/jsdom/xml-name-validator":{"v4.0.0":["lib/xml-name-validator.js",{"syntax":"commonjs"}]}},
@@ -545,6 +547,9 @@
           "ws": "./einaros_2011_ws.js",
           "w3c-xmlserializer":"./Mayr_2018_w3c_xmlserializer.js"
         },
+        "edit":{"XMLHttpRequest-impl.js":{
+          "require.resolve \\? require.resolve":"import.meta.resolve ? await import.meta.resolve"
+        }},
         "./Harris_2015_json.js": {},
         "./Harris_2015_noderesolve.js": {}
       }
