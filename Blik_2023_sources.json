@@ -327,13 +327,28 @@
       "./Harris_2015_noderesolve.js": {}
     }
   ],
-  "facebook_2014_flow_parser.js":{"https://registry.npmjs.org/flow-parser/-/flow-parser-0.216.1.tgz":["flow_parser.js"]},
-  "facebook_2013_react.js":{"https://github.com/facebook/react/packages/react":{"v18.2.0":["index.js",{}]}},
-  "facebook_2013_react_dom_client.js":{"https://github.com/facebook/react/packages/react-dom":{"v18.2.0":["client.js"]}},
-  "facebook_2013_react_dom_server.js":{"https://github.com/facebook/react/packages/react-dom":{"v18.2.0":["server.node.js"]}},
-  "remix_2014_react_router_dom.js":{"https://github.com/remix-run/react-router/packages/react-router-dom":{"v6.3.0":["index.tsx"]}},
-  "remix_2014_react_router_dom_server.js":{"https://github.com/remix-run/react-router/packages/react-router-dom":{"v6.3.0":["server.tsx"]}},
-  "mui_2014_material.js":{"https://github.com/mui/material-ui/packages/mui-material":{"v5.14.10":["src/index.js"]}},
+  "facebook_2014_flow_parser.js":{"https://registry.npmjs.org/flow-parser/-/flow-parser-0.216.1.tgz":[
+    "flow_parser.js"
+  ]},
+  "facebook_2013_react.js":{"https://github.com/facebook/react/packages/react":{"v18.2.0":[
+    "packages/react/src/React.js",{"syntax":"typescript"}
+  ]}},
+  "facebook_2013_react_dom_client.js":{"https://github.com/facebook/react/packages/react-dom":{"v18.2.0":[
+    "packages/react-dom/src/client/ReactDOM.js",{"syntax":"typescript"}
+  ]}},
+  "facebook_2013_react_dom_server.js":{"https://github.com/facebook/react/packages/react-dom":{"v18.2.0":[
+    "packages/react-dom/src/server/ReactDOMFizzServerNode.js",{"syntax":"typescript"}
+  ]}},
+  "remix_2014_react_router_dom.js":{"https://github.com/remix-run/react-router/packages/react-router-dom":{"v6.3.0":[
+    "packages/react-router-dom/index.tsx",{"syntax":"typescript"}
+  ]}},
+  "remix_2014_react_router_dom_server.js":{"https://github.com/remix-run/react-router/packages/react-router-dom":{"v6.3.0":[
+    "packages/react-router-dom/server.tsx",{"syntax":"typescript"}
+  ]}},
+  "mui_2014_material.js":{"https://github.com/mui/material-ui/packages/mui-material":{"v5.14.10":[
+    "src/index.ts",
+    {"comment":"dependencies go to deep, let's just not use this okay? why do you need babel as runtime dependency in a layout library?"}
+  ]}},
   "domenic_2016_whatwg_encoding.js": {
     "https://github.com/jsdom/whatwg-encoding": {
       "v2.0.0": [
@@ -547,11 +562,30 @@
           "ws": "./einaros_2011_ws.js",
           "w3c-xmlserializer":"./Mayr_2018_w3c_xmlserializer.js"
         },
-        "edit":{"XMLHttpRequest-impl.js":{
-          "require.resolve \\? require.resolve":"import.meta.resolve ? await import.meta.resolve"
-        }},
+        "edit":{
+          "living/nodes/Document-impl.js":{
+            "const (documents) = (require\\(\"..\\/documents.js\"\\))":"var $1;setTimeout(time=>$1=$2,3000)",
+            "const (DOMImplementation) = (require\\(\"..\\/generated\\/DOMImplementation\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"
+          },
+          "living/nodes/HTMLFrameElement-impl.js":{"const (window) = (require\\(\"..\\/..\\/browser\\/Window\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
+          "living/generated/AbortSignal.js":{
+            "const (Impl) = (require\\(\"..\\/aborting\\/AbortSignal-impl.js\"\\))":"var $1;setTimeout(time=>$1=$2,3000)",
+            "const (EventTarget) = (require\\(\".\\/EventTarget.js\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"
+          },
+          "living/generated/MouseEventInit.js":{"const (EventTarget) = (require\\(\".\\/EventTarget.js\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
+          "living/generated/MouseEvent.js":{"const (EventTarget) = (require\\(\".\\/EventTarget.js\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
+          "helpers/create-element.js":{"const (interfaces) = (require\\(\"..\\/interfaces\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
+          "living/range/Range-impl.js":{"const (Range) = (require\\(\"..\\/generated\\/Range\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
+          "living/webstorage/Storage-impl.js":{"const (StorageEvent) = (require\\(\"..\\/generated\\/StorageEvent\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
+          "living/file-api/Blob-impl.js":{"const (Blob) = (require\\(\"..\\/generated\\/Blob\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
+          "living/geometry/DOMRectReadOnly-impl.js":{"const (DOMRectReadOnly) = (require\\(\"..\\/generated\\/DOMRectReadOnly\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
+          "living/geometry/DOMRect-impl.js":{"const (DOMRect) = (require\\(\"..\\/generated\\/DOMRect\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
+          "XMLHttpRequest-impl.js":{"(const syncWorkerFile =) .*\n":"$1 null;"},
+          "lib/api.js":{"^((?:.*[\n$])*)":"$1\nexport default new Promise(resolve=>setTimeout(time=>resolve(module.exports),3000));"}
+        },
         "./Harris_2015_json.js": {},
-        "./Harris_2015_noderesolve.js": {}
+        "./Harris_2015_noderesolve.js": {},
+        "comment":"circular static requires need to be edited dynamic for module. AbortSignal seems to be the last file in the bundle."
       }
     ]}
   },

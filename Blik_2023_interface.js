@@ -336,7 +336,7 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
 {return Object.entries(edits||{}).reduce((source, [field,value]) =>
  source.replace(new RegExp(field,"g"),(match, ...groups) =>
  [value, ...groups.slice(0,-2)].reduce((value, group, index) =>
- value.replace("$"+index, group)))
+ value.replaceAll("$"+index, group)))
 ,source);
 };
 

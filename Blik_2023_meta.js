@@ -2,6 +2,7 @@ import path from "path";
 import { access, resolve, note } from "./Blik_2023_interface.js";
 import { compose, record, provide, compound, tether, string } from "./Blik_2023_inference.js";
 import { search, merge, prune, route, random } from "./Blik_2023_search.js";
+let address=new URL(import.meta.url).pathname;
 
 export async function parse(source, syntax = "javascript", options = {}) {
   // interpret language syntax.
@@ -53,8 +54,8 @@ export async function parse(source, syntax = "javascript", options = {}) {
  grammar.body.shift();
  let {alias={},detach,replace,output,syntax,scripts}=format;
  let path=await import("path");
- let location=path.dirname(new URL(import.meta.url).pathname);
- let relation=path.dirname(grammar.meta.url.pathname);
+ let location=path.dirname(address);
+ let relation=path.dirname(grammar.meta?.url.pathname||address);
  let disjunction=estree[syntax];
  if(disjunction)
  grammar=prune.call(grammar,function([field,value],path)
@@ -116,7 +117,7 @@ export async function parse(source, syntax = "javascript", options = {}) {
  [{type:"ExportSpecifier",local,exported:local}]});
  return provide(...statements);
 });
- if(/\.d\.ts$/.test(grammar.meta.url.pathname))
+ if(/\.d\.ts$/.test(grammar.meta?.url.pathname))
  grammar=prune.call(grammar,function initialized({1:value})
 {// typescript ambiguates uninitialized const as type declarations. 
  let declaration=value?.type==="ExportNamedDeclaration"?value.declaration:value;
@@ -180,8 +181,8 @@ export async function parse(source, syntax = "javascript", options = {}) {
  {commonjs:
  {dynamicblock:
  {condition(value,field,path)
-{return ["FunctionDeclaration","FunctionExpression"].includes(value?.type)&&(value.body.body||[value.body]).some((value,index)=>
- estree.commonjs.dynamicrequire.condition(value,index,[path,"body"].flat()));
+{return ["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(value?.type)&&[value.body.body||value.body].flat().some((value,index)=>
+ estree.commonjs.dynamicrequire.condition(value,index,[path,field,"body"].flat()));
 },ecma(value){return {...value,async:true};}
  }
  ,require:
@@ -193,11 +194,11 @@ export async function parse(source, syntax = "javascript", options = {}) {
 ?[value.expression]
 :[];
  return values.some(value=>Object.keys(search.call({value:prune.call(value,({1:value})=>
- ["FunctionDeclaration","ArrowFunctionExpression"].includes(value?.type)?undefined:value)}
+ ["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(value?.type)?undefined:value)}
 ,({1:value})=>value?.callee?.name==="require")).length);
 },ecma(value,field,path)
 {let scope=prune.call(value,({1:value})=>
- ["FunctionDeclaration","ArrowFunctionExpression"].includes(value?.type)?undefined:value);
+ ["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(value?.type)?undefined:value);
  let requires=search.call(scope,({1:value})=>value?.callee?.name==="require");
  let id=value=>value.replace(/[^a-zA-Z]/g,"")+"_exports";
  let imports=Object.values(requires).map(require=>(
@@ -213,6 +214,8 @@ export async function parse(source, syntax = "javascript", options = {}) {
  {condition(term,field,path)
 {if(path.length<2)return;
  path={VariableDeclaration:"declarations",ExpressionStatement:["expression","right"],CallExpression:"arguments",AssignmentExpression:"right",MemberExpression:"object",Property:[]}[term?.type];
+ term=prune.call(term,({1:value})=>
+ ["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(value?.type)?undefined:value);
  let value=[search.call(term,path)].flat();
  return value.some(value=>Object.keys(search.call({value},({1:value})=>value?.callee?.name==="require")).length);
 },ecma(value)
@@ -550,7 +553,10 @@ export async function test(scope, tests, path = []) {
 
 export const tests=
  {parse:{context:[import.meta.url,true,access],terms:["type",Reflect.get,"Program"],condition:"equal"}
- ,estree:
+ ,sanitize:
+[{context:["var a=!function(){a=require('')}()",parse,{syntax:"commonjs"}],terms:[serialize,"let exports = {}, module = {\n  exports\n};\nvar a = !(async function () {\n  a = await import('').then(({default: module}) => module);\n})();\nexport default module.exports;\n"],condition:"equal"}
+,{context:["setTimeout(time=>a=require(''),3000)",parse,{syntax:"commonjs"}],terms:[serialize,"let exports = {}, module = {\n  exports\n};\nsetTimeout(3000, async time => a = await import('').then(({default: module}) => module));\nexport default module.exports;\n"],condition:"equal"}
+],estree:
  {commonjs:
  {require:
  {condition:
