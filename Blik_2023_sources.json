@@ -15,13 +15,12 @@
   "jridgewell_2015_sourcemap_codec.js":{"https://github.com/jridgewell/sourcemap-codec":{"v1.4.13":["src/sourcemap-codec.ts"]}},
   "rich_harris_2014_magic_string.js":{"https://github.com/rich-harris/magic-string":{"v0.27.0":["src/index.js",{
     "replace":{"Identifier":{"DEBUG":"false"}},
-    "alias":{"@jridgewell/sourcemap-codec":"./jridgewell_2015_sourcemap_codec.js"},
-    "output":{"footer":"export const DecodedSourceMap=undefined;"}
+    "alias":{"@jridgewell/sourcemap-codec":"./jridgewell_2015_sourcemap_codec.js"}
   }]}},
   "rich_harris_2016_is_reference.js":{"https://github.com/Rich-Harris/is-reference":{"v3.0.1":["src/index.js",{"output":{"footer":"export const NodeWithFieldDefinition=undefined;"}}]}},
   "rich_harris_2015_estree_walker.js":{"https://github.com/Rich-Harris/estree-walker":{"v2.0.2":["src/index.js"]}},
   "rich_harris_2016_locate_character.js":{"https://github.com/Rich-Harris/locate-character":{"v3.0.0":[
-      "src/index.js",{"output":{"footer":"export const Location=undefined;"},"comment":"Typescript sometimes ambiguates type imports with lexical imports. Without dts files present, it's impossible to tell if they need to be discarded."}
+      "src/index.js"
   ]}},
   "lukeed_2019_flru.js":{"https://github.com/lukeed/flru":{"v1.0.2":["src/index.js"]}},
   "sindresorhus_2015_builtin_modules_static.js":{"https://github.com/sindresorhus/builtin-modules":{"v3.3.0":["builtin-modules.json",{
@@ -291,12 +290,25 @@
   "Bynens_2022_unicode_Neutral.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Other_Neutral/code-points.js":{"v1.3.1":["Bidi_Class/Other_Neutral/code-points.js",{"syntax":"commonjs"}]}},
   "Bynens_2022_unicode_Arabic_number.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Arabic_Number/code-points.js":{"v1.3.1":["Bidi_Class/Arabic_Number/code-points.js",{"syntax":"commonjs"}]}},
   "Bynens_2013_regenerate.js":{"https://github.com/mathiasbynens/regenerate":{"v1.4.2":["regenerate.js",{"syntax":"commonjs"}]}},
+  "Isonen_2014_jss.js":{"https://github.com/cssinjs/jss/packages/jss":{"v10.10.0":["packages/jss/src/index.js",{
+    "alias":{"is-in-browser":"./Anderson_2016_isinbrowser.js","tiny-warning":"./Reardon_2018_tinywarning.js"}
+  }]}},
+  "Isonen_2014_jss_nested.js":{"https://github.com/cssinjs/jss/packages/jss-plugin-nested":{"v10.10.0":["packages/jss-plugin-nested/src/index.js",{"alias":{
+    "tiny-warning":"./Reardon_2018_tinywarning.js"
+  }}]}},
+  "Isonen_2014_jss_extend.js":{"https://github.com/cssinjs/jss/packages/jss-plugin-extend":{"v10.10.0":["packages/jss-plugin-extend/src/index.js",{"alias":{
+    "tiny-warning":"./Reardon_2018_tinywarning.js"
+  }}]}},
+  "Isonen_2014_jss_global.js":{"https://github.com/cssinjs/jss/packages/jss-plugin-global":{"v10.10.0":["packages/jss-plugin-global/src/index.js",{"alias":{
+    "jss":"./Isonen_2014_jss.js"
+  }}]}},
+  "Anderson_2016_isinbrowser.js":{"https://github.com/tuxsudo/is-in-browser":{"v.2.0.0":["src/index.ts"]}},
   "domenic_2015_whatwg_url.js": {
     "https://github.com/jsdom/whatwg-url": {
       "v12.0.0": [
-        "index.js",
-        {"scripts": ["./domenic_2015_whatwg_url_transform.js", "./domenic_2015_whatwg_url_webidl_wrapper.js"],
+        "index.js", {
           "syntax":"commonjs",
+          "scripts": ["./domenic_2015_whatwg_url_transform.js","./domenic_2015_whatwg_url_webidl_wrapper.js"],
           "alias":{"webidl-conversions":"./domenic_2014_webidl.js","tr46":"./Mayr_2017_tr46.js"},
           "./Harris_2015_json.js": {},
           "./Harris_2015_noderesolve.js": {}
@@ -304,13 +316,34 @@
       ]
     }
   },
-  "domenic_2015_whatwg_url_webidl_wrapper.js": [
-    "domenic_2015_whatwg_url/0/webidl2js-wrapper.js", {
+  "Reardon_2018_tinywarning.js":{"https://github.com/alexreardon/tiny-warning":{"v1.0.3":["src/index.js",{"syntax":"typescript"}]}},
+  "domenic_2015_whatwg_url_webidl_wrapper.js": {
+    "https://github.com/jsdom/whatwg-url": {"v12.0.0": ["webidl2js-wrapper.js",{
+      "scripts": ["./domenic_2015_whatwg_url_webidl_wrapper_transform.js"],
+      "alias":{"webidl-conversions":"./domenic_2014_webidl.js","tr46":"./Mayr_2017_tr46.js"},
       "syntax":"commonjs"
-    }
-  ],
+    }]}
+  },
   "domenic_2015_whatwg_url_transform.js": [
     "domenic_2015_whatwg_url/0/scripts/transform.js", {
+      "syntax":"commonjs",
+      "input": { "external": ["prettier"] },
+      "alias": {
+        "rimraf": "./isaacs_2011_rimraf.js",
+        "webidl-conversions": "./domenic_2014_webidl.js",
+        "webidl2js": "./domenic_2022_jsdom_webidl2js.js",
+        "minipass-fetch": "./isaacs_2019_minipass_fetch.js"
+      },
+      "edit": {"domenic_2015_whatwg_url/0/scripts/transform.js": {
+        "transformer\\.generate": "module.exports=transformer.generate"
+      }},
+      "comment":"commonjs executes synchronously, so its thread needs to be exported to track after modularization.",
+      "./Harris_2015_json.js": {},
+      "./Harris_2015_noderesolve.js": {}
+    }
+  ],
+  "domenic_2015_whatwg_url_webidl_wrapper_transform.js": [
+    "domenic_2015_whatwg_url_webidl_wrapper/0/scripts/transform.js", {
       "syntax":"commonjs",
       "input": { "external": ["prettier"] },
       "alias": {
@@ -619,7 +652,10 @@
   "jonschlinkert_2015_is_number.js":{"https://github.com/jonschlinkert/is-number":{"7.0.0":["index.js",{"syntax":"commonjs"}]}},
   "jonschlinkert_2015_regex_range.js":{"https://github.com/micromatch/to-regex-range":{"5.0.1":["index.js",{"syntax":"commonjs","alias":{"is-number":"./jonschlinkert_2015_is_number.js"}}]}},
   "jonschlinkert_2014_fill_range.js":{"https://github.com/jonschlinkert/fill-range":{"7.0":["index.js",{"syntax":"commonjs","alias":{"to-regex-range":"./jonschlinkert_2015_regex_range.js"}}]}},
-  "paulmillr_2013_anymatch.js":{"https://github.com/micromatch/anymatch":{"3.1.2":["index.js",{"syntax":"commonjs","alias":{"picomatch":"./micromatch_2018_picomatch.js"}}]}},
+  "paulmillr_2013_anymatch.js":{"https://github.com/micromatch/anymatch":{"3.1.2":["index.js",{"syntax":"commonjs","alias":{
+    "picomatch":"./micromatch_2018_picomatch.js",
+    "normalize-path":"./jonschlinkert_2015_normalize_path.js"
+  }}]}},
   "jonschlinkert_2014_braces.js":{"https://github.com/micromatch/braces":{"3.0.2":["index.js",{"syntax":"commonjs","alias":{"fill-range":"./jonschlinkert_2014_fill_range.js"}}]}},
   "phated_2021_glob_parent.js":{"https://github.com/gulpjs/glob-parent":{"v5.1.2":["index.js",{"syntax":"commonjs","alias":{"is-glob":"./jonschlinkert_2015_is_glob.js"}}]}},
   "sindresorhus_2015_binary_extensions.js":{"https://github.com/sindresorhus/binary-extensions":{"v2.0.0":["index.js",{"syntax":"commonjs","./Harris_2015_json.js":{}}]}},
@@ -628,7 +664,7 @@
   "jonschlinkert_2015_is_glob.js":{"https://github.com/micromatch/is-glob":{"4.0.1":["index.js",{"syntax":"commonjs","alias":{"is-extglob":"./jonschlinkert_2015_is_extglob.js"}}]}},
   "jonschlinkert_2015_normalize_path.js":{"https://github.com/jonschlinkert/normalize-path":{"3.0.0":["index.js",{"syntax":"commonjs"}]}},
   "paulmillr_2012_readdirp.js":{"https://github.com/paulmillr/readdirp":{"3.6.0":["index.js",{"syntax":"commonjs","alias":{"picomatch":"./micromatch_2018_picomatch.js"}}]}},
-  "paulmillr_2012_chokidar.js":{"https://github.com/paulmillr/chokidar":{"3.5.3":["index.js",{"syntax":"commonjs","alias":{
+  "paulmillr_2012_chokidar.js":{"https://github.com/paulmillr/chokidar":{"3.5.3":["index.js",{"syntax":"commonjs","comment":"fsevents is optional dependency, resolution failure can be ignored.","alias":{
     "anymatch":"./paulmillr_2013_anymatch.js",
     "braces":"./jonschlinkert_2014_braces.js",
     "glob-parent":"./phated_2021_glob_parent.js",

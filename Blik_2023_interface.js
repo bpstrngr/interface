@@ -183,7 +183,7 @@ export const purge = (path) => fs.rm(path, { recursive: true }).then((done) => p
  [source,...context]=client?process.argv.slice(1):Array.from(arguments);
  let term=context.length?[context.shift(),Reflect.get]:[];
  // --watch flag is omitted from execArgv for unknown reason.
- let suspense=client/*&&process.execArgv.includes("--watch")*/?10*60*1000:0;
+ let suspense=client&&process.execArgv.includes("--watch")?10*60*1000:0;
  return compose(module,...term,infer.bind(null,provide(...context)),terms=>
  client?compose(terms,note,wait.bind(0,suspense),term=>0,process.exit):terms);
 };
