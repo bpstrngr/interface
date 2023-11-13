@@ -1,50 +1,45 @@
-import path from "path";
-import { access, resolve, note } from "./Blik_2023_interface.js";
-import { compose, record, provide, compound, tether, string } from "./Blik_2023_inference.js";
-import { search, merge, prune, route, random } from "./Blik_2023_search.js";
+import {stream,record,plural,compound,bind,string,is,not,serial} from "./Blik_2023_inference.js";
+import {search,merge,prune,route,random} from "./Blik_2023_search.js";
 let address=new URL(import.meta.url).pathname;
 
-export async function parse(source, syntax = "javascript", options = {}) {
-  // interpret language syntax.
-  if(typeof source!=="string")
-  return Error("can't parse "+typeof source);
-  if(source instanceof Buffer)
-  source=source.toString();
-  if (syntax === "json") return JSON.parse(source);
-  let { Parser } = await import("./haverbeke_2012_acorn.js");
-  if(syntax=="typescript")
-  Parser=await import("./tyrealhu_2023_acorn_typescript.js").then(({default:plugin})=>
-  Parser.extend(plugin({dts:options.source?.endsWith(".d.ts")})));
-  else if(!/xtuc_2020_acorn_importattributes/.test(options.source))
-  Parser=await import("./xtuc_2020_acorn_importattributes.js").then(({importAttributes:plugin})=>
-  Parser.extend(plugin));
-  let comments = [];
-  let scope = Parser.parse(source, {
-    ecmaVersion: 2022,
-    sourceType: "module",
-    onComment: comments,
-    locations: syntax === "typescript",
-  });
-  comments
-    .map((comment) => Object.assign(comment, { type: comment.type + "Comment" }))
-    .forEach((comment) => route(scope, comment, path));
-  if (options.source) scope.meta = { url: options.source.startsWith("file:/")?new URL(options.source):await resolve("url","pathToFileURL",options.source)};
-  return scope;
-  function descendant(scope) {
-    return scope.start < this.start && this.end < scope.end;
-  }
-  function sibling(scope, index, scopes) {
-    return (scopes[index - 1]?.end ?? -1) < this.start && this.end < scope.start;
-  }
-  function path(scope, comment) {
-    Array.isArray(scope)
-      ? [descendant, sibling, undefined].reduce(
-          (found, find) => (found < 0 ? find && scope.findIndex(find.bind(comment)) : found),
-          -1
-        )
-      : descendant.call(comment, scope) &&
-        ["body", "declaration", "consequent"].find((field) => scope[field]);
-  }
+ export async function parse(source, syntax = "javascript", options = {})
+{// interpret language syntax.
+ if(typeof source!=="string")
+ return Error("can't parse "+typeof source);
+ if(source instanceof Buffer)
+ source=source.toString();
+ if (syntax === "json") return JSON.parse(source);
+ let { Parser } = await import("./haverbeke_2012_acorn.js");
+ if(syntax=="typescript")
+ Parser=await import("./tyrealhu_2023_acorn_typescript.js").then(({default:plugin})=>
+ Parser.extend(plugin({dts:options.source?.endsWith(".d.ts")})));
+ else if(!/xtuc_2020_acorn_importattributes/.test(options.source))
+ Parser=await import("./xtuc_2020_acorn_importattributes.js").then(({importAttributes:plugin})=>
+ Parser.extend(plugin));
+ let comments = [];
+ let scope = Parser.parse(source
+,{ecmaVersion: 2022
+ ,sourceType: "module"
+ ,onComment: comments
+ ,locations: syntax === "typescript",
+ });
+ comments.map((comment)=>
+ Object.assign(comment, { type: comment.type + "Comment" })).forEach((comment)=>
+ route(scope, comment, path));
+ if(options.source)scope.meta=
+ {url:options.source.startsWith("file:/")?new URL(options.source):await import("url").then(({pathToFileURL:url})=>url(options.source))
+ };
+ return scope;
+ function descendant(scope){return scope.start<this.start&&this.end<scope.end;}
+ function sibling(scope,index,scopes){return (scopes[index-1]?.end??-1)<this.start&&this.end<scope.start;}
+ function path(scope,comment)
+{Array.isArray(scope)
+?[descendant,sibling,undefined].reduce((found,find)=>
+ (found<0?find&&scope.findIndex(find.bind(comment)):found)
+,-1)
+:descendant.call(comment,scope)&&["body","declaration","consequent"].find((field)=>
+ scope[field]);
+}
 }
 
  export async function sanitize(grammar,format)
@@ -115,7 +110,7 @@ export async function parse(source, syntax = "javascript", options = {}) {
  if(/^Export/.test(boundary))
  statements.push({type:"ExportNamedDeclaration",specifiers:value.specifiers?.map(specifier=>({...specifier,local:specifier.exported}))||
  [{type:"ExportSpecifier",local,exported:local}]});
- return provide(...statements);
+ return plural(...statements);
 });
  if(/\.d\.ts$/.test(grammar.meta?.url.pathname))
  grammar=prune.call(grammar,function initialized({1:value})
@@ -170,7 +165,7 @@ export async function parse(source, syntax = "javascript", options = {}) {
  // })
  await ["banner","footer"].map(extension=>
  output?.[extension]).reduce(record((extension,index)=>
- extension&&compose(extension,parse,({body})=>
+ extension&&stream(extension,parse,({body})=>
  grammar.body[index?"push":"unshift"](...body)))
 ,[]);
  return grammar;
@@ -208,7 +203,7 @@ export async function parse(source, syntax = "javascript", options = {}) {
 ])}));
  let statement=Object.keys(requires).reduce((value,path,index)=>
  merge(value,imports[index].specifiers[0].local,path.split("/")),value);
- return provide(...imports,statement);
+ return plural(...imports,statement);
 }}
  ,dynamicrequire:
  {condition(term,field,path)
@@ -467,20 +462,21 @@ export async function compile(address, dialect = "prettier", options = {}) {
 
 export async function imports(syntax,format={}) {
   if(typeof syntax==="string")
-  syntax=await compose(syntax,true,access,format.syntax,{...format,source:await resolve("url","pathToFileURL",syntax)},parse);
+  syntax=await stream(syntax,true,access,format.syntax,{...format,source:await import("url").then(({pathToFileURL:url})=>url(syntax))},parse);
+  let path=await import("path");
   let terms = search.call(syntax,([field,scope])=>["Declaration", "Expression"].map((type) => "Import" + type).includes(scope?.type));
   let sources = Object.values(terms)
     .map(({ source }) => source.value)
     .filter((source) => source?.startsWith("."))
     .map((peer) => path.resolve(path.dirname(syntax.meta.url.pathname), peer));
   sources = await sources.reduce(record(async source=>
-  compose(source,format,imports)), []);
+  stream(source,format,imports)), []);
   return { [syntax.meta.url.pathname]: sources.reduce(merge, {}) };
 }
 
 export async function exports(source) {
-  let module = await resolve(source);
-  let sources = await compose(imports(source), source, Reflect.get);
+  let module = await import(source);
+  let sources = await stream(imports(source), source, Reflect.get);
   await prune.call(sources, ([path, term]) =>
     exports(path).then((exports) => [term, exports].reduce(merge))
   );
@@ -503,12 +499,12 @@ export async function test(scope, tests, path = []) {
   tests = tests || scope.tests || {};
   let fails = await Object.entries(tests).reduce(
     record(async ([term, value]) => {
-      let traverse=!value.condition||compound(value.condition)||value.condition?.some?.(condition=>condition.condition);
+      let traverse=!value.condition||is(compound,not(serial))(value.condition)||value.condition?.some?.(condition=>condition.condition);
       if (traverse) return test(scope[term] ?? scope, value, path.concat(term));
       let { tether, context = [], terms = [], condition } = value;
       if(!context.length) context.push(undefined);
       try {
-        await compose(...[context].flat(), (scope[term] ?? scope).bind(tether), ...[terms].flat(), assert[condition] || condition);
+        await stream(...[context].flat(), (scope[term] ?? scope).bind(tether), ...[terms].flat(), assert[condition] || condition);
       } catch (fail) {
         let field = path.concat(term).join("/");
         let { stack } = fail;
@@ -522,7 +518,7 @@ export async function test(scope, tests, path = []) {
   fails = fails.reduce(merge, {});
   if (path.length) return fails;
   let format = (item, order, items) =>
-    compose(
+    stream(
       Math.max(...items.map(({ length }) => length)),
       (length) =>
         item +
@@ -552,43 +548,43 @@ export async function test(scope, tests, path = []) {
 }
 
 export const tests=
- {parse:{context:[import.meta.url,true,access],terms:["type",Reflect.get,"Program"],condition:"equal"}
+ {parse:{context:[""],terms:["type",Reflect.get,"Program"],condition:"equal"}
  ,sanitize:
 [{context:["var a=!function(){a=require('')}()",parse,{syntax:"commonjs"}],terms:[serialize,"let exports = {}, module = {\n  exports\n};\nvar a = !(async function () {\n  a = await import('').then(({default: module}) => module);\n})();\nexport default module.exports;\n"],condition:"equal"}
-,{context:["setTimeout(time=>a=require(''),3000)",parse,{syntax:"commonjs"}],terms:[serialize,"let exports = {}, module = {\n  exports\n};\nsetTimeout(3000, async time => a = await import('').then(({default: module}) => module));\nexport default module.exports;\n"],condition:"equal"}
+,{context:["setTimeout(time=>a=require(''),3000)",parse,{syntax:"commonjs"}],terms:[serialize,"let exports = {}, module = {\n  exports\n};\nsetTimeout(async time => a = await import('').then(({default: module}) => module), 3000);\nexport default module.exports;\n"],condition:"equal"}
 ],estree:
  {commonjs:
  {require:
  {condition:
-[{context:["a.b=require('')",parse,["body",0],tether(search),"0",["body"]],terms:[true],condition:"equal"}
-,{context:["require('')",parse,["body",0],tether(search),"0",["body"]],terms:[true],condition:"equal"}
+[{context:["a.b=require('')",parse,["body",0],bind(search),"0",["body"]],terms:[true],condition:"equal"}
+,{context:["require('')",parse,["body",0],bind(search),"0",["body"]],terms:[true],condition:"equal"}
 ],ecma:
-[{context:["require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\n_exports;\n"],condition:"equal"}
-,{context:["require('')()",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\n_exports();\n"],condition:"equal"}
-,{context:["a=require('')()",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na = _exports();\n"],condition:"equal"}
-,{context:["a.b=require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na.b = _exports;\n"],condition:"equal"}
-,{context:["const a=require('');",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\nconst a = _exports;\n"],condition:"equal"}
+[{context:["require('')",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\n_exports;\n"],condition:"equal"}
+,{context:["require('')()",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\n_exports();\n"],condition:"equal"}
+,{context:["a=require('')()",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na = _exports();\n"],condition:"equal"}
+,{context:["a.b=require('')",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na.b = _exports;\n"],condition:"equal"}
+,{context:["const a=require('');",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\nconst a = _exports;\n"],condition:"equal"}
 ]}
  ,dynamicrequire:
  {ecma:
-[{context:["const a=require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"const a = await import('').then(({default: module}) => module);\n"],condition:"equal"}
-,{context:["a=require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('').then(({default: module}) => module);\n"],condition:"equal"}
-,{context:["a=require('')()",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('').then(({default: module}) => module());\n"],condition:"equal"}
-,{context:["a=require('').map()",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('').then(({default: module}) => module.map());\n"],condition:"equal"}
-,{context:["a.b=require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a.b = await import('').then(({default: module}) => module);\n"],condition:"equal"}
-,{context:["a={a:require('')}",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = {\n  a: require('')\n};\n"],condition:"equal"}
-,{context:["a={a:require('')}",parse,["body",0,"expression","right","properties",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a: await import('').then(({default: module}) => module)\n"],condition:"equal"}
-,{context:["compose({a:require('')})",parse,["body",0,"expression"],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"compose({\n  a: require('')\n})\n"],condition:"equal"}
+[{context:["const a=require('')",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"const a = await import('').then(({default: module}) => module);\n"],condition:"equal"}
+,{context:["a=require('')",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('').then(({default: module}) => module);\n"],condition:"equal"}
+,{context:["a=require('')()",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('').then(({default: module}) => module());\n"],condition:"equal"}
+,{context:["a=require('').map()",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('').then(({default: module}) => module.map());\n"],condition:"equal"}
+,{context:["a.b=require('')",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a.b = await import('').then(({default: module}) => module);\n"],condition:"equal"}
+,{context:["a={a:require('')}",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = {\n  a: require('')\n};\n"],condition:"equal"}
+,{context:["a={a:require('')}",parse,["body",0,"expression","right","properties",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a: await import('').then(({default: module}) => module)\n"],condition:"equal"}
+,{context:["compose({a:require('')})",parse,["body",0,"expression"],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"compose({\n  a: require('')\n})\n"],condition:"equal"}
 ]}
  ,dynamicblock:[[true],["async",Reflect.get,true]].map((terms)=>
-[{context:["function a(){const a=require('');}",parse,["body",0],tether(search)],terms,condition:"equal"}
-,{context:["function a(){a=require('');}",parse,["body",0],tether(search)],terms,condition:"equal"}
+[{context:["function a(){const a=require('');}",parse,["body",0],bind(search)],terms,condition:"equal"}
+,{context:["function a(){a=require('');}",parse,["body",0],bind(search)],terms,condition:"equal"}
 ]).reduce((condition,ecma)=>({condition,ecma}))
  }
  ,typescript:
  {typeimport:{condition:
-[{context:["import type {a} from 'a'","typescript",parse,["body",0],tether(search)],terms:[true],condition:"equal"}
-,{context:["import type a from 'a'","typescript",parse,["body",0],tether(search)],terms:[true],condition:"equal"}
+[{context:["import type {a} from 'a'","typescript",parse,["body",0],bind(search)],terms:[true],condition:"equal"}
+,{context:["import type a from 'a'","typescript",parse,["body",0],bind(search)],terms:[true],condition:"equal"}
 ]}
  }
  }

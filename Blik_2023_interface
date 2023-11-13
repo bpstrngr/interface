@@ -24,9 +24,10 @@ Doing so leaves us without access to invoke their functions, hence this module
 extends the 3 steps with an inference of arguments provided by a client (shell/function). 
 
 Examples: 
- node --loader=./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3; (node.js 16)
- node --import=./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3; (node.js 20.7.0)
- node --import 'data:text/javascript;import("module").then(({register})=>register("./Blik_2023_interface.js",{parentURL:pathToFileURL("./")}));' ./Blik_2023_search.js sum 1 2 3; (node.js 20.7.0)
+ node --loader=./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3; # node.js 16
+ node --import=./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3; # node.js 20.7.0
+ node --import 'data:text/javascript;import("module").then(({register})=>register("./Blik_2023_interface.js",{parentURL:pathToFileURL("./")}));' ./Blik_2023_search.js sum 1 2 3; # node.js 20.7.0
+ node --import=./Blik_2023_interface.js --experimental-detect-module ./Blik_2023_search.js sum 1 2 3; # node.js 21.1.0
  node ./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3;
  import("./Blik_2023_interface.js").then(({resolve})=>resolve("./Blik_2023_search.js","sum",1,2,3));
  http.on("request",({path,query},response)=>resolve(path,...query).then(body=>response.send({body})));
