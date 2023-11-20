@@ -9,15 +9,21 @@
  var unbundled={};
 
  if(!globalThis.window)
- if(process.execArgv.some(flag=>new RegExp("^--import[= ][^ ]*"+file).test(flag)))
- // nodejs 20.7.0 compatibility. 
- await Promise.all(["module","worker_threads"].map(module=>
+ Promise.resolve
+(process.execArgv.some(flag=>new RegExp("^--import[= ][^ ]*"+file).test(flag))
+ // nodejs 20.7's --import flag registers loader on a worker thread. 
+?Error().stack.split(/\n */).pop().match(/^at async MessagePort.handleMessage/)
+?0
+:Promise.all(["module","worker_threads"].map(module=>
  import(module))).then(([{register},{MessageChannel}])=>
  [new MessageChannel(),import.meta.url].reduce(({port1,port2},parentURL)=>
- register(address,parentURL,{data:{socket:port2},transferList:[port2]})));
- else if(!process.execArgv.some(flag=>new RegExp("^--loader[= ][^ ]*"+file).test(flag)))
- // nodejs 16 backwards compatibility. 
- stream(...process.argv.slice(2),resolve,console.log);
+ register(address,parentURL,{data:{socket:port2},transferList:[port2]})||
+ port1.on("message",note)&&
+ 1))
+ // nodejs 16's --loader flag loads modules on main thread, so no need to infer explicitly. 
+:2*!process.execArgv.some(flag=>new RegExp("^--loader[= ][^ ]*"+file).test(flag))
+).then(index=>
+ index&&compose(resolve,note)(...process.argv.slice(index)));
 
  export function track(...context)
 {// console.log with return value.
@@ -148,7 +154,7 @@ export const purge = (path) => import("fs").then(({promises:{rm}})=>rm(path, { r
 
  export async function initialize(options)
 {if(process.execArgv.some(flag=>new RegExp("^--import[= ][^ ]*"+file).test(flag)))
- options.socket.postMessage("Module interface ready.");
+ options.socket.postMessage("Module loader registered:\n"+import.meta.url);
 }
 
  export async function resolve(source,context,next)
@@ -157,14 +163,17 @@ export const purge = (path) => import("fs").then(({promises:{rm}})=>rm(path, { r
  // (https://nodejs.org/api/esm.html#esm_loaders). 
  if(Array.isArray(source))
  return source.reduce(record(source=>resolve(source,context,next)),[]);
- if(typeof source==="object")
+ if(!string(source))
  return source;
  let internal=context?.parentURL;
  let loading=next?.name==="nextResolve";
  let command=!loading||!internal;
  let target=internal?decodeURI(new URL(internal).pathname):address;
  let relation=target.replace(/\/[^/]*$/,"");
- let absolute=/^file:/.test(source)?new URL(source).pathname:/^\//.test(source)?source:[relation,source].join("/");
+ let absolute=/^\//.test(source)?source
+:/^file:/.test(source)?new URL(source).pathname
+:source==="path"?[relation,source].join("/")
+:await import("path").then(({resolve})=>resolve(relation,source));
  let module=command?import(source):next(source,context).catch(async function recover(fail)
 {let index={ERR_MODULE_NOT_FOUND:0,ERR_UNSUPPORTED_DIR_IMPORT:1}[fail.code];
  let immediate=fail.message.includes("'"+absolute+"'");
@@ -189,18 +198,16 @@ export const purge = (path) => import("fs").then(({promises:{rm}})=>rm(path, { r
  return module;
  let client=loading&&!internal;
  [source,...context]=client?process.argv.slice(1):Array.from(arguments);
- let term=context.length?[context.shift(),Reflect.get]:[];
- // --watch flag is omitted from execArgv for unknown reason.
  let suspense=client&&!process.execArgv.includes("--watch")?10*60*1000:0;
- return stream(module,...term,apply.bind(null,plural(...context)),terms=>
- client?stream(terms,note,wait.bind(0,suspense),term=>0,process.exit):terms);
+ return compose(context.shift(),terms=>
+ client?stream(terms,wait.bind(0,suspense),term=>0,process.exit):terms)(module,...context);
 };
 
  async function retrieve(absolute,dependent)
 {// bundle if not found despite source entry, 
  // load source if source entry already downloaded for bundling (eg. imported by bundler/parser/serializer). 
  if(!defined(this))exit([retrieve.name,"requires bound array to track unbundled source imports."].join(" "));
- let {default:modules}=await import("./Blik_2023_sources.json",{assert:{type:"json"}});
+ let {default:modules}=await import("./Blik_2023_sources.json");
  let path=await import("path");
  let target=absolute.replace(/\.js$/, "/");
  let relative=path.relative(location,absolute);
@@ -218,11 +225,11 @@ export const purge = (path) => import("fs").then(({promises:{rm}})=>rm(path, { r
  // Has a low probability to be invalid in the final purge stage of bundling. A simple restart will resolve the available bundle at that point.
  path.resolve(location,...remote?[target,"0"]:[],input[0])
 ,file=>access(file).then(async present=>!this[target]?.shortCircuit
-?note.call(3,"Accessing source entry for \""+relative+"\":\n "+file+"\n (bundling already in progress or interrupted before purge)")&&
+?track.call(3,"Accessing source entry for \""+relative+"\":\n "+file+"\n (bundling already in progress or interrupted before purge)")&&
  resolve("url","pathToFileURL",file).then(({href:url})=>this[target]={url,format:relative,shortCircuit:true})
 :this[target]).catch(async fail=>
  this[target]=this[target]||
- note.call(2,"Found source of \""+relative+"\" for",dependent+"...")&&
+ track.call(2,"Found source of \""+relative+"\" for",dependent+"...")&&
  assemble(sources,absolute).then(bundle=>delete this[target]&&bundle)));
  let sloppy=!/\.(js|json)$/.test(absolute)&&
  await ["js","ts","d.ts"].map(extension=>absolute+"."+extension).reduce((module,file)=>
@@ -241,7 +248,7 @@ export const purge = (path) => import("fs").then(({promises:{rm}})=>rm(path, { r
  absolute.startsWith(path.join(location,target.replace(/\.js$/,""),String(index)))))||[];
  let namespace=definition&&Object.values(search.call([definition],({1:entry})=>
  Array.isArray(entry)||typeof entry==="string")).flat().find(entry=>entry.alias);
- let alias=namespace?.alias[source];
+let alias=namespace?.alias[source];
  return alias?path.resolve(location,alias):exit(Error("no alias for "+source+" in "+target));
 };
 
@@ -269,7 +276,7 @@ export const purge = (path) => import("fs").then(({promises:{rm}})=>rm(path, { r
  stream(asset,decompress,depot,decompress)).then(ready=>
  stream(asset,purge)))
 :await checkout(address, depot, branch, route).catch(fail=>fail).then(done=>
- access(depot,false).then(done=>note.call(2,"Source downloaded:",address,"->",depot)).catch(fail=>exit(done)));
+ access(depot,false).then(done=>track.call(2,"Source downloaded:",address,"->",depot)).catch(fail=>exit(done)));
  let relation=remote?depot:location;
  let entries=await [input].flat().reduce(record(input=>typeof input==="string"
 ?Promise.resolve(/\/$/.test(input)
@@ -285,12 +292,12 @@ export const purge = (path) => import("fs").then(({promises:{rm}})=>rm(path, { r
  format=format.reduce(merge,{});
  await patch(path.dirname(source[0]), patches);
  await [format.scripts].flat().filter(Boolean).reduce(record(script=>
- note.call(3,"running "+script+" for "+target+"...")&&
- resolve(path.resolve(path.dirname(target),script)).then(({default:module})=>module).then(module=>note.call(2,script,"for",target+":",module)))
+ track.call(3,"running "+script+" for "+target+"...")&&
+ resolve(path.resolve(path.dirname(target),script)).then(({default:module})=>module).then(module=>track.call(2,script,"for",target+":",module)))
 ,[]);
  let part=await bundle(source,format);
  return access(length>1?path.dirname(depot)+"_"+index+".js":target,part,true).then(file=>
- note.call(2,file,"bundle ready.")&&file);
+ track.call(2,file,"bundle ready.")&&file);
 }),[]).catch(fail=>purge(deposit).finally(exit.bind(null,fail)));
  return Promise.resolve(input.length>1
 ?bundle(input.flat()).then(content=>access(target,content,true))
@@ -302,13 +309,14 @@ export const purge = (path) => import("fs").then(({promises:{rm}})=>rm(path, { r
  // compose(source,true,access,interpret,format,sanitize,serialize,modularize). 
  let version=process.versions.node.split(".")[0];
  if(string(context))context={format:context};
- let {importAssertions:assertion={},format}=context||{};
- let syntax=assertion?.type||mime(source)?.replace(/.*\//,"");
+ let {importAttributes:attributes,importAssertions:assertion,format}=context||{};
+ attributes=assertion||attributes||{};
+ let syntax=attributes?.type||mime(source)?.replace(/.*\//,"");
  if(syntax==="json"&&format!==syntax)
  Object.assign(context,{format:format=syntax});
- if(format==="json"&&assertion.type!==format)
- // bypasses need for static import assertions. 
- Object.assign(assertion,{type:format});
+ if(format==="json"&&attributes.type!==format)
+ // bypass need for static import attributes. 
+ Object.assign(attributes,{type:format});
  if(format!=="builtin"&&/^node:/.test(source))
  // builtin format is sometimes omitted by nodejs. 
  Object.assign(context,{format:format="builtin"});
@@ -337,7 +345,7 @@ export const purge = (path) => import("fs").then(({promises:{rm}})=>rm(path, { r
  let edits=Object.fromEntries(Object.entries(definition.edit||{}).flatMap(([field,value])=>
  string(value)?[[field,value]]:source.endsWith(field)?Object.entries(value):[]));
  source=await stream(source,true,access,edits,edit,...patriate).catch(fail=>
- note.call(1,"Failed to patriate "+syntax+" \""+source+"\" due to",fail)&&exit(fail));
+ track.call(1,"Failed to patriate "+syntax+" \""+source+"\" due to",fail)&&exit(fail));
  return next?{source,format:{json:"json"}[syntax]||"module",shortCircuit:true}:source;
 };
 
@@ -475,7 +483,7 @@ export function patch(repository, patch) {
 };
 
 export async function spawn(command, ...context) {
-  note.call(3,command, ...context, "...");
+  track.call(3,command, ...context, "...");
   let process = await resolve("child_process", "spawn", command, context);
   let streams = ["out", "err"].map((stream) => process["std" + stream]);
   streams.forEach((stream,index,[out]) => stream.on(

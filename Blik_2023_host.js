@@ -42,8 +42,7 @@
 
  export var {window,fetch}=globalThis.window?globalThis
 :{async window(location)
-{let {resolve}=await import("./Blik_2023_interface.js");
- let {JSDOM}=await compose.call("./domenic_2022_jsdom_rollup.js",resolve,"default");
+{let {JSDOM}=await compose.call("./domenic_2022_jsdom_rollup.js",resolve,"default");
  await wait(3000);
  return {window}=new JSDOM("",{url:location});
 },async fetch(request,header)

@@ -104,15 +104,18 @@
  export function note(...context)
 {// expose context in console. 
  let stack=trace().slice(1);
- let source=Object.values(stack)[0]?.[0]||"...intractable";
+ let neutral="\x1b[0m";
+ let blue=neutral+"\x1b[40m\x1b[34m\x1b[1m\x1b[3m";
+ let dim=neutral+"\x1b[40m\x1b[34m\x1b[2m\x1b[1m\x1b[3m";
+ let source=Object.values(stack)[0]?.[0].replace("at ","").replace(" (.",dim+"\n (\x1b[30mfile://"+location).replace(")",dim+")")||"...intractable";
+ source=!globalThis.window?blue+source+"\x1b[0m":source;
  stack=compose.call
 (stack.reverse()
 ,infer("map",compose(drop(0,1),infer("slice",1),infer("filter",Boolean),".","join"))
-,infer("map",(stack,index,{length})=>(index+1==length?"\x1b[36m\x1b[7m":"")+stack)
-,"\x1b[0m/\x1b[36m","join"
+,infer("map",(stack,index,{length})=>index+1==length?source:stack)
+,blue+"/"+dim,"join"
 )+"\x1b[0m";
- source=!globalThis.window?"\x1b[30m"+source+"\x1b[0m":source;
- console.log("\x1b[36m\x1b[7m"+clock(new Date())+"\x1b[0m "+stack+" ("+source+"\x1b[36m)\x1b[0m:\n");
+ console.info(dim+"\x1b[3m "+clock(new Date())+" "+blue+stack+neutral+":\n");
  console.log(...context);
  return provide(context);
 };
