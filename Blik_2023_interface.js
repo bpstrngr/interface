@@ -1,46 +1,30 @@
  import {Parser} from "./isaacs_2011_node-tar.js";
  import {note,trace,compound,apply,stream,record,provide,tether,drop,swap,infer,buffer,is,plural,wait,string,defined,compose,exit} from "./Blik_2023_inference.js";
  import {merge,stringify,search} from "./Blik_2023_search.js";
- import {parse,sanitize,serialize,modularise,compile,test} from "./Blik_2023_meta.js";
+ import {parse,sanitize,serialize,compile,test} from "./Blik_2023_meta.js";
  export const address=new URL(import.meta.url).pathname;
  export const location = address.replace(/\/[^/]*$/,"");//path.dirname(address);
  export const file=address.replace(/.*\//,"");//path.basename(address);
- var colors={steady:"\x1b[0m",alarm:"\x1b[31m",ready:"\x1b[32m",busy:"\x1b[33m",bright:"\x1b[1m",dim:"\x1b[2m",underscore:"\x1b[4m", blink:"\x1b[5m", reverse:"\x1b[7m",invisible:"\x1b[8m", black:"\x1b[30m", red:"\x1b[31m", green:"\x1b[32m",yellow:"\x1b[33m",blue:"\x1b[34m", magenta:"\x1b[35m",cyan:"\x1b[36m", white:"\x1b[37m",gray:"\x1b[90m",night:"\x1b[40m",fire:"\x1b[41m",grass:"\x1b[42m",sun:"\x1b[43m",sea:"\x1b[44m",club:"\x1b[45m",sky:"\x1b[46m",milk:"\x1b[47m",fog:"\x1b[100m"};
  var unbundled={};
 
- if(!globalThis.window)
- Promise.resolve
+ let index=!globalThis.window&&
+ await Promise.resolve
 (process.execArgv.some(flag=>new RegExp("^--import[= ][^ ]*"+file).test(flag))
- // nodejs 20.7's --import flag registers loader on a worker thread. 
+ // register loader thread and infer context with nodejs 20.7's --import flag.
 ?Error().stack.split(/\n */).pop().match(/^at async MessagePort.handleMessage/)
+ // stay modular on worker thread.
 ?0
-:Promise.all(["module","worker_threads"].map(module=>
- import(module))).then(([{register},{MessageChannel}])=>
+:resolve(["module","worker_threads"]).then(([{register},{MessageChannel}])=>
  [new MessageChannel(),import.meta.url].reduce(({port1,port2},parentURL)=>
  register(address,parentURL,{data:{socket:port2},transferList:[port2]})||
- port1.on("message",note)&&
+ port1.on("message",note.bind(3))&&
  1))
- // nodejs 16's --loader flag loads modules on main thread, so no need to infer explicitly. 
+ // nodejs 16's --loader flag loads modules on primary thread, so no need to infer context explicitly. 
+ // without either flag, context begins at second index. 
 :2*!process.execArgv.some(flag=>new RegExp("^--loader[= ][^ ]*"+file).test(flag))
-).then(index=>
- index&&compose(resolve,note)(...process.argv.slice(index)));
-
- export function track(...context)
-{// console.log with return value.
- let stack = Error().stack.split("\n");
- let location = stack[2] || stack[1];
- if(/^ *at infer /.test(location))
- location = stack[5];
- location = location.replace(/^ */, "");
- let stream=console[this?"warn":"log"];
- stream("\x1b[36m" + location + ":\x1b[0m");
- let steady=colors.steady;
- let phase=colors[this]||Object.values(colors)[this]||steady;
- process.stdout.write(phase);
- stream(...context);
- process.stdout.write(steady);
- return plural(...context);
-}
+);
+ if(index)
+ compose(resolve,note)(...process.argv.slice(index));
 
  export async function prompt(...context)
 {// request context from client interface, 
@@ -105,21 +89,21 @@
 {// access folder/file's metadata, content with specified encoding, or overwrite its content.
  if(file.startsWith("http"))
  return request(file);
- if (/^file:\/\//.test(file))
- file = new URL(file).pathname;
+ if(/^file:\/\//.test(file))
+ file=new URL(file).pathname;
  let {promises:fs}=await import("fs");
- if (!encoding)
+ if(!encoding)
  return fs.stat(file);
  if(/\/$/.test(file))
- return fs.readdir(file,{withFileTypes: true});
- if (content)
- return fs.writeFile(file, ...typeof content==="boolean"?[encoding, 'utf8']:[content, encoding]).then((written) => file);
+ return fs.readdir(file,{withFileTypes:true});
+ if(content)
+ return fs.writeFile(file,...typeof content==="boolean"?[encoding,'utf8']:[content,encoding]).then((written)=>file);
  let buffer=await fs.readFile(file);
  if(["binary",1].includes(encoding))
  return buffer;
  if(encoding===true)encoding="utf8";
  content=buffer.toString(encoding);
- if(encoding === "object")
+ if(encoding==="object")
  return JSON.parse(content);
  return content;
 }
@@ -146,7 +130,7 @@ export const purge = (path) => import("fs").then(({promises:{rm}})=>rm(path, { r
  //path=new URL(note(path)).pathname;
  if(instance)
  return instance(path);
- require.instance=await import("module").then(({createRequire})=>createRequire(import.meta.url));
+ require.instance=await resolve("module","createRequire",import.meta.url);
  return require.instance(path);
 };
 
@@ -188,19 +172,21 @@ export const purge = (path) => import("fs").then(({promises:{rm}})=>rm(path, { r
 ][index]||Promise.reject.bind(Promise,fail);
  return recovery(absolute,target).then(source=>
  string(source)?resolve(source,context,next):source).catch(reason=>
- track.call(1,recovery.name,"failed for",absolute+":\n",reason)&&
+ note.call(1,recovery.name,"failed for",absolute+":\n",reason)&&
  exit(fail));
 });
+ //if(source.endsWith("face.js"))console.log(source,module)
+ // if(source.endsWith("face.js"))await module.then(console.log).catch(console.log)
  let bundle=Object.keys(unbundled).find(depot=>absolute.startsWith(depot));
  if(bundle)
  module=stream(module,{format:bundle.replace(/\/$/,".js").replace(/.*\//,"")},1,merge).catch(exit);
  if(loading&&internal)
  return module;
- let client=loading&&!internal;
- [source,...context]=client?process.argv.slice(1):Array.from(arguments);
- let suspense=client&&!process.execArgv.includes("--watch")?10*60*1000:0;
+ let primary=loading&&!internal;
+ [source,...context]=primary?process.argv.slice(1):Array.from(arguments);
+ let suspense=primary&&!process.execArgv.includes("--watch")?10*60*1000:0;
  return compose(context.shift(),terms=>
- client?stream(terms,wait.bind(0,suspense),term=>0,process.exit):terms)(module,...context);
+ primary?stream(terms,wait.bind(0,suspense),term=>0,process.exit):terms)(module,...context);
 };
 
  async function retrieve(absolute,dependent)
@@ -225,11 +211,11 @@ export const purge = (path) => import("fs").then(({promises:{rm}})=>rm(path, { r
  // Has a low probability to be invalid in the final purge stage of bundling. A simple restart will resolve the available bundle at that point.
  path.resolve(location,...remote?[target,"0"]:[],input[0])
 ,file=>access(file).then(async present=>!this[target]?.shortCircuit
-?track.call(3,"Accessing source entry for \""+relative+"\":\n "+file+"\n (bundling already in progress or interrupted before purge)")&&
+?note.call(3,"Accessing source entry for \""+relative+"\":\n "+file+"\n (bundling already in progress or interrupted before purge)")&&
  resolve("url","pathToFileURL",file).then(({href:url})=>this[target]={url,format:relative,shortCircuit:true})
 :this[target]).catch(async fail=>
  this[target]=this[target]||
- track.call(2,"Found source of \""+relative+"\" for",dependent+"...")&&
+ note.call(2,"Found source of \""+relative+"\" for",dependent+"...")&&
  assemble(sources,absolute).then(bundle=>delete this[target]&&bundle)));
  let sloppy=!/\.(js|json)$/.test(absolute)&&
  await ["js","ts","d.ts"].map(extension=>absolute+"."+extension).reduce((module,file)=>
@@ -276,7 +262,7 @@ let alias=namespace?.alias[source];
  stream(asset,decompress,depot,decompress)).then(ready=>
  stream(asset,purge)))
 :await checkout(address, depot, branch, route).catch(fail=>fail).then(done=>
- access(depot,false).then(done=>track.call(2,"Source downloaded:",address,"->",depot)).catch(fail=>exit(done)));
+ access(depot,false).then(done=>note.call(2,"Source downloaded:",address,"->",depot)).catch(fail=>exit(done)));
  let relation=remote?depot:location;
  let entries=await [input].flat().reduce(record(input=>typeof input==="string"
 ?Promise.resolve(/\/$/.test(input)
@@ -292,12 +278,12 @@ let alias=namespace?.alias[source];
  format=format.reduce(merge,{});
  await patch(path.dirname(source[0]), patches);
  await [format.scripts].flat().filter(Boolean).reduce(record(script=>
- track.call(3,"running "+script+" for "+target+"...")&&
- resolve(path.resolve(path.dirname(target),script)).then(({default:module})=>module).then(module=>track.call(2,script,"for",target+":",module)))
+ note.call(3,"running "+script+" for "+target+"...")&&
+ resolve(path.resolve(path.dirname(target),script)).then(({default:module})=>module).then(module=>note.call(2,script,"for",target+":",module)))
 ,[]);
  let part=await bundle(source,format);
  return access(length>1?path.dirname(depot)+"_"+index+".js":target,part,true).then(file=>
- track.call(2,file,"bundle ready.")&&file);
+ note.call(2,file,"bundle ready.")&&file);
 }),[]).catch(fail=>purge(deposit).finally(exit.bind(null,fail)));
  return Promise.resolve(input.length>1
 ?bundle(input.flat()).then(content=>access(target,content,true))
@@ -333,6 +319,7 @@ let alias=namespace?.alias[source];
  test(source).catch(fail=>fail).then(result=>
  console.log("\x1b[4m"+source+"\x1b[0m:\n"+result)))&&module
 :module);
+ if(source.endsWith("face.js"))console.log(...arguments)
  let {comment,...definition}=[{syntax},typeof format==="object"?format:await import("./Blik_2023_sources.json").then(sources=>
  [sources.default[format]||{}].reduce(function flat(entries,source)
 {return [entries,typeof source!=="object"||Array.isArray(source)?source:Object.values(source).reduce(flat,[])].flat();
@@ -345,7 +332,7 @@ let alias=namespace?.alias[source];
  let edits=Object.fromEntries(Object.entries(definition.edit||{}).flatMap(([field,value])=>
  string(value)?[[field,value]]:source.endsWith(field)?Object.entries(value):[]));
  source=await stream(source,true,access,edits,edit,...patriate).catch(fail=>
- track.call(1,"Failed to patriate "+syntax+" \""+source+"\" due to",fail)&&exit(fail));
+ note.call(1,"Failed to patriate "+syntax+" \""+source+"\" due to",fail)&&exit(fail));
  return next?{source,format:{json:"json"}[syntax]||"module",shortCircuit:true}:source;
 };
 
@@ -355,6 +342,30 @@ let alias=namespace?.alias[source];
  [value, ...groups.slice(0,-2)].reduce((value, group, index) =>
  value.replaceAll("$"+index, group)))
 ,source);
+};
+
+ export async function modularise(resource,identifier,context={})
+{// uses --experimental-vm-modules 
+ let {SourceTextModule,createContext,isContext}=await import("vm");
+ let {default:{resolve}}=await import("path");
+ let {pathToFileURL}=await import("url");
+ identifier=resolve(identifier)
+ if(!isContext(context))
+ context=createContext({imports:new Map(),URL});
+ let options=
+ {identifier,context
+ ,importModuleDynamically:identifer=>import(identifer)
+ ,initializeImportMeta:meta=>Object.assign(meta,{url:pathToFileURL(identifier)})
+ ,cachedData:context.imports.get(identifier)
+ };
+ note(identifier,options.cachedData);
+ let module=new SourceTextModule(resource||"",options);
+ context.imports.set(identifier,module.createCachedData());
+ await module.link((identifier,{context})=>
+ access(identifier,true).then(source=>
+ modularise(source,identifier,context)));
+ await module.evaluate().catch(compose(note,exit));
+ return module;
 };
 
  export async function bundle(source,format)
@@ -483,7 +494,7 @@ export function patch(repository, patch) {
 };
 
 export async function spawn(command, ...context) {
-  track.call(3,command, ...context, "...");
+  note.call(3,command, ...context, "...");
   let process = await resolve("child_process", "spawn", command, context);
   let streams = ["out", "err"].map((stream) => process["std" + stream]);
   streams.forEach((stream,index,[out]) => stream.on(

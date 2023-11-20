@@ -355,32 +355,32 @@ export async function serialize(syntax, format = "astring", options) {
   return import(module).then(module=>module[term](syntax, options));
 }
 
- export async function modularise(resource,identifier,context={})
-{// uses --experimental-vm-modules 
- let {SourceTextModule,createContext,isContext}=await import("vm");
- let {default:{resolve}}=await import("path");
- if(!isContext(context))
- context=createContext(
- {cache:new Map(),imports:new Map()
- ,importModuleDynamically:identifer=>({})
- ,initializeImportMeta:meta=>Object.assign(meta,{url:identifier})
- })
- let module=new SourceTextModule(resource||"",{identifier,context});
- context.cache.set(identifier,module);
- await module.link((identifier,{context})=>
- context.cache.has(identifier)
-?context.cache.get(identifier)
-:import(identifier).then(module=>
- context.imports.set(identifier,module)&&
- modularise(Object.getOwnPropertyNames(module).sort(name=>
- name!="default"||-1).map((name,index,exports)=>name=="default"
-?"export default imports.get(\""+identifier+"\").default;"
-:"export const {"+exports.splice(index).join(",")+`}=
- imports.get("`+identifier+"\");").join("\n")
-,identifier,context)));
- await module.evaluate();
- return module;
-};
+//  export async function modularise(resource,identifier,context={})
+// {// uses --experimental-vm-modules 
+//  let {SourceTextModule,createContext,isContext}=await import("vm");
+//  let {default:{resolve}}=await import("path");
+//  if(!isContext(context))
+//  context=createContext(
+//  {cache:new Map(),imports:new Map()
+//  ,importModuleDynamically:identifer=>({})
+//  ,initializeImportMeta:meta=>Object.assign(meta,{url:identifier})
+//  })
+//  let module=new SourceTextModule(resource||"",{identifier,context});
+//  context.cache.set(identifier,module);
+//  await module.link((identifier,{context})=>
+//  context.cache.has(identifier)
+// ?context.cache.get(identifier)
+// :import(identifier).then(module=>
+//  context.imports.set(identifier,module)&&
+//  modularise(Object.getOwnPropertyNames(module).sort(name=>
+//  name!="default"||-1).map((name,index,exports)=>name=="default"
+// ?"export default imports.get(\""+identifier+"\").default;"
+// :"export const {"+exports.splice(index).join(",")+`}=
+//  imports.get("`+identifier+"\");").join("\n")
+// ,identifier,context)));
+//  await module.evaluate();
+//  return module;
+// };
 
  function set(options, namespace)
 {return Object.entries(namespace).reduce(

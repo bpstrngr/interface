@@ -1,6 +1,6 @@
  import JSDOM from "./domenic_2022_jsdom_rollup.js";
- import {note,trace,clock,is,compound,when,pattern,infer,tether,collect,provide,route,buffer,compose,combine,either,drop,swap,record,wait,exit} from "./Blik_2023_inference.js";
- import {track,prompt,resolve,access,list} from "./Blik_2023_interface.js";
+ import {note,describe,clock,observe,is,compound,when,pattern,infer,tether,collect,provide,route,buffer,compose,combine,either,drop,swap,record,wait,exit} from "./Blik_2023_inference.js";
+ import {prompt,resolve,access,list} from "./Blik_2023_interface.js";
  import {search,merge} from "./Blik_2023_search.js";
 
  export default
@@ -12,7 +12,7 @@
  return forward(request.url,request);
  let scope=await module(this||{});
  let path=await import("path");
- let address="."+request.url;
+ let address=request.url.replace(/^\//,"./");
  if(!permit(address,classified))
  throw Error("Classified");
  let file=await access(address);
@@ -79,6 +79,7 @@
 (combine(swap(scope),"path",either())
 ,buffer(either(tether(route),"error",drop(-1)),provide)
 )(request);
+ if(response instanceof Error)note.call(1,response)
  let status=response?response instanceof Error?500:response.status||200:404;
  let success=status<400;
  let body=response instanceof Error?response.message:response?.body??response??"no such file or function";
@@ -102,7 +103,7 @@
  return json?this.body:JSON.stringify(this.body);
  return json?JSON.parse(this.body):this.body;
 },arrayBuffer()
-{note(this.body);return this.body.constructor?.name=="Buffer"?this.body:Buffer.from(this.body,"utf-8");
+{return this.body.constructor?.name=="Buffer"?this.body:Buffer.from(this.body,"utf-8");
 }});
 }};
 
@@ -150,7 +151,7 @@
  if(!cpus.length)
  cpus=[{model:os.platform()}];
  return cpus.reduce(record((cpu,index,cpus)=>compose.call(wait(index*1000)
-,"\x1b[31m"+cluster.fork().id+"/"+cpus.length+" "+cpu.model+(!cpus[index+1]?"":"\nnext fork in a second...")+"\x1b[0m",note))
+,swap(cluster.fork().id+"/"+cpus.length+" "+cpu.model+(!cpus[index+1]?"":"\nnext fork in a second...")),note.bind(1)))
 ,[]);
 };
  encrypt(parameters.hmac);
@@ -159,21 +160,27 @@
  source=await import(source);
  let certificates=protocol.globalAgent.protocol=="https:"?[certify(Object.values(parameters.certification)[0],parameters.distinguishedname)]:[];
  let open=infer("createServer",...certificates,respond);
- let listen=infer("listen",parameters.port,function listen(port){note(this._connectionKey||port,"open")});
+ function listen(port)
+{let agent=protocol.globalAgent.protocol+"//"+(this._connectionKey||port)+"/";
+ let response={end(body){return {...this.header,body};},setHeader(header){this.header={header}},writeHead(){}};
+ compose(prompt,agent,"url",describe,{headers:{},method:"get"},merge
+,response,tether(send),note,swap(this),port,tether(listen))({[agent]:undefined});
+};
  let virtualize=Object.entries(parameters.certification||{}).slice(1).map(([name,certificate])=>
  compose(name,certify(certificate),combine("addContext",either()),drop(1)));
- let channel=await compose(open,listen,...virtualize)(protocol);
+ let channel=await compose(open,infer("listen",parameters.port,listen),...virtualize)(protocol);
  //compose("default",protocol.open)(import("./Blik_2020_room.js"));
  return new Promise(resolve=>channel.on("close",resolve));
  function respond(request,response)
-{return Object.entries(
- {data(data){this.body+=decoder.write(data);}
- ,end()
+{return observe.call(Object.assign(request,{body:""})
+,{data(data){this.body+=decoder.write(data);}
+ ,end(){send.call(request,response)}
+ });
+};
+ function send(response)
 {let distinction=({url,headers})=>url+(headers?.cookie||"");
- let retrieve=remember?compose(record(fetch,distinction),distinction(request)):tether(fetch);
- return compose(retrieve,response||request,tether(submit))(source.default,this);
-}}).reduce((request,[event,action])=>request.on(event,action)
-,Object.assign(request,{body:""}));
+ let retrieve=remember?compose(record(fetch,distinction),distinction(this)):tether(fetch);
+ return compose(retrieve,response||this,tether(submit))(source.default,this);
 };
 };
 

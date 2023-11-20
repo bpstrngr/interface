@@ -1,5 +1,6 @@
  export const address=new URL(import.meta.url).pathname;
  export const location = address.replace(/\/[^/]*$/,"");
+ var colors={steady:"\x1b[0m",alarm:"\x1b[31m",ready:"\x1b[32m",busy:"\x1b[33m",bright:"\x1b[1m",dim:"\x1b[2m",underscore:"\x1b[4m", blink:"\x1b[5m", reverse:"\x1b[7m",invisible:"\x1b[8m", black:"\x1b[30m", red:"\x1b[31m", green:"\x1b[32m",yellow:"\x1b[33m",blue:"\x1b[34m", magenta:"\x1b[35m",cyan:"\x1b[36m", white:"\x1b[37m",gray:"\x1b[90m",night:"\x1b[40m",fire:"\x1b[41m",grass:"\x1b[42m",sun:"\x1b[43m",sea:"\x1b[44m",club:"\x1b[45m",sky:"\x1b[46m",milk:"\x1b[47m",fog:"\x1b[100m"};
 
  export function defined(term){return term!==undefined;};
  export function compound(term){return typeof term==="object";};
@@ -60,65 +61,11 @@
  return time;
 };
 
- export function trace(factor,path=[])
-{// trace factor in scope or stack. 
- let scope=this;
- let remarks=compose.call(
-{term:/at (?:async )*([^ ]*)/
-,file:/(?:.*[\(_|\/])*(.*?)/
-,location:/(?:.js)*(?::[0-9]+){0,2}/
-},Object.values,infer("map",infer("source")),"","join",RegExp);
- if(!something(factor))
- return compose.call
-(Error,combine
-(infer()
-,compose(...Array(2).fill("stackTraceLimit"),describe)
-,compose
-({stackTraceLimit:Infinity},Object.assign
-,Function.call,"stack",/\n */,"split"
-,infer("map",compose
-(infer("replace","file://"+location,".")
-,infer("match",remarks)
-,combine(infer("slice",1,3),"input")
-,combine("concat")
-,infer("reverse")
-))
-)
-),combine
-(drop(2)
-,compose(drop(0,2),Object.assign)
-)
-,drop(0,1)
-,combine(infer(),infer("findIndex",({2:term})=>term==trace.name))
-,infer("slice")
-,infer("slice",1)
-);
- if(scope===factor||!scope)
- return path;
- return Object.entries(scope).reduce((hit,[track,scope])=>hit||
- [factor===scope,path.concat(track)].reduce((hit,path)=>
- hit?path:(typeof scope=="object")?trace.call(factor,scope,path):undefined)
-,undefined);
-};
-
- export function note(...context)
-{// expose context in console. 
- let stack=trace().slice(1);
- let neutral="\x1b[0m";
- let blue=neutral+"\x1b[40m\x1b[34m\x1b[1m\x1b[3m";
- let dim=neutral+"\x1b[40m\x1b[34m\x1b[2m\x1b[1m\x1b[3m";
- let source=Object.values(stack)[0]?.[0].replace("at ","").replace(" (.",dim+"\n (\x1b[30mfile://"+location).replace(")",dim+")")||"...intractable";
- source=!globalThis.window?blue+source+"\x1b[0m":source;
- stack=compose.call
-(stack.reverse()
-,infer("map",compose(drop(0,1),infer("slice",1),infer("filter",Boolean),".","join"))
-,infer("map",(stack,index,{length})=>index+1==length?source:stack)
-,blue+"/"+dim,"join"
-)+"\x1b[0m";
- console.info(dim+"\x1b[3m "+clock(new Date())+" "+blue+stack+neutral+":\n");
- console.log(...context);
- return provide(context);
-};
+ export function observe(actions)
+{if(!defined(this))
+ return tether(observe,actions);
+ return Object.entries(actions).reduce((scope,[event,action])=>scope.on(event,action));
+}
 
 export function plural(...context) {
   // express plurality with Generators.
@@ -261,6 +208,65 @@ export var wait = (time, ...context) =>
  return Array.from(factor);
 };
 
+ var track=compose.call(
+{term:/at(?: async){0,1}(?: (.*) | )/
+,location:/\(*(.+?(?::[0-9]+){0,2})\)*$/
+},Object.values,infer("map",infer("source")),"","join",RegExp);
+
+ export function trace(term,path=[])
+{// trace term in scope or stack. 
+ let scope=this;
+ if(!something(term))
+ return compose.call
+(Error,combine
+(infer()
+,compose(...combine(2)("stackTraceLimit"),describe)
+,compose
+({stackTraceLimit:Infinity},Object.assign
+,Function.call,"stack",/\n */,"split",infer("slice",1)
+,infer("map",compose(either(infer("match",track),swap([])),combine(infer("slice",1))))
+,combine(infer(),infer("findIndex",([term])=>term===trace.name))
+,infer("slice")
+,infer("slice",1)
+,"reverse"
+)
+),combine
+(drop(2)
+,compose(crop(2),Object.assign)
+)
+,crop(1)
+);
+ if(scope===term||!scope)
+ return path;
+ return Object.entries(scope).reduce((hit,[track,scope])=>hit||
+ [term===scope,path.concat(track)].reduce((hit,path)=>
+ hit?path:(typeof scope=="object")?trace.call(term,scope,path):undefined)
+,undefined);
+};
+
+ export function note(...context)
+{// expose context in console. 
+ let stack=trace().slice(0,-1);
+ let neutral="\x1b[0m";
+ let blue=neutral+"\x1b[40m\x1b[34m\x1b[1m\x1b[3m";
+ let dim=neutral+"\x1b[40m\x1b[34m\x1b[2m\x1b[1m\x1b[3m";
+ let source=dim+"\x1b[30m@"+stack.at(-1)?.[1]+dim+"\n "||"...intractable";
+ source=!globalThis.window?blue+source+"\x1b[0m":source;
+ stack=compose.call
+(stack
+,infer("map",([term,position],index,{length})=>length-index-1?term||position.replace("file://"+location,"."):(blue+term))
+,blue+"/"+dim,"join"
+)+"\x1b[0m";
+ let stream=console[this?"info":"log"];
+ stream(dim+"\x1b[3m "+clock(new Date())+source+blue+stack+neutral+":");
+ let steady=colors.steady;
+ let phase=colors[this]||Object.values(colors)[this]||steady;
+ process.stdout.write(phase);
+ stream(...context);
+ process.stdout.write(steady);
+ return provide(context);
+};
+
  export function infer(term,...pretext)
 {// call/attach/detach/attend or append term on collected and dynamically prepended context. 
  if(this===undefined)
@@ -311,7 +317,13 @@ export var wait = (time, ...context) =>
 }catch(fail){return quit(fail);};
 };
 
-  export function tether(term,...context)
+ export function each(term,...context)
+{if(!defined(this))
+ return tether(...arguments);
+ return provide([this,...context].map(term));
+}
+
+ export function tether(term,...context)
 {// bound inference. (univalence axiom - undefined scope will return identity). 
  let bound=term instanceof Function
 ?describe.call("tether ",function()
