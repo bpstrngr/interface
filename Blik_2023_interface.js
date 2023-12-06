@@ -1,54 +1,113 @@
  import {Parser} from "./isaacs_2011_node-tar.js";
- import {note,trace,compound,apply,stream,record,provide,tether,drop,swap,infer,buffer,is,plural,wait,string,defined,compose,exit} from "./Blik_2023_inference.js";
- import {merge,stringify,search} from "./Blik_2023_search.js";
+ import {note,trace,compound,apply,stream,record,provide,tether,pattern,either,when,each,drop,swap,infer,buffer,is,plural,wait,string,defined,compose,combine,exit} from "./Blik_2023_inference.js";
+ import {merge,stringify,search,edit} from "./Blik_2023_search.js";
  import {parse,sanitize,serialize,compile,test} from "./Blik_2023_meta.js";
  export const address=new URL(import.meta.url).pathname;
  export const location = address.replace(/\/[^/]*$/,"");//path.dirname(address);
  export const file=address.replace(/.*\//,"");//path.basename(address);
  var unbundled={};
 
- let index=!globalThis.window&&
- await Promise.resolve
-(process.execArgv.some(flag=>new RegExp("^--import[= ][^ ]*"+file).test(flag))
- // register loader thread and infer context with nodejs 20.7's --import flag.
-?Error().stack.split(/\n */).pop().match(/^at async MessagePort.handleMessage/)
- // stay modular on worker thread.
-?0
-:resolve(["module","worker_threads"]).then(([{register},{MessageChannel}])=>
+ let context=
+ !globalThis.window&&(process.execArgv.some(flag=>new RegExp("^--import[= ][^ ]*"+file).test(flag))
+ // --import flag registers loader module on separate thread unlike 
+?Number(!/^at async MessagePort.handleMessage/.test(Error().stack.split(/\n */).pop()))
+ // --loader, where context can be inferred implicitly on the primary thread. 
+ // without either, context just begins at second index. 
+:2*!process.execArgv.some(flag=>new RegExp("^--loader[= ][^ ]*"+file).test(flag)));
+
+ if(context===1)
+ // register loader thread. 
+ await resolve(["module","worker_threads","net"]).then(([{register},{MessageChannel},{connect}])=>
  [new MessageChannel(),import.meta.url].reduce(({port1,port2},parentURL)=>
  register(address,parentURL,{data:{socket:port2},transferList:[port2]})||
- port1.on("message",note.bind(3))&&
- 1))
- // nodejs 16's --loader flag loads modules on primary thread, so no need to infer context explicitly. 
- // without either flag, context begins at second index. 
-:2*!process.execArgv.some(flag=>new RegExp("^--loader[= ][^ ]*"+file).test(flag))
-);
- if(index)
- compose(resolve,note)(...process.argv.slice(index));
+ port1.on("message",compose(drop(1),combine(note.bind(3),compose(infer.bind(connect(process.debugPort),"write")))))));
 
- export async function prompt(...context)
-{// request context from client interface, 
- // or offer it to the client (syncing the cli 
- // with debugPort and customizing it don't work yet). 
- let {createInterface}=await import("readline");
- let {stdin:input,stdout:output}=process;
- let shell=createInterface({input,output});
- let entries=context.flat().flatMap(term=>compound(term)?Object.entries(term):[[term]]);
- entries=await entries.reduce(record(([node,term])=>new Promise(resolve=>
- term?resolve(term):shell.question(node+":",resolve)).then(term=>
- [node,term]))
-,[]);
- return compose("close",swap(Object.fromEntries(entries)))(shell)
- let socket=await import("net").then(({connect})=>connect(process.debugPort));
- let prompt="\x1b[31m"+process.versions.node+": \x1b[0m";// regexp bracket matching: ]]
- let inspector=await createInterface({input,output:socket,prompt});
- return inspector.question(prompt,console.log);
- let repl=await import("repl");
- return (
-[{input,output,prompt}
-,{input:socket,output,prompt}
-].map(options=>repl.start(options)));
+ if(context)
+ compose(buffer(resolve),note)(...process.argv.slice(context));
+
+ export var classified=
+["*.git*"
+].map(term=>RegExp("^"+term.replace(/\./g,"\\.").replace(/\*/g,".*")+"$"));
+
+ export var classify=compose(when(either(pattern,infer("every",pattern))),file=>
+ [file].flat().forEach(file=>
+ classified.push(file)));
+
+ export var permit=(name,classified)=>!classified.some(term=>term.test(name));
+
+ export default
+{async get(request,mode)
+{mode=request.query?.mode||"binary";
+ if(typeof request!="object")
+ request={url:request};
+ if(/^http/.test(request.url))
+ return forward(request.url,request);
+ let scope=await module(this||{});
+ let path=await import("path");
+ let address=request.url.replace(/^\//,"./");
+ if(!permit(address,classified))
+ throw Error("Classified");
+ let file=await access(address);
+ if(!file.isDirectory())
+ return access(address,1);
+ scope=await list(address,true,classified);
+ return scope;
+}
+,put:async function(request)
+{let url=path.join(...request.path);
+ return await persist(request.body,url,request.query?.force)
+}
+,delete:async function(request)
+{let address=Object.fromEntries(request.headers.origin.split(/:\/+|:/g).map((path,index)=>
+ [["protocol","hostname","port"][index],path+(!index?":":"")]));
+ let [match,authority]=request.headers.cookie.match(/authority=([^;]*);/)||[];
+ let get=path=>new Promise(resolve=>import(address[0].substring(0,-1)).then(({request})=>
+ request(note({...address,path,method:"get"}),response=>
+ response.setEncoding("utf8").on("data",compose(JSON.parse,resolve))).end())).then(note)
+ let {author}=authority&&await get("/authority/"+authority);
+ let {rank}=author&&await get("/mind/"+author);
+ if(rank!="ranger")
+ return Error("unauthorised");
+ return purge(path.resolve(...request.path));
+}
 };
+
+ export async function access(file, encoding, content)
+{// access folder/file's metadata, content with specified encoding, or overwrite its content.
+ if(file.startsWith("http"))
+ return request(file);
+ if(/^file:\/\//.test(file))
+ file=new URL(file).pathname;
+ let {promises:fs}=await import("fs");
+ if(!encoding)
+ return fs.stat(file);
+ if(/\/$/.test(file))
+ return fs.readdir(file,{withFileTypes:true});
+ if(content)
+ return fs.writeFile(file,...typeof content==="boolean"?[encoding,'utf8']:[content,encoding]).then((written)=>file);
+ let buffer=await fs.readFile(file);
+ if(["binary",1].includes(encoding))
+ return buffer;
+ if(encoding===true)encoding="utf8";
+ content=buffer.toString(encoding);
+ if(encoding==="object")
+ return JSON.parse(content);
+ return content;
+}
+
+ export async function list(file,recursive=true,exclude=[])
+{if(!/\/$/.test(file))file=file.replace(/$/,"/");
+ let {promises:fs}=await import("fs");
+ let files=await fs.readdir(file,{withFileTypes:true});
+ let entries=await files.reduce(record((entry)=>
+ exclude.some(exclusion=>RegExp(exclusion).test(file+entry.name))
+?[]
+:Promise.resolve(entry.isDirectory()
+?recursive?list(file+entry.name+"/",recursive,exclude):{}
+:function(){console.log(entry)}).then((content)=>[entry.name,content]))
+,[]);
+ return Object.fromEntries(entries);
+}
 
  export async function persist(body,path,force)
 {if(!path)throw Error("Unspecified persistence target");
@@ -84,43 +143,6 @@
  throw fail;
  return path;
 };
-
- export async function access(file, encoding, content)
-{// access folder/file's metadata, content with specified encoding, or overwrite its content.
- if(file.startsWith("http"))
- return request(file);
- if(/^file:\/\//.test(file))
- file=new URL(file).pathname;
- let {promises:fs}=await import("fs");
- if(!encoding)
- return fs.stat(file);
- if(/\/$/.test(file))
- return fs.readdir(file,{withFileTypes:true});
- if(content)
- return fs.writeFile(file,...typeof content==="boolean"?[encoding,'utf8']:[content,encoding]).then((written)=>file);
- let buffer=await fs.readFile(file);
- if(["binary",1].includes(encoding))
- return buffer;
- if(encoding===true)encoding="utf8";
- content=buffer.toString(encoding);
- if(encoding==="object")
- return JSON.parse(content);
- return content;
-}
-
- export async function list(file,recursive=true,exclude=[])
-{if(!/\/$/.test(file))file=file.replace(/$/,"/");
- let {promises:fs}=await import("fs");
- let files=await fs.readdir(file,{withFileTypes:true});
- let entries=await files.reduce(record((entry)=>
- exclude.some(exclusion=>RegExp(exclusion).test(file+entry.name))
-?[]
-:Promise.resolve(entry.isDirectory()
-?recursive?list(file+entry.name+"/",recursive,exclude):{}
-:null).then((content)=>[entry.name,content]))
-,[]);
- return Object.fromEntries(entries);
-}
 
 export const purge = (path) => import("fs").then(({promises:{rm}})=>rm(path, { recursive: true })).then((done) => path);
 
@@ -336,33 +358,28 @@ let alias=namespace?.alias[source];
  return next?{source,format:{json:"json"}[syntax]||"module",shortCircuit:true}:source;
 };
 
- export function edit(source,edits)
-{return Object.entries(edits||{}).reduce((source, [field,value]) =>
- source.replace(new RegExp(field,"g"),(match, ...groups) =>
- [value, ...groups.slice(0,-2)].reduce((value, group, index) =>
- value.replaceAll("$"+index, group)))
-,source);
-};
-
  export async function modularise(resource,identifier,context={})
 {// uses --experimental-vm-modules 
- let {SourceTextModule,createContext,isContext}=await import("vm");
+ let {SourceTextModule,SyntheticModule,createContext,isContext}=await import("vm");
  let {default:{resolve}}=await import("path");
  let {pathToFileURL}=await import("url");
  identifier=resolve(identifier)
  if(!isContext(context))
- context=createContext({imports:new Map(),URL});
+ context=createContext({imports:new Map(),URL,TextEncoder,TextDecoder,Buffer,global,...context});
  let options=
  {identifier,context
- ,importModuleDynamically:identifer=>import(identifer)
+ ,importModuleDynamically:identifier=>import(identifier)
  ,initializeImportMeta:meta=>Object.assign(meta,{url:pathToFileURL(identifier)})
  ,cachedData:context.imports.get(identifier)
  };
- note(identifier,options.cachedData);
  let module=new SourceTextModule(resource||"",options);
  context.imports.set(identifier,module.createCachedData());
  await module.link((identifier,{context})=>
- access(identifier,true).then(source=>
+ /^[a-z]/.test(identifier)
+?import(identifier).then(module=>new SyntheticModule(Object.keys(module),function()
+{Object.entries(module).reduce((module,entry)=>module.setExport(...entry)||module,this);
+},{identifier,context}))
+:access(identifier,true).then(source=>
  modularise(source,identifier,context)));
  await module.evaluate().catch(compose(note,exit));
  return module;
@@ -524,7 +541,13 @@ export async function spawn(command, ...context) {
 :undefined
 ,terms=>terms?.join("/")
 );
-}
+};
+
+ export function module(source)
+{//return JSON.parse(JSON.stringify(source));
+ return Object.fromEntries(Object.entries(source.default||source).map(([key,value])=>
+ [key,value&&typeof value=="object"?module(value):value?value.toString():value]))
+};
 
 export var tests=
  {access:

@@ -1,4 +1,4 @@
-import {stream,record,plural,compound,bind,string,is,not,serial} from "./Blik_2023_inference.js";
+import {note,buffer,compose,collect,stream,record,plural,compound,bind,string,is,not,serial} from "./Blik_2023_inference.js";
 import {search,merge,prune,route,random} from "./Blik_2023_search.js";
 let address=new URL(import.meta.url).pathname;
 
@@ -355,6 +355,31 @@ export async function serialize(syntax, format = "astring", options) {
   return import(module).then(module=>module[term](syntax, options));
 }
 
+ export function namespace(declarations,references,procedures)
+{// translate abstract syntax tree or runtime reference into javascript;
+ [declarations,references]=
+ [declarations,references].map((argument,index)=>
+ typeof argument==="string"?JSON.parse(argument):argument);
+ let {type,body,sourceType}=declarations;
+ if(sourceType==="typescript")
+ declarations=prune(declarations,(field,value)=>!value?.type?.startsWith("TS"));
+ if(type==="Program")
+ return import("./davidbonnet_2015_astring.js").then(({generate})=>generate(declarations));
+ declarations=!declarations?""
+:Promise.all([import("./Yahoo_2014_serialize.js"),declarations]).then(([{__moduleExports:serialize},declarations])=>
+ Object.entries(declarations||{}).map(([field,functor])=>
+ "export "+({default:field}[field]||("var "+field+"="))+serialize(functor)).join("\n\n")).then(module=>
+ // apply formatting. 
+ module.replace(/(\}\})(,\"[^\"]*\":)(\{)/g,(...match)=>match.slice(1,4).join("\n ")))
+,references=Object.entries(references||{}).reduce((support,[module,functors])=>support
++"import "+functors.map((functor,index,{length})=>(
+ {"1":"{"+functor,[length-1]:(length==2?"{":"")+functor+"}"}[String(index||"")]||functor)).filter(Boolean).join(",")
++" from \""+module+"\";\n"
+,"")
+,procedures=String(procedures||"").replace(/(^function *\w*\([\w,\n]*\)\n* *\{\n*)|(\}$)/g,"");
+ return compose(collect,"\n","join")(procedures,references,declarations);
+};
+
 //  export async function modularise(resource,identifier,context={})
 // {// uses --experimental-vm-modules 
 //  let {SourceTextModule,createContext,isContext}=await import("vm");
@@ -492,59 +517,43 @@ export function scope(module) {
   return Object.fromEntries(entries);
 }
 
-export async function test(scope, tests, path = []) {
-  // compose tests defined in scope. 
-  let assert = await import("assert");
-  if (typeof scope === "string" && !path.length) scope = await import(scope);
-  tests = tests || scope.tests || {};
-  let fails = await Object.entries(tests).reduce(
-    record(async ([term, value]) => {
-      let traverse=!value.condition||is(compound,not(serial))(value.condition)||value.condition?.some?.(condition=>condition.condition);
-      if (traverse) return test(scope[term] ?? scope, value, path.concat(term));
-      let { tether, context = [], terms = [], condition } = value;
-      if(!context.length) context.push(undefined);
-      try {
-        await stream(...[context].flat(), (scope[term] ?? scope).bind(tether), ...[terms].flat(), assert[condition] || condition);
-      } catch (fail) {
-        let field = path.concat(term).join("/");
-        let { stack } = fail;
-        console.log(field + ": \x1b[31m" + stack + "\x1b[0m");
-        return { [field]: stack };
-      }
-      return {};
-    }),
-    []
-  );
-  fails = fails.reduce(merge, {});
-  if (path.length) return fails;
-  let format = (item, order, items) =>
-    stream(
-      Math.max(...items.map(({ length }) => length)),
-      (length) =>
-        item +
-        (order % Math.floor(process.stdout.columns / length)
-          ? " ".repeat(length - item.length)
-          : "\n")
-    );
-  let report =
-    [fails, tests, scope]
-      .map((subject, index) => [
-        "\x1b[" + ["31mFAIL:", "32mPASS:", "34mSKIP:"][index],
-        ...Object.keys(subject).map(
-          index ? (field) => field : (field) => field.match(/(.*?)(\/|$)/)[1]
-        ),
-      ])
-      .map((subject, index, subjects) =>
-        subject
-          .filter((test) => !subjects.slice(0, index).flat().includes(test))
-          .slice(0, 15)
-          .concat(subject.length < 16 ? (!subject.length ? "-" : []) : "...")
-          .map(format)
-          .join("")
-      ).filter(subject=>subject.length>11)
-      .join("\n") + "\x1b[0m\n";
-  if (Object.keys(fails).length) throw report;
-  return report;
+ export async function test(namespace,tests,path=[])
+{// compose tests defined in namespace. 
+ let assert=await import("assert");
+ if(typeof namespace==="string"&&!path.length)namespace=await import(namespace);
+ tests=tests||namespace.tests||{};
+ let fails=await Object.entries(tests).reduce(record(async([term,value])=>
+{let traverse=!value.condition||is(compound,not(serial))(value.condition)||value.condition?.some?.(condition=>condition.condition);
+ if(traverse)return test(namespace[term]??namespace,value,path.concat(term));
+ let {tether,scope,context=[],terms=[],condition}=value;
+ scope=scope||tether;
+ if(!context.length)context.push(undefined);
+ try
+{await stream(...[context].flat(),buffer((namespace[term]??namespace).bind(scope)),...[terms].flat(),assert[condition]||condition);
+}catch(fail)
+{let field=path.concat(term).join("/");
+ let {stack}=fail;
+ console.log(field+": \x1b[31m"+stack+"\x1b[0m");
+ return {[field]:stack};
+}
+ return {};
+})
+,[]);
+ fails=fails.reduce(merge,{});
+ if(path.length)return fails;
+ let format=(item,order,items)=>stream(
+ Math.max(...items.map(({length})=>length))
+,length=>item+(order%Math.floor(process.stdout.columns/length)? " ".repeat(length-item.length):"\n"));
+ let report=[fails,tests,namespace].map((subject,index)=>
+["\x1b["+["31mFAIL:","32mPASS:","34mSKIP:"][index]
+,...Object.keys(subject).map(index?field=>field:field=>field.match(/(.*?)(\/|$)/)[1]),
+]).map((subject,index,subjects)=>
+ subject.filter(test=>
+ !subjects.slice(0,index).flat().includes(test)).slice(0,15).concat(subject.length<16
+?(!subject.length?"-":[])
+:"...").map(format).join("")).filter(subject=>subject.length>11).join("\n")+"\x1b[0m\n";
+ if(Object.keys(fails).length)throw report;
+ return report;
 }
 
 export const tests=

@@ -24,11 +24,12 @@ Doing so leaves us without access to invoke their functions, hence this module
 extends the 3 steps with an inference of arguments provided by a client (shell/function). 
 
 Examples: 
+ node ./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3;
  node --loader=./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3; # node.js 16
  node --import=./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3; # node.js 20.7.0
  node --import 'data:text/javascript;import("module").then(({register})=>register("./Blik_2023_interface.js",{parentURL:pathToFileURL("./")}));' ./Blik_2023_search.js sum 1 2 3; # node.js 20.7.0
  node --import=./Blik_2023_interface.js --experimental-detect-module ./Blik_2023_search.js sum 1 2 3; # node.js 21.1.0
- node ./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3;
+ node --import=./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3; # node.js 21.x
  import("./Blik_2023_interface.js").then(({resolve})=>resolve("./Blik_2023_search.js","sum",1,2,3));
  http.on("request",({path,query},response)=>resolve(path,...query).then(body=>response.send({body})));
 
@@ -36,7 +37,8 @@ Due to lack of loader, git or vm modules, browser clients can only control inter
  let resolve=either(import(module),compose(file,{method:"get"},fetch,"text",interpret,options,serialize,"body",describe,{method:"post"},merge,infer.bind(module),fetch,import));
  resolve(module);
 
-The first usage extends the interface to every import call (flag to expose import stages available from nodejs 17). 
+The flags in the examples extend the interface to every import call (available from nodejs 16). 
+Note that before nodejs 21.1, you need a package.json file to determine module type: echo '{"type":"module"}'>package.json;
 For the other cases, external modules can be resolved in advance: 
  for file in $(echo sources.json | jq .keys --raw-output);do node ./Blik_2023_interface.js ./Blik_2023_interface.js resolve $file;done;
  for file in $(git ls-tree --full-tree --name-only -r HEAD);do node ./Blik_2023_interface.js ./Blik_2023_interface.js resolve $file;done;
