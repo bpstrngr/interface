@@ -338,7 +338,7 @@ export async function serialize(syntax, format = "astring", options) {
 }
 
  export function namespace(declarations,references,procedures)
-{// translate abstract syntax tree or runtime reference into javascript;
+{// translate abstract syntax tree or runtime namespace into javascript;
  [declarations,references]=
  [declarations,references].map((argument,index)=>
  typeof argument==="string"?JSON.parse(argument):argument);
@@ -356,10 +356,10 @@ export async function serialize(syntax, format = "astring", options) {
 ,references=Object.entries(references||{}).reduce((support,[module,functors])=>support
 +"import "+functors.map((functor,index,{length})=>(
  {"1":"{"+functor,[length-1]:(length==2?"{":"")+functor+"}"}[String(index||"")]||functor)).filter(Boolean).join(",")
-+" from \""+module+"\";\n"
++" from \""+module+"\""+(/\.json$/.test(module)?" assert {type:\"json\"}":"")+";\n"
 ,"")
 ,procedures=String(procedures||"").replace(/(^function *\w*\([\w,\n]*\)\n* *\{\n*)|(\}$)/g,"");
- return compose(collect,"\n","join")(procedures,references,declarations);
+ return compose(collect,"\n","join")(references,declarations,procedures);
 };
 
 //  export async function modularise(resource,identifier,context={})

@@ -1,4 +1,3 @@
- import {Parser} from "./isaacs_2011_node-tar.js";
  import {note,collect,same,slip,something,observe,describe,expect,trace,array,compound,apply,stream,record,provide,tether,differ,wether,pattern,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,match,wait,string,defined,compose,combine,exit} from "./Blik_2023_inference.js";
  import {merge,stringify,search,edit} from "./Blik_2023_search.js";
  import {parse,sanitize,serialize,compile,test} from "./Blik_2023_meta.js";
@@ -542,7 +541,7 @@ export function patch(repository, patch) {
  import("zlib").then(({gunzip})=>gunzip(buffer,(fail,buffer)=>fail?reject(fail):resolve(buffer))));
  let stream=await import("stream").then(({Duplex})=>
  [new Duplex(),buffer,null].reduce((duplex,buffer)=>(duplex.push(buffer),duplex)));
- let extractor=new Parser();
+ let extractor=await import("./isaacs_2011_node-tar.js").then(({Parser})=>new Parser());
  let folder={};
  let prefix="extracting ";
  let pathspace=process.stdout.columns-prefix.length;

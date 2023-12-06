@@ -76,8 +76,8 @@
  let status=response?fail?500:response.status||200:404;
  let success=status<400;
  let body=wether
-([is(Error),is(window.Element),something]
-,"message","outerHTML","body"
+([is(Error),has("nodeName"),something]
+,"message","outerHTML",either("body",crop(1))
 ,swap(["missing source: \"",path,"\""].join(""))
 )(response);
  let type=response?.type||response?.nodeName?.toLowerCase()||

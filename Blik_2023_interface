@@ -41,10 +41,11 @@ Due to lack of loader, git or vm modules, browser clients can only control inter
  let resolve=either(import(module),compose(file,{method:"get"},fetch,"text",interpret,options,serialize,"body",describe,{method:"post"},merge,infer.bind(module),fetch,import));
  resolve(module);
 
-The flags in the examples extend the interface to every import call (available from nodejs 16). 
 Note that before nodejs 21.1, you need a package.json file to determine module type: echo '{"type":"module"}'>package.json;
-For the other cases, external modules can be resolved in advance: 
- for file in $(echo sources.json | jq .keys --raw-output);do node ./Blik_2023_interface.js ./Blik_2023_interface.js resolve $file;done;
+The flags in the examples extend the interface to every import call (available from nodejs 16). 
+
+Without the flag, external modules can be resolved in advance: 
+ for file in $(cat sources.json | jq keys[] --raw-output);do node ./Blik_2023_interface.js ./Blik_2023_interface.js resolve $file;done;
  for file in $(git ls-tree --full-tree --name-only -r HEAD);do node ./Blik_2023_interface.js ./Blik_2023_interface.js resolve $file;done;
 
 Source definitions map files to entry points (local or remote address and version, supporting sparse-checkout of monorepos), patches and 
@@ -78,7 +79,10 @@ Copy pre-commit hook to format and test staged modules before each commit:
 Copy post-commit hook to restage your local formatting stashed by pre-commit: 
  cp git_hook_post-commit .git/hooks/post-commit;
 
-Uninstall dependencies (make sure no files you need have been gitignored): 
+Uninstall dependencies: 
+ for file in $(cat sources.json | jq keys[] --raw-output);do rm -rf $file $(echo $file | sed 's/\.js$//');done
+
+or, if all new files you need have been included under gitignore: 
  rm -rf $(git check-ignore *);
 
 Installing Node.js: 
