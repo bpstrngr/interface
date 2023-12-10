@@ -1,5 +1,5 @@
  import {Parser} from "./isaacs_2011_node-tar.js";
- import {note,trace,compound,apply,stream,record,provide,tether,pattern,either,when,each,drop,swap,infer,buffer,is,plural,wait,string,defined,compose,combine,exit} from "./Blik_2023_inference.js";
+ import {note,expect,trace,compound,apply,stream,record,provide,tether,wether,pattern,either,when,each,drop,swap,infer,buffer,is,plural,wait,string,defined,compose,combine,exit} from "./Blik_2023_inference.js";
  import {merge,stringify,search,edit} from "./Blik_2023_search.js";
  import {parse,sanitize,serialize,compile,test} from "./Blik_2023_meta.js";
  export const address=new URL(import.meta.url).pathname;
@@ -126,7 +126,7 @@
  if(directory)return fs.mkdir(path).catch(fail=>fail).then(done=>path);
  let transaction=force?fs.appendFile:fs.writeFile;
  let descriptor=await fs.open(path,"wx").catch(fail=>fail);
- process.stdout.clearLine();
+ process.stdout.clearLine?.();
  process.stdout.write(("\rwriting "+path).slice(0,process.stdout.columns));
  if(!(descriptor instanceof Error))
  return await descriptor.writeFile(body).finally(descriptor.close.bind(descriptor)).then(write=>path);
@@ -228,17 +228,22 @@ export const purge = (path) => import("fs").then(({promises:{rm}})=>rm(path, { r
  return Object.entries(input).map(([branch,input])=>({remote,branch,input:[input].flat()}));
 });
  if(sources.length)
- return stream(sources[0],({remote,input})=>
  // presence of first source entry indicates in-progress assembly. 
  // Has a low probability to be invalid in the final purge stage of bundling. A simple restart will resolve the available bundle at that point.
- path.resolve(location,...remote?[target,"0"]:[],input[0])
-,file=>access(file).then(async present=>!this[target]?.shortCircuit
-?note.call(3,"Accessing source entry for \""+relative+"\":\n "+file+"\n (bundling already in progress or interrupted before purge)")&&
- resolve("url","pathToFileURL",file).then(({href:url})=>this[target]={url,format:relative,shortCircuit:true})
-:this[target]).catch(async fail=>
- this[target]=this[target]||
- note.call(2,"Found source of \""+relative+"\" for",dependent+"...")&&
- assemble(sources,absolute).then(bundle=>delete this[target]&&bundle)));
+ return compose.call
+(sources[0],({remote,input})=>path.resolve(location,...remote?[target,"0"]:[],input[0]),wether
+(buffer(access,drop())
+,file=>this[target]=this[target]||
+ note.call(3,"Accessing source entry for \""+relative+"\":\n "+file+"\n (bundling already in progress or interrupted before purge)")&&
+ file
+,file=>this[target]=this[target]||(
+ note.call(2,"Retrieving source entry of \""+relative+"\" for",dependent+"...")&&
+ assemble(sources,absolute).then(bundle=>delete this[target])&&
+ compose(expect(access,250),note,ready=>file)(file))
+),note
+,file=>resolve("url","pathToFileURL",file)
+,({href:url})=>({url,format:relative,shortCircuit:true})
+);
  let sloppy=!/\.(js|json)$/.test(absolute)&&
  await ["js","ts","d.ts"].map(extension=>absolute+"."+extension).reduce((module,file)=>
  module.catch(fail=>access(file).then(present=>file))
@@ -264,7 +269,7 @@ let alias=namespace?.alias[source];
 {let deposit=target.replace(/\.js$/,"/");
  await persist({},deposit);
  let path=await import("path");
- let input = await sources.reduce(record(async function({ remote, branch, input }, index, {length}={})
+ let input=await sources.reduce(record(async function({ remote, branch, input }, index, {length}={})
 {if(!remote)return input.map(input=>string(input)?path.join(deposit,input):input);
  let depot=path.join(deposit,String(index))+"/";
  let [protocol, host, author, name, ...route] = remote?.match(/(.*:\/\/)(.*)/).slice(1).reduce((protocol, address) =>
@@ -278,7 +283,7 @@ let alias=namespace?.alias[source];
  compressed
 ?await access(asset).catch(fail=>
  stream(remote,fetch,response=>response.status===200
-?response.arrayBuffer().then(buffer=>persist(Buffer.from(buffer),asset)).catch(fail=>access(asset))
+?response.arrayBuffer().then(buffer=>persist(Buffer.from(buffer),asset)).catch(fail=>note(fail)&&access(asset))
 :exit(response.status))).then(compressed=>
  stream({},depot,persist).then(ready=>
  stream(asset,decompress,depot,decompress)).then(ready=>
@@ -451,7 +456,7 @@ export async function checkout(remote, target, branch, path) {
   clone=await spawn("git","-C",target,"checkout",branch);
   if(!path.length)
   return clone;
-  clone=await spawn("git","-C", target, "sparse-checkout", "add", path.join("/"));
+  clone=await spawn("git","-C", target, "sparse-checkout", "add", ...[path.join("/").split(" ")].flat());
   if(!commit&&branch)
   clone=await spawn("git","-C", target, "checkout", branch);
   return clone;
@@ -480,8 +485,8 @@ export function patch(repository, patch) {
  let pathspace=process.stdout.columns-prefix.length;
  await new Promise((resolve,reject)=>Object.entries(
  {entry(entry)
-{process.stdout.cursorTo(prefix.length);
- process.stdout.clearLine(1);
+{process.stdout.cursorTo?.(prefix.length);
+ process.stdout.clearLine?.(1);
  process.stdout.write(entry.path.slice(0,pathspace));
  entry.on("data",function(data){this.push(data.toString("utf-8"))}.bind(
  entry.path.match(/^(.*)\/(.*)/).slice(1).map(path=>

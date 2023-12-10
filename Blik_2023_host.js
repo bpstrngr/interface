@@ -1,4 +1,3 @@
- import JSDOM from "./domenic_2022_jsdom_rollup.js";
  import {note,prompt,describe,clock,observe,is,something,compound,infer,tether,wether,collect,provide,route,buffer,compose,combine,either,drop,crop,swap,record,wait,exit} from "./Blik_2023_inference.js";
  import local,{resolve,access,list,classify} from "./Blik_2023_interface.js";
  import {search,merge} from "./Blik_2023_search.js";

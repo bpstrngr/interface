@@ -183,8 +183,8 @@
 {// recursive inference agnostic of dynamic context. 
  if(!defined(this))
  return refer(compose,...arguments);
- return terms.reduce(describe((context,term)=>
- infer(term)(context),compose),this);
+ let inference=describe((context,term)=>infer(term)(context),compose);
+ return terms.reduce(inference,this);
 };
 
  export function combine(...functors)
@@ -379,10 +379,19 @@
  return compose(collect,context,(terms,context)=>context.length<terms.length||context.every((term,index)=>terms[index]===term))(this);
 };
 
- export function wait(time,...context)
+ export function wait(time)
 {// hold context for time period.
- return new Promise(resolve=>setTimeout(infer(resolve,...context),time));
+ if(!defined(this))
+ return refer(wait,time)
+ return new Promise(resolve=>setTimeout(resolve,time)).then(infer.bind(this));
 };
+
+ export function expect(condition=something,time=500)
+{// hold thread until factor satisfies condition. 
+ if(!defined(this))
+ return refer(expect,condition,time);
+ return either(condition,compose(wait(time),expect(condition,time)))(this);
+}
 
  export function exit(fail){throw fail;}
 
