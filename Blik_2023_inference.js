@@ -175,7 +175,7 @@
 },0),[])
 ,([track])=>functors[track??conditions.length]??
  compose(swap(Error([conditions.length,"conditions not satisfied:",trace().reverse().find(([term])=>term?.startsWith(wether.name))[0]].join(" "))),exit)
-,infer.bind(provide(context))
+,infer.bind(provide(context,true))
 );
 };
 
@@ -345,14 +345,16 @@
  export var nothing=not(something);
  export var pattern=is(RegExp);
  export var promise=is(Promise);
- export function is(term=something,...terms)
+ export function is(term,...terms)
 {// express term as true if defined or satisfies term.
  if(!defined(this))
  return refer(is,...arguments);
  let [scope,...context]=collect(this);
- return [term,...terms].every(term=>/^[A-Z]/.test(term?.name)
+ return [term,...terms].every(term=>term
+?/^[A-Z]/.test(term?.name)
 ?scope instanceof term
-:infer(term)(scope,...context));
+:infer(term)(scope,...context)
+:false);
 };
  export function not(...terms)
 {// deny conditions
@@ -389,8 +391,10 @@
  export function expect(condition=something,time=500)
 {// hold thread until factor satisfies condition. 
  if(!defined(this))
- return refer(expect,condition,time);
- return either(condition,compose(wait(time),expect(condition,time)))(this);
+ return refer(expect,...arguments);
+ let context=collect(this);
+ let repeat=compose(wait(time),swap(...context),expect(condition,time));
+ return either(condition,repeat)(...context);
 }
 
  export function exit(fail){throw fail;}

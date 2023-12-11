@@ -4,30 +4,26 @@ let address=new URL(import.meta.url).pathname;
 
  export async function parse(source, syntax = "javascript", options = {})
 {// interpret language syntax.
- if(typeof source!=="string")
+ if(!string(source))
  return Error("can't parse "+typeof source);
- if(source instanceof Buffer)
+ if(is(Buffer)(source))
  source=source.toString();
- if (syntax === "json") return JSON.parse(source);
- let { Parser } = await import("./haverbeke_2012_acorn.js");
+ if(syntax==="json")return JSON.parse(source);
+ let {Parser}=await import("./haverbeke_2012_acorn.js");
  if(syntax=="typescript")
  Parser=await import("./tyrealhu_2023_acorn_typescript.js").then(({default:plugin})=>
  Parser.extend(plugin({dts:options.source?.endsWith(".d.ts")})));
  else if(!/xtuc_2020_acorn_importattributes/.test(options.source))
  Parser=await import("./xtuc_2020_acorn_importattributes.js").then(({importAttributes:plugin})=>
  Parser.extend(plugin));
- let comments = [];
- let scope = Parser.parse(source
-,{ecmaVersion: 2022
- ,sourceType: "module"
- ,onComment: comments
- ,locations: syntax === "typescript",
- });
+ let comments=[];
+ let scope=Parser.parse(source,{ecmaVersion:2022,sourceType:"module",onComment:comments,locations:syntax==="typescript"});
  comments.map((comment)=>
- Object.assign(comment, { type: comment.type + "Comment" })).forEach((comment)=>
- route(scope, comment, path));
+ Object.assign(comment,{type:comment.type+"Comment"})).forEach((comment)=>route(scope,comment,path));
  if(options.source)scope.meta=
- {url:options.source.startsWith("file:/")?new URL(options.source):await import("url").then(({pathToFileURL:url})=>url(options.source))
+ {url:options.source.startsWith("file:/")
+?new URL(options.source)
+:await import("url").then(({pathToFileURL:url})=>url(options.source))
  };
  return scope;
  function descendant(scope){return scope.start<this.start&&this.end<scope.end;}
@@ -35,10 +31,10 @@ let address=new URL(import.meta.url).pathname;
  function path(scope,comment)
 {Array.isArray(scope)
 ?[descendant,sibling,undefined].reduce((found,find)=>
- (found<0?find&&scope.findIndex(find.bind(comment)):found)
+ found<0?find&&scope.findIndex(find.bind(comment)):found
 ,-1)
-:descendant.call(comment,scope)&&["body","declaration","consequent"].find((field)=>
- scope[field]);
+:descendant.call(comment,scope)&&
+ ["body","declaration","consequent"].find((field)=>scope[field]);
 }
 }
 

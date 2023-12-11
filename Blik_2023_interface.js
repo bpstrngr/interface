@@ -1,7 +1,8 @@
  import {Parser} from "./isaacs_2011_node-tar.js";
- import {note,expect,trace,compound,apply,stream,record,provide,tether,wether,pattern,either,when,each,drop,swap,infer,buffer,is,plural,wait,string,defined,compose,combine,exit} from "./Blik_2023_inference.js";
+ import {note,expect,trace,compound,apply,stream,record,provide,tether,wether,pattern,either,when,each,drop,swap,crop,infer,buffer,is,plural,wait,string,defined,compose,combine,exit} from "./Blik_2023_inference.js";
  import {merge,stringify,search,edit} from "./Blik_2023_search.js";
  import {parse,sanitize,serialize,compile,test} from "./Blik_2023_meta.js";
+ import {fetch,forward} from "./Blik_2023_host.js";
  export const address=new URL(import.meta.url).pathname;
  export const location = address.replace(/\/[^/]*$/,"");//path.dirname(address);
  export const file=address.replace(/.*\//,"");//path.basename(address);
@@ -20,7 +21,7 @@
  await resolve(["module","worker_threads","net"]).then(([{register},{MessageChannel},{connect}])=>
  [new MessageChannel(),import.meta.url].reduce(({port1,port2},parentURL)=>
  register(address,parentURL,{data:{socket:port2},transferList:[port2]})||
- port1.on("message",compose(drop(1),combine(note.bind(3),compose(infer.bind(connect(process.debugPort),"write")))))));
+ port1.on("message",compose(drop(1),combine(note.bind(3)/*,infer.bind(buffer(connect,note)(process.debugPort),"write")*/)))));
 
  if(context)
  compose(buffer(resolve),note)(...process.argv.slice(context));
@@ -197,8 +198,6 @@ export const purge = (path) => import("fs").then(({promises:{rm}})=>rm(path, { r
  note.call(1,recovery.name,"failed for",absolute+":\n",reason)&&
  exit(fail));
 });
- //if(source.endsWith("face.js"))console.log(source,module)
- // if(source.endsWith("face.js"))await module.then(console.log).catch(console.log)
  let bundle=Object.keys(unbundled).find(depot=>absolute.startsWith(depot));
  if(bundle)
  module=stream(module,{format:bundle.replace(/\/$/,".js").replace(/.*\//,"")},1,merge).catch(exit);
@@ -231,16 +230,17 @@ export const purge = (path) => import("fs").then(({promises:{rm}})=>rm(path, { r
  // presence of first source entry indicates in-progress assembly. 
  // Has a low probability to be invalid in the final purge stage of bundling. A simple restart will resolve the available bundle at that point.
  return compose.call
-(sources[0],({remote,input})=>path.resolve(location,...remote?[target,"0"]:[],input[0]),wether
+(sources[0],({remote,input})=>path.resolve(location,...remote?[target,"0"]:[],input[0]),combine(infer(),wether
 (buffer(access,drop())
 ,file=>this[target]=this[target]||
- note.call(3,"Accessing source entry for \""+relative+"\":\n "+file+"\n (bundling already in progress or interrupted before purge)")&&
- file
-,file=>this[target]=this[target]||(
- note.call(2,"Retrieving source entry of \""+relative+"\" for",dependent+"...")&&
- assemble(sources,absolute).then(bundle=>delete this[target])&&
- compose(expect(access,250),note,ready=>file)(file))
-),note
+ note.call(3,"Accessing source entry for \""+relative+"\":\n "+file+"\n (bundling already in progress or interrupted before purge)")
+,file=>this[target]=this[target]||
+[note.call(2,"Obtaining source entry of \""+relative+"\" for",dependent+"...")
+,assemble(sources,absolute).then(bundle=>delete this[target])
+,expect(access,500)(file).then(ready=>
+ note.call(3,"Accessing source entry for \""+relative+"\":\n "+file+"\n (not to halt its further imports before bundle is ready)"))
+].pop()
+))
 ,file=>resolve("url","pathToFileURL",file)
 ,({href:url})=>({url,format:relative,shortCircuit:true})
 );
@@ -261,7 +261,7 @@ export const purge = (path) => import("fs").then(({promises:{rm}})=>rm(path, { r
  absolute.startsWith(path.join(location,target.replace(/\.js$/,""),String(index)))))||[];
  let namespace=definition&&Object.values(search.call([definition],({1:entry})=>
  Array.isArray(entry)||typeof entry==="string")).flat().find(entry=>entry.alias);
-let alias=namespace?.alias[source];
+ let alias=namespace?.alias[source];
  return alias?path.resolve(location,alias):exit(Error("no alias for "+source+" in "+target));
 };
 
@@ -282,7 +282,7 @@ let alias=namespace?.alias[source];
  // download. 
  compressed
 ?await access(asset).catch(fail=>
- stream(remote,fetch,response=>response.status===200
+ compose.call(remote,buffer(fetch,compose(remote,note,exit)),response=>response.status===200
 ?response.arrayBuffer().then(buffer=>persist(Buffer.from(buffer),asset)).catch(fail=>note(fail)&&access(asset))
 :exit(response.status))).then(compressed=>
  stream({},depot,persist).then(ready=>
@@ -346,8 +346,7 @@ let alias=namespace?.alias[source];
  test(source).catch(fail=>fail).then(result=>
  console.log("\x1b[4m"+source+"\x1b[0m:\n"+result)))&&module
 :module);
- if(source.endsWith("face.js"))console.log(...arguments)
- let {comment,...definition}=[{syntax},typeof format==="object"?format:await import("./Blik_2023_sources.json").then(sources=>
+ let {comment,...definition}=[{syntax},typeof format==="object"?format||{}:await import("./Blik_2023_sources.json").then(sources=>
  [sources.default[format]||{}].reduce(function flat(entries,source)
 {return [entries,typeof source!=="object"||Array.isArray(source)?source:Object.values(source).reduce(flat,[])].flat();
 },[]).filter(entry=>typeof entry==="object"))].flat().reduce(merge);
@@ -355,9 +354,9 @@ let alias=namespace?.alias[source];
  let foreign=!["javascript","json"].includes(syntax)||Object.keys(definition).length>1;
  // parse foreign to serialize standard syntax. without native interpretter to call (next), all syntax are foreign. 
  // using acorn's Parser methods (parse) until interpretation reducer is complete. 
- let patriate=foreign?[syntax,{source},parse,definition,sanitize,serialize]:[];
  let edits=Object.fromEntries(Object.entries(definition.edit||{}).flatMap(([field,value])=>
  string(value)?[[field,value]]:source.endsWith(field)?Object.entries(value):[]));
+ let patriate=foreign?[syntax,{source},parse,definition,sanitize,serialize]:[];
  source=await stream(source,true,access,edits,edit,...patriate).catch(fail=>
  note.call(1,"Failed to patriate "+syntax+" \""+source+"\" due to",fail)&&exit(fail));
  return next?{source,format:{json:"json"}[syntax]||"module",shortCircuit:true}:source;
