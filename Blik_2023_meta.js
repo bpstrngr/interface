@@ -168,22 +168,12 @@ let address=new URL(import.meta.url).pathname;
 };
 
  var local=({1:value})=>["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(value?.type)?undefined:value;
- var require=({1:value})=>value?.callee?.name==="require";
+ var requirecall=({1:value})=>value?.callee?.name==="require";
 
  export var estree=
  // sort by decreasing specificity for declarative disjunction (Object.values(estree.dialect)). 
  {commonjs:
- {dynamicblock:
- {condition(term,field,path)
-{let block=["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(term?.type);
- if(!block)return;
- let scope=prune.call(term,local);
- let dynamic=search.call({scope},([field,term],path)=>
- estree.commonjs.dynamicrequire.condition(term,field,path));
- return Object.keys(dynamic)?.length;
-},ecma(value){return {...value,async:true};}
- }
- ,require:
+ {require:
  {condition(value,field,path)
 {if(path?.length>1)return;
  let values=value?.type==="VariableDeclaration"
@@ -192,10 +182,10 @@ let address=new URL(import.meta.url).pathname;
 ?[value.expression]
 :[];
  return values.some(value=>Object.keys(search.call({value:prune.call(value,local)}
-,require)).length);
+,requirecall)).length);
 },ecma(value,field,path)
 {let scope=prune.call(value,local);
- let requires=search.call(scope,require);
+ let requires=search.call(scope,requirecall);
  let id=value=>value.replace(/[^a-zA-Z]/g,"")+"_exports";
  let imports=Object.values(requires).map(require=>(
  {type:"ImportDeclaration",source:require.arguments[0]
@@ -206,30 +196,28 @@ let address=new URL(import.meta.url).pathname;
  merge(value,imports[index].specifiers[0].local,path.split("/")),value);
  return plural(...imports,statement);
 }}
+ ,dynamicblock:
+ {condition(term,field,path)
+{let block=["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(term?.type);
+ if(!block)return;
+ let scope=prune.call(term,local);
+ let dynamic=search.call({scope},([field,term],path)=>
+ estree.commonjs.dynamicrequire.condition(term,field,path));
+ return Object.keys(dynamic)?.length;
+},ecma(value){return {...value,async:true};}
+ }
  ,dynamicrequire:
  {condition(term,field,path)
 {if(path.length<2)return;
- let awaitable="VariableDeclaration/ExpressionStatement/CallExpression/IfStatement/Property".split("/").includes(term?.type);
- if(!awaitable)return;
- let scope=prune.call(term,local);
- return Object.keys(search.call(scope,require)).length;
-},ecma(term)
-{let depth={VariableDeclaration:3,ExpressionStatement:2,CallExpression:2,IfStatement:2,Property:0}[term.type]||1;
- let scope=prune.call(term,local);
- let requires=search.call({scope},require);
- let statements=Object.entries(requires).map(function([field,require])
-{let path=field.split("/").slice(1);
- let awaitpath=path.slice(0,depth);
- let awaitable=search.call(term,awaitpath);
- if(awaitable.type==="ObjectExpression")
- // Properties will be pruned individually. 
- return [awaitpath,awaitable];
- let requirepath=path.slice(depth);
- let expression=
+ let requiretype=term?.type==="CallExpression";
+ if(!requiretype)return;
+ return term?.callee.name==="require";
+},ecma({arguments:[source]})
+{let dynamic=
  {type:"AwaitExpression",argument:
  {type:"CallExpression",callee:
  {type:"MemberExpression"
- ,object:{type:"ImportExpression",source:require.arguments[0]}
+ ,object:{type:"ImportExpression",source}
  ,property:{type:"Identifier",name:"then"}
  },arguments:
 [{type:"ArrowFunctionExpression",expression:true
@@ -239,13 +227,11 @@ let address=new URL(import.meta.url).pathname;
  ,value:{type:"Identifier",name:"module"}
  }
 ]}]
- ,body:merge(awaitable,{type:"Identifier",name:"module"},requirepath)
+ ,body:{type:"Identifier",name:"module"}
  }
 ]}
  };
- return [awaitpath,expression];
-});
- return statements.reduce((term,[awaitpath,expression])=>merge(term,expression,awaitpath),term);
+ return dynamic
 }}
   // module.exports exportdefaultdeclaration prepended to scope instead. 
 //  ,export:
