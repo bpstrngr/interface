@@ -196,8 +196,9 @@ rm(path,{recursive:true})).then(done=>path);
  let recovery=
 [immediate?retrieve.bind(scope):redirect
 ,immediate&&function enter(absolute)
-{return ["js","ts","d.ts"].map(extension=>
- [absolute,"index."+extension].join("/")).reduce((file,source)=>
+{return [".js","js","ts","d.ts"].map((extension,index)=>
+ index?[absolute,"index."+extension].join("/"):absolute+extension).reduce((first,second,index,all)=>
+ [all.splice(index),first].flat()).reduce((file,source)=>
  file.catch(fail=>access(source).then(file=>source))
 ,Promise.reject());
 }
@@ -317,11 +318,13 @@ rm(path,{recursive:true})).then(done=>path);
 }).reduce((entries,entry)=>merge(entries,entry,0), {});
  format=format.reduce(merge,{});
  await patch(path.dirname(source[0]), patches);
- await [format.scripts].flat().filter(Boolean).reduce(record(script=>
+ let scripts=[format.scripts].flat().filter(Boolean);
+ if(scripts.length)
+ await scripts.reduce(record(script=>
  note.call(3,"running "+script+" for "+target+"...")&&
  resolve(path.resolve(path.dirname(target),script)).then(({default:module})=>module).then(module=>
  note.call(2,script,"for",target+":",module)))
-,[]);
+,[]).catch(combine(note,exit));
  return {source,format};
 };
 
