@@ -14,10 +14,10 @@
   "microsoft_2014_typescript.js":{"https://github.com/microsoft/TypeScript":{"v5.1.6":["src/compiler/_namespaces/ts.ts",{"syntax":"typescript"}]}},
   "jridgewell_2015_sourcemap_codec.js":{"https://github.com/jridgewell/sourcemap-codec":{"v1.4.13":["src/sourcemap-codec.ts"]}},
   "rich_harris_2014_magic_string.js":{"https://github.com/rich-harris/magic-string":{"v0.27.0":["src/index.js",{
-    "replace":{"Identifier":{"DEBUG":"false"}},
-    "alias":{"@jridgewell/sourcemap-codec":"./jridgewell_2015_sourcemap_codec.js"}
+    "alias":{"@jridgewell/sourcemap-codec":"./jridgewell_2015_sourcemap_codec.js"},
+    "edit":{"DEBUG":"false"}
   }]}},
-  "rich_harris_2016_is_reference.js":{"https://github.com/Rich-Harris/is-reference":{"v3.0.1":["src/index.js",{"output":{"footer":"export const NodeWithFieldDefinition=undefined;"}}]}},
+  "rich_harris_2016_is_reference.js":{"https://github.com/Rich-Harris/is-reference":{"v3.0.1":["src/index.js"]}},
   "rich_harris_2015_estree_walker.js":{"https://github.com/Rich-Harris/estree-walker":{"v2.0.2":["src/index.js"]}},
   "rich_harris_2016_locate_character.js":{"https://github.com/Rich-Harris/locate-character":{"v3.0.0":[
       "src/index.js"
@@ -224,20 +224,21 @@
             "webidl-conversions": "./domenic_2014_webidl.js"
           },
           "detach":["prettier"],
-          "edit":{"domenic_2022_jsdom_webidl2js/0/lib/transformer.js":{
+          "edit":{"lib/transformer.js":{
             "_prettify\\(source\\) \\{": "_prettify(source){return source;"
           }},
           "replace": {
-            "domenic_2022_jsdom_webidl2js/0/lib/transformer.js":{"Literal":{"output/utils.js":"domenic_2022_jsdom_webidl2js_output_utils.js"}}
+            "lib/transformer.js":{"Literal":{"output/utils.js":"domenic_2022_jsdom_webidl2js_output_utils.js"}}
           },
           "./Harris_2015_json.js": {},
-          "./Harris_2015_noderesolve.js": {}
+          "./Harris_2015_noderesolve.js": {},
+          "comment":"prettier was easy to detach with one small edit."
         }
       ]
     }
   },
   "domenic_2022_jsdom_webidl2js_output_utils.js": {
-    "https://github.com/jsdom/webidl2js/lib/output/utils/utils.js": {
+    "https://github.com/jsdom/webidl2js/lib/output/utils.js": {
       "v17.1.0": [
         "lib/output/utils.js",{
           "syntax":"commonjs",
@@ -248,7 +249,7 @@
   },
   "Mayr_2017_tr46.js":{"https://github.com/jsdom/tr46":{"v4.1.1":["index.js",{
     "syntax":"commonjs",
-    "scripts":["Mayr_2017_tr46_generateMappingTable.js","Mayr_2017_tr46_generateRegexes.js"],
+    "scripts":["Mayr_2017_tr46/0/scripts/generateMappingTable.js","Mayr_2017_tr46/0/scripts/generateRegexes.js"],
     "alias":{
       "punycode/":"./Bynens_2011_punycode.js",
       "minipass-fetch":"./isaacs_2019_minipass_fetch.js",
@@ -266,29 +267,24 @@
       "@unicode/unicode-15.0.0/Bidi_Class/Other_Neutral/code-points.js":"./Bynens_2022_unicode_Neutral.js",
       "@unicode/unicode-15.0.0/Bidi_Class/Arabic_Number/code-points.js":"./Bynens_2022_unicode_Arabic_number.js"
     },
+    "edit":{
+      "scripts/generateMappingTable.js":{"main\\(\\)\\.catch":"module.exports=main().catch"},
+      "scripts/generateRegexes.js":{"main\\(\\)\\.catch":"module.exports=main().catch","(`.*)\\${unicodeVersion}(.*`)":"$115.0.0$2"}
+    },
     "./Harris_2015_json.js": {}
   }]}},
-  "Mayr_2017_tr46_generateMappingTable.js":["Mayr_2017_tr46/0/scripts/generateMappingTable.js",{
-    "syntax":"commonjs",
-    "alias":{"minipass-fetch":"./isaacs_2019_minipass_fetch.js"},
-    "edit":{"main\\(\\)\\.catch":"module.exports=main().catch"}
-  }],
-  "Mayr_2017_tr46_generateRegexes.js":["Mayr_2017_tr46/0/scripts/generateRegexes.js",{
-    "syntax":"commonjs",
-    "edit":{"main\\(\\)\\.catch":"module.exports=main().catch","(`.*)\\${unicodeVersion}(.*`)":"$115.0.0$2"}
-  }],
-  "Bynens_2022_unicode_Mark.js":{"https://github.com/node-unicode/unicode-15.0.0/General_Category/Mark/code-points.js":{"v1.3.1":["General_Category/Mark/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_LTR.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Left_To_Right/code-points.js":{"v1.3.1":["Bidi_Class/Left_To_Right/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_RTL.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Right_To_Left/code-points.js":{"v1.3.1":["Bidi_Class/Right_To_Left/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_Arabic.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Arabic_Letter/code-points.js":{"v1.3.1":["Bidi_Class/Arabic_Letter/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_EU_number.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/European_Number/code-points.js":{"v1.3.1":["Bidi_Class/European_Number/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_EU_separator.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/European_Separator/code-points.js":{"v1.3.1":["Bidi_Class/European_Separator/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_EU_terminator.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/European_Terminator/code-points.js":{"v1.3.1":["Bidi_Class/European_Terminator/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_Common_separator.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Common_Separator/code-points.js":{"v1.3.1":["Bidi_Class/Common_Separator/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_Nonspacing_mark.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Nonspacing_Mark/code-points.js":{"v1.3.1":["Bidi_Class/Nonspacing_Mark/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_Neutral_Boundary.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Boundary_Neutral/code-points.js":{"v1.3.1":["Bidi_Class/Boundary_Neutral/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_Neutral.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Other_Neutral/code-points.js":{"v1.3.1":["Bidi_Class/Other_Neutral/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_Arabic_number.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Arabic_Number/code-points.js":{"v1.3.1":["Bidi_Class/Arabic_Number/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_Mark.js":{"https://github.com/node-unicode/unicode-15.0.0/General_Category/Mark":{"v1.3.1":["General_Category/Mark/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_LTR.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Left_To_Right":{"v1.3.1":["Bidi_Class/Left_To_Right/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_RTL.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Right_To_Left":{"v1.3.1":["Bidi_Class/Right_To_Left/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_Arabic.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Arabic_Letter":{"v1.3.1":["Bidi_Class/Arabic_Letter/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_EU_number.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/European_Number":{"v1.3.1":["Bidi_Class/European_Number/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_EU_separator.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/European_Separator":{"v1.3.1":["Bidi_Class/European_Separator/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_EU_terminator.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/European_Terminator":{"v1.3.1":["Bidi_Class/European_Terminator/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_Common_separator.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Common_Separator":{"v1.3.1":["Bidi_Class/Common_Separator/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_Nonspacing_mark.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Nonspacing_Mark":{"v1.3.1":["Bidi_Class/Nonspacing_Mark/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_Neutral_Boundary.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Boundary_Neutral":{"v1.3.1":["Bidi_Class/Boundary_Neutral/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_Neutral.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Other_Neutral":{"v1.3.1":["Bidi_Class/Other_Neutral/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_Arabic_number.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Arabic_Number":{"v1.3.1":["Bidi_Class/Arabic_Number/code-points.js",{"syntax":"commonjs"}]}},
   "Bynens_2013_regenerate.js":{"https://github.com/mathiasbynens/regenerate":{"v1.4.2":["regenerate.js",{"syntax":"commonjs"}]}},
   "Isonen_2014_jss.js":{"https://github.com/cssinjs/jss/packages/jss":{"v10.10.0":["packages/jss/src/index.js",{
     "alias":{"is-in-browser":"./Anderson_2016_isinbrowser.js","tiny-warning":"./Reardon_2018_tinywarning.js"}
@@ -303,63 +299,51 @@
     "jss":"./Isonen_2014_jss.js"
   }}]}},
   "Anderson_2016_isinbrowser.js":{"https://github.com/tuxsudo/is-in-browser":{"v.2.0.0":["src/index.ts"]}},
+  "Reardon_2018_tinywarning.js":{"https://github.com/alexreardon/tiny-warning":{"v1.0.3":["src/index.js",{"syntax":"typescript"}]}},
   "domenic_2015_whatwg_url.js": {
     "https://github.com/jsdom/whatwg-url": {
       "v12.0.0": [
         "index.js", {
           "syntax":"commonjs",
-          "scripts": ["./domenic_2015_whatwg_url_transform.js","./domenic_2015_whatwg_url_webidl_wrapper.js"],
-          "alias":{"webidl-conversions":"./domenic_2014_webidl.js","tr46":"./Mayr_2017_tr46.js"},
-          "./Harris_2015_json.js": {},
-          "./Harris_2015_noderesolve.js": {}
+          "scripts": ["./domenic_2015_whatwg_url/0/scripts/transform.js"],
+          "alias":{
+            "webidl-conversions":"./domenic_2014_webidl.js","tr46":"./Mayr_2017_tr46.js",
+            "rimraf": "./isaacs_2011_rimraf.js",
+            "webidl2js": "./domenic_2022_jsdom_webidl2js.js",
+            "minipass-fetch": "./isaacs_2019_minipass_fetch.js"
+          },
+          "edit": {"scripts/transform.js": {
+            "transformer\\.generate": "module.exports=transformer.generate"
+          }},
+          "comment":"commonjs executes synchronously, so its thread needs to be exported to track after modularization.",
+          "./Harris_2015_noderesolve.js": {},
+          "./Harris_2015_json.js": {}
         }
       ]
     }
   },
-  "Reardon_2018_tinywarning.js":{"https://github.com/alexreardon/tiny-warning":{"v1.0.3":["src/index.js",{"syntax":"typescript"}]}},
   "domenic_2015_whatwg_url_webidl_wrapper.js": {
-    "https://github.com/jsdom/whatwg-url": {"v12.0.0": ["webidl2js-wrapper.js",{
-      "scripts": ["./domenic_2015_whatwg_url_webidl_wrapper_transform.js"],
-      "alias":{"webidl-conversions":"./domenic_2014_webidl.js","tr46":"./Mayr_2017_tr46.js"},
-      "syntax":"commonjs"
-    }]}
+    "https://github.com/jsdom/whatwg-url": {
+      "v12.0.0": [
+        "webidl2js-wrapper.js", {
+          "syntax":"commonjs",
+          "scripts": ["./domenic_2015_whatwg_url_webidl_wrapper/0/scripts/transform.js"],
+          "alias":{
+            "webidl-conversions":"./domenic_2014_webidl.js","tr46":"./Mayr_2017_tr46.js",
+            "rimraf": "./isaacs_2011_rimraf.js",
+            "webidl2js": "./domenic_2022_jsdom_webidl2js.js",
+            "minipass-fetch": "./isaacs_2019_minipass_fetch.js"
+          },
+          "edit": {"scripts/transform.js": {
+            "transformer\\.generate": "module.exports=transformer.generate"
+          }},
+          "comment":"commonjs executes synchronously, so its thread needs to be exported to track after modularization.",
+          "./Harris_2015_noderesolve.js": {},
+          "./Harris_2015_json.js": {}
+        }
+      ]
+    }
   },
-  "domenic_2015_whatwg_url_transform.js": [
-    "domenic_2015_whatwg_url/0/scripts/transform.js", {
-      "syntax":"commonjs",
-      "input": { "external": ["prettier"] },
-      "alias": {
-        "rimraf": "./isaacs_2011_rimraf.js",
-        "webidl-conversions": "./domenic_2014_webidl.js",
-        "webidl2js": "./domenic_2022_jsdom_webidl2js.js",
-        "minipass-fetch": "./isaacs_2019_minipass_fetch.js"
-      },
-      "edit": {"domenic_2015_whatwg_url/0/scripts/transform.js": {
-        "transformer\\.generate": "module.exports=transformer.generate"
-      }},
-      "comment":"commonjs executes synchronously, so its thread needs to be exported to track after modularization.",
-      "./Harris_2015_json.js": {},
-      "./Harris_2015_noderesolve.js": {}
-    }
-  ],
-  "domenic_2015_whatwg_url_webidl_wrapper_transform.js": [
-    "domenic_2015_whatwg_url_webidl_wrapper/0/scripts/transform.js", {
-      "syntax":"commonjs",
-      "input": { "external": ["prettier"] },
-      "alias": {
-        "rimraf": "./isaacs_2011_rimraf.js",
-        "webidl-conversions": "./domenic_2014_webidl.js",
-        "webidl2js": "./domenic_2022_jsdom_webidl2js.js",
-        "minipass-fetch": "./isaacs_2019_minipass_fetch.js"
-      },
-      "edit": {"domenic_2015_whatwg_url/0/scripts/transform.js": {
-        "transformer\\.generate": "module.exports=transformer.generate"
-      }},
-      "comment":"commonjs executes synchronously, so its thread needs to be exported to track after modularization.",
-      "./Harris_2015_json.js": {},
-      "./Harris_2015_noderesolve.js": {}
-    }
-  ],
   "facebook_2014_flow_parser.js":{"https://registry.npmjs.org/flow-parser/-/flow-parser-0.216.1.tgz":[
     "flow_parser.js"
   ]},
@@ -452,35 +436,26 @@
     "v3.0.0": [
       "lib/CSSStyleDeclaration.js", {
         "syntax":"commonjs",
-        "scripts": ["./Sakas_2018_cssstyle_allproperties.js","./Sakas_2018_cssstyle_someproperties.js","./Sakas_2018_cssstyle_properties.js"],
-        "alias": {"rrweb-cssom": "./rrweb_2010_cssom.js"},
-        "./Harris_2015_json.js": {}
+        "scripts": ["./Sakas_2018_cssstyle/0/scripts/download_latest_properties.js","./Sakas_2018_cssstyle/0/scripts/generate_implemented_properties.js","./Sakas_2018_cssstyle/0/scripts/generate_properties.js"],
+        "edit":{
+          "scripts/download_latest_properties.js":{
+            "main\\(\\)\\.catch":"module.exports=main().catch",
+            "(out_file.end\\(function \\(err\\) {)":"return new Promise(resolve=>$1resolve(err);",
+            "(ties.\\'\\);\n  }\\))":"$1)"
+          },
+          "scripts/generate_implemented_properties.js":{
+            "^((?:.*[\n$])*)":" let [{promises:{readdir:r,writeFile:w}},{dirname:d,basename:b}]=await Promise.all(['fs','path'].map(m=>import(m)))\n,l=d(new URL(import.meta.url).pathname)\n,f=await r(l+'/../lib/properties').then(f=>\n new Set(f.flatMap(f=>/\\.js$/.test(f)?b(f,'.js').replace(/[A-Z]/,'-$&').replace(/^([^-]+)-/,(m,g)=>\n ['o','moz','ms','webkit'].includes(g)?'-'+m:m).toLowerCase():[])));\n export default w(l+'/../lib/implementedProperties.js','module.exports=new Set('+JSON.stringify(Array.from(f))+')');"
+          },
+          "scripts/generate_properties.js":{
+            "^((?:.*[\n$])*)":"let [{promises:{readdir:r,writeFile:w}},{dirname:d,basename:b}]=await Promise.all(['fs','path'].map(m=>import(m)))\n,l=d(new URL(import.meta.url).pathname)\n,f=await r(l+'/../lib/properties').then(f=>\n Array.from(new Set(f.flatMap((f,n)=>[n=b(f,'.js'),n.replace(/[A-Z]/,'-$&').replace(/^([^-]+)-/,(m,g)=>\n ['o','moz','ms','webkit'].includes(g)?'-'+m:m).toLowerCase()].map(n=>'\"'+n+'\":require(\"./properties/'+f+'\").definition')))));\n f='const properties={'+f+'};module.exports=function(prototype){Object.defineProperties(prototype,properties);}';\n export default w(l+'/../lib/properties.js',f)"
+          }
+        },
+        "alias": {"rrweb-cssom": "./rrweb_2010_cssom.js","minipass-fetch":"./isaacs_2019_minipass_fetch.js"},
+        "./Harris_2015_json.js": {},
+        "comment":"generate_implemented_properties originally generates an imperative script from ast (with babel!) instead of simply iterating directly.... \n generate_properties is a simple bundler: parses property files listing their dependencies, sorts external dependencies above local, reconciles namespace of exports and imports, exports function to extend a prototype with property namespace entries, in dashed and camel case. the last step is sufficient input for an external bundler."
       }
     ]
   }},
-  "Sakas_2018_cssstyle_allproperties.js": [
-    "Sakas_2018_cssstyle/0/scripts/download_latest_properties.js",{
-      "syntax":"commonjs",
-      "edit":{
-        "main\\(\\)\\.catch":"module.exports=main().catch",
-        "(out_file.end\\(function \\(err\\) {)":"return new Promise(resolve=>$1resolve(err);",
-        "(ties.\\'\\);\n  }\\))":"$1)"
-      },
-      "alias":{"minipass-fetch":"./isaacs_2019_minipass_fetch.js"}
-    }
-  ],
-  "Sakas_2018_cssstyle_someproperties.js": [
-    "Sakas_2018_cssstyle/0/scripts/generate_implemented_properties.js",{
-      "edit":{"^((?:.*[\n$])*)":" let [{promises:{readdir:r,writeFile:w}},{dirname:d,basename:b}]=await Promise.all(['fs','path'].map(m=>import(m)))\n,l=d(new URL(import.meta.url).pathname)\n,f=await r(l+'/../lib/properties').then(f=>\n new Set(f.flatMap(f=>/\\.js$/.test(f)?b(f,'.js').replace(/[A-Z]/,'-$&').replace(/^([^-]+)-/,(m,g)=>\n ['o','moz','ms','webkit'].includes(g)?'-'+m:m).toLowerCase():[])));\n export default w(l+'/../lib/implementedProperties.js','module.exports=new Set('+JSON.stringify(Array.from(f))+')');"},
-      "comment":"the file originally generates an imperative script from ast (with babel!) instead of simply iterating directly...."
-    }
-  ],
-  "Sakas_2018_cssstyle_properties.js": [
-    "Sakas_2018_cssstyle/0/scripts/generate_properties.js", {
-      "edit":{"^((?:.*[\n$])*)":"let [{promises:{readdir:r,writeFile:w}},{dirname:d,basename:b}]=await Promise.all(['fs','path'].map(m=>import(m)))\n,l=d(new URL(import.meta.url).pathname)\n,f=await r(l+'/../lib/properties').then(f=>\n Array.from(new Set(f.flatMap((f,n)=>[n=b(f,'.js'),n.replace(/[A-Z]/,'-$&').replace(/^([^-]+)-/,(m,g)=>\n ['o','moz','ms','webkit'].includes(g)?'-'+m:m).toLowerCase()].map(n=>'\"'+n+'\":require(\"./properties/'+f+'\").definition')))));\n f='const properties={'+f+'};module.exports=function(prototype){Object.defineProperties(prototype,properties);}';\n export default w(l+'/../lib/properties.js',f)"},
-      "comment": "this file is a simple bundler: parses property files listing their dependencies, sorts external dependencies above local, reconciles namespace of exports and imports, exports function to extend a prototype with property namespace entries, in dashed and camel case. the last step is sufficient input for an external bundler."
-    }
-  ],
   "McKenzie_2014_babel_types.js": {"https://github.com/babel/babel/packages/babel-types": {"v6.13.0": ["src/index.js",{"syntax": "typescript"}]}},
   "domenic_2018_dataurls.js":{"https://github.com/jsdom/data-urls":{"v4.0.0":["lib/parser.js",{"syntax":"commonjs","alias":{
     "whatwg-url": "./domenic_2015_whatwg_url.js",

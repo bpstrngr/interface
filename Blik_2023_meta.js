@@ -167,13 +167,20 @@ let address=new URL(import.meta.url).pathname;
  return grammar;
 };
 
+ var local=({1:value})=>["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(value?.type)?undefined:value;
+ var require=({1:value})=>value?.callee?.name==="require";
+
  export var estree=
  // sort by decreasing specificity for declarative disjunction (Object.values(estree.dialect)). 
  {commonjs:
  {dynamicblock:
- {condition(value,field,path)
-{return ["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(value?.type)&&[value.body.body||value.body].flat().some((value,index)=>
- estree.commonjs.dynamicrequire.condition(value,index,[path,field,"body"].flat()));
+ {condition(term,field,path)
+{let block=["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(term?.type);
+ if(!block)return;
+ let scope=prune.call(term,local);
+ let dynamic=search.call({scope},([field,term],path)=>
+ estree.commonjs.dynamicrequire.condition(term,field,path));
+ return Object.keys(dynamic)?.length;
 },ecma(value){return {...value,async:true};}
  }
  ,require:
@@ -184,13 +191,11 @@ let address=new URL(import.meta.url).pathname;
 :value?.type==="ExpressionStatement"
 ?[value.expression]
 :[];
- return values.some(value=>Object.keys(search.call({value:prune.call(value,({1:value})=>
- ["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(value?.type)?undefined:value)}
-,({1:value})=>value?.callee?.name==="require")).length);
+ return values.some(value=>Object.keys(search.call({value:prune.call(value,local)}
+,require)).length);
 },ecma(value,field,path)
-{let scope=prune.call(value,({1:value})=>
- ["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(value?.type)?undefined:value);
- let requires=search.call(scope,({1:value})=>value?.callee?.name==="require");
+{let scope=prune.call(value,local);
+ let requires=search.call(scope,require);
  let id=value=>value.replace(/[^a-zA-Z]/g,"")+"_exports";
  let imports=Object.values(requires).map(require=>(
  {type:"ImportDeclaration",source:require.arguments[0]
@@ -204,37 +209,43 @@ let address=new URL(import.meta.url).pathname;
  ,dynamicrequire:
  {condition(term,field,path)
 {if(path.length<2)return;
- path={VariableDeclaration:"declarations",ExpressionStatement:["expression","right"],CallExpression:"arguments",AssignmentExpression:"right",MemberExpression:"object",Property:[]}[term?.type];
- term=prune.call(term,({1:value})=>
- ["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(value?.type)?undefined:value);
- let value=[search.call(term,path)].flat();
- return value.some(value=>Object.keys(search.call({value},({1:value})=>value?.callee?.name==="require")).length);
-},ecma(value)
-{let depth={VariableDeclaration:3,ExpressionStatement:2,CallExpression:2,Property:0}[value.type]||1;
- let statements=Object.entries(search.call({value},({1:value})=>value?.callee?.name==="require")).map(function([field,require])
+ let awaitable="VariableDeclaration/ExpressionStatement/CallExpression/IfStatement/Property".split("/").includes(term?.type);
+ if(!awaitable)return;
+ let scope=prune.call(term,local);
+ return Object.keys(search.call(scope,require)).length;
+},ecma(term)
+{let depth={VariableDeclaration:3,ExpressionStatement:2,CallExpression:2,IfStatement:2,Property:0}[term.type]||1;
+ let scope=prune.call(term,local);
+ let requires=search.call({scope},require);
+ let statements=Object.entries(requires).map(function([field,require])
 {let path=field.split("/").slice(1);
- let expressionpath=path.slice(0,depth);
- let expression=search.call(value,expressionpath);
- if(expression.type==="ObjectExpression")
- // Properties should be found individually. 
- return [expressionpath,expression];
- let properties=[{type:"Property",kind:"init",key:{type:"Identifier",name:"default"},value:{type:"Identifier",name:"module"}}];
- let importexpression={type:"ImportExpression",source:require.arguments[0]};
+ let awaitpath=path.slice(0,depth);
+ let awaitable=search.call(term,awaitpath);
+ if(awaitable.type==="ObjectExpression")
+ // Properties will be pruned individually. 
+ return [awaitpath,awaitable];
  let requirepath=path.slice(depth);
- let argument=
+ let expression=
+ {type:"AwaitExpression",argument:
  {type:"CallExpression",callee:
  {type:"MemberExpression"
- ,object:importexpression
+ ,object:{type:"ImportExpression",source:require.arguments[0]}
  ,property:{type:"Identifier",name:"then"}
  },arguments:
 [{type:"ArrowFunctionExpression",expression:true
- ,params:[{type:"ObjectPattern",properties}]
- ,body:merge(expression,{type:"Identifier",name:"module"},requirepath)
+ ,params:[{type:"ObjectPattern",properties:
+[{type:"Property",kind:"init"
+ ,key:{type:"Identifier",name:"default"}
+ ,value:{type:"Identifier",name:"module"}
  }
-]};
- return [expressionpath,{type:"AwaitExpression",argument}];
+]}]
+ ,body:merge(awaitable,{type:"Identifier",name:"module"},requirepath)
+ }
+]}
+ };
+ return [awaitpath,expression];
 });
- return statements.reduce((value,[path,expression])=>merge(value,expression,path),value);
+ return statements.reduce((term,[awaitpath,expression])=>merge(term,expression,awaitpath),term);
 }}
   // module.exports exportdefaultdeclaration prepended to scope instead. 
 //  ,export:

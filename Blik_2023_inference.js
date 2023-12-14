@@ -8,17 +8,17 @@
  // with debugPort and customizing it don't work yet). 
  let {createInterface}=await import("readline");
  let {stdin:input,stdout:output}=process;
- let socket=await import("net").then(({connect})=>connect(process.debugPort));
- let inspector=await createInterface({input:socket,output:socket});
- let shell=await createInterface({input,output});
+ let socket=await new Promise((resolve,error)=>import("net").then(({connect})=>
+ observe.call(connect(process.debugPort),{connect(){resolve(this)},error}))).catch(fail=>undefined);
+ let interfaces=[{input,output},socket&&{input:socket,output:socket}].filter(Boolean).map(createInterface);
  let abortion=new AbortController();
  let entries=context.flat().flatMap(term=>compound(term)?Object.entries(term):[[term]]);
  entries=await entries.reduce(record(([node,term])=>new Promise(resolve=>
  term?resolve(term):each("question",node+":",{signal:abortion.signal}
-,combine(compose(swap(abortion),"abort"),resolve))(shell,inspector)).then(term=>
+,combine(compose(swap(abortion),"abort"),resolve))(...interfaces)).then(term=>
  [node,term]))
 ,[]);
- return compose(each("close"),swap(Object.fromEntries(entries)))(shell,inspector);
+ return compose(each("close"),swap(Object.fromEntries(entries)))(...interfaces);
 };
 
  export var collect=
@@ -281,8 +281,8 @@
  export function note(...context)
 {// expose context in console. (combine(compose(note,drop()),infer()))
  let stack=trace();
- let composition="provide.compose/Array.reduce/infer/infer(note)/provide.infer/note".split("/");
- let composed=composition.every((term,index,{length})=>stack.at(-length+index)?.[0]===term);
+ let composition="compose/reduce/compose/infer\\((bound )*note\\)/infer/note".split("/");
+ let composed=composition.every((term,index,{length})=>RegExp(term+"$").test(stack.at(index-length)?.[0]));
  stack=stack.slice(0,composed?-composition.length:-1);
  let neutral="\x1b[0m";
  let blue=neutral+"\x1b[40m\x1b[34m\x1b[1m\x1b[3m";
@@ -420,7 +420,11 @@
  export function trace(term,path=[])
 {// trace term in scope or stack. 
  if(!something(term))
- return stack();
+ return compose.call
+(stack()
+,combine(infer(),swap(0),infer("findIndex",([term])=>term===trace.name))
+,infer("slice")
+);
  let scope=this;
  if(scope===term||!scope)
  return path;
@@ -442,7 +446,7 @@
 ,swap([])
 ),infer("slice",1));
 
- export var stack=compose.bind(Error,combine
+ export var stack=compose(swap(Error),combine
  // collect stack trace. 
 (infer()
 ,compose(...combine(2)("stackTraceLimit"),describe)
@@ -450,7 +454,7 @@
 ({stackTraceLimit:Infinity},Object.assign
 ,Function.call,"stack",/\n */,"split",infer("slice",1)
 ,infer("map",term)
-,combine(infer(),infer("findIndex",([term])=>term===trace.name))
+,combine(infer(),infer("findIndex",([term])=>term===stack.name))
 ,infer("slice")
 ,infer("slice",1)
 ,"reverse"

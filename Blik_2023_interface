@@ -44,7 +44,7 @@ For the other cases, external modules can be resolved in advance:
  for file in $(git ls-tree --full-tree --name-only -r HEAD);do node ./Blik_2023_interface.js ./Blik_2023_interface.js resolve $file;done;
 
 Source definitions map files to entry points (local or remote address and version, supporting sparse-checkout of monorepos), patches and 
-format specifications (currently supporting rollup plugins, but options for a modular parser/serializer are evolving, such as syntax, alias, replace): 
+format specifications (currently supporting rollup plugins, but options for a modular parser/serializer are evolving, such as syntax, alias, replace - the latter only applies to bundle output, not internal loading): 
  {"module.js":"path/index.js"};
  {"module.js":["path/index.js",{plugin:{option:"setting"},syntax:"commonjs",output:{paths:{specifier:"path"}}}]};
  {"module.js":{"protocol://domain/author/module":["index.js","index2.js"]}};
@@ -105,7 +105,6 @@ Uninstall git:
  but it remains idle without arguments from the client.) 
 
 Issues: 
- mass bundling exits without notice at ~second recursive import of rollup. (to be confirmed)
  expose modularisation of sources to support module loading without nodejs's native loader module. update references to it in this readme after. 
  make composition monadic (only execute on dynamic or bound context). 
  compress code with monadic combinators (infer, compose, either, wether, combine etc.)

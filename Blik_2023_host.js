@@ -12,11 +12,10 @@
 ].map(compose(drop(0,1),RegExp));
  classify(classified);
  parameters=await compose(resolve,["default",protocol],tether(route))(parameters);
- let cluster=await import("cluster"); 
  let missing=["port","hmac",...protocol=="https"?["distinguishedname"]:[]].filter(key=>!parameters[key]);
  if(missing.length)
  exit("missing "+missing+" in "+arguments[1]);
- //if(cluster.isMaster)return persistence(),history(),fork();
+ //if(await resolve("cluster","isMaster"))return persistence(),history(),fork();
  encrypt(parameters.hmac);
  await window([protocol,"//localhost",parameters.port].join(":"));
  protocol=await import(protocol);
