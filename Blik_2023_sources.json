@@ -358,30 +358,20 @@
     "https://github.com/jsdom/whatwg-encoding": {
       "v2.0.0": [
         "lib/whatwg-encoding.js",
-        { "scripts": "./domenic_2016_whatwg_encoding_update.js",
+        { "scripts": "./domenic_2016_whatwg_encoding/0/scripts/update.js",
           "syntax":"commonjs",
           "alias": {
             "minipass-fetch": "./isaacs_2019_minipass_fetch.js",
             "iconv-lite":"./ashtuchkin_2012_iconv_lite.js"
           },
+          "edit": {"scripts/update.js": {
+            "main\\(\\)\\.catch":"module.exports=main().catch"
+          }},
           "./Harris_2015_json.js": {}
         }
       ]
     }
   },
-  "domenic_2016_whatwg_encoding_update.js":[
-    "domenic_2016_whatwg_encoding/0/scripts/update.js", {
-      "syntax":"commonjs",
-      "alias": {
-        "minipass-fetch": "./isaacs_2019_minipass_fetch.js",
-        "iconv-lite":"./ashtuchkin_2012_iconv_lite.js"
-      },
-      "edit": {"domenic_2016_whatwg_encoding/0/scripts/update.js": {
-        "main\\(\\)\\.catch":"module.exports=main().catch"
-      }},
-      "./Harris_2015_json.js": {}
-    }
-  ],
   "domenic_2016_whatwg_mimetype.js": {
     "https://github.com/jsdom/whatwg-mimetype": {
       "v3.0.0": [
@@ -398,7 +388,7 @@
     "comment":"hoisted commonjs variable named 'module' edited to local scope to not conflict with inserted module variable in module scope after standardization."
   }]}},
   "rrweb_2010_cssom.js": {"https://github.com/rrweb-io/CSSOM": {"a469aae2f92e454e669aec821781626924f98d17": ["lib/index.js", {
-    "scripts":["./rrweb_2010_cssom_build.js"],
+    "scripts":["./rrweb_2010_cssom/0/build.js"],
     "syntax":"commonjs",
     "edit":{
       "lib/parse.js":{"(CSSOM\\.CSSStyleDeclaration = require\\('\\.\\/CSSStyleDeclaration'\\).CSSStyleDeclaration)":"!function(){$1}()"},
@@ -408,15 +398,15 @@
       },
       "lib/CSSStyleRule.js":{"var CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSStyleRule.prototype =(?:.*\n)*)(CSSOM.CSSStyleRule.parse =)":"var CSSOM={};\n!function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4"},
       "lib/CSSFontFaceRule.js":{"var CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSFontFaceRule.prototype =(?:.*\n)*)(exports.CSSFontFaceRule =)":"var CSSOM={};\n!function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4"},
-      "lib/CSSKeyframeRule.js":{"var CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSKeyframeRule.prototype =(?:.*\n)*)(exports.CSSKeyframeRule =)":"var CSSOM={};\n!function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4"}
+      "lib/CSSKeyframeRule.js":{"var CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSKeyframeRule.prototype =(?:.*\n)*)(exports.CSSKeyframeRule =)":"var CSSOM={};\n!function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4"},
+      "build.js":{
+          "__dirname":"PATH.dirname(new URL(import.meta.url).pathname)",
+          "process.stdout":"module.exports=process.stdout",
+          ", 0755":""
+      }
     },
     "comment":"circular requires made dynamic to resolve horrific circular dependency. there must be a generic way to modularize synchronous circular imports without these edits (rollup's commonjs plugin may have hints). This way, some throttling is expected before the module is ready to use. Hopefully not many commonjs dependencies have such an insane structure for this to need general support."
   }]}},
-  "rrweb_2010_cssom_build.js":["rrweb_2010_cssom/0/build.js",{"syntax":"commonjs","edit":{
-    "__dirname":"PATH.dirname(new URL(import.meta.url).pathname)",
-    "process.stdout":"module.exports=process.stdout",
-    ", 0755":""
-  }}],
   "Sakas_2018_cssstyle.js": {"https://github.com/jsdom/cssstyle": {
     "v3.0.0": [
       "lib/CSSStyleDeclaration.js", {
@@ -429,10 +419,10 @@
             "(ties.\\'\\);\n  }\\))":"$1)"
           },
           "scripts/generate_implemented_properties.js":{
-            "^((?:.*[\n$])*)":" let [{promises:{readdir:r,writeFile:w}},{dirname:d,basename:b}]=await Promise.all(['fs','path'].map(m=>import(m)))\n,l=d(new URL(import.meta.url).pathname)\n,f=await r(l+'/../lib/properties').then(f=>\n new Set(f.flatMap(f=>/\\.js$/.test(f)?b(f,'.js').replace(/[A-Z]/,'-$&').replace(/^([^-]+)-/,(m,g)=>\n ['o','moz','ms','webkit'].includes(g)?'-'+m:m).toLowerCase():[])));\n export default w(l+'/../lib/implementedProperties.js','module.exports=new Set('+JSON.stringify(Array.from(f))+')');"
+            "^((?:.*[\n$])*)":" let [{promises:{readdir:r,writeFile:w}},{dirname:d,basename:b}]=await Promise.all(['fs','path'].map(m=>import(m)))\n,l=d(new URL(import.meta.url).pathname)\n,f=await r(l+'/../lib/properties').then(f=>\n new Set(f.flatMap(f=>/\\.js$/.test(f)?b(f,'.js').replace(/[A-Z]/,'-$&').replace(/^([^-]+)-/,(m,g)=>\n ['o','moz','ms','webkit'].includes(g)?'-'+m:m).toLowerCase():[])));\n module.exports=w(l+'/../lib/implementedProperties.js','module.exports=new Set('+JSON.stringify(Array.from(f))+')');"
           },
           "scripts/generate_properties.js":{
-            "^((?:.*[\n$])*)":"let [{promises:{readdir:r,writeFile:w}},{dirname:d,basename:b}]=await Promise.all(['fs','path'].map(m=>import(m)))\n,l=d(new URL(import.meta.url).pathname)\n,f=await r(l+'/../lib/properties').then(f=>\n Array.from(new Set(f.flatMap((f,n)=>[n=b(f,'.js'),n.replace(/[A-Z]/,'-$&').replace(/^([^-]+)-/,(m,g)=>\n ['o','moz','ms','webkit'].includes(g)?'-'+m:m).toLowerCase()].map(n=>'\"'+n+'\":require(\"./properties/'+f+'\").definition')))));\n f='const properties={'+f+'};module.exports=function(prototype){Object.defineProperties(prototype,properties);}';\n export default w(l+'/../lib/properties.js',f)"
+            "^((?:.*[\n$])*)":"let [{promises:{readdir:r,writeFile:w}},{dirname:d,basename:b}]=await Promise.all(['fs','path'].map(m=>import(m)))\n,l=d(new URL(import.meta.url).pathname)\n,f=await r(l+'/../lib/properties').then(f=>\n Array.from(new Set(f.flatMap((f,n)=>[n=b(f,'.js'),n.replace(/[A-Z]/,'-$&').replace(/^([^-]+)-/,(m,g)=>\n ['o','moz','ms','webkit'].includes(g)?'-'+m:m).toLowerCase()].map(n=>'\"'+n+'\":require(\"./properties/'+f+'\").definition')))));\n f='const properties={'+f+'};module.exports=function(prototype){Object.defineProperties(prototype,properties);}';\n module.exports=w(l+'/../lib/properties.js',f)"
           }
         },
         "alias": {"rrweb-cssom": "./rrweb_2010_cssom.js","minipass-fetch":"./isaacs_2019_minipass_fetch.js"},
@@ -451,15 +441,11 @@
   "wel_2015_symbol_tree.js":{"https://github.com/jsdom/js-symbol-tree":{"v3.2.4":["lib/SymbolTree.js",{"syntax":"commonjs"}]}},
   "domenic_2017_domexception_webidl2js-wrapper.js":{"https://github.com/jsdom/domexception":{"v4.0.0":["webidl2js-wrapper.js",{
     "syntax":"commonjs",
-    "scripts":"./domenic_2017_domexception_webidl2js-wrapper_generate.js",
-    "alias":{"webidl-conversions":"./domenic_2014_webidl.js"},
-    "./Harris_2015_json.js": {}
+    "scripts":"./domenic_2017_domexception_webidl2js-wrapper/0/scripts/generate.js",
+    "alias":{"webidl-conversions":"./domenic_2014_webidl.js","webidl2js":"./domenic_2022_jsdom_webidl2js.js"},
+    "./Harris_2015_json.js": {},
+    "comment":"generate.js called during domexception/webidl2js-wrapper bundling, so will be resolved from source: no need to adjust __dirname locations for persistent bundle."
   }]}},
-  "domenic_2017_domexception_webidl2js-wrapper_generate.js":["domenic_2017_domexception_webidl2js-wrapper/0/scripts/generate.js",{
-    "syntax":"commonjs",
-    "alias":{"webidl2js":"./domenic_2022_jsdom_webidl2js.js"},
-    "comment":"called during domexception/webidl2js-wrapper bundling, so will be resolved from source: no need to adjust __dirname locations for persistent bundle."
-  }],
   "jonathanong_2014_mimedb.js":{"https://github.com/jshttp/mime-db":{"v1.24.0":["index.js",{"syntax":"commonjs","./Harris_2015_json.js":{}}]}},
   "felixge_2011_delayedstream.js":{"https://github.com/felixge/node-delayed-stream":{"1.0.0":["lib/delayed_stream.js",{"syntax":"commonjs"}]}},
   "jonathanong_2014_mimetypes.js":{"https://github.com/jshttp/mime-types":{"2.1.12":["index.js",{"syntax":"commonjs","alias":{"mime-db":"./jonathanong_2014_mimedb.js"}}]}},
@@ -528,7 +514,7 @@
       "lib/api.js",
       {
         "syntax": "commonjs",
-        "scripts": ["./domenic_2022_jsdom_webidl_convert.js", "./domenic_2022_jsdom_jsglobals.js"],
+        "scripts": ["./domenic_2022_jsdom_rollup/0/scripts/webidl/convert.js", "./domenic_2022_jsdom_rollup/0/scripts/generate-js-globals.js"],
         "alias": {
           "tough-cookie": "./salesforce_2011_toughcookie.js",
           "webidl-conversions": "./domenic_2014_webidl.js",
@@ -553,9 +539,18 @@
           "parse5": "./inikulin_2013_parse5.js",
           "saxes": "./Dubeau_2011_saxes.js",
           "ws": "./einaros_2011_ws.js",
-          "w3c-xmlserializer":"./Mayr_2018_w3c_xmlserializer.js"
+          "w3c-xmlserializer":"./Mayr_2018_w3c_xmlserializer.js",
+          "rimraf": "./isaacs_2011_rimraf.js",
+          "webidl2js": "./domenic_2022_jsdom_webidl2js.js"
         },
+        "input": { "external": ["prettier"] },
         "edit":{
+          "scripts/generate-js-globals.js": {
+            "fs\\.writeFileSync": "module.exports=fs.writeFileSync"
+          },
+          "scripts/webidl/convert.js": {
+            "transformer\\.generate": "module.exports=transformer.generate"
+          },
           "living/nodes/Document-impl.js":{
             "const (documents) = (require\\(\"..\\/documents.js\"\\))":"var $1;setTimeout(time=>$1=$2,3000)",
             "const (DOMImplementation) = (require\\(\"..\\/generated\\/DOMImplementation\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"
@@ -581,32 +576,6 @@
       }
     ]}
   },
-  "domenic_2022_jsdom_jsglobals.js": [
-    "domenic_2022_jsdom_rollup/0/scripts/generate-js-globals.js", {
-      "syntax":"commonjs",
-      "./Harris_2015_json.js": {},
-      "edit": {"domenic_2022_jsdom_rollup/0/scripts/generate-js-globals.js": {
-        "fs\\.writeFileSync": "module.exports=fs.writeFileSync"
-      }},
-      "comment":"called during jsdom bundling, so will be available from source: no need to adjust __dirname locations."
-    }
-  ],
-  "domenic_2022_jsdom_webidl_convert.js": [
-    "domenic_2022_jsdom_rollup/0/scripts/webidl/convert.js",
-    {
-      "syntax": "commonjs",
-      "alias": {
-        "rimraf": "./isaacs_2011_rimraf.js",
-        "webidl-conversions": "./domenic_2014_webidl.js",
-        "webidl2js": "./domenic_2022_jsdom_webidl2js.js"
-      },
-      "input": { "external": ["prettier"] },
-      "./Harris_2015_json.js": {},
-      "edit": {"domenic_2022_jsdom_rollup/0/scripts/webidl/convert.js": {
-        "transformer\\.generate": "module.exports=transformer.generate"
-      }}
-    }
-  ],
   "jonschlinkert_2015_is_number.js":{"https://github.com/jonschlinkert/is-number":{"7.0.0":["index.js",{"syntax":"commonjs"}]}},
   "jonschlinkert_2015_regex_range.js":{"https://github.com/micromatch/to-regex-range":{"5.0.1":["index.js",{"syntax":"commonjs","alias":{"is-number":"./jonschlinkert_2015_is_number.js"}}]}},
   "jonschlinkert_2014_fill_range.js":{"https://github.com/jonschlinkert/fill-range":{"7.0":["index.js",{"syntax":"commonjs","alias":{"to-regex-range":"./jonschlinkert_2015_regex_range.js"}}]}},
