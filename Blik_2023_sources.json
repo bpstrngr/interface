@@ -27,7 +27,7 @@
     "syntax":"commonjs",
     "./Harris_2015_json.js":{}
   }]}},
-  "sindresorhus_2015_builtin_modules.js":{"https://github.com/sindresorhus/builtin-modules":{"v3.3.0":["index.js",{"syntax":"commonjs","./Harris_2015_noderesolve.js":{}}]}},
+  "sindresorhus_2015_builtin_modules.js":{"https://github.com/sindresorhus/builtin-modules":{"v3.3.0":["index.js",{"syntax":"commonjs"}]}},
   "sindresorhus_2015_is-builtin-module.js":{"https://github.com/sindresorhus/is-builtin-module":{"v3.2.1":["index.js",{"syntax":"commonjs","alias":{"builtin-modules":"./sindresorhus_2015_builtin_modules.js"}}]}},
   "micromatch_2018_picomatch.js":{"https://github.com/micromatch/picomatch":{"2.3.0":["lib/picomatch.js",{"syntax":"commonjs"}]}},
   "definitely_2015_estree.js":{"https://registry.npmjs.org/@types/estree/-/estree-1.0.0.tgz":["index.d.ts"]},
@@ -46,7 +46,7 @@
   "timaschew_2014_is-module.js":{"https://github.com/component/is-module":{"1.0.0":["index.js",{"syntax":"commonjs"}]}},
   "Fisher_2012_deepmerge.js":{"https://github.com/TehShrike/deepmerge":{"v4.2.2":["index.js",{"syntax":"commonjs","alias":{"is-mergeable-object":"./TehStrike_2017_is-mergeable-object.js"}}]}},
   "TehStrike_2017_is-mergeable-object.js":{"https://github.com/TehShrike/is-mergeable-object":{"v1.1.0":["index.js",{"syntax":"commonjs"}]}},
-  "Harris_2015_rollup.js":{"https://github.com/rollup/rollup/src cli browser":{"v3.28.1":["src/node-entry.ts",{"./Harris_2015_noderesolve.js":{},"./Harris_2015_json.js":{},"alias":{
+  "Harris_2015_rollup.js":{"https://github.com/rollup/rollup/src cli browser":{"v3.28.1":["src/node-entry.ts",{"./Harris_2015_json.js":{},"alias":{
     "package.json":"./Harris_2015_rollup/0/package.json",
     "acorn":"./haverbeke_2012_acorn.js",
     "locate-character":"./rich_harris_2016_locate_character.js",
@@ -102,8 +102,7 @@
         "src/index.ts",
         {
           "syntax":"commonjs",
-          "./Harris_2015_alias.js": {"entries": [{"find": "^(.*)\\.js$", "replacement": "$1.ts"}]},
-          "./Harris_2015_noderesolve.js":{}
+          "./Harris_2015_alias.js": {"entries": [{"find": "^(.*)\\.js$", "replacement": "$1.ts"}]}
         }
       ]
     }
@@ -128,7 +127,6 @@
       "v4.1.2": [
         "lib/cookie.js", {
           "./Harris_2015_json.js": {},
-          "./Harris_2015_noderesolve.js": {},
           "alias": {
             "punycode/": "./Bynens_2011_punycode.js","url-parse":"./unshiftio_2014_urlparse.js","universalify":"./ryanzim_2017_universalify.js",
             "psl":"./lupomontero_2019_psl.js"
@@ -142,8 +140,7 @@
     "https://github.com/jsdom/webidl-conversions": {
       "v7.0.0": [
         "lib/index.js", {
-          "syntax":"commonjs",
-          "./Harris_2015_noderesolve.js": {}
+          "syntax":"commonjs"
         }
       ]
     }
@@ -152,22 +149,19 @@
   "isaacs_2015_yallist.js":{"https://github.com/isaacs/yallist":{"v4.0.0":["yallist.js",{"syntax":"commonjs"}]}},
   "isaacs_2017_minipass.js":{"https://github.com/isaacs/minipass": {"v3.1.0": ["index.js", {
     "syntax":"commonjs",
-    "alias":{"yallist":"./isaacs_2015_yallist.js"},
-    "./Harris_2015_noderesolve.js":{}
+    "alias":{"yallist":"./isaacs_2015_yallist.js"}
   }]}},
   "isaacs_2019_minipass_sized.js":{
     "https://github.com/isaacs/minipass-sized":{
       "v1.0.3":["index.js", {
         "syntax":"commonjs",
-        "alias": {"minipass": "./isaacs_2017_minipass.js"},
-        "./Harris_2015_noderesolve.js": {}
+        "alias": {"minipass": "./isaacs_2017_minipass.js"}
       }]
     }
   },
   "isaacs_2017_minizlib.js":{"https://github.com/isaacs/minizlib": {"v2.0.0": ["index.js", {
     "syntax":"commonjs",
-    "alias": {"minipass": "./isaacs_2017_minipass.js"},
-    "./Harris_2015_noderesolve.js": {}
+    "alias": {"minipass": "./isaacs_2017_minipass.js"}
   }]}},
   "isaacs_2019_minipass_fetch.js":{"https://github.com/npm/minipass-fetch": {"v1.4.1": [
     "lib/index.js",
@@ -179,7 +173,6 @@
         "minipass-sized": "./isaacs_2019_minipass_sized.js"
       },
       "./Harris_2015_json.js": {},
-      "./Harris_2015_noderesolve.js": {},
       "comment":"encoding is an optional dependency, its failed resolution is handled by the module"
     }
   ]}},
@@ -205,7 +198,6 @@
     "https://github.com/w3c/webidl2.js": {
       "v24.4.0": [
         "index.js", {
-          "./Harris_2015_noderesolve.js": {},
           "edit":{"w3c_2016_webidl2/0/index.js":{"export":"import","^((?:.*[\n$])*)": "$1\nexport default {parse,write,validate,WebIDLParseError};"}},
           "comment":"webidl2js requires (aka default-imports) this module, despite it only re-exports namespaces. re-exported namespaces can't be default exported, hence the conversion to imports before the new default export."
         }
@@ -215,8 +207,7 @@
   "domenic_2022_jsdom_webidl2js.js": {
     "https://github.com/jsdom/webidl2js": {
       "v17.1.0": [
-        "lib/transformer.js",
-        {
+        "lib/transformer.js", {
           "scripts": "./domenic_2022_jsdom_webidl2js_output_utils.js",
           "syntax":"commonjs",
           "alias": {
@@ -231,7 +222,6 @@
             "lib/transformer.js":{"Literal":{"output/utils.js":"domenic_2022_jsdom_webidl2js_output_utils.js"}}
           },
           "./Harris_2015_json.js": {},
-          "./Harris_2015_noderesolve.js": {},
           "comment":"prettier was easy to detach with one small edit."
         }
       ]
@@ -316,7 +306,6 @@
             "transformer\\.generate": "module.exports=transformer.generate"
           }},
           "comment":"commonjs executes synchronously, so its thread needs to be exported to track after modularization.",
-          "./Harris_2015_noderesolve.js": {},
           "./Harris_2015_json.js": {}
         }
       ]
@@ -338,7 +327,6 @@
             "transformer\\.generate": "module.exports=transformer.generate"
           }},
           "comment":"commonjs executes synchronously, so its thread needs to be exported to track after modularization.",
-          "./Harris_2015_noderesolve.js": {},
           "./Harris_2015_json.js": {}
         }
       ]
@@ -376,8 +364,7 @@
             "minipass-fetch": "./isaacs_2019_minipass_fetch.js",
             "iconv-lite":"./ashtuchkin_2012_iconv_lite.js"
           },
-          "./Harris_2015_json.js": {},
-          "./Harris_2015_noderesolve.js": {}
+          "./Harris_2015_json.js": {}
         }
       ]
     }
@@ -392,8 +379,7 @@
       "edit": {"domenic_2016_whatwg_encoding/0/scripts/update.js": {
         "main\\(\\)\\.catch":"module.exports=main().catch"
       }},
-      "./Harris_2015_json.js": {},
-      "./Harris_2015_noderesolve.js": {}
+      "./Harris_2015_json.js": {}
     }
   ],
   "domenic_2016_whatwg_mimetype.js": {
@@ -409,7 +395,6 @@
     "alias":{"safer-buffer":"./Skovoroda_2018_saferbuffer.js"},
     "edit":{"ashtuchkin_2012_iconv_lite/0/encodings/index.js":{"var module = modules":"let module=modules"}},
     "./Harris_2015_json.js": {},
-    "./Harris_2015_noderesolve.js": {},
     "comment":"hoisted commonjs variable named 'module' edited to local scope to not conflict with inserted module variable in module scope after standardization."
   }]}},
   "rrweb_2010_cssom.js": {"https://github.com/rrweb-io/CSSOM": {"a469aae2f92e454e669aec821781626924f98d17": ["lib/index.js", {
@@ -592,7 +577,6 @@
           "lib/api.js":{"^((?:.*[\n$])*)":"$1\nexport default new Promise(resolve=>setTimeout(time=>resolve(module.exports),3000));"}
         },
         "./Harris_2015_json.js": {},
-        "./Harris_2015_noderesolve.js": {},
         "comment":"circular static requires need to be edited dynamic for module. AbortSignal seems to be the last file in the bundle."
       }
     ]}
@@ -618,7 +602,6 @@
       },
       "input": { "external": ["prettier"] },
       "./Harris_2015_json.js": {},
-      "./Harris_2015_noderesolve.js": {},
       "edit": {"domenic_2022_jsdom_rollup/0/scripts/webidl/convert.js": {
         "transformer\\.generate": "module.exports=transformer.generate"
       }}
