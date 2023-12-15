@@ -1,4 +1,4 @@
-import {note,buffer,compose,collect,stream,record,plural,compound,bind,string,is,not,serial} from "./Blik_2023_inference.js";
+import {note,buffer,compose,collect,stream,record,provide,compound,bind,string,is,not,serial} from "./Blik_2023_inference.js";
 import {search,merge,prune,route,random} from "./Blik_2023_search.js";
 let address=new URL(import.meta.url).pathname;
 
@@ -106,7 +106,7 @@ let address=new URL(import.meta.url).pathname;
  if(/^Export/.test(boundary))
  statements.push({type:"ExportNamedDeclaration",specifiers:value.specifiers?.map(specifier=>({...specifier,local:specifier.exported}))||
  [{type:"ExportSpecifier",local,exported:local}]});
- return plural(...statements);
+ return provide(statements);
 });
  if(/\.d\.ts$/.test(grammar.meta?.url.pathname))
  grammar=prune.call(grammar,function initialized({1:value})
@@ -167,54 +167,26 @@ let address=new URL(import.meta.url).pathname;
  return grammar;
 };
 
- var local=({1:value})=>["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(value?.type)?undefined:value;
- var requirecall=({1:value})=>value?.callee?.name==="require";
+ var synchronous=({1:term})=>["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(term?.type)&&term.async?undefined:term;
+ var requirecall=term=>term?.type==="CallExpression"&&term.callee.name==="require";
 
  export var estree=
  // sort by decreasing specificity for declarative disjunction (Object.values(estree.dialect)). 
  {commonjs:
  {require:
- {condition(value,field,path)
-{if(path?.length>1)return;
- let values=value?.type==="VariableDeclaration"
-?value.declarations.map(({init})=>init?.type==="MemberExpression"?init.object:init)
-:value?.type==="ExpressionStatement"
-?[value.expression]
-:[];
- return values.some(value=>Object.keys(search.call({value:prune.call(value,local)}
-,requirecall)).length);
-},ecma(value,field,path)
-{let scope=prune.call(value,local);
- let requires=search.call(scope,requirecall);
- let id=value=>value.replace(/[^a-zA-Z]/g,"")+"_exports";
- let imports=Object.values(requires).map(require=>(
- {type:"ImportDeclaration",source:require.arguments[0]
- ,specifiers:["ImportDefaultSpecifier",{type:"Identifier",name:id(require.arguments[0].value)}].reduce((type,local)=>
-[{type,local,imported:local}
-])}));
- let statement=Object.keys(requires).reduce((value,path,index)=>
- merge(value,imports[index].specifiers[0].local,path.split("/")),value);
- return plural(...imports,statement);
-}}
- ,dynamicblock:
  {condition(term,field,path)
-{let block=["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(term?.type);
- if(!block)return;
- let scope=prune.call(term,local);
- let dynamic=search.call({scope},([field,term],path)=>
- estree.commonjs.dynamicrequire.condition(term,field,path));
- return Object.keys(dynamic)?.length;
-},ecma(value){return {...value,async:true};}
- }
- ,dynamicrequire:
- {condition(term,field,path)
-{if(path.length<2)return;
- let requiretype=term?.type==="CallExpression";
- if(!requiretype)return;
- return term?.callee.name==="require";
-},ecma({arguments:[source]})
-{let dynamic=
- {type:"AwaitExpression",argument:
+{let toplevel=path.length===1;
+ let dynamic=!toplevel&&"FunctionDeclaration/FunctionExpression/ArrowFunctionExpression".split("/").includes(term?.type)&&term.async;
+ if(!toplevel&&!dynamic)return;
+ let scope=prune.call(term,synchronous);
+ let requires=search.call({scope},({1:term})=>requirecall(term));
+ return Object.keys(requires).length;
+},ecma(term)
+{let scope=prune.call(term,synchronous);
+ let requires=search.call(scope,({1:term})=>requirecall(term));
+ let dynamic=term.async||term.type==="TryStatement";
+ let values=Object.values(requires).map(({arguments:[source]})=>dynamic
+?{type:"AwaitExpression",argument:
  {type:"CallExpression",callee:
  {type:"MemberExpression"
  ,object:{type:"ImportExpression",source}
@@ -230,8 +202,16 @@ let address=new URL(import.meta.url).pathname;
  ,body:{type:"Identifier",name:"module"}
  }
 ]}
- };
- return dynamic
+ }
+:{type:"Identifier",name:source.value.replace(/[^a-zA-Z]/g,"")+"_exports"});
+ term=values.reduce((term,value,index)=>merge(term,value,Object.keys(requires)[index].split("/")),term);
+ if(dynamic)return term;
+ let imports=Object.values(requires).map((require,index)=>(
+ {type:"ImportDeclaration",source:require.arguments[0]
+ ,specifiers:
+[{type:"ImportDefaultSpecifier",local:values[index],imported:values[index]}
+]}));
+ return provide([...imports,term]);
 }}
   // module.exports exportdefaultdeclaration prepended to scope instead. 
 //  ,export:
