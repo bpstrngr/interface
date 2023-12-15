@@ -19,7 +19,6 @@
  // without either, context just begins at second index. 
 :2*!process.execArgv.some(flag=>new RegExp("^--loader[= ][^ ]*"+file).test(flag)));
 
-console.log(context)
  if(context===1)
  // register loader thread. 
  await resolve(["module","worker_threads","net"]).then(([{register},{MessageChannel},{connect}])=>
@@ -256,12 +255,12 @@ rm(path,{recursive:true})).then(done=>path);
 ,combine(infer(),wether
 (buffer(access,drop())
 ,file=>this[target]=this[target]||
- note.call(3,"Accessing source entry for \""+relative+"\":\n "+file+"\n (bundling already in progress or interrupted before purge)")
+ note.call(3,"Accessing source entry of \""+relative+"\" for "+dependent+":\n "+file+"\n (bundling already in progress or interrupted before purge)")
 ,file=>this[target]=this[target]||
  note.call(2,"Obtaining source of \""+relative+"\" for",dependent+"...")&&
  sources.reduce(record(assemble),[]).catch(fail=>
  purge(target).finally(done=>exit(fail))).then(parts=>
-[note.call(3,"Accessing source entry for \""+relative+"\":\n "+file+"\n (not to halt re-imports while bundle is being prepared)")
+[note.call(3,"Accessing source entry of \""+relative+"\" for "+dependent+":\n "+file+"\n (not to halt re-imports while bundle is being prepared)")
 ,compose.call
 (parts.reduce(record(({source,format})=>bundle(source,format)),[])
 ,infer("reduce",record((bundle,index,{length})=>length>1?access(absolute.replace(/\.js/,"_"+index+".js"),bundle,true):bundle),[])
@@ -322,7 +321,7 @@ rm(path,{recursive:true})).then(done=>path);
  if(scripts.length)
  await scripts.reduce(record(script=>
  note.call(3,"running "+script+" for "+target+"...")&&
- resolve(path.resolve(path.dirname(target),script)).then(({default:module})=>module).then(module=>
+ compose.call(path.dirname(target),script,path.resolve,resolve,"default",module=>
  note.call(2,script,"for",target+":",module)))
 ,[]).catch(combine(note,exit));
  return {source,format};
@@ -372,7 +371,7 @@ rm(path,{recursive:true})).then(done=>path);
  // using acorn's Parser methods (parse) until interpretation reducer is complete. 
  let edits=Object.fromEntries(Object.entries(definition.edit||{}).flatMap(([field,value])=>
  string(value)?[[field,value]]:source.endsWith(field)?Object.entries(value):[]));
- let patriate=foreign?[syntax,{source},parse,definition,sanitize,serialize]:[];
+ let patriate=foreign?[syntax,{source},parse,definition,sanitize,serialize,parse,serialize]:[];
  source=await stream(source,true,access,edits,edit,...patriate).catch(fail=>
  note.call(1,"Failed to patriate "+syntax+" \""+source+"\" due to",fail)&&exit(fail));
  return next?{source,format:{json:"json"}[syntax]||"module",shortCircuit:true}:source;
@@ -435,7 +434,7 @@ rm(path,{recursive:true})).then(done=>path);
  multientry&&source.endsWith("virtual:multi-entry.js")
 ?false
 :/^\./.test(source)
-?["",".ts","/index.ts"].map(extension=>
+?["","/index.js","/index.ts",".js",".ts"].map(extension=>
  path.resolve(path.dirname(client),source.replace(/\/$/,"")+extension)).reduce((source,alias)=>
  source.then(source=>source||access(alias).then(file=>file.isDirectory()?exit():alias).catch(fail=>null))
 ,Promise.resolve(null))
