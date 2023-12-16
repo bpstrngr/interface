@@ -276,14 +276,15 @@
 };
 
  export var crop=drop.bind(null,0);
+ export var snap=drop.bind(null,0,0);
  export var swap=drop.bind(null,Infinity,0);
 
  export function note(...context)
 {// expose context in console. (combine(compose(note,drop()),infer()))
- let stack=trace();
- let composition="compose/reduce/compose/infer\\((bound )*note\\)/infer/note".split("/");
- let composed=composition.every((term,index,{length})=>RegExp(term+"$").test(stack.at(index-length)?.[0]));
- stack=stack.slice(0,composed?-composition.length:-1);
+ let stack=trace().slice(0,-1);
+ // let composition="compose/reduce/compose/infer\\((bound )*note\\)/infer/note".split("/");
+ // let composed=composition.every((term,index,{length})=>RegExp(term+"$").test(stack.at(index-length)?.[0]));
+ // stack=stack.slice(0,composed?-composition.length:-1);
  let neutral="\x1b[0m";
  let blue=neutral+"\x1b[40m\x1b[34m\x1b[1m\x1b[3m";
  let dim=neutral+"\x1b[40m\x1b[34m\x1b[2m\x1b[1m\x1b[3m";
@@ -444,7 +445,7 @@
  ,location:/\(*((?:index [0-9]+)|(?:.+?(?::[0-9]+){0,2}))\)*$/
  }))
 ,swap([])
-),infer("slice",1));
+),infer("slice",1),infer("map",match=>match||"anonymous"));
 
  export var stack=compose(swap(Error),combine
  // collect stack trace. 

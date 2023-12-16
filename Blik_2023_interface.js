@@ -1,12 +1,13 @@
  import {Parser} from "./isaacs_2011_node-tar.js";
- import {note,observe,expect,trace,array,stack,compound,apply,stream,record,provide,tether,differ,wether,pattern,either,when,each,drop,swap,crop,infer,buffer,is,plural,wait,string,defined,compose,combine,exit} from "./Blik_2023_inference.js";
+ import {note,observe,describe,expect,trace,array,stack,compound,apply,stream,record,provide,tether,differ,wether,pattern,either,when,each,drop,swap,crop,infer,buffer,is,plural,wait,string,defined,compose,combine,exit} from "./Blik_2023_inference.js";
  import {merge,stringify,search,edit} from "./Blik_2023_search.js";
  import {parse,sanitize,serialize,compile,test} from "./Blik_2023_meta.js";
  import {fetch,forward} from "./Blik_2023_host.js";
  export const address=new URL(import.meta.url).pathname;
  export const location = address.replace(/\/[^/]*$/,"");//path.dirname(address);
  export const file=address.replace(/.*\//,"");//path.basename(address);
- export var classified=
+ var sources="./Blik_2023_sources.json";
+ var classified=
 ["*.git*"
 ].map(term=>RegExp("^"+term.replace(/\./g,"\\.").replace(/\*/g,".*")+"$"));
  var scope={};
@@ -202,26 +203,34 @@ rm(path,{recursive:true})).then(done=>path);
 ,Promise.reject());
 }
 ][index]||Promise.reject.bind(Promise,fail);
- return recovery(absolute,target).then(source=>
- string(source)?resolve(source,context,next):source).catch(reason=>
- note.call(1,recovery.name,"failed for",absolute+":\n",reason)&&
- next(source,context));
+ return buffer
+(compose(recovery,infer(resolve,context,next))
+,fail=>
+{let [bundle,entry]=Object.entries(scope).find(([target,value])=>absolute.startsWith(target)&&string(value))||[];
+ if(!bundle)
+ return note.call(1,recovery.name,"failed for",absolute+":\n",fail)&&next(source,context)
+ if([bundle,entry].join("")===source)
+ return next(bundle+entry,context);
+ if(/^no source definition/.test(fail.message))
+ note.call(3,"Aborting",source,"import. ("+bundle,"ready...)")&&next(source,context);
+}
+)(absolute,target);
 });
- let [resource]=Object.entries(scope).find(([target,value])=>absolute.startsWith(target)&&!(value instanceof Set))||[];
- if(!command&&resource)
- module=stream(module,{format:resource.replace(/\/$/,".js").replace(/.*\//,"")},1,merge).catch(exit);
+ let [bundle,entry]=Object.entries(scope).find(([target,value])=>absolute.startsWith(target)&&string(value))||[];
+ if(!command&&bundle)
+ module=compose.call(module,{format:bundle.replace(/\/$/,".js").replace(/.*\//,"")},1,merge).catch(exit);
  if(loading&&internal)
  return module;
  let primary=loading&&!internal;
  [source,...context]=primary?process.argv.slice(1):Array.from(arguments);
  let suspense=primary&&!process.execArgv.includes("--watch")?10*60*1000:0;
  return compose(context.shift(),terms=>
- primary?stream(terms,wait.bind(0,suspense),term=>0,process.exit):terms)(module,...context);
+ primary?compose.call(terms,wait(suspense),swap(0),process.exit):terms)(module,...context);
 };
 
  async function redirect(absolute,target)
 {// find potential alias in bundle definition. 
- let {default:modules}=await import("./Blik_2023_sources.json");
+ let {default:modules}=await import(sources);
  let path=await import("path");
  let source=path.relative(path.dirname(target),absolute);
  let [format,definition]=Object.entries(modules).find(([target,definition])=>
@@ -248,36 +257,38 @@ rm(path,{recursive:true})).then(done=>path);
  return entries.map(([branch,input])=>({remote,branch,input:[input].flat(),target}));
 });
  if(sources.length)
- // presence of first source entry indicates in-progress assembly. 
- // Has a low probability to be invalid in the final purge stage of bundling. A simple restart will resolve the available bundle at that point.
  return compose.call
 (sources,([{remote,input}])=>path.resolve(location,...remote?[target,"0"]:[],input[0])
 ,combine(infer(),wether
 (buffer(access,drop())
-,file=>this[target]=this[target]||
- note.call(3,"Accessing source entry of \""+relative+"\" for "+dependent+":\n "+file+"\n (bundling already in progress or interrupted before purge)")
-,file=>this[target]=this[target]||
- note.call(2,"Obtaining source of \""+relative+"\" for",dependent+"...")&&
- sources.reduce(record(assemble),[]).catch(fail=>
- purge(target).finally(done=>exit(fail))).then(parts=>
-[note.call(3,"Accessing source entry of \""+relative+"\" for "+dependent+":\n "+file+"\n (not to halt re-imports while bundle is being prepared)")
-,compose.call
+,entry=>void(either.call(this,target,compose
+(compose(describe(path.relative(target,entry),target),merge,drop()),3
+,"Accessing source entry of \""+relative+"\" for "+dependent+":\n "+entry+"\n (bundling already in progress or interrupted before purge)"
+,tether(note)
+)))
+,entry=>either.call(this,target,compose
+(compose(describe(path.relative(target,entry),target),merge,drop()),2,"Obtaining source of \""+relative+"\" for",dependent+"..."
+,tether(note),drop()
+,sources.reduce(record(assemble),[]).catch(fail=>purge(target).finally(done=>exit(fail)))
+,note
+,combine(infer(),compose(drop(),note.bind(3,"Accessing source entry of \""+relative+"\" for "+dependent+":\n "+entry+"\n (not to halt re-imports while bundle is being prepared)")))
+,parts=>void(compose.call
+ // not returning bundle promise to unblock resolution from source and re-imports (scope reference will help redirect to bundle if it makes rings around an import). 
 (parts.reduce(record(({source,format})=>bundle(source,format)),[])
 ,infer("reduce",record((bundle,index,{length})=>length>1?access(absolute.replace(/\.js/,"_"+index+".js"),bundle,true):bundle),[])
 ,input=>input.length>1?bundle(input.flat()):input
 ,content=>access(absolute,content,true)
-,bundle=>note.call(2,bundle,"bundle ready.")&&delete this[target]
-).finally(done=>purge(target))
-])
+,bundle=>note.call(2,bundle,"bundle ready.")
+).finally(done=>purge(target)))
 ))
-,file=>resolve("url","pathToFileURL",file)
-,({href:url})=>({url,format:relative,shortCircuit:true})
+))
+,crop(1)
 );
  let sloppy=!/\.(js|json)$/.test(absolute)&&
  await ["js","ts","d.ts"].map(extension=>absolute+"."+extension).reduce((module,file)=>
  module.catch(fail=>access(file).then(present=>file))
 ,Promise.reject()).catch(fail=>false);
- return sloppy||exit(Error("no source entry for "+absolute));
+ return sloppy||exit(Error("no source definition for "+absolute));
 };
 
  async function assemble({remote,branch,input,target},index,{length}={})
@@ -298,10 +309,8 @@ rm(path,{recursive:true})).then(done=>path);
  compose.call(remote,buffer(fetch,compose(remote,note,exit)),response=>response.status===200
 ?response.arrayBuffer().then(buffer=>persist(Buffer.from(buffer),asset)).catch(fail=>note(fail)&&access(asset))
 :exit(response.status))).then(compressed=>
- stream({},depot,persist).then(ready=>
- stream(asset,decompress,depot,decompress)).then(ready=>
- stream(asset,purge)))
-:await checkout(address, depot, branch, route).catch(fail=>fail).then(done=>
+ compose.call({},depot,persist,swap(asset),decompress,depot,decompress,swap(asset),purge))
+:await checkout(address,depot,branch,route).catch(fail=>fail).then(done=>
  access(depot,false).then(done=>note.call(2,"Source downloaded:",address,"->",depot)).catch(fail=>exit(done)));
  let relation=remote?depot:location;
  let entries=await [input].flat().reduce(record(input=>typeof input==="string"
@@ -349,7 +358,7 @@ rm(path,{recursive:true})).then(done=>path);
  Object.assign(context,{format:format="module"}));
  let native=["json","module","wasm","builtin","commonjs"].includes(format);
  if(native&&next)
- return stream(source,context,next,module=>module.format==="module"
+ return compose.call(source,context,next,module=>module.format==="module"
  //read(source).then(module=>modularise(module,source)).then(({namespace:module})=>prove.call(module,module.proof))
  // dispatch new import thread for tests until modularization halts on self-referential imports. 
 ?import(source).then(module=>module.tests&&
@@ -371,9 +380,12 @@ rm(path,{recursive:true})).then(done=>path);
  // using acorn's Parser methods (parse) until interpretation reducer is complete. 
  let edits=Object.fromEntries(Object.entries(definition.edit||{}).flatMap(([field,value])=>
  string(value)?[[field,value]]:source.endsWith(field)?Object.entries(value):[]));
- let patriate=foreign?[syntax,{source},parse,definition,sanitize,serialize,parse,serialize]:[];
- source=await stream(source,true,access,edits,edit,...patriate).catch(fail=>
- note.call(1,"Failed to patriate "+syntax+" \""+source+"\" due to",fail)&&exit(fail));
+ let a=source.includes("xtuc");
+ let patriate=foreign?[syntax,{source},parse,definition,sanitize,serialize,syntax,{source},parse,serialize]:[];
+ source=await buffer
+(compose(access,edits,edit,...patriate)
+,fail=>note.call(1,"Failed to patriate "+syntax+" \""+source+"\" due to",fail,format)&&exit(fail)
+)(source,true);
  return next?{source,format:{json:"json"}[syntax]||"module",shortCircuit:true}:source;
 };
 
