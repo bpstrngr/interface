@@ -1,17 +1,19 @@
  import {Parser} from "./isaacs_2011_node-tar.js";
- import {note,observe,describe,expect,trace,array,stack,compound,apply,stream,record,provide,tether,differ,wether,pattern,either,when,each,drop,swap,crop,infer,buffer,is,plural,wait,string,defined,compose,combine,exit} from "./Blik_2023_inference.js";
+ import {note,same,snap,something,observe,describe,expect,trace,array,stack,compound,apply,stream,record,provide,tether,differ,wether,pattern,either,when,each,drop,swap,crop,infer,buffer,is,plural,wait,string,defined,compose,combine,exit} from "./Blik_2023_inference.js";
  import {merge,stringify,search,edit} from "./Blik_2023_search.js";
  import {parse,sanitize,serialize,compile,test} from "./Blik_2023_meta.js";
  import {fetch,forward} from "./Blik_2023_host.js";
  export const address=new URL(import.meta.url).pathname;
  export const location = address.replace(/\/[^/]*$/,"");//path.dirname(address);
  export const file=address.replace(/.*\//,"");//path.basename(address);
+ var classified=["*.git*"].map(term=>RegExp("^"+term.replace(/\./g,"\\.").replace(/\*/g,".*")+"$"));
  var sources="./Blik_2023_sources.json";
- var classified=
-["*.git*"
-].map(term=>RegExp("^"+term.replace(/\./g,"\\.").replace(/\*/g,".*")+"$"));
  var scope={};
-
+ function precedent(source)
+{return Object.entries(scope).find(([bundle,entry])=>
+ source.startsWith(bundle)&&is(Promise)(entry));
+};
+ 
  let context=
  !globalThis.window&&(process.execArgv.some(flag=>new RegExp("^--import[= ][^ ]*"+file).test(flag))
  // --import flag registers loader module on separate thread unlike 
@@ -28,9 +30,9 @@
 ,{connect(){resolve(infer.bind(this,"write"))}
  ,error(){resolve()}
  }))
-].reduce(({port1,port2},inspect)=>
- observe.call(port1,{message:compose(drop(1),combine(note.bind(3),inspect))})&&
- register(address,import.meta.url,{data:{socket:port2},transferList:[port2],stdout:false})));
+].reduce(({port1,port2},inspect)=>new Promise(resolve=>
+ observe.call(port1,{message:compose(drop(1),note.bind(3),resolve)})&&
+ register(address,import.meta.url,{data:{socket:port2},transferList:[port2],stdout:false}))));
 
  if(context)
  compose(buffer(resolve),note)(...process.argv.slice(context));
@@ -154,6 +156,33 @@
 export const purge=path=>import("fs").then(({promises:{rm}})=>
 rm(path,{recursive:true})).then(done=>path);
 
+ export async function modularise(resource,identifier,context={})
+{// uses --experimental-vm-modules 
+ let {SourceTextModule,SyntheticModule,createContext,isContext}=await import("vm");
+ let {default:{resolve}}=await import("path");
+ let {pathToFileURL}=await import("url");
+ identifier=resolve(identifier)
+ if(!isContext(context))
+ context=createContext({imports:new Map(),URL,TextEncoder,TextDecoder,Buffer,global,...context});
+ let options=
+ {identifier,context
+ ,importModuleDynamically:identifier=>import(identifier)
+ ,initializeImportMeta:meta=>Object.assign(meta,{url:pathToFileURL(identifier)})
+ ,cachedData:context.imports.get(identifier)
+ };
+ let module=new SourceTextModule(resource||"",options);
+ context.imports.set(identifier,module.createCachedData());
+ await module.link((identifier,{context})=>
+ /^[a-z]/.test(identifier)
+?import(identifier).then(module=>new SyntheticModule(Object.keys(module),function()
+{Object.entries(module).reduce((module,entry)=>module.setExport(...entry)||module,this);
+},{identifier,context}))
+:access(identifier,true).then(source=>
+ modularise(source,identifier,context)));
+ await module.evaluate().catch(compose(note,exit));
+ return module;
+};
+
  export async function require(path)
 {// to be deprecated in favor of commonjs compilation. 
  let instance=globalThis.require||require.instance;
@@ -190,35 +219,34 @@ rm(path,{recursive:true})).then(done=>path);
 :await import("path").then(({resolve})=>resolve(relation,source));
  if(internal)
  merge(scope,{[target]:new Set([source])});
- let module=command?import(source):next(source,context).catch(async function recover(fail)
-{let index={ERR_MODULE_NOT_FOUND:0,ERR_UNSUPPORTED_DIR_IMPORT:1}[fail.code];
- let immediate=fail.message.includes("'"+absolute+"'");
- let recovery=
-[immediate?retrieve.bind(scope):redirect
-,immediate&&function enter(absolute)
-{return [".js","js","ts","d.ts"].map((extension,index)=>
- index?[absolute,"index."+extension].join("/"):absolute+extension).reduce((first,second,index,all)=>
- [all.splice(index),first].flat()).reduce((file,source)=>
- file.catch(fail=>access(source).then(file=>source))
-,Promise.reject());
-}
-][index]||Promise.reject.bind(Promise,fail);
- return buffer
-(compose(recovery,infer(resolve,context,next))
-,fail=>
-{let [bundle,entry]=Object.entries(scope).find(([target,value])=>absolute.startsWith(target)&&string(value))||[];
- if(!bundle)
- return note.call(1,recovery.name,"failed for",absolute+":\n",fail)&&next(source,context)
- if([bundle,entry].join("")===source)
- return next(bundle+entry,context);
- if(/^no source definition/.test(fail.message))
- note.call(3,"Aborting",source,"import. ("+bundle,"ready...)")&&next(source,context);
-}
-)(absolute,target);
-});
- let [bundle,entry]=Object.entries(scope).find(([target,value])=>absolute.startsWith(target)&&string(value))||[];
- if(!command&&bundle)
- module=compose.call(module,{format:bundle.replace(/\/$/,".js").replace(/.*\//,"")},1,merge).catch(exit);
+ merge(scope,{[absolute]:new Set()});
+ let recover=compose
+(drop(-1),combine(infer(),compose("message","'"+absolute+"'","includes"))
+,(fail,immediate)=>(
+ {ERR_MODULE_NOT_FOUND:immediate?acquire:divert
+ ,ERR_UNSUPPORTED_DIR_IMPORT:immediate&&extend
+ }[fail.code])||Promise.reject.bind(Promise,fail)
+,infer(Function.call,scope,absolute,target)
+,infer(resolve,context,next)
+);
+ let retry=compose
+(swap(absolute),precedent
+,([bundle])=>bundle+".js"
+,wether(same(absolute)
+,compose(swap(absolute),context,next)
+,compose(bundle=>Error("Aborting import of "+absolute+". ("+bundle+" bundle ready...)"),exit)
+)
+);
+ let module=command?import(source):either
+(next,recover,retry,compose(drop(-1),exit)
+)(source,context);
+ let a=source.includes("picomatch");
+ if(!command)
+ module=either(compose
+("url",precedent
+,([bundle])=>bundle.replace(/.*\//,"")+".js","format"
+,describe,snap(module),1,a&&note,merge
+),crop(1))(module).catch(exit);
  if(loading&&internal)
  return module;
  let primary=loading&&!internal;
@@ -228,7 +256,15 @@ rm(path,{recursive:true})).then(done=>path);
  primary?compose.call(terms,wait(suspense),swap(0),process.exit):terms)(module,...context);
 };
 
- async function redirect(absolute,target)
+ function extend(absolute)
+{return [".js","js","ts","d.ts"].map((extension,index)=>
+ index?[absolute,"index."+extension].join("/"):absolute+extension).reduce((first,second,index,all)=>
+ [...all.splice(index),first]).reduce((file,source)=>
+ file.catch(fail=>access(source).then(file=>source))
+,Promise.reject());
+};
+
+ async function divert(absolute,target)
 {// find potential alias in bundle definition. 
  let {default:modules}=await import(sources);
  let path=await import("path");
@@ -242,45 +278,49 @@ rm(path,{recursive:true})).then(done=>path);
  return alias?path.resolve(location,alias):exit(Error("no alias for "+source+" in "+target));
 };
 
- async function retrieve(absolute,dependent)
+ export async function acquire(absolute,dependent)
 {// bundle if not found despite source entry, 
  // load source if source entry already downloaded for bundling (eg. imported by bundler/parser/serializer). 
- if(!defined(this))exit([retrieve.name,"requires bound array to track unbundled source imports."].join(" "));
+ if(!defined(this))exit([acquire.name,"requires bound array to track unbundled source imports."].join(" "));
  let path=await import("path");
- let target=absolute.replace(/\.js$/, "/");
+ let target=absolute.replace(/\.js$/,"");
  let relative=path.relative(location,absolute);
- let definition=await compose("default",resolve,either(relative,swap({})))("./Blik_2023_sources.json");
+ let definition=await compose("default",resolve,either(relative,swap({})))(sources);
  let entry=!compound(definition)||array(definition);
- let sources=Object.entries(entry?[definition]:definition).flatMap(function sort([remote,input],index)
+ let entries=Object.entries(entry?[definition]:definition).flatMap(function sort([remote,input],index)
 {if(remote==index)remote=undefined;
  let entries=!compound(input)||array(input)?[[undefined,input]]:Object.entries(input);
  return entries.map(([branch,input])=>({remote,branch,input:[input].flat(),target}));
 });
- if(sources.length)
+ if(entries.length)
  return compose.call
-(sources,([{remote,input}])=>path.resolve(location,...remote?[target,"0"]:[],input[0])
+(entries,([{remote,input}])=>path.resolve(location,...remote?[target,"0"]:[],input[0])
 ,combine(infer(),wether
 (buffer(access,drop())
-,entry=>void(either.call(this,target,compose
-(compose(describe(path.relative(target,entry),target),merge,drop()),3
-,"Accessing source entry of \""+relative+"\" for "+dependent+":\n "+entry+"\n (bundling already in progress or interrupted before purge)"
-,tether(note)
-)))
+ // existence of entry Set indicates re-import. 
+,entry=>either.call(this,entry,swap(null))
+ // existence of target promise indicates in progress assembly for re-imports. 
 ,entry=>either.call(this,target,compose
-(compose(describe(path.relative(target,entry),target),merge,drop()),2,"Obtaining source of \""+relative+"\" for",dependent+"..."
-,tether(note),drop()
-,sources.reduce(record(assemble),[]).catch(fail=>purge(target).finally(done=>exit(fail)))
-,note
-,combine(infer(),compose(drop(),note.bind(3,"Accessing source entry of \""+relative+"\" for "+dependent+":\n "+entry+"\n (not to halt re-imports while bundle is being prepared)")))
-,parts=>void(compose.call
- // not returning bundle promise to unblock resolution from source and re-imports (scope reference will help redirect to bundle if it makes rings around an import). 
+(swap(2),"Collecting source of \""+relative+"\" for",dependent+"...",tether(note),swap(this)
+ // expose assembly promise to inform re-imports and redirect to bundle if its purge of sources outpaces an import in progress. 
+,scope=>merge(scope,{[target]:entries.reduce(record(assemble),[]).catch(fail=>note(fail)&&purge(target).finally(done=>exit(fail)))})
+ // not returning bundle promise after assembly to unblock immediate resolution from source and re-imports. 
+,target,parts=>void(compose.call
 (parts.reduce(record(({source,format})=>bundle(source,format)),[])
 ,infer("reduce",record((bundle,index,{length})=>length>1?access(absolute.replace(/\.js/,"_"+index+".js"),bundle,true):bundle),[])
 ,input=>input.length>1?bundle(input.flat()):input
 ,content=>access(absolute,content,true)
 ,bundle=>note.call(2,bundle,"bundle ready.")
-).finally(done=>purge(target)))
+).finally(fail=>note(fail)&&purge(target)))
 ))
+))
+,combine(infer(),compose
+((entry,reference)=>!something(reference)&&note.call(3,
+["Accessing source entry of \""+relative+"\" for "+dependent+":\n "+entry+"\n "
+,defined(reference)
+?"(bundling interrupted - delete source to guarantee consistency)"
+:"(not to halt re-imports while bundle is being prepared)"
+].join(""))
 ))
 ,crop(1)
 );
@@ -294,10 +334,10 @@ rm(path,{recursive:true})).then(done=>path);
  async function assemble({remote,branch,input,target},index,{length}={})
 {let path=await import("path");
  if(!remote)return input.map(input=>string(input)?path.join(target,input):input);
- let [protocol, host, author, name, ...route] = remote?.match(/(.*:\/\/)(.*)/).slice(1).reduce((protocol, address) =>
- [protocol, ...address.split("/")])||[];
+ let [protocol,host,author,name,...route]=remote?.match(/(.*:\/\/)(.*)/).slice(1).reduce((protocol,address)=>
+ [protocol,...address.split("/")])||[];
  let compressed=route[0]==="tarball"||!["github.com"].some(host.includes.bind(host));
- let address = protocol + [host, author, name, ...compressed?route:[]].join("/");
+ let address=protocol+[host,author,name,...compressed?route:[]].join("/");
  let depot=path.join(target,String(index))+"/";
  let asset=depot.replace(/\/$/,".tar.gz");
  let local=await access(depot,false).catch(fail=>false);
@@ -315,13 +355,13 @@ rm(path,{recursive:true})).then(done=>path);
  let relation=remote?depot:location;
  let entries=await [input].flat().reduce(record(input=>typeof input==="string"
 ?Promise.resolve(/\/$/.test(input)
-?access(path.join(relation, input), true).then(files=>
+?access(path.join(relation,input),true).then(files=>
  files.map(({name})=>path.join(input,name)).filter(name=>/\.js$/.test(name)))
-:[input]).then(input=>input.map(input=>path.join(relation, input)))
+:[input]).then(input=>input.map(input=>path.join(relation,input)))
 :input)
 ,[]);
- let {source = [], format = [],patches = []} = [entries.flat()].flat().map(function sort(part)
-{let field =typeof part == "string" ? (/\.patch$/.test(part) ? "patches" : "source") : "format";
+ let {source=[],format=[],patches=[]}=[entries.flat()].flat().map(function sort(part)
+{let field=typeof part=="string"?(/\.patch$/.test(part)?"patches":"source"):"format";
  return { [field]: [part] };
 }).reduce((entries,entry)=>merge(entries,entry,0), {});
  format=format.reduce(merge,{});
@@ -331,7 +371,7 @@ rm(path,{recursive:true})).then(done=>path);
  await scripts.reduce(record(script=>
  note.call(3,"running "+script+" for "+target+"...")&&
  compose.call(path.dirname(target),script,path.resolve,resolve,"default",module=>
- note.call(2,script,"for",target+":",module)))
+ note.call(2,script+" for "+target+":",module)))
 ,[]).catch(combine(note,exit));
  return {source,format};
 };
@@ -380,7 +420,6 @@ rm(path,{recursive:true})).then(done=>path);
  // using acorn's Parser methods (parse) until interpretation reducer is complete. 
  let edits=Object.fromEntries(Object.entries(definition.edit||{}).flatMap(([field,value])=>
  string(value)?[[field,value]]:source.endsWith(field)?Object.entries(value):[]));
- let a=source.includes("xtuc");
  let patriate=foreign?[syntax,{source},parse,definition,sanitize,serialize,syntax,{source},parse,serialize]:[];
  source=await buffer
 (compose(access,edits,edit,...patriate)
@@ -389,42 +428,15 @@ rm(path,{recursive:true})).then(done=>path);
  return next?{source,format:{json:"json"}[syntax]||"module",shortCircuit:true}:source;
 };
 
- export async function modularise(resource,identifier,context={})
-{// uses --experimental-vm-modules 
- let {SourceTextModule,SyntheticModule,createContext,isContext}=await import("vm");
- let {default:{resolve}}=await import("path");
- let {pathToFileURL}=await import("url");
- identifier=resolve(identifier)
- if(!isContext(context))
- context=createContext({imports:new Map(),URL,TextEncoder,TextDecoder,Buffer,global,...context});
- let options=
- {identifier,context
- ,importModuleDynamically:identifier=>import(identifier)
- ,initializeImportMeta:meta=>Object.assign(meta,{url:pathToFileURL(identifier)})
- ,cachedData:context.imports.get(identifier)
- };
- let module=new SourceTextModule(resource||"",options);
- context.imports.set(identifier,module.createCachedData());
- await module.link((identifier,{context})=>
- /^[a-z]/.test(identifier)
-?import(identifier).then(module=>new SyntheticModule(Object.keys(module),function()
-{Object.entries(module).reduce((module,entry)=>module.setExport(...entry)||module,this);
-},{identifier,context}))
-:access(identifier,true).then(source=>
- modularise(source,identifier,context)));
- await module.evaluate().catch(compose(note,exit));
- return module;
-};
-
  export async function bundle(source,format)
 {if(!source)return;
  source=[source].flat();
  let path=await import("path");
  let relation=path.dirname(source[0])
  let multientry=source.length > 1;
- if(multientry) format["./Harris_2015_multientry.js"]={};
- let plugins = await Object.entries(format).filter(([field])=>
- /^\./. test(field)).reduce(record(([plugin,settings])=>resolve(plugin, "default", settings)),
+ if(multientry)format["./Harris_2015_multientry.js"]={};
+ let plugins=await Object.entries(format).filter(([field])=>
+ /^\./.test(field)).reduce(record(([plugin,settings])=>resolve(plugin,"default",settings)),
 [{name:"interface"
  ,transform:(source,address)=>
  multientry&&address.endsWith("virtual:multi-entry.js")
@@ -523,7 +535,7 @@ export function patch(repository, patch) {
 :entry.type=="SymbolicLink"
 ?["export *,{default} from \""+entry.linkpath+"\";"]
 :[])))
-},close(){console.log("\nextracted "+ target+".");resolve(folder)}
+},close(){console.log("\nextracted "+target+".");resolve(folder)}
  }).reduce((stream,[event,action])=>
  stream.on(event,action)
 ,(process.stdout.write(prefix),stream.pipe(extractor))));

@@ -2,6 +2,19 @@
  export const location = address.replace(/\/[^/]*$/,"");
  var colors={steady:"\x1b[0m",alarm:"\x1b[31m",ready:"\x1b[32m",busy:"\x1b[33m",bright:"\x1b[1m",dim:"\x1b[2m",underscore:"\x1b[4m", blink:"\x1b[5m", reverse:"\x1b[7m",invisible:"\x1b[8m", black:"\x1b[30m", red:"\x1b[31m", green:"\x1b[32m",yellow:"\x1b[33m",blue:"\x1b[34m", magenta:"\x1b[35m",cyan:"\x1b[36m", white:"\x1b[37m",gray:"\x1b[90m",night:"\x1b[40m",fire:"\x1b[41m",grass:"\x1b[42m",sun:"\x1b[43m",sea:"\x1b[44m",club:"\x1b[45m",sky:"\x1b[46m",milk:"\x1b[47m",fog:"\x1b[100m"};
 
+ export function ascend(term)
+{return term?[...ascend(Object.getPrototypeOf(term)),term]:[];
+};
+
+ export function fields(term)
+{return ascend(term).flatMap(term=>
+{try{return Reflect.ownKeys(term);}catch(fail)
+{console.warn("warning: can't see all properties on",term," - ",fail.message);
+ return Object.keys(term);
+};
+});
+};
+
  export async function prompt(...context)
 {// request context from client interface, 
  // or offer it to the client (syncing the cli 
@@ -81,14 +94,7 @@
  let attach=term instanceof Function&&prefix.test(term.name)&&term;
  let attend=!attach&&defined(scope??undefined)&&!Array.isArray(term)
 ?[Object(scope),detach||term].reduce((domain,term)=>term instanceof Function
-?[Object.getPrototypeOf(domain),domain].filter(Boolean).flatMap(domain=>
-{try{return Reflect.ownKeys(domain);}catch(fail)
-{console.warn(["warning: can't see all properties to attend ",term.name," on"].join("\""),domain," - ",fail.message);
- return Object.keys(domain);
-};
-}).find(field=>
-{try{return Object.is(Reflect.get(domain,field),term);}catch(fail){};
-})&&term
+?fields(domain).find(field=>{try{return Object.is(Reflect.get(domain,field),term);}catch(fail){};})&&term
 :Reflect.get(domain,term))
 :undefined;
  let bound=attach||attend;
@@ -96,15 +102,17 @@
  if(!((bound??term) instanceof Function))
  return bound??provide([...context,term]);
  let functor=bound?Function.call.bind(bound):term;
+ //console.log(bound, functor,scope,context)
  return functor(...context);
 };
 
- export function differ(term,...context)
+ export function differ(term)
 {// infer without allowing identity. 
  if(!defined(this))
- return tether(differ,...arguments);
- let fail=compose(swap([term?.name||term,"yielded identity of",JSON.stringify(this)].join(" ")),Error,exit);
- return compose.call(this,infer(term,...context),wether(same(this,...context),fail,infer()));
+ return refer(differ,term);
+ let context=collect(this)
+ let fail=compose(swap([term?.name||String(term),"yielded identity of",JSON.stringify(this)].join(" ")),Error,exit);
+ return compose.call(this,infer(term,provide(context)),wether(same(provide(context)),fail,infer()));
 };
 
  export function buffer(term,quit=provide)
@@ -123,17 +131,15 @@
  return describe(function(...context)
 {if(defined(this))
  context.unshift(this);
- return refer.call(provide(context,true),combinator,...terms);
+ return refer.call(provide(collect(...context),true),combinator,...terms);
 },combinator,...terms);
  return combinator.call(this,...terms);
 };
 
  export function tether(term,...context)
-{// bind term to scope by prefixing "tether" for inference. (undefined scope will keep prepending context). 
+{// bind term to scope by inferring with a "tether" prefix. 
  let bound=is(Function)(term)
-?describe.call("tether ",function()
-{return term.call(this,...arguments);
-},term)
+?describe.call("tether ",function(){return term.call(this,...arguments);},term)
 :term;
  return infer.call(this,bound,...context);
 };
@@ -144,18 +150,31 @@
  return refer(either,...arguments);
  let context=collect(this);
  let next=functors.length?buffer(differ(functor)):functor;
- return compose(next,function proceed(...terms)
+ return compose(provide,next,function proceed(...terms)
 {let fail=terms.length&&terms.every(is(Error));
  let valid=!fail&&terms.every(term=>is(something,not(nay))(term));
+ //let valid=!fail&&infer(each(term=>is(something,not(nay))(term)))(...terms)
  if(valid)
  return provide(terms);
  let identity=fail&&terms.at(-1).message.startsWith((functor?.name||functor)+" yielded identity");
  if(functors.length)
- return either(...functors)(...context,...fail&&!identity?terms:[]);
+ return either(...functors)(provide(context),...fail&&!identity?terms:[]);
  if(!fail)
- return provide(context);
+ return provide(terms);
  exit(terms.pop());
-})(...context);
+})(context);
+//  return functors.reduce(function next(context,functor,index,functors)
+// {context=collect(context);
+//  let remaining=functors.length-index-1;
+//  if(!remaining)
+//  return infer(functor)(provide(context));
+//  let cumulate=fail=>infer(fail.message.includes("yielded identity")?undefined:fail)(provide(context));
+//  let next=buffer(differ(functor),cumulate);
+//  let valid=is(compose(crop(-1),not(Error)),each(term=>is(something,not(nay))(term)));
+//  let escape=combine(infer(),compose(swap(functors),infer("splice",index),drop()));
+//  let proceed=wether(valid,escape,infer());
+//  return compose(next,proceed)(provide(context));
+// },this);
 };
 
  export function wether(condition,...functors)
@@ -335,7 +354,7 @@
 
  export function defined(term){return term!==undefined;};
  export function compound(term){return typeof term==="object";};
- export function serial(term){return Symbol.iterator in term;};
+ export function iterable(term){try{return Symbol.iterator in term;}catch(fail){return false}};
  export function array(term){return Array.isArray(term);};
  export function binary(term){return typeof term==="boolean";};
  export function string(term){return typeof term==="string";};
@@ -346,16 +365,14 @@
  export var nothing=not(something);
  export var pattern=is(RegExp);
  export var promise=is(Promise);
- export function is(term,...terms)
+ export function is(...terms)
 {// express term as true if defined or satisfies term.
  if(!defined(this))
- return refer(is,...arguments);
- let [scope,...context]=collect(this);
- return [term,...terms].every(term=>term
-?/^[A-Z]/.test(term?.name)
-?scope instanceof term
-:infer(term)(scope,...context)
-:false);
+ return refer(is,...terms);
+ let context=collect(this);
+ return compose
+(provide,collect,infer("every",Boolean)
+)(terms.map(term=>term?compose(provide,/^[A-Z]/.test(term?.name)?scope=>scope instanceof term:term)(context):false));
 };
  export function not(...terms)
 {// deny conditions
@@ -379,7 +396,11 @@
  export function same(...context)
 {if(!defined(this))
  return refer(same,...context);
- return compose(collect,context,(terms,context)=>context.length<terms.length||context.every((term,index)=>terms[index]===term))(this);
+ return compose
+(collect,collect(...context),(terms,context)=>
+ context.length<terms.length||
+ context.every((term,index)=>terms[index]===term)
+)(this);
 };
 
  export function wait(time)
@@ -523,11 +544,11 @@
  ,append:
 [{context:[5,1,2],terms:[0,3,4,tether(Function.call),collect,[0,1,2,3,4,5]],condition:["deepEqual"]}
 ,{context:[3,4,5],terms:[0,1,2,tether(Function.call),collect,[0,4,5,1,2,3]],condition:["deepEqual"]}
-],access:{tether:[],context:["length"],terms:[0],condition:["equal"]}
+],access:{scope:[],context:["length"],terms:[0],condition:["equal"]}
  ,invoke:{context:[isNaN],terms:[{},tether(Function.call),true],condition:["equal"]}
  ,method:
-[{tether:[1],context:[provide(["map",crop(1)])],terms:[[1]],condition:["deepEqual"]}
-,{tether:{a:a=>1},context:["a"],terms:[1],condition:["equal"]}
+[{scope:[1],context:[provide(["map",crop(1)])],terms:[[1]],condition:["deepEqual"]}
+,{scope:{a:a=>1},context:["a"],terms:[1],condition:["equal"]}
 ]}
  ,buffer:
 [{context:[provide([a=>{throw Error()},fail=>2])],terms:[1,tether(Function.call),2],condition:"equal"}
@@ -541,7 +562,8 @@
  ,second:{context:[provide([a=>false,a=>a*3])],terms:[1,tether(Function.call),3],condition:["equal"]}
  ,abscond:{context:[provide([a=>false,drop()])],terms:[1,tether(Function.call),collect,c=>c.length,0],condition:["equal"]}
  ,identity:{context:[],terms:[1,tether(Function.call),1],condition:["equal"]}
- ,neither:{context:[differ()],terms:[buffer,1,2,tether(Function.call),is(Error),true],condition:["equal"]}
+ ,neither:{context:[provide([differ()])],terms:[buffer,1,2,tether(Function.call),is(Error),true],condition:["equal"]}
+ ,promise:{context:[provide([a=>false,a=>2])],terms:[Promise.resolve(1),tether(Function.call),2],condition:["equal"]}
  }
  ,wether:
  {boolean:
@@ -553,17 +575,17 @@
  }
  ,combine:{context:[provide([a=>a*2,a=>a*3,a=>a*4])],terms:[1,tether(Function.call),collect,[2,3,4]],condition:["deepEqual"]}
  ,route:
- {path:{tether:{a:{b:c=>c.body}},context:[["a","b"],{method:"post",body:1}],terms:[1],condition:["equal"]}
- ,method:{tether:{a:{get:c=>c.method}},context:[["a"],{method:"get"}],terms:["get"],condition:["equal"]}
- ,beyond:{tether:{a:{get:c=>({b:c.method})}},context:[["a","b"],{method:"get"}],terms:["get"],condition:["equal"]}
+ {path:{scope:{a:{b:c=>c.body}},context:[["a","b"],{method:"post",body:1}],terms:[1],condition:["equal"]}
+ ,method:{scope:{a:{get:c=>c.method}},context:[["a"],{method:"get"}],terms:["get"],condition:["equal"]}
+ ,beyond:{scope:{a:{get:c=>({b:c.method})}},context:[["a","b"],{method:"get"}],terms:["get"],condition:["equal"]}
  ,broken:
-[{tether:{a:{b:c=>{throw Error("fail")}}},context:[["a","b"]],terms:[is(Error)],condition:["ok"]}
-,{tether:{a:{b:{get:c=>{throw Error("fail")}}}},context:[["a","b"],{method:"get"}],terms:[is(Error)],condition:["ok"]}
+[{scope:{a:{b:c=>{throw Error("fail")}}},context:[["a","b"]],terms:[is(Error)],condition:["ok"]}
+,{scope:{a:{b:{get:c=>{throw Error("fail")}}}},context:[["a","b"],{method:"get"}],terms:[is(Error)],condition:["ok"]}
 ]}
  ,is:
- {something:{context:[],terms:[0,tether(Function.call),true],condition:["equal"]}
+ {something:{context:[provide([something])],terms:[0,tether(Function.call),true],condition:["equal"]}
  ,nothing:{context:[],terms:[tether(Function.call),false],condition:["equal"]}
  ,instance:{context:[provide([Function])],terms:[infer(undefined,function(){}),tether(Function.call),true],condition:["equal"]}
- ,multiple:{context:[provide([serial,a=>a.some(Boolean)])],terms:[[0,1,2],tether(Function.call),true],condition:["equal"]}
+ ,multiple:{context:[provide([iterable,a=>a.some(Boolean)])],terms:[[0,1,2],tether(Function.call),true],condition:["equal"]}
  }
  };

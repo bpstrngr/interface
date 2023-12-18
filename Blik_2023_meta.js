@@ -1,4 +1,4 @@
-import {note,buffer,compose,collect,stream,record,provide,compound,bind,string,is,not,serial} from "./Blik_2023_inference.js";
+import {note,buffer,compose,collect,stream,record,provide,compound,bind,string,is,not,iterable} from "./Blik_2023_inference.js";
 import {search,merge,prune,route,random} from "./Blik_2023_search.js";
 let address=new URL(import.meta.url).pathname;
 
@@ -496,7 +496,7 @@ export function scope(module) {
  if(typeof namespace==="string"&&!path.length)namespace=await import(namespace);
  tests=tests||namespace.tests||{};
  let fails=await Object.entries(tests).reduce(record(async([term,value])=>
-{let traverse=!value.condition||is(compound,not(serial))(value.condition)||value.condition?.some?.(condition=>condition.condition);
+{let traverse=!value.condition||is(compound,not(iterable))(value.condition)||value.condition?.some?.(condition=>condition.condition);
  if(traverse)return test(namespace[term]??namespace,value,path.concat(term));
  let {tether,scope,context=[],terms=[],condition}=value;
  scope=scope||tether;
