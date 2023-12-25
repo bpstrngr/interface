@@ -295,7 +295,7 @@
 };
 
  export var crop=drop.bind(null,0);
- export var snap=drop.bind(null,0,0);
+ export var slip=drop.bind(null,0,0);
  export var swap=drop.bind(null,Infinity,0);
 
  export function note(...context)
@@ -330,26 +330,27 @@
  return Object.entries(actions).reduce((scope,[event,action])=>scope.on(event,action),this);
 };
 
- export function describe(factor,...context)
-{// name factor after a bound prefix and context in its closure. 
- let functor=factor instanceof Function;
- let name=functor?context.shift()?.name:context.shift();
- if(this!==undefined)
- name=String(this)+name;
+ export function describe(term,...context)
+{// name term after a bound prefix and context in its closure. 
+ let functor=term instanceof Function;
  if(!functor)
- return {[name]:factor};
- let value=context.reduce((value,context,field,{length})=>
+ return context.flat().reverse().reduce((scope,field)=>({[field]:scope}),term);
+ let prefix=String(this||"");
+ let eponymous=context.shift();
+ let name=[prefix,eponymous?.name||eponymous].filter(Boolean).join("");
+ let abbreviation=/^([\s\S]{20})[\s\S]*$/;
+ let value=context.reduce((value,term,index,{length})=>
 [value
-,typeof context!=="number"
-?typeof context==="string"
-?"\""+context.replace(/*/(?<=^.{9}).*//^([\s\S]{20})[\s\S]*$/,/*({length})=>length?"…":""*/(...match)=>match[1]+"…").replace(/\n/g,"")+"\""
-:(context instanceof Function)
-?context.name||"functor"
-:(context?.constructor?.name??(typeof context).toLowerCase())
-:String(context)
-].join(field?",":"(")+(length-field-1?"":")")
+,!numeric(term)
+?string(term)
+?"\""+term.replace(abbreviation,(...match)=>match[1]+"…").replace(/\n/g,"")+"\""
+:(term instanceof Function)
+?(term.name||"functor")
+:(term?.constructor?.name??(typeof term).toLowerCase())
+:String(term)
+].join(index?",":"(")+(length-index-1?"":")")
 ,name);
- return Object.defineProperty(factor,"name",{value});
+ return Object.defineProperty(term,"name",{value});
 };
 
  export function defined(term){return term!==undefined;};
@@ -410,13 +411,14 @@
  return new Promise(resolve=>setTimeout(resolve,time)).then(infer.bind(this));
 };
 
- export function expect(condition=something,time=500)
+ export function expect(condition=something,interval=500,limit=Infinity)
 {// hold thread until factor satisfies condition. 
  if(!defined(this))
  return refer(expect,...arguments);
+ if(!limit)return infer(condition)(this);
  let context=collect(this);
- let repeat=compose(wait(time),swap(...context),expect(condition,time));
- return either(condition,repeat)(...context);
+ let repeat=compose(wait(interval),swap(provide(context)),expect(condition,interval,limit-1));
+ return either(condition,repeat)(provide(context));
 }
 
  export function exit(fail){throw fail;}
@@ -439,24 +441,7 @@
  return time;
 };
 
- export function trace(term,path=[])
-{// trace term in scope or stack. 
- if(!something(term))
- return compose.call
-(stack()
-,combine(infer(),swap(0),infer("findIndex",([term])=>term===trace.name))
-,infer("slice")
-);
- let scope=this;
- if(scope===term||!scope)
- return path;
- return Object.entries(scope).reduce((hit,[track,scope])=>hit||
- [term===scope,path.concat(track)].reduce((hit,path)=>
- hit?path:(typeof scope=="object")?trace.call(term,scope,path):undefined)
-,undefined);
-};
-
- var term=
+ var stack=
  // parse nodejs stack trace entry. 
  compose(either
 (infer("match",compose(Object.values,infer("map",infer("source")),"","join",RegExp)(
@@ -468,22 +453,33 @@
 ,swap([])
 ),infer("slice",1),infer("map",match=>match||"anonymous"));
 
- export var stack=compose(swap(Error),combine
+ export function trace(term,path=[])
+{// trace term in scope or stack. 
+ if(!something(term))
+ return compose.call
+(Error,combine
  // collect stack trace. 
 (infer()
 ,compose(...combine(2)("stackTraceLimit"),describe)
 ,compose
 ({stackTraceLimit:Infinity},Object.assign
 ,Function.call,"stack",/\n */,"split",infer("slice",1)
-,infer("map",term)
-,combine(infer(),infer("findIndex",([term])=>term===stack.name))
-,infer("slice")
-,infer("slice",1)
+,infer("map",stack)
 ,"reverse"
 )
 )
 ,combine(drop(2),compose(crop(2),Object.assign))
-,crop(1));
+,crop(1)
+,combine(infer(),swap(0),infer("findIndex",([term])=>term===trace.name)),infer("slice")
+);
+ let scope=this;
+ if(scope===term||!scope)
+ return path;
+ return Object.entries(scope).reduce((hit,[track,scope])=>hit||
+ [term===scope,path.concat(track)].reduce((hit,path)=>
+ hit?path:(typeof scope=="object")?trace.call(term,scope,path):undefined)
+,undefined);
+};
 
  // OBSOLETE (weak variations of provide, infer, compose, tether) 
 

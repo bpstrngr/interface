@@ -502,7 +502,7 @@ export function scope(module) {
  scope=scope||tether;
  if(!context.length)context.push(undefined);
  try
-{await stream(...[context].flat(),buffer((namespace[term]??namespace).bind(scope)),...[terms].flat(),assert[condition]||condition);
+{await compose(buffer((namespace[term]??namespace).bind(scope)),...[terms].flat(),assert[condition]||condition)(...[context].flat());
 }catch(fail)
 {let field=path.concat(term).join("/");
  let {stack}=fail;
