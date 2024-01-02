@@ -14,15 +14,12 @@
  source.startsWith(bundle)&&is(Promise)(entry));
 };
  
- let context=
- !globalThis.window&&(process.execArgv.some(flag=>new RegExp("^--import[= ][^ ]*"+file).test(flag))
  // --import flag registers loader module on separate thread unlike 
-?Number(await import("worker_threads").then(({isMainThread})=>isMainThread))
  // --loader, where context can be inferred implicitly on the primary thread. 
- // without either, context just begins at second index. 
-:2*!process.execArgv.some(flag=>new RegExp("^--loader[= ][^ ]*"+file).test(flag)));
+ let [explicit,implicit]=["import","loader"].map(name=>!globalThis.window&&
+ process.execArgv.some(flag=>new RegExp("^--"+name+"[= ][^ ]*"+file).test(flag)));
 
- if(context===1)
+ if(explicit&&await import("worker_threads").then(({isMainThread})=>isMainThread))
  // register loader thread. 
  await resolve(["module","worker_threads","net"]).then(([{register},{MessageChannel},{connect}])=>
 [new MessageChannel()
@@ -32,10 +29,11 @@
  }))
 ].reduce(({port1,port2},inspect)=>new Promise(resolve=>
  observe.call(port1,{message:compose(drop(1),note.bind(3),resolve)})&&
- register(address,import.meta.url,{data:{socket:port2},transferList:[port2],stdout:false}))));
+ register(address,import.meta.url,{data:{socket:port2,context:process.argv.slice(1)},transferList:[port2]}))));
 
- if(context)
- compose(buffer(resolve),note)(...process.argv.slice(context));
+ if(!explicit&&!implicit)
+ // without either, context just begins at second index. 
+ initialize({context:process.argv.slice(2)});
 
  export var classify=compose(when(either(pattern,infer("every",pattern))),file=>
  [file].flat().forEach(file=>
@@ -194,9 +192,9 @@ rm(path,{recursive:true})).then(done=>path);
 
 // https://nodejs.org/api/esm.html#esm_loaders 
 
- export async function initialize({socket})
-{if(process.execArgv.some(flag=>new RegExp("^--import[= ][^ ]*"+file).test(flag)))
- socket.postMessage("Module loader registered:\n"+import.meta.url);
+ export async function initialize({socket,context})
+{socket?.postMessage("Module loader registered:\n"+import.meta.url);
+ compose(buffer(resolve),note)(...context);
 }
 
  export async function resolve(source,context,next)
