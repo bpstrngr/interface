@@ -1,4 +1,4 @@
-import {note,buffer,compose,collect,stream,record,provide,compound,bind,string,is,not,iterable} from "./Blik_2023_inference.js";
+import {note,wait,buffer,compose,collect,stream,record,provide,compound,bind,string,is,not,iterable} from "./Blik_2023_inference.js";
 import {search,merge,prune,route,random} from "./Blik_2023_search.js";
 let address=new URL(import.meta.url).pathname;
 
@@ -10,16 +10,19 @@ let address=new URL(import.meta.url).pathname;
  source=source.toString();
  if(syntax==="json")return JSON.parse(source);
  let {Parser}=await import("./haverbeke_2012_acorn.js");
- if(syntax=="typescript")
+ let typescript=syntax==="typescript";
+ if(typescript)
  Parser=await import("./tyrealhu_2023_acorn_typescript.js").then(({default:plugin})=>
  Parser.extend(plugin({dts:options.source?.endsWith(".d.ts")})));
  else if(!/xtuc_2020_acorn_importattributes/.test(options.source))
+ // the typescript plugin includes support for importattributes. 
  Parser=await import("./xtuc_2020_acorn_importattributes.js").then(({importAttributes:plugin})=>
  Parser.extend(plugin));
  let comments=[];
- let scope=Parser.parse(source,{ecmaVersion:2022,sourceType:"module",onComment:comments,locations:syntax==="typescript"});
- comments.map((comment)=>
- Object.assign(comment,{type:comment.type+"Comment"})).forEach((comment)=>route(scope,comment,path));
+ let scope=Parser.parse(source,{ecmaVersion:2022,sourceType:"module",onComment:comments,locations:typescript});
+ comments.map(comment=>
+ Object.assign(comment,{type:comment.type+"Comment"})).forEach(comment=>
+ route(scope,comment,path));
  if(options.source)scope.meta=
  {url:options.source.startsWith("file:/")
 ?new URL(options.source)

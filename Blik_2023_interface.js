@@ -9,7 +9,7 @@
  var classified=["*.git*"].map(term=>RegExp("^"+term.replace(/\./g,"\\.").replace(/\*/g,".*")+"$"));
  var sources="./Blik_2023_sources.json";
  var scope={};
- function precedent(source)
+ function bundling(source)
 {return Object.entries(scope).find(([bundle,entry])=>
  source.startsWith(bundle)&&is(Promise)(entry));
 };
@@ -215,7 +215,10 @@ rm(path,{recursive:true})).then(done=>path);
 :source==="path"?[relation,source].join("/")
 :await import("path").then(({resolve})=>resolve(relation,source));
  if(internal)
- merge(scope,{[target]:{imports:new Set([source])}});
+ merge(scope,{[target]:{imports:new Set([source])}},0);
+ let precedent=scope[absolute]?.resolve;
+ if(precedent)
+ return precedent;
  merge(scope,{[absolute]:{imports:new Set()}});
  let recover=compose
 (drop(-1),combine(infer(),compose("message","'"+absolute+"'","includes"))
@@ -226,23 +229,25 @@ rm(path,{recursive:true})).then(done=>path);
  Promise.reject.bind(Promise,fail)
 ,infer(Function.call,scope,absolute,target)
 ,infer(resolve,context,next)
+,{shortCircuit:true},merge
+,[absolute,"resolve"],describe,0,slip(scope),merge,[absolute,"resolve"],tether(search)
 );
  let retry=compose
-(swap(absolute),precedent,([bundle])=>bundle+".js"
+(swap(absolute),bundling,([bundle])=>bundle+".js"
 ,wether(same(absolute)
 ,compose(swap(absolute),context,next)
 ,compose(bundle=>Error("Aborting import of "+absolute+". ("+bundle+" bundle ready...)"),exit)
 )
 );
- let module=command?import(source):either
-(next,recover,retry,compose(drop(-3),exit)
-)(source,context);
- if(!command)
- module=either(compose
-("url",collect,slip(URL),Reflect.construct,"pathname",decodeURI,precedent
+ let module=command?import(source)
+:either(next,recover,retry,compose(drop(-3),exit))(source,context);
+ let associate=compose
+("url",collect,slip(URL),Reflect.construct,"pathname",decodeURI,bundling
 ,([bundle])=>bundle.replace(/.*\//,"")+".js","format"
 ,describe,slip(module),1,merge
-),crop(1))(module).catch(exit);
+);
+ if(!command)
+ module=either(associate,crop(1))(module).catch(exit);
  if(loading&&internal)
  return module;
  let primary=loading&&!internal;
@@ -312,14 +317,12 @@ rm(path,{recursive:true})).then(done=>path);
 ).finally(done=>purge(target)))
 ))
 ))
-,combine(infer(),compose
-((entry,reference)=>!something(reference)&&note.call(defined(reference)?1:3,
+,combine(infer(),(entry,reference)=>!something(reference)&&note.call(defined(reference)?1:3,
 ["Accessing source entry of \""+relative+"\" for "+dependent+":\n "+entry+"\n "
 ,defined(reference)
 ?"(bundling interrupted - delete source to guarantee consistency)"
 :"(not to halt re-imports while bundle is being prepared)"
-].join(""))
-))
+].join("")))
 ,crop(1)
 );
  let sloppy=!/\.(js|json)$/.test(absolute)&&
@@ -426,7 +429,6 @@ rm(path,{recursive:true})).then(done=>path);
  // using acorn's Parser methods (parse) until interpretation reducer is complete. 
  let edits=Object.fromEntries(Object.entries(definition.edit||{}).flatMap(([field,value])=>
  string(value)?[[field,value]]:source.endsWith(field)?Object.entries(value):[]));
- let a=source.includes("15_rollup/0/src")||undefined
  let patriate=foreign?[syntax,{source},parse,definition,sanitize,serialize,syntax,{source},parse,serialize]:[];
  let module=await buffer
 (compose(access,edits,edit,...patriate)
