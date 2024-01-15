@@ -1,7 +1,6 @@
- import JSDOM from "./domenic_2022_jsdom_rollup.js";
  import {note,prompt,describe,clock,observe,is,something,compound,infer,tether,wether,collect,provide,route,buffer,compose,combine,either,drop,crop,swap,record,wait,exit} from "./Blik_2023_inference.js";
  import local,{resolve,access,list,classify} from "./Blik_2023_interface.js";
- import {search,merge} from "./Blik_2023_search.js";
+ import {search,merge,sum} from "./Blik_2023_search.js";
 
  export async function expose(source,parameters,protocol="http",remember)
 {let {default:path}=await import("path");
@@ -13,11 +12,10 @@
 ].map(compose(drop(0,1),RegExp));
  classify(classified);
  parameters=await compose(resolve,["default",protocol],tether(route))(parameters);
- let cluster=await import("cluster"); 
  let missing=["port","hmac",...protocol=="https"?["distinguishedname"]:[]].filter(key=>!parameters[key]);
  if(missing.length)
  exit("missing "+missing+" in "+arguments[1]);
- //if(cluster.isMaster)return persistence(),history(),fork();
+ //if(await resolve("cluster","isMaster"))return persistence(),history(),fork();
  encrypt(parameters.hmac);
  await window([protocol,"//localhost",parameters.port].join(":"));
  protocol=await import(protocol);
@@ -77,7 +75,11 @@
  let fail=is(Error)(response);
  let status=response?fail?500:response.status||200:404;
  let success=status<400;
- let body=wether([is(Error),is(window.Element),something],"message","outerHTML",either("body",crop(1)),swap(["missing source: \"",path,"\""].join("")))(response);
+ let body=wether
+([is(Error),is(window.Element),something]
+,"message","outerHTML","body"
+,swap(["missing source: \"",path,"\""].join(""))
+)(response);
  let type=response?.type||response?.nodeName?.toLowerCase()||
  request.url.match(/\.([^\.\/]*)$/)?.slice(1)[0]||(compound(response)?"json":"txt");
  if(fail)note(response);
@@ -96,7 +98,7 @@
  return json?this.body:JSON.stringify(this.body);
  return json?JSON.parse(this.body):this.body;
 },arrayBuffer()
-{return this.body.constructor?.name=="Buffer"?this.body:Buffer.from(this.body,"utf-8");
+{return Promise.resolve(this.body.constructor?.name=="Buffer"?this.body:Buffer.from(this.body,"utf-8"));
 }});
 }};
 
@@ -121,6 +123,33 @@
  response.setHeader?response.writeHead(status,header):response.respond(header);
  let body=type==="json"?this.text():this.arrayBuffer();
  return response.end(body);
+};
+
+ export function forward(file,request)
+{if(request)request.method=request.method?.toUpperCase()||"GET";
+ let protocol=file.match(/[^:]*/)?.[0];
+ request={method:"GET",...request,...new URL(file)};
+ return new Promise(resolve=>compose.call
+(import(protocol)
+,infer("request",file,response=>
+{let {location}=response.headers;
+ if(location)
+ console.log(request.url,"redirected to",location,"...");
+ let body=[];
+ response.on("data",record(body=>body).bind(body));
+ response.on("end",end=>location
+?compose.call(location,request,forward,resolve)
+:resolve(
+ {body:Buffer.concat(body,sum(body.map(({length})=>length)))
+ ,status:response.statusCode
+ ,type:response.headers["content-type"]
+ ,headers:{get:compose("toLowerCase",infer.bind(response.headers))}
+ ,json:()=>Promise.resolve(JSON.parse(body))
+ ,text:()=>Promise.resolve(body||response.statusMessage)
+ }));
+})
+,combine(infer("write",String(request.body||"")),"end")
+));
 };
 
  async function fork()

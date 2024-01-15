@@ -1,33 +1,32 @@
-import {note,buffer,compose,collect,stream,record,plural,compound,bind,string,is,not,serial} from "./Blik_2023_inference.js";
+import {note,wait,buffer,compose,collect,stream,record,provide,compound,bind,string,is,not,iterable} from "./Blik_2023_inference.js";
 import {search,merge,prune,route,random} from "./Blik_2023_search.js";
 let address=new URL(import.meta.url).pathname;
 
  export async function parse(source, syntax = "javascript", options = {})
 {// interpret language syntax.
- if(typeof source!=="string")
+ if(!string(source))
  return Error("can't parse "+typeof source);
- if(source instanceof Buffer)
+ if(is(Buffer)(source))
  source=source.toString();
- if (syntax === "json") return JSON.parse(source);
- let { Parser } = await import("./haverbeke_2012_acorn.js");
- if(syntax=="typescript")
+ if(syntax==="json")return JSON.parse(source);
+ let {Parser}=await import("./haverbeke_2012_acorn.js");
+ let typescript=syntax==="typescript";
+ if(typescript)
  Parser=await import("./tyrealhu_2023_acorn_typescript.js").then(({default:plugin})=>
  Parser.extend(plugin({dts:options.source?.endsWith(".d.ts")})));
  else if(!/xtuc_2020_acorn_importattributes/.test(options.source))
+ // the typescript plugin includes support for importattributes. 
  Parser=await import("./xtuc_2020_acorn_importattributes.js").then(({importAttributes:plugin})=>
  Parser.extend(plugin));
- let comments = [];
- let scope = Parser.parse(source
-,{ecmaVersion: 2022
- ,sourceType: "module"
- ,onComment: comments
- ,locations: syntax === "typescript",
- });
- comments.map((comment)=>
- Object.assign(comment, { type: comment.type + "Comment" })).forEach((comment)=>
- route(scope, comment, path));
+ let comments=[];
+ let scope=Parser.parse(source,{ecmaVersion:2022,sourceType:"module",onComment:comments,locations:typescript});
+ comments.map(comment=>
+ Object.assign(comment,{type:comment.type+"Comment"})).forEach(comment=>
+ route(scope,comment,path));
  if(options.source)scope.meta=
- {url:options.source.startsWith("file:/")?new URL(options.source):await import("url").then(({pathToFileURL:url})=>url(options.source))
+ {url:options.source.startsWith("file:/")
+?new URL(options.source)
+:await import("url").then(({pathToFileURL:url})=>url(options.source))
  };
  return scope;
  function descendant(scope){return scope.start<this.start&&this.end<scope.end;}
@@ -35,10 +34,10 @@ let address=new URL(import.meta.url).pathname;
  function path(scope,comment)
 {Array.isArray(scope)
 ?[descendant,sibling,undefined].reduce((found,find)=>
- (found<0?find&&scope.findIndex(find.bind(comment)):found)
+ found<0?find&&scope.findIndex(find.bind(comment)):found
 ,-1)
-:descendant.call(comment,scope)&&["body","declaration","consequent"].find((field)=>
- scope[field]);
+:descendant.call(comment,scope)&&
+ ["body","declaration","consequent"].find((field)=>scope[field]);
 }
 }
 
@@ -110,7 +109,7 @@ let address=new URL(import.meta.url).pathname;
  if(/^Export/.test(boundary))
  statements.push({type:"ExportNamedDeclaration",specifiers:value.specifiers?.map(specifier=>({...specifier,local:specifier.exported}))||
  [{type:"ExportSpecifier",local,exported:local}]});
- return plural(...statements);
+ return provide(statements);
 });
  if(/\.d\.ts$/.test(grammar.meta?.url.pathname))
  grammar=prune.call(grammar,function initialized({1:value})
@@ -171,74 +170,51 @@ let address=new URL(import.meta.url).pathname;
  return grammar;
 };
 
+ var synchronous=({1:term})=>["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(term?.type)&&term.async?undefined:term;
+ var requirecall=term=>term?.type==="CallExpression"&&term.callee.name==="require";
+
  export var estree=
  // sort by decreasing specificity for declarative disjunction (Object.values(estree.dialect)). 
  {commonjs:
- {dynamicblock:
- {condition(value,field,path)
-{return ["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(value?.type)&&[value.body.body||value.body].flat().some((value,index)=>
- estree.commonjs.dynamicrequire.condition(value,index,[path,field,"body"].flat()));
-},ecma(value){return {...value,async:true};}
- }
- ,require:
- {condition(value,field,path)
-{if(path?.length>1)return;
- let values=value?.type==="VariableDeclaration"
-?value.declarations.map(({init})=>init?.type==="MemberExpression"?init.object:init)
-:value?.type==="ExpressionStatement"
-?[value.expression]
-:[];
- return values.some(value=>Object.keys(search.call({value:prune.call(value,({1:value})=>
- ["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(value?.type)?undefined:value)}
-,({1:value})=>value?.callee?.name==="require")).length);
-},ecma(value,field,path)
-{let scope=prune.call(value,({1:value})=>
- ["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(value?.type)?undefined:value);
- let requires=search.call(scope,({1:value})=>value?.callee?.name==="require");
- let id=value=>value.replace(/[^a-zA-Z]/g,"")+"_exports";
- let imports=Object.values(requires).map(require=>(
- {type:"ImportDeclaration",source:require.arguments[0]
- ,specifiers:["ImportDefaultSpecifier",{type:"Identifier",name:id(require.arguments[0].value)}].reduce((type,local)=>
-[{type,local,imported:local}
-])}));
- let statement=Object.keys(requires).reduce((value,path,index)=>
- merge(value,imports[index].specifiers[0].local,path.split("/")),value);
- return plural(...imports,statement);
-}}
- ,dynamicrequire:
+ {require:
  {condition(term,field,path)
-{if(path.length<2)return;
- path={VariableDeclaration:"declarations",ExpressionStatement:["expression","right"],CallExpression:"arguments",AssignmentExpression:"right",MemberExpression:"object",Property:[]}[term?.type];
- term=prune.call(term,({1:value})=>
- ["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(value?.type)?undefined:value);
- let value=[search.call(term,path)].flat();
- return value.some(value=>Object.keys(search.call({value},({1:value})=>value?.callee?.name==="require")).length);
-},ecma(value)
-{let depth={VariableDeclaration:3,ExpressionStatement:2,CallExpression:2,Property:0}[value.type]||1;
- let statements=Object.entries(search.call({value},({1:value})=>value?.callee?.name==="require")).map(function([field,require])
-{let path=field.split("/").slice(1);
- let expressionpath=path.slice(0,depth);
- let expression=search.call(value,expressionpath);
- if(expression.type==="ObjectExpression")
- // Properties should be found individually. 
- return [expressionpath,expression];
- let properties=[{type:"Property",kind:"init",key:{type:"Identifier",name:"default"},value:{type:"Identifier",name:"module"}}];
- let importexpression={type:"ImportExpression",source:require.arguments[0]};
- let requirepath=path.slice(depth);
- let argument=
+{let toplevel=path.length===1;
+ let dynamic=!toplevel&&"FunctionDeclaration/FunctionExpression/ArrowFunctionExpression".split("/").includes(term?.type)&&term.async;
+ if(!toplevel&&!dynamic)return;
+ let scope=prune.call(term,synchronous);
+ let requires=search.call({scope},({1:term})=>requirecall(term));
+ return Object.keys(requires).length;
+},ecma(term)
+{let scope=prune.call(term,synchronous);
+ let requires=search.call(scope,({1:term})=>requirecall(term));
+ let dynamic=term.async||term.type==="TryStatement";
+ let values=Object.values(requires).map(({arguments:[source]})=>dynamic
+?{type:"AwaitExpression",argument:
  {type:"CallExpression",callee:
  {type:"MemberExpression"
- ,object:importexpression
+ ,object:{type:"ImportExpression",source}
  ,property:{type:"Identifier",name:"then"}
  },arguments:
 [{type:"ArrowFunctionExpression",expression:true
- ,params:[{type:"ObjectPattern",properties}]
- ,body:merge(expression,{type:"Identifier",name:"module"},requirepath)
+ ,params:[{type:"ObjectPattern",properties:
+[{type:"Property",kind:"init"
+ ,key:{type:"Identifier",name:"default"}
+ ,value:{type:"Identifier",name:"module"}
  }
-]};
- return [expressionpath,{type:"AwaitExpression",argument}];
-});
- return statements.reduce((value,[path,expression])=>merge(value,expression,path),value);
+]}]
+ ,body:{type:"Identifier",name:"module"}
+ }
+]}
+ }
+:{type:"Identifier",name:source.value.replace(/[^a-zA-Z]/g,"")+"_exports"});
+ term=values.reduce((term,value,index)=>merge(term,value,Object.keys(requires)[index].split("/")),term);
+ if(dynamic)return term;
+ let imports=Object.values(requires).map((require,index)=>(
+ {type:"ImportDeclaration",source:require.arguments[0]
+ ,specifiers:
+[{type:"ImportDefaultSpecifier",local:values[index],imported:values[index]}
+]}));
+ return provide([...imports,term]);
 }}
   // module.exports exportdefaultdeclaration prepended to scope instead. 
 //  ,export:
@@ -523,13 +499,13 @@ export function scope(module) {
  if(typeof namespace==="string"&&!path.length)namespace=await import(namespace);
  tests=tests||namespace.tests||{};
  let fails=await Object.entries(tests).reduce(record(async([term,value])=>
-{let traverse=!value.condition||is(compound,not(serial))(value.condition)||value.condition?.some?.(condition=>condition.condition);
+{let traverse=!value.condition||is(compound,not(iterable))(value.condition)||value.condition?.some?.(condition=>condition.condition);
  if(traverse)return test(namespace[term]??namespace,value,path.concat(term));
  let {tether,scope,context=[],terms=[],condition}=value;
  scope=scope||tether;
  if(!context.length)context.push(undefined);
  try
-{await stream(...[context].flat(),buffer((namespace[term]??namespace).bind(scope)),...[terms].flat(),assert[condition]||condition);
+{await compose(buffer((namespace[term]??namespace).bind(scope)),...[terms].flat(),assert[condition]||condition)(...[context].flat());
 }catch(fail)
 {let field=path.concat(term).join("/");
  let {stack}=fail;

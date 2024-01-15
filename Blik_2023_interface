@@ -7,9 +7,9 @@ Loading modules requires 3 steps:
  (4. test, if the namespace exposes cases for itself). 
  (5. infer arguments if provided by client). 
 
-The semantically flexible javascript platform has been subdued by several 
+The semantically flexible javascript platform has been commonly constrained by several 
 syntactic/semantic variations in its ecosystem (commonjs, flow, typescript, jsx, purescript etc.) 
-that has required growing amounts of configuration and compilation to manage. 
+that have required growing amounts of configuration and compilation from you to manage. 
 
 To compound this, package managers (npm, yarn etc.) obscure the dependency graphs of external libraries too. 
 Distributing source format definitions for them instead of reducing your control to simple version tracking in package.json 
@@ -19,9 +19,12 @@ With the advent of a modular loader interface in the node.js implementation,
 these dialects can finally be compiled (and tested) dynamically and deterministically, 
 without a need for volatile configurations or a new platform bloated by heterogeneity (deno, bun). 
 
-Although ecmascript allows polluting modules with procedures, it is advised to keep them Modular. 
+Although ecmascript allows polluting modules with procedures, it is advised to keep them modular. 
 Doing so leaves us without access to invoke their functions, hence this module 
 extends the 3 steps with an inference of arguments provided by a client (shell/function). 
+
+Keeping the scope of these functions pure and specific makes them composable, 
+for which you can find generic combinators in the inference module. 
 
 Examples: 
  node ./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3;
@@ -44,7 +47,7 @@ For the other cases, external modules can be resolved in advance:
  for file in $(git ls-tree --full-tree --name-only -r HEAD);do node ./Blik_2023_interface.js ./Blik_2023_interface.js resolve $file;done;
 
 Source definitions map files to entry points (local or remote address and version, supporting sparse-checkout of monorepos), patches and 
-format specifications (currently supporting rollup plugins, but options for a modular parser/serializer are evolving, such as syntax, alias, replace): 
+format specifications (currently supporting rollup plugins, but options for a modular parser/serializer are evolving, such as syntax, alias, replace - the latter only applies to bundle output, not internal loading): 
  {"module.js":"path/index.js"};
  {"module.js":["path/index.js",{plugin:{option:"setting"},syntax:"commonjs",output:{paths:{specifier:"path"}}}]};
  {"module.js":{"protocol://domain/author/module":["index.js","index2.js"]}};
@@ -53,9 +56,9 @@ format specifications (currently supporting rollup plugins, but options for a mo
  {"module.js":{"protocol://domain/author/module/sparse/checkout/path":{"branch or tag":["path/index.js"]}}};
 Locally available modules (self-hosted or checked out remotes) are loaded in memory, remotes get bundled and erased. 
 
-Modules get tested (composed with context, terms and a condition) after modularisation if they expose a "tests" object: 
+Modules get tested (inferred on a scope/context, and composed with further terms and a condition) after modularisation if they expose a "tests" object: 
  export var tests=
- {member:{in:{namespace:{description:{context:[],terms:[],condition:[]}}}}
+ {member:{in:{namespace:{description:{scope:optional,context:[],terms:[],condition:[]}}}}
  };
 
 To test manually: 
@@ -74,8 +77,10 @@ Copy pre-commit hook to format and test staged modules before each commit:
 Copy post-commit hook to restage your local formatting stashed by pre-commit: 
  cp git_hook_post-commit .git/hooks/post-commit;
 
-Uninstall dependencies: 
+Uninstall dependencies (make sure no files you need have been gitignored): 
  for file in $(git check-ignore *);do rm "$file";done;
+in case sources interrupted in bundling are present: 
+ rm -rf $(ls -d */);
 
 Installing Node.js: 
  which node;
@@ -105,11 +110,12 @@ Uninstall git:
  but it remains idle without arguments from the client.) 
 
 Issues: 
- mass bundling exits without notice at ~second recursive import of rollup. (to be confirmed)
- expose modularisation of sources to support module loading without nodejs's native loader module. update references to it in this readme after. 
- make composition monadic (only execute on dynamic or bound context). 
- compress code with monadic combinators (infer, compose, either, wether, combine etc.)
- make decompress function more declarative (concise). 
- swap Acorn's plugin-system for a composable parser to release acorn-typescript plugin dependency (compilers written in the language it compiles constitute a new platform. No native compiler exists for typescript). 
- define typescript semantics for that new parser so it can be merged in its composition as needed (as well as for jsx, flow, etc.). 
- establish functional type assertion convention to check types at runtime and lint them without heterogenous syntax. 
+ Handle potential resolution failure in dependencies being loaded from source during bundling, in case it concludes with a purge sooner. 
+ It may produce inconsistencies in other dependencies being interrupted in download/bundle, which makes full cleanup (check-ignore, rm ls -d */, see above) recommended until a solution. 
+ Haverbeke_2012_acorn loaded from bundle after successful load from source produces anomalous syntaxerrors. 
+ Re-running with the bundle thereby present doesn't reproduce the problem. could be an issue with acorn-typescript's reliance on stale states... 
+ Fix modularisation of sources to support module loading without nodejs's native loader module. update references to it in this readme after. 
+ Make decompress function more declarative (concise). 
+ Swap Acorn's plugin-system for a composable parser to release acorn-typescript plugin dependency (compilers written in the language it compiles constitute a new platform. No native compiler exists for typescript). 
+ Define typescript semantics for that new parser so it can be merged in its composition as needed (as well as for jsx, flow, etc.). 
+ Establish functional type check convention to lint them without introduction of heterogenous (non-lexical) syntax (typescript, jsdocs etc.). 
