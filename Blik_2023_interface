@@ -78,9 +78,7 @@ Copy post-commit hook to restage your local formatting stashed by pre-commit:
  cp git_hook_post-commit .git/hooks/post-commit;
 
 Uninstall dependencies (make sure no files you need have been gitignored): 
- for file in $(git check-ignore *);do rm "$file";done;
-in case sources interrupted in bundling are present: 
- rm -rf $(ls -d */);
+ rm -rf $(git check-ignore *);
 
 Installing Node.js: 
  which node;
