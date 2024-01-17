@@ -281,7 +281,7 @@ rm(path,{recursive:true})).then(done=>path);
 
  export async function acquire(absolute,dependent)
 {// bundle if not found despite source entry, 
- // load source if source entry already downloaded for bundling (eg. imported by bundler/parser/serializer). 
+ // redirect to source once available (being, or failed to be bundled). 
  if(!defined(this))
  exit([acquire.name,"requires bound scope to track source imports."].join(" "));
  let path=await import("path");
@@ -299,15 +299,15 @@ rm(path,{recursive:true})).then(done=>path);
 (entries,([{remote,input}])=>path.resolve(location,...remote?[target,"0"]:[],input[0])
 ,combine(infer(),wether
 (buffer(access,drop())
- // existence of scope entry indicates re-import. 
-,entry=>either.call(this,entry,swap(null))
- // existence of target promise indicates in progress assembly for re-imports. 
+ // source entry indicates available re-import, or incomplete assembly to await/report. 
+,entry=>either.call(this,entry,wether(target,expect(entry),swap(null)))
+ // target entry indicates assembly outpaced by re-import, otherwise begin. 
 ,entry=>either.call(this,target,compose
 (swap(2),"Collecting source of \""+relative+"\" for",dependent+"...",tether(note),swap(this)
- // expose assembly promise to inform re-imports and redirect to bundle if its purge of sources outpaces an import in progress. 
+ // expose assembly promise to inform redirects to source, and retries if they're outpaced by its purge. 
 ,scope=>merge(scope,{[target]:entries.reduce(record(assemble),[]).catch(fail=>purge(target).finally(done=>exit(fail)))})
- // not returning bundle promise after assembly to unblock immediate resolution from source and re-imports. 
 ,target,combine(infer(),([{source}])=>resolve(source))
+ // not returning bundle promise after assembly to unblock immediate resolution from source. 
 ,parts=>void(compose.call
 (parts.reduce(record(({source,format})=>bundle(source,format)),[])
 ,infer("reduce",record((bundle,index,{length})=>length>1?access(absolute.replace(/\.js/,"_"+index+".js"),bundle,true):bundle),[])
@@ -317,10 +317,11 @@ rm(path,{recursive:true})).then(done=>path);
 ).finally(done=>purge(target)))
 ))
 ))
-,combine(infer(),(entry,reference)=>!something(reference)&&note.call(defined(reference)?1:3,
+,combine(infer(),(entry,reference)=>!something(reference)&&
+ note.call(defined(reference)?1:3,
 ["Accessing source entry of \""+relative+"\" for "+dependent+":\n "+entry+"\n "
 ,defined(reference)
-?"(bundling interrupted - delete source to guarantee consistency)"
+?"(bundling failed - delete source to guarantee integrity)"
 :"(not to halt re-imports while bundle is being prepared)"
 ].join("")))
 ,crop(1)
@@ -438,7 +439,7 @@ rm(path,{recursive:true})).then(done=>path);
  return compose.call
 ({source:module,format:{json:"json"}[syntax]||"module",shortCircuit:true}
  // persist shortCircuit on scope to support loading from source during bundling. 
-,[source,"module"],describe,slip(scope),merge,source,"module"
+,[target,"module"],describe,slip(scope),merge,target,"module"
 );
  return module;
 };
