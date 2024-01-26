@@ -1,4 +1,4 @@
-import {note,wait,buffer,compose,collect,stream,record,provide,compound,bind,string,is,not,iterable} from "./Blik_2023_inference.js";
+import {note,wait,buffer,compose,collect,stream,record,provide,compound,tether,bind,string,is,not,iterable} from "./Blik_2023_inference.js";
 import {search,merge,prune,route,random} from "./Blik_2023_search.js";
 let address=new URL(import.meta.url).pathname;
 
@@ -170,8 +170,8 @@ let address=new URL(import.meta.url).pathname;
  return grammar;
 };
 
- var synchronous=({1:term})=>["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(term?.type)&&term.async?undefined:term;
- var requirecall=term=>term?.type==="CallExpression"&&term.callee.name==="require";
+ var synchronous=({1:term})=>"FunctionDeclaration/FunctionExpression/ArrowFunctionExpression".split("/").includes(term?.type)&&term.async?undefined:term;
+ var requirecall=term=>term?.type==="CallExpression"&&term.callee?.name==="require";
 
  export var estree=
  // sort by decreasing specificity for declarative disjunction (Object.values(estree.dialect)). 
@@ -207,7 +207,8 @@ let address=new URL(import.meta.url).pathname;
 ]}
  }
 :{type:"Identifier",name:source.value.replace(/[^a-zA-Z]/g,"")+"_exports"});
- term=values.reduce((term,value,index)=>merge(term,value,Object.keys(requires)[index].split("/")),term);
+ term=values.reduce((term,value,index)=>
+ merge(term,value,Object.keys(requires)[index].split("/")),term);
  if(dynamic)return term;
  let imports=Object.values(requires).map((require,index)=>(
  {type:"ImportDeclaration",source:require.arguments[0]
@@ -533,43 +534,42 @@ export function scope(module) {
 }
 
 export const tests=
- {parse:{context:[""],terms:["type",Reflect.get,"Program"],condition:"equal"}
+ {parse:
+ {empty:{context:[""],terms:["type","Program"],condition:"equal"}
+ }
  ,sanitize:
-[{context:["var a=!function(){a=require('')}()",parse,{syntax:"commonjs"}],terms:[serialize,"let exports = {}, module = {\n  exports\n};\nvar a = !(async function () {\n  a = await import('').then(({default: module}) => module);\n})();\nexport default module.exports;\n"],condition:"equal"}
-,{context:["setTimeout(time=>a=require(''),3000)",parse,{syntax:"commonjs"}],terms:[serialize,"let exports = {}, module = {\n  exports\n};\nsetTimeout(async time => a = await import('').then(({default: module}) => module), 3000);\nexport default module.exports;\n"],condition:"equal"}
-],estree:
+ {dynamicrequire:
+ {block:{context:[parse("var a=!async function(){a=require('')}()"),{syntax:"commonjs"}],terms:[serialize,"let exports = {}, module = {\n  exports\n};\nvar a = !(async function () {\n  a = await import('').then(({default: module}) => module);\n})();\nexport default module.exports;\n"],condition:"equal"}
+ ,lambda:{context:[parse("setTimeout(async time=>a=require(''),3000)"),{syntax:"commonjs"}],terms:[serialize,"let exports = {}, module = {\n  exports\n};\nsetTimeout(async time => a = await import('').then(({default: module}) => module), 3000);\nexport default module.exports;\n"],condition:"equal"}
+ }
+ }
+ ,estree:
  {commonjs:
  {require:
  {condition:
-[{context:["a.b=require('')",parse,["body",0],bind(search),"0",["body"]],terms:[true],condition:"equal"}
-,{context:["require('')",parse,["body",0],bind(search),"0",["body"]],terms:[true],condition:"equal"}
-],ecma:
-[{context:["require('')",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\n_exports;\n"],condition:"equal"}
-,{context:["require('')()",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\n_exports();\n"],condition:"equal"}
-,{context:["a=require('')()",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na = _exports();\n"],condition:"equal"}
-,{context:["a.b=require('')",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na.b = _exports;\n"],condition:"equal"}
-,{context:["const a=require('');",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\nconst a = _exports;\n"],condition:"equal"}
+ {static:
+[{context:[parse("a.b=require('')").then(tether(search,["body",0])),"0",["body"]],terms:[true],condition:"equal"}
+,{context:[parse("require('')").then(tether(search,["body",0])),"0",["body"]],terms:[true],condition:"equal"}
 ]}
- ,dynamicrequire:
- {ecma:
-[{context:["const a=require('')",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"const a = await import('').then(({default: module}) => module);\n"],condition:"equal"}
-,{context:["a=require('')",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('').then(({default: module}) => module);\n"],condition:"equal"}
-,{context:["a=require('')()",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('').then(({default: module}) => module());\n"],condition:"equal"}
-,{context:["a=require('').map()",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('').then(({default: module}) => module.map());\n"],condition:"equal"}
-,{context:["a.b=require('')",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a.b = await import('').then(({default: module}) => module);\n"],condition:"equal"}
-,{context:["a={a:require('')}",parse,["body",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = {\n  a: require('')\n};\n"],condition:"equal"}
-,{context:["a={a:require('')}",parse,["body",0,"expression","right","properties",0],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a: await import('').then(({default: module}) => module)\n"],condition:"equal"}
-,{context:["compose({a:require('')})",parse,["body",0,"expression"],bind(search)],terms:[(...body)=>({type:"Program",body}),serialize,"compose({\n  a: require('')\n})\n"],condition:"equal"}
+ ,ecma:
+ {static:
+[{context:[parse("require('')").then(tether(search,["body",0]))],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\n_exports;\n"],condition:"equal"}
+,{context:[parse("require('')()").then(tether(search,["body",0]))],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\n_exports();\n"],condition:"equal"}
+,{context:[parse("a=require('')()").then(tether(search,["body",0]))],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na = _exports();\n"],condition:"equal"}
+,{context:[parse("a.b=require('')").then(tether(search,["body",0]))],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na.b = _exports;\n"],condition:"equal"}
+,{context:[parse("const a=require('');").then(tether(search,["body",0]))],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\nconst a = _exports;\n"],condition:"equal"}
+,{context:[parse("function a(){compose({a:require('')})}").then(tether(search,["body",0]))],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\nfunction a() {\n  compose({\n    a: _exports\n  });\n}\n"],condition:"equal"}
+],dynamic:
+[{context:[parse("async function a(){const a=require('')}").then(tether(search,["body",0]))],terms:[(...body)=>({type:"Program",body}),serialize,"async function a() {\n  const a = await import('').then(({default: module}) => module);\n}\n"],condition:"equal"}
+,{context:[parse("async function a(){compose({a:require('')})}").then(tether(search,["body",0]))],terms:[(...body)=>({type:"Program",body}),serialize,"async function a() {\n  compose({\n    a: await import('').then(({default: module}) => module)\n  });\n}\n"],condition:"equal"}
 ]}
- ,dynamicblock:[[true],["async",Reflect.get,true]].map((terms)=>
-[{context:["function a(){const a=require('');}",parse,["body",0],bind(search)],terms,condition:"equal"}
-,{context:["function a(){a=require('');}",parse,["body",0],bind(search)],terms,condition:"equal"}
-]).reduce((condition,ecma)=>({condition,ecma}))
+ }
  }
  ,typescript:
  {typeimport:{condition:
-[{context:["import type {a} from 'a'","typescript",parse,["body",0],bind(search)],terms:[true],condition:"equal"}
-,{context:["import type a from 'a'","typescript",parse,["body",0],bind(search)],terms:[true],condition:"equal"}
+[{context:[parse("import type {a} from 'a'","typescript").then(tether(search,["body",0]))],terms:[true],condition:"equal"}
+,{context:[parse("import type a from 'a'","typescript").then(tether(search,["body",0]))],terms:[true],condition:"equal"}
+,{context:[parse("import a from 'a'","typescript").then(tether(search,["body",0]))],terms:[false],condition:"equal"}
 ]}
  }
  }

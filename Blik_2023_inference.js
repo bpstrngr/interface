@@ -188,8 +188,8 @@
 ,infer("reduce",record(function(condition,index,{length})
 {let [track]=this;
  return track??compose
-(is(Function)(condition)?condition:swap(condition)
-,valid=>!numeric(valid)?valid?index:track:valid
+(is(Function)(condition)?buffer(condition):swap(condition)
+,valid=>!numeric(valid)?valid&&!is(Error)(valid)?index:track:valid
 )(...context);
 },0),[])
 ,([track])=>functors[track??conditions.length]??
@@ -223,7 +223,7 @@
 ,Object.fromEntries,...Array.isArray(factor)?[Object.values]:[])
 :functor%1*factor
  }));
- return provide(content);
+ return provide(collect(...content));
 // length?compose(drop(),functor,Math.ceil,Array,fields,"fill","flat",[]
 // ,tether("reduce",(records,field,index,fields)=>
 // (index%Math.round(functor*length)||
@@ -286,6 +286,7 @@
 ,compose
 (combine(1),0,infer("sort",(stop,start)=>(start<stop)-1)
 ,combine(infer(0),infer("reduce",(past,next)=>next-past))
+,collect
 )
 )
 );
@@ -367,13 +368,14 @@
  export var pattern=is(RegExp);
  export var promise=is(Promise);
  export function is(...terms)
-{// express term as true if defined or satisfies term.
+{// express context as true if defined or satisfies terms.
  if(!defined(this))
  return refer(is,...terms);
  let context=collect(this);
- return compose
-(provide,collect,infer("every",Boolean)
-)(terms.map(term=>term?compose(provide,/^[A-Z]/.test(term?.name)?scope=>scope instanceof term:term)(context):false));
+ let conditions=terms.map(term=>term
+?compose(provide,/^[A-Z]/.test(term.name)
+?scope=>scope instanceof term:term)(context):false);
+ return compose(provide,collect,infer("every",Boolean))(conditions);
 };
  export function not(...terms)
 {// deny conditions
@@ -386,13 +388,14 @@
 };
  export function when(...terms)
 {// demand conditions on context. 
- return function when(...context)
-{terms=[terms].flat().flatMap(term=>compound(term)?Object.values(term):term);
+ if(!defined(this))
+ return refer(when,...terms);
+ let context=collect(this);
+ terms=[terms].flat().flatMap(term=>compound(term)?Object.values(term):term);
  let index=terms.findIndex((term,index)=>!is(term)(context[index]));
  if(index+1)
  throw Error(terms[index].name+": "+context[index]);
  return provide(context,true);
-};
 };
  export function same(...context)
 {if(!defined(this))
@@ -403,6 +406,13 @@
  context.every((term,index)=>terms[index]===term)
 )(this);
 };
+ export function match(...expressions)
+{if(!defined(this))
+ return tether(match,...expressions);
+ if(!string(this))
+ throw Error("can't match regular expressions on ",this);
+ return expressions.every(expression=>expression.test(this));
+}
 
  export function wait(time)
 {// hold context for time period.

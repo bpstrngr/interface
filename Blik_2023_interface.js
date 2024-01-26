@@ -1,5 +1,5 @@
  import {Parser} from "./isaacs_2011_node-tar.js";
- import {note,collect,same,slip,something,observe,describe,expect,trace,array,compound,apply,stream,record,provide,tether,differ,wether,pattern,either,when,each,drop,swap,crop,infer,buffer,is,plural,wait,string,defined,compose,combine,exit} from "./Blik_2023_inference.js";
+ import {note,collect,same,slip,something,observe,describe,expect,trace,array,compound,apply,stream,record,provide,tether,differ,wether,pattern,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,match,wait,string,defined,compose,combine,exit} from "./Blik_2023_inference.js";
  import {merge,stringify,search,edit} from "./Blik_2023_search.js";
  import {parse,sanitize,serialize,compile,test} from "./Blik_2023_meta.js";
  import {fetch,forward} from "./Blik_2023_host.js";
@@ -9,11 +9,7 @@
  var classified=["*.git*"].map(term=>RegExp("^"+term.replace(/\./g,"\\.").replace(/\*/g,".*")+"$"));
  var sources="./Blik_2023_sources.json";
  var scope={};
- function bundling(source)
-{return Object.entries(scope).find(([bundle,entry])=>
- source.startsWith(bundle)&&is(Promise)(entry));
-};
- 
+
  // --import flag registers loader module on separate thread unlike 
  // --loader, where context can be inferred implicitly on the primary thread. 
  let [explicit,implicit]=["import","loader"].map(name=>!globalThis.window&&
@@ -27,9 +23,14 @@
 ,{connect(){resolve(infer.bind(this,"write"))}
  ,error(){resolve()}
  }))
-].reduce(({port1,port2},inspect)=>new Promise(resolve=>
- observe.call(port1,{message:compose(drop(1),note.bind(3),resolve)})&&
- register(address,import.meta.url,{data:{socket:port2,context:process.argv.slice(1)},transferList:[port2]}))));
+].reduce(({port1,port2},inspect)=>new Promise(proceed=>observe.call(port1
+,{message:compose
+(drop(1),proceed,swap([],...process.argv.slice(1)),record(function()
+{if(!this.length)compose(buffer(resolve),note)(...arguments);
+ return true;
+})
+)})&&
+ register(address,import.meta.url,{data:{socket:port2},transferList:[port2]})))).then(note.bind(3));
 
  if(!explicit&&!implicit)
  // without either, context just begins at second index. 
@@ -192,10 +193,35 @@ rm(path,{recursive:true})).then(done=>path);
 
 // https://nodejs.org/api/esm.html#esm_loaders 
 
- export async function initialize({socket,context})
+ export async function initialize({socket})
 {socket?.postMessage("Module loader registered:\n"+import.meta.url);
- compose(buffer(resolve),note)(...context);
 }
+
+ let precedent=compose(crop(1),"resolve",collect,search.bind(scope));
+ let respecify=compose("url",collect,slip(URL),Reflect.construct,"pathname",decodeURI);
+ let recovery=compose
+(drop(-1,1),combine(infer(),(source,{message})=>message.includes("'"+source+"'"))
+,(source,fail,immediate)=>(
+ {ERR_MODULE_NOT_FOUND:immediate?acquire:divert
+ ,ERR_UNSUPPORTED_DIR_IMPORT:immediate&&extend
+ }[fail.code])||
+ Promise.reject.bind(Promise,fail)
+);
+ let backtrack=compose
+(crop(1),scope,either((source,scope)=>
+ Object.entries(scope).find(([field,module])=>
+ source.startsWith(field)&&is(Promise)(module)))
+,infer("replace",/.*\//,""),".js",collect,infer("join","")
+);
+ let format=compose
+(combine(infer(),compose(swap(sources),"default",resolve,Object.keys)),(source,sources)=>
+ sources.find(field=>source.startsWith([location,field.replace(/\.js$/,"")].join("/"))),"format",describe
+);
+ let modulepath=when(is(match(/^[\/\.]/),not(match(RegExp(sources+"$")))));
+ let shortcircuit=compose
+(combine(infer(),either(compose(respecify,modulepath,format),swap({}))),merge
+,{shortCircuit:true},merge,"resolve",describe
+);
 
  export async function resolve(source,context,next)
 {// import module from source, infer context if provided. 
@@ -208,53 +234,37 @@ rm(path,{recursive:true})).then(done=>path);
  let internal=context?.parentURL;
  let loading=next?.name==="nextResolve";
  let command=!loading||!internal;
+ let primary=loading&&!internal;
+ if(primary&&await import("worker_threads").then(({isMainThread})=>!isMainThread))
+ // suppress primary import on loader thread (registered with --import) in favor of explicit inference with context available only on main. 
+ return next("worker_threads",context);
  let target=internal?decodeURI(new URL(internal).pathname):address;
  let relation=target.replace(/\/[^/]*$/,"");
- let absolute=/^\//.test(source)?source
-:/^file:/.test(source)?new URL(source).pathname
-:source==="path"?[relation,source].join("/")
-:await import("path").then(({resolve})=>resolve(relation,source));
+ let [url,path]=[/^file:/.test(source),/^[\/\.]/.test(source)];
+ let absolute=await wether
+([url,path]
+,source=>resolve("url","fileURLToPath",source)
+,source=>resolve("path","resolve",relation,source)
+,infer()
+)(source);
+ //if(url||path)console.log("\x1b[36m"+internal+"\x1b[0m\n"+source)
  if(internal)
- merge(scope,{[target]:{imports:new Set([source])}},0);
- let precedent=scope[absolute]?.resolve;
- if(precedent)
- return precedent;
- merge(scope,{[absolute]:{imports:new Set()}});
- let recover=compose
-(drop(-1),combine(infer(),compose("message","'"+absolute+"'","includes"))
-,(fail,immediate)=>(
- {ERR_MODULE_NOT_FOUND:immediate?acquire:divert
- ,ERR_UNSUPPORTED_DIR_IMPORT:immediate&&extend
- }[fail.code])||
- Promise.reject.bind(Promise,fail)
-,infer(Function.call,scope,absolute,target)
-,infer(resolve,context,next)
-,{shortCircuit:true},merge
-,[absolute,"resolve"],describe,0,slip(scope),merge,[absolute,"resolve"],tether(search)
-);
- let retry=compose
-(swap(absolute),bundling,([bundle])=>bundle+".js"
-,wether(same(absolute)
-,compose(swap(absolute),context,next)
-,compose(bundle=>Error("Aborting import of "+absolute+". ("+bundle+" bundle ready...)"),exit)
-)
-);
- let module=command?import(source)
-:either(next,recover,retry,compose(drop(-3),exit))(source,context);
- let associate=compose
-("url",collect,slip(URL),Reflect.construct,"pathname",decodeURI,bundling
-,([bundle])=>bundle.replace(/.*\//,"")+".js","format"
-,describe,slip(module),1,merge
-);
- if(!command)
- module=either(associate,crop(1))(module).catch(exit);
+ merge(scope,{[target]:{imports:new Set([absolute])}},0);
+ let invoke=infer(Function.call,scope,absolute,target);
+ let proceed=infer(resolve,context,next);
+ let discard=wether(same(absolute),compose(context,next),compose(drop(-1),exit));
+ let module=command?import(source):compose
+(either(precedent,next,compose(recovery,invoke,proceed),compose(backtrack,discard))
+,shortcircuit,{imports:new Set()},merge
+,absolute,describe,slip(scope),merge
+,[absolute,"resolve"],tether(search)
+)(absolute,context);
  if(loading&&internal)
  return module;
- let primary=loading&&!internal;
  [source,...context]=primary?process.argv.slice(1):Array.from(arguments);
  let suspense=primary&&!process.execArgv.includes("--watch")?10*60*1000:0;
- return compose(context.shift(),terms=>
- primary?compose.call(terms,wait(suspense),swap(0),process.exit):terms)(module,...context);
+ return compose(infer(...context),terms=>
+ primary?compose.call(terms,note,wait(suspense),swap(0),process.exit):terms)(module);
 };
 
  function extend(absolute)
@@ -300,13 +310,13 @@ rm(path,{recursive:true})).then(done=>path);
 ,combine(infer(),wether
 (buffer(access,drop())
  // source entry indicates available re-import, or incomplete assembly to await/report. 
-,entry=>either.call(this,entry,wether(target,expect(entry),swap(null)))
+,entry=>either.call(this,entry,wether(differ(target),expect(entry),swap(null)))
  // target entry indicates assembly outpaced by re-import, otherwise begin. 
 ,entry=>either.call(this,target,compose
 (swap(2),"Collecting source of \""+relative+"\" for",dependent+"...",tether(note),swap(this)
- // expose assembly promise to inform redirects to source, and retries if they're outpaced by its purge. 
+ // expose assembly promise to inform redirects to source, and retries in case of their unlikely outpace by its purge. 
 ,scope=>merge(scope,{[target]:entries.reduce(record(assemble),[]).catch(fail=>purge(target).finally(done=>exit(fail)))})
-,target,combine(infer(),([{source}])=>resolve(source))
+,target//,combine(infer(),([{source}])=>resolve(source))
  // not returning bundle promise after assembly to unblock immediate resolution from source. 
 ,parts=>void(compose.call
 (parts.reduce(record(({source,format})=>bundle(source,format)),[])
@@ -384,7 +394,7 @@ rm(path,{recursive:true})).then(done=>path);
  //let version=process.versions.node.split(".")[0];
  let target=/^file:/.test(source)?await resolve("url","fileURLToPath",source):source;
  let precedent=scope[target]?.module;
- if(precedent&&next)return precedent;
+ if(precedent&&next?.name==="nexLoad")return precedent;
  if(string(context))context={format:context};
  let {format,importAttributes:attributes,importAssertions:assertion}=context||{};
  attributes=assertion||attributes||{};
@@ -438,8 +448,8 @@ rm(path,{recursive:true})).then(done=>path);
  if(next)
  return compose.call
 ({source:module,format:{json:"json"}[syntax]||"module",shortCircuit:true}
- // persist shortCircuit on scope to support loading from source during bundling. 
-,[target,"module"],describe,slip(scope),merge,target,"module"
+ // persist shortCircuit on scope to support loading from source while bundling. 
+//,[target,"module"],describe,slip(scope),merge,target,"module"
 );
  return module;
 };
@@ -482,11 +492,11 @@ rm(path,{recursive:true})).then(done=>path);
 :null
  }
 ]);
- note.call(3,"bundling " + source + "...");
- let { rollup } = await import("./Harris_2015_rollup.js");
- let input=multientry ? { include: source } : source[0];
+ note.call(3,"bundling "+source+"...");
+ let {rollup}=await import("./Harris_2015_rollup.js");
+ let input=multientry?{include:source}:source[0];
  let bundle=await rollup({input,plugins,...format.input});
- let {output:[{code}]}=await bundle.generate({ format: "module", inlineDynamicImports: true, ...format.output });
+ let {output:[{code}]}=await bundle.generate({format:"module",inlineDynamicImports:true,...format.output});
  return code;
 }
 

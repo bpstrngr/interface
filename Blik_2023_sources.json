@@ -337,21 +337,21 @@
     "scripts":["./rrweb_2010_cssom/0/build.js"],
     "syntax":"commonjs",
     "edit":{
-      "lib/parse.js":{"(CSSOM\\.CSSStyleDeclaration = require\\('\\.\\/CSSStyleDeclaration'\\).CSSStyleDeclaration)":"!function(){$1}()"},
+      "lib/parse.js":{"(CSSOM\\.CSSStyleDeclaration = require\\('\\.\\/CSSStyleDeclaration'\\).CSSStyleDeclaration)":"!async function(){$1}()"},
       "lib/CSSStyleSheet.js":{
-        "CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSStyleSheet.prototype =(?:.*\n)*)(exports.CSSStyleSheet =)":"CSSOM={};!function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4",
-        "(CSSOM\\.parse = require\\('\\.\\/parse'\\).parse)":"!function(){$1}()"
+        "CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSStyleSheet.prototype =(?:.*\n)*)(exports.CSSStyleSheet =)":"CSSOM={};!async function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4",
+        "(CSSOM\\.parse = require\\('\\.\\/parse'\\).parse)":"!async function(){$1}()"
       },
-      "lib/CSSStyleRule.js":{"var CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSStyleRule.prototype =(?:.*\n)*)(CSSOM.CSSStyleRule.parse =)":"var CSSOM={};\n!function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4"},
-      "lib/CSSFontFaceRule.js":{"var CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSFontFaceRule.prototype =(?:.*\n)*)(exports.CSSFontFaceRule =)":"var CSSOM={};\n!function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4"},
-      "lib/CSSKeyframeRule.js":{"var CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSKeyframeRule.prototype =(?:.*\n)*)(exports.CSSKeyframeRule =)":"var CSSOM={};\n!function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4"},
+      "lib/CSSStyleRule.js":{"var CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSStyleRule.prototype =(?:.*\n)*)(CSSOM.CSSStyleRule.parse =)":"var CSSOM={};\n!async function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4"},
+      "lib/CSSFontFaceRule.js":{"var CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSFontFaceRule.prototype =(?:.*\n)*)(exports.CSSFontFaceRule =)":"var CSSOM={};\n!async function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4"},
+      "lib/CSSKeyframeRule.js":{"var CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSKeyframeRule.prototype =(?:.*\n)*)(exports.CSSKeyframeRule =)":"var CSSOM={};\n!async function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4"},
       "build.js":{
           "__dirname":"PATH.dirname(new URL(import.meta.url).pathname)",
           "process.stdout":"module.exports=process.stdout",
           ", 0755":""
       }
     },
-    "comment":"circular requires made dynamic to resolve horrific circular dependency. there must be a generic way to modularize synchronous circular imports without these edits (rollup's commonjs plugin may have hints). This way, some throttling is expected before the module is ready to use. Hopefully not many commonjs dependencies have such an insane structure for this to need general support."
+    "comment":"circular requires edited dynamic to resolve horrific circular dependency. there must be a generic way to modularize synchronous circular imports without these edits (rollup's commonjs plugin may have hints). This way, some throttling is expected before the module is ready to use. Hopefully not many commonjs dependencies have such an insane structure for this to need general support."
   }]}},
   "Sakas_2018_cssstyle.js": {"https://github.com/jsdom/cssstyle": {
     "v3.0.0": [

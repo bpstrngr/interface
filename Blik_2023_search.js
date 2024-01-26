@@ -24,7 +24,7 @@ export function sum(...context) {
     .reduce((sum, value) => sum + value, 0);
 }
 
-export function search(term, recursive = false,path=[]) {
+export function search(term,recursive=false,path=[]){
   // traverse scope for entries satisfying a term (condition or singular path).
   // recursive search includes ranges in recursion domain.
   const scope = this;
