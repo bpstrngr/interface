@@ -504,9 +504,10 @@ export function scope(module) {
  if(traverse)return test(namespace[term]??namespace,value,path.concat(term));
  let {tether,scope,context=[],terms=[],condition}=value;
  scope=scope||tether;
+ context=[context].flat();
  if(!context.length)context.push(undefined);
  try
-{await compose(buffer((namespace[term]??namespace).bind(scope)),...[terms].flat(),assert[condition]||condition)(...[context].flat());
+{await compose.call(...context,buffer((namespace[term]??namespace).bind(scope)),...[terms].flat(),assert[condition]||condition);
 }catch(fail)
 {let field=path.concat(term).join("/");
  let {stack}=fail;
@@ -539,8 +540,8 @@ export const tests=
  }
  ,sanitize:
  {dynamicrequire:
- {block:{context:[parse("var a=!async function(){a=require('')}()"),{syntax:"commonjs"}],terms:[serialize,"let exports = {}, module = {\n  exports\n};\nvar a = !(async function () {\n  a = await import('').then(({default: module}) => module);\n})();\nexport default module.exports;\n"],condition:"equal"}
- ,lambda:{context:[parse("setTimeout(async time=>a=require(''),3000)"),{syntax:"commonjs"}],terms:[serialize,"let exports = {}, module = {\n  exports\n};\nsetTimeout(async time => a = await import('').then(({default: module}) => module), 3000);\nexport default module.exports;\n"],condition:"equal"}
+ {block:{context:["var a=!async function(){a=require('')}()",parse,{syntax:"commonjs"}],terms:[serialize,"let exports = {}, module = {\n  exports\n};\nvar a = !(async function () {\n  a = await import('').then(({default: module}) => module);\n})();\nexport default module.exports;\n"],condition:"equal"}
+ ,lambda:{context:["setTimeout(async time=>a=require(''),3000)",parse,{syntax:"commonjs"}],terms:[serialize,"let exports = {}, module = {\n  exports\n};\nsetTimeout(async time => a = await import('').then(({default: module}) => module), 3000);\nexport default module.exports;\n"],condition:"equal"}
  }
  }
  ,estree:
@@ -548,28 +549,28 @@ export const tests=
  {require:
  {condition:
  {static:
-[{context:[parse("a.b=require('')").then(tether(search,["body",0])),"0",["body"]],terms:[true],condition:"equal"}
-,{context:[parse("require('')").then(tether(search,["body",0])),"0",["body"]],terms:[true],condition:"equal"}
+[{context:["a.b=require('')",parse,tether(search,["body",0]),"0",["body"]],terms:[true],condition:"equal"}
+,{context:["require('')",parse,tether(search,["body",0]),"0",["body"]],terms:[true],condition:"equal"}
 ]}
  ,ecma:
  {static:
-[{context:[parse("require('')").then(tether(search,["body",0]))],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\n_exports;\n"],condition:"equal"}
-,{context:[parse("require('')()").then(tether(search,["body",0]))],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\n_exports();\n"],condition:"equal"}
-,{context:[parse("a=require('')()").then(tether(search,["body",0]))],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na = _exports();\n"],condition:"equal"}
-,{context:[parse("a.b=require('')").then(tether(search,["body",0]))],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na.b = _exports;\n"],condition:"equal"}
-,{context:[parse("const a=require('');").then(tether(search,["body",0]))],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\nconst a = _exports;\n"],condition:"equal"}
-,{context:[parse("function a(){compose({a:require('')})}").then(tether(search,["body",0]))],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\nfunction a() {\n  compose({\n    a: _exports\n  });\n}\n"],condition:"equal"}
+[{context:["require('')",parse,tether(search,["body",0])],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\n_exports;\n"],condition:"equal"}
+,{context:["require('')()",parse,tether(search,["body",0])],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\n_exports();\n"],condition:"equal"}
+,{context:["a=require('')()",parse,tether(search,["body",0])],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na = _exports();\n"],condition:"equal"}
+,{context:["a.b=require('')",parse,tether(search,["body",0])],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na.b = _exports;\n"],condition:"equal"}
+,{context:["const a=require('');",parse,tether(search,["body",0])],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\nconst a = _exports;\n"],condition:"equal"}
+,{context:["function a(){compose({a:require('')})}",parse,tether(search,["body",0])],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\nfunction a() {\n  compose({\n    a: _exports\n  });\n}\n"],condition:"equal"}
 ],dynamic:
-[{context:[parse("async function a(){const a=require('')}").then(tether(search,["body",0]))],terms:[(...body)=>({type:"Program",body}),serialize,"async function a() {\n  const a = await import('').then(({default: module}) => module);\n}\n"],condition:"equal"}
-,{context:[parse("async function a(){compose({a:require('')})}").then(tether(search,["body",0]))],terms:[(...body)=>({type:"Program",body}),serialize,"async function a() {\n  compose({\n    a: await import('').then(({default: module}) => module)\n  });\n}\n"],condition:"equal"}
+[{context:["async function a(){const a=require('')}",parse,tether(search,["body",0])],terms:[(...body)=>({type:"Program",body}),serialize,"async function a() {\n  const a = await import('').then(({default: module}) => module);\n}\n"],condition:"equal"}
+,{context:["async function a(){compose({a:require('')})}",parse,tether(search,["body",0])],terms:[(...body)=>({type:"Program",body}),serialize,"async function a() {\n  compose({\n    a: await import('').then(({default: module}) => module)\n  });\n}\n"],condition:"equal"}
 ]}
  }
  }
  ,typescript:
  {typeimport:{condition:
-[{context:[parse("import type {a} from 'a'","typescript").then(tether(search,["body",0]))],terms:[true],condition:"equal"}
-,{context:[parse("import type a from 'a'","typescript").then(tether(search,["body",0]))],terms:[true],condition:"equal"}
-,{context:[parse("import a from 'a'","typescript").then(tether(search,["body",0]))],terms:[false],condition:"equal"}
+[{context:["import type {a} from 'a'","typescript",parse,tether(search,["body",0])],terms:[true],condition:"equal"}
+,{context:["import type a from 'a'","typescript",parse,tether(search,["body",0])],terms:[true],condition:"equal"}
+,{context:["import a from 'a'","typescript",parse,tether(search,["body",0])],terms:[false],condition:"equal"}
 ]}
  }
  }

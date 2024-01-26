@@ -498,22 +498,22 @@
             "transformer\\.generate": "module.exports=transformer.generate"
           },
           "living/nodes/Document-impl.js":{
-            "const (documents) = (require\\(\"..\\/documents.js\"\\))":"var $1;setTimeout(time=>$1=$2,3000)",
-            "const (DOMImplementation) = (require\\(\"..\\/generated\\/DOMImplementation\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"
+            "const (documents) = (require\\(\"..\\/documents.js\"\\))":"var $1;!function expect_hoisted_$1(){setTimeout(time=>$1?$1=$2:expect_hoisted_$1(),500)}();",
+            "const (DOMImplementation) = (require\\(\"..\\/generated\\/DOMImplementation\"\\))":"var $1;!function expect_hoisted_$1(){setTimeout(time=>$1?$1=$2:expect_hoisted_$1(),500)}();"
           },
-          "living/nodes/HTMLFrameElement-impl.js":{"const (window) = (require\\(\"..\\/..\\/browser\\/Window\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
+          "living/nodes/HTMLFrameElement-impl.js":{"const (window) = (require\\(\"..\\/..\\/browser\\/Window\"\\))":"var $1;!function expect_hoisted_$1(){setTimeout(time=>$1?$1=$2:expect_hoisted_$1(),500)}();"},
           "living/generated/AbortSignal.js":{
-            "const (Impl) = (require\\(\"..\\/aborting\\/AbortSignal-impl.js\"\\))":"var $1;setTimeout(time=>$1=$2,3000)",
-            "const (EventTarget) = (require\\(\".\\/EventTarget.js\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"
+            "const (Impl) = (require\\(\"..\\/aborting\\/AbortSignal-impl.js\"\\))":"var $1;!function expect_hoisted_$1(){setTimeout(time=>$1?$1=$2:expect_hoisted_$1(),500)}();",
+            "const (EventTarget) = (require\\(\".\\/EventTarget.js\"\\))":"var $1;!function expect_hoisted_$1(){setTimeout(time=>$1?$1=$2:expect_hoisted_$1(),500)}();"
           },
-          "living/generated/MouseEventInit.js":{"const (EventTarget) = (require\\(\".\\/EventTarget.js\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
-          "living/generated/MouseEvent.js":{"const (EventTarget) = (require\\(\".\\/EventTarget.js\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
-          "helpers/create-element.js":{"const (interfaces) = (require\\(\"..\\/interfaces\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
-          "living/range/Range-impl.js":{"const (Range) = (require\\(\"..\\/generated\\/Range\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
-          "living/webstorage/Storage-impl.js":{"const (StorageEvent) = (require\\(\"..\\/generated\\/StorageEvent\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
-          "living/file-api/Blob-impl.js":{"const (Blob) = (require\\(\"..\\/generated\\/Blob\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
-          "living/geometry/DOMRectReadOnly-impl.js":{"const (DOMRectReadOnly) = (require\\(\"..\\/generated\\/DOMRectReadOnly\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
-          "living/geometry/DOMRect-impl.js":{"const (DOMRect) = (require\\(\"..\\/generated\\/DOMRect\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
+          "living/generated/MouseEventInit.js":{"const (EventTarget) = (require\\(\".\\/EventTarget.js\"\\))":"var $1;!function expect_hoisted_$1(){setTimeout(time=>$1?$1=$2:expect_hoisted_$1(),500)}();"},
+          "living/generated/MouseEvent.js":{"const (EventTarget) = (require\\(\".\\/EventTarget.js\"\\))":"var $1;!function expect_hoisted_$1(){setTimeout(time=>$1?$1=$2:expect_hoisted_$1(),500)}();"},
+          "helpers/create-element.js":{"const (interfaces) = (require\\(\"..\\/interfaces\"\\))":"var $1;!function expect_hoisted_$1(){setTimeout(time=>$1?$1=$2:expect_hoisted_$1(),500)}();"},
+          "living/range/Range-impl.js":{"const (Range) = (require\\(\"..\\/generated\\/Range\"\\))":"var $1;!function expect_hoisted_$1(){setTimeout(time=>$1?$1=$2:expect_hoisted_$1(),500)}();"},
+          "living/webstorage/Storage-impl.js":{"const (StorageEvent) = (require\\(\"..\\/generated\\/StorageEvent\"\\))":"var $1;!function expect_hoisted_$1(){setTimeout(time=>$1?$1=$2:expect_hoisted_$1(),500)}();"},
+          "living/file-api/Blob-impl.js":{"const (Blob) = (require\\(\"..\\/generated\\/Blob\"\\))":"var $1;!function expect_hoisted_$1(){setTimeout(time=>$1?$1=$2:expect_hoisted_$1(),500)}();"},
+          "living/geometry/DOMRectReadOnly-impl.js":{"const (DOMRectReadOnly) = (require\\(\"..\\/generated\\/DOMRectReadOnly\"\\))":"var $1;!function expect_hoisted_$1(){setTimeout(time=>$1?$1=$2:expect_hoisted_$1(),500)}();"},
+          "living/geometry/DOMRect-impl.js":{"const (DOMRect) = (require\\(\"..\\/generated\\/DOMRect\"\\))":"var $1;!function expect_hoisted_$1(){setTimeout(time=>$1?$1=$2:expect_hoisted_$1(),500)}();"},
           "XMLHttpRequest-impl.js":{"(const syncWorkerFile =) .*\n":"$1 null;"},
           "lib/api.js":{"^((?:.*[\n$])*)":"$1\nexport default new Promise(resolve=>setTimeout(time=>resolve(module.exports),3000));"}
         },

@@ -195,7 +195,7 @@ rm(path,{recursive:true})).then(done=>path);
 
  export async function initialize({socket})
 {socket?.postMessage("Module loader registered:\n"+import.meta.url);
-}
+};
 
  let precedent=compose(crop(1),"resolve",collect,search.bind(scope));
  let respecify=compose("url",collect,slip(URL),Reflect.construct,"pathname",decodeURI);
@@ -616,16 +616,10 @@ export function patch(repository, patch) {
  [key,value&&typeof value=="object"?module(value):value?value.toString():value]))
 };
 
-export var tests=
+ export var tests=
  {access:
-[{context: [import.meta.url]
- ,terms: [(value) => typeof value, "object"]
- ,condition: "equal",
- },
- {context: [import.meta.url,true]
- ,terms: [(value) => typeof value, "string"]
- ,condition: "equal"
- }
+[{context:[import.meta.url],terms:[value=>typeof value,"object"],condition:"equal"},
+ {context:[import.meta.url,true],terms:[value=>typeof value,"string"],condition:"equal"}
 ],resolve:
 [{context:[import.meta.url,"tests"],terms:[entry=>provide([entry,tests]),Object.is],condition:"ok"}
 ,{context:[import.meta.url],terms:[swap(scope),address,record=>record.hasOwnProperty("imports")],condition:"ok"}
