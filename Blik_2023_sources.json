@@ -7,13 +7,13 @@
   "eslint_2019_typescript_estree.js":{"https://github.com/typescript-eslint/typescript-eslint/packages/typescript-estree":{"v6.4.1":["src/parser.ts"]}},
   "microsoft_2014_typescript.js":{"https://github.com/microsoft/TypeScript":{"v5.1.6":["src/compiler/_namespaces/ts.ts",{"syntax":"typescript"}]}},
   "jridgewell_2015_sourcemap_codec.js":{"https://github.com/jridgewell/sourcemap-codec":{"v1.4.13":["src/sourcemap-codec.ts"]}},
-  "rich_harris_2014_magic_string.js":{"https://github.com/rich-harris/magic-string":{"v0.27.0":["src/index.js",{
+  "Harris_2014_magic_string.js":{"https://github.com/rich-harris/magic-string":{"v0.27.0":["src/index.js",{
     "alias":{"@jridgewell/sourcemap-codec":"./jridgewell_2015_sourcemap_codec.js"},
     "edit":{"DEBUG":"false"}
   }]}},
-  "rich_harris_2016_is_reference.js":{"https://github.com/Rich-Harris/is-reference":{"v3.0.1":["src/index.js"]}},
-  "rich_harris_2015_estree_walker.js":{"https://github.com/Rich-Harris/estree-walker":{"v2.0.2":["src/index.js"]}},
-  "rich_harris_2016_locate_character.js":{"https://github.com/Rich-Harris/locate-character":{"v3.0.0":["src/index.js"]}},
+  "Harris_2016_is_reference.js":{"https://github.com/Rich-Harris/is-reference":{"v3.0.1":["src/index.js"]}},
+  "Harris_2015_estree_walker.js":{"https://github.com/Rich-Harris/estree-walker":{"v2.0.2":["src/index.js"]}},
+  "Harris_2016_locate_character.js":{"https://github.com/Rich-Harris/locate-character":{"v3.0.0":["src/index.js"]}},
   "lukeed_2019_flru.js":{"https://github.com/lukeed/flru":{"v1.0.2":["src/index.js"]}},
   "sindresorhus_2015_builtin_modules_static.js":{"https://github.com/sindresorhus/builtin-modules":{"v3.3.0":["builtin-modules.json",{"syntax":"commonjs","./Harris_2015_json.js":{}}]}},
   "sindresorhus_2015_builtin_modules.js":{"https://github.com/sindresorhus/builtin-modules":{"v3.3.0":["index.js",{"syntax":"commonjs"}]}},
@@ -38,13 +38,13 @@
   "Harris_2015_rollup.js":{"https://github.com/rollup/rollup/src cli browser":{"v3.28.1":["src/node-entry.ts",{"./Harris_2015_json.js":{},"alias":{
     "package.json":"./Harris_2015_rollup/0/package.json",
     "acorn":"./haverbeke_2012_acorn.js",
-    "locate-character":"./rich_harris_2016_locate_character.js",
+    "locate-character":"./Harris_2016_locate_character.js",
     "acorn-import-assertions":"./xtuc_2020_acorn_importassertions.js",
     "@rollup/pluginutils":"./Harris_2015_pluginutils.js",
-    "magic-string":"./rich_harris_2014_magic_string.js",
+    "magic-string":"./Harris_2014_magic_string.js",
     "acorn-walk":"./haverbeke_2012_acorn_walk.js",
     "flru":"./lukeed_2019_flru.js",
-    "is-reference":"./rich_harris_2016_is_reference.js",
+    "is-reference":"./Harris_2016_is_reference.js",
     "@jridgewell/sourcemap-codec":"./jridgewell_2015_sourcemap_codec.js",
     "builtin-modules/static":"./sindresorhus_2015_builtin_modules_static.js",
     "colorette":"./jorgebucaran_2018_colorette.js",
@@ -54,7 +54,7 @@
     "packages/pluginutils/src/index.ts",
     {"alias":{
       "estree":"./definitely_2015_estree.js",
-      "estree-walker":"./rich_harris_2015_estree_walker.js",
+      "estree-walker":"./Harris_2015_estree_walker.js",
       "picomatch":"./micromatch_2018_picomatch.js"
     }}
   ]}},

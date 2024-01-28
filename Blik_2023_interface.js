@@ -11,30 +11,27 @@
  var scope={};
 
  // --import flag registers loader module on separate thread unlike 
- // --loader, where context can be inferred implicitly on the primary thread. 
- let [explicit,implicit]=["import","loader"].map(name=>!globalThis.window&&
+ // --loader, where context is available directly on the primary thread. 
+ let [worker,loader]=["import","loader"].map(name=>!globalThis.window&&
  process.execArgv.some(flag=>new RegExp("^--"+name+"[= ][^ ]*"+file).test(flag)));
 
- if(explicit&&await import("worker_threads").then(({isMainThread})=>isMainThread))
+ if(worker&&await resolve("worker_threads","isMainThread"))
  // register loader thread. 
- await resolve(["module","worker_threads","net"]).then(([{register},{MessageChannel},{connect}])=>
-[new MessageChannel()
-,new Promise((resolve,reject)=>observe.call(connect(process.debugPort)
-,{connect(){resolve(infer.bind(this,"write"))}
- ,error(){resolve()}
- }))
-].reduce(({port1,port2},inspect)=>new Promise(proceed=>observe.call(port1
-,{message:compose
-(drop(1),proceed,swap([],...process.argv.slice(1)),record(function()
-{if(!this.length)compose(buffer(resolve),note)(...arguments);
- return true;
-})
-)})&&
- register(address,import.meta.url,{data:{socket:port2},transferList:[port2]})))).then(note.bind(3));
+ await compose.call
+("worker_threads",resolve,["MessageChannel"],tether(search),[],Reflect.construct
+ // draft to forward logs to inspector. 
+ // ,resolve("net","connect",process.debugPort).then(inspector=>new Promise((resolve,reject)=>
+ //  observe.call(inspector,{connect(){resolve(infer.bind(this,"write"))},error(){resolve()}})))
+,combine
+(({port1})=>new Promise(message=>observe.call(port1,{message}))
+,({port2})=>resolve("module","register",address,import.meta.url,{data:{socket:port2},transferList:[port2]})
+)// promise resolves on message from registration port. 
+,crop(1),note.bind(3),drop(),...process.argv.slice(1),buffer(resolve),note
+);
 
- if(!explicit&&!implicit)
- // without either, context just begins at second index. 
- initialize({context:process.argv.slice(2)});
+ if(!worker&&!loader&&process.argv[1].endsWith(file))
+ // without either loader flag, context begins at second index. 
+ resolve(...process.argv.slice(2));
 
  export var classify=compose(when(either(pattern,infer("every",pattern))),file=>
  [file].flat().forEach(file=>
@@ -235,7 +232,7 @@ rm(path,{recursive:true})).then(done=>path);
  let loading=next?.name==="nextResolve";
  let command=!loading||!internal;
  let primary=loading&&!internal;
- if(primary&&await import("worker_threads").then(({isMainThread})=>!isMainThread))
+ if(primary&&!await resolve("worker_threads","isMainThread"))
  // suppress primary import on loader thread (registered with --import) in favor of explicit inference with context available only on main. 
  return next("worker_threads",context);
  let target=internal?decodeURI(new URL(internal).pathname):address;
@@ -253,12 +250,11 @@ rm(path,{recursive:true})).then(done=>path);
  let invoke=infer(Function.call,scope,absolute,target);
  let proceed=infer(resolve,context,next);
  let discard=wether(same(absolute),compose(context,next),compose(drop(-1),exit));
- let module=command?import(source):compose
-(either(precedent,next,compose(recovery,invoke,proceed),compose(backtrack,discard))
-,shortcircuit,{imports:new Set()},merge
-,absolute,describe,slip(scope),merge
+ let module=command?import(source):either(precedent,compose
+(either(next,compose(recovery,invoke,proceed),compose(backtrack,discard))
+,shortcircuit,{imports:new Set()},merge,absolute,describe,slip(scope),merge
 ,[absolute,"resolve"],tether(search)
-)(absolute,context);
+))(absolute,context);
  if(loading&&internal)
  return module;
  [source,...context]=primary?process.argv.slice(1):Array.from(arguments);
@@ -394,7 +390,7 @@ rm(path,{recursive:true})).then(done=>path);
  //let version=process.versions.node.split(".")[0];
  let target=/^file:/.test(source)?await resolve("url","fileURLToPath",source):source;
  let precedent=scope[target]?.module;
- if(precedent&&next?.name==="nexLoad")return precedent;
+ if(precedent&&next?.name==="nextLoad")return precedent;
  if(string(context))context={format:context};
  let {format,importAttributes:attributes,importAssertions:assertion}=context||{};
  attributes=assertion||attributes||{};
@@ -414,9 +410,8 @@ rm(path,{recursive:true})).then(done=>path);
  let native=["json","module","wasm","builtin","commonjs"].includes(format);
  if(native&&next)
  return compose.call
-(source,context,next
- // native modules don't need shortCircuits to be tracked on scope. 
-//,[source,"module"],describe,slip(scope),merge,source,"module"
+(source,context,next,{shortCircuit:true},merge
+,[target,"module"],describe,slip(scope),merge,target,"module"
 ,module=>module.format==="module"
  //read(source).then(module=>modularise(module,source)).then(({namespace:module})=>prove.call(module,module.proof))
  // dispatch new import thread for tests until modularization halts on self-referential imports. 
@@ -449,7 +444,7 @@ rm(path,{recursive:true})).then(done=>path);
  return compose.call
 ({source:module,format:{json:"json"}[syntax]||"module",shortCircuit:true}
  // persist shortCircuit on scope to support loading from source while bundling. 
-//,[target,"module"],describe,slip(scope),merge,target,"module"
+,[target,"module"],describe,slip(scope),merge,target,"module"
 );
  return module;
 };
