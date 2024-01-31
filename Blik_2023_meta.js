@@ -172,6 +172,7 @@ let address=new URL(import.meta.url).pathname;
 
  var synchronous=({1:term})=>"FunctionDeclaration/FunctionExpression/ArrowFunctionExpression".split("/").includes(term?.type)&&term.async?undefined:term;
  var requirecall=term=>term?.type==="CallExpression"&&term.callee?.name==="require";
+ var linear=(scope,field,index,path)=>scope[field].type==="TryStatement"?!path.splice(index):scope[field];
 
  export var estree=
  // sort by decreasing specificity for declarative disjunction (Object.values(estree.dialect)). 
@@ -179,8 +180,8 @@ let address=new URL(import.meta.url).pathname;
  {require:
  {condition(term,field,path)
 {let toplevel=path.length===1;
- let dynamic=!toplevel&&"FunctionDeclaration/FunctionExpression/ArrowFunctionExpression".split("/").includes(term?.type)&&term.async;
- if(!toplevel&&!dynamic)return;
+ let asynchronous=!toplevel&&"FunctionDeclaration/FunctionExpression/ArrowFunctionExpression".split("/").includes(term?.type)&&term.async;
+ if(!toplevel&&!asynchronous)return;
  let scope=prune.call(term,synchronous);
  let requires=search.call({scope},({1:term})=>requirecall(term));
  return Object.keys(requires).length;
@@ -188,7 +189,7 @@ let address=new URL(import.meta.url).pathname;
 {let scope=prune.call(term,synchronous);
  let requires=search.call(scope,({1:term})=>requirecall(term));
  let dynamic=term.async||term.type==="TryStatement";
- let values=Object.values(requires).map(({arguments:[source]})=>dynamic
+ let values=Object.entries(requires).map(([path,{arguments:[source]}])=>dynamic||!path.split("/").reduce(linear,scope)
 ?{type:"AwaitExpression",argument:
  {type:"CallExpression",callee:
  {type:"MemberExpression"
@@ -210,11 +211,12 @@ let address=new URL(import.meta.url).pathname;
  term=values.reduce((term,value,index)=>
  merge(term,value,Object.keys(requires)[index].split("/")),term);
  if(dynamic)return term;
- let imports=Object.values(requires).map((require,index)=>(
- {type:"ImportDeclaration",source:require.arguments[0]
+ let imports=Object.entries(requires).map(([path,require],index)=>
+ !path.split("/").reduce(linear,scope)?undefined
+:{type:"ImportDeclaration",source:require.arguments[0]
  ,specifiers:
 [{type:"ImportDefaultSpecifier",local:values[index],imported:values[index]}
-]}));
+]});
  return provide([...imports,term]);
 }}
   // module.exports exportdefaultdeclaration prepended to scope instead. 
@@ -563,6 +565,7 @@ export const tests=
 ],dynamic:
 [{context:["async function a(){const a=require('')}",parse,tether(search,["body",0])],terms:[(...body)=>({type:"Program",body}),serialize,"async function a() {\n  const a = await import('').then(({default: module}) => module);\n}\n"],condition:"equal"}
 ,{context:["async function a(){compose({a:require('')})}",parse,tether(search,["body",0])],terms:[(...body)=>({type:"Program",body}),serialize,"async function a() {\n  compose({\n    a: await import('').then(({default: module}) => module)\n  });\n}\n"],condition:"equal"}
+,{context:["try{b=require('')}catch(fail){}",parse,tether(search,["body",0])],terms:[(...body)=>({type:"Program",body}),serialize,"try {\n  b = await import('').then(({default: module}) => module);\n} catch (fail) {}\n"],condition:"equal"}
 ]}
  }
  }
