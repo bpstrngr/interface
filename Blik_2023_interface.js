@@ -26,10 +26,12 @@
 (({port1})=>new Promise(message=>observe.call(port1,{message}))
 ,({port2})=>resolve("module","register",address,import.meta.url,{data:{socket:port2},transferList:[port2]})
 )// promise resolves on message from registration port. 
-,crop(1),note.bind(3),drop(),...process.argv.slice(1),buffer(resolve),note
+,crop(1),note.bind(3)
 );
 
- if(!worker&&!loader&&process.argv[1].endsWith(file))
+ if(worker)
+ compose(buffer(resolve),note)(...process.argv.slice(1));
+ else if(!loader&&process.argv[1].endsWith(file))
  // without either loader flag, context begins at second index. 
  resolve(...process.argv.slice(2));
 
@@ -207,8 +209,9 @@ rm(path,{recursive:true})).then(done=>path);
  let backtrack=compose
 (crop(1),scope,either((source,scope)=>
  Object.entries(scope).find(([field,module])=>
- source.startsWith(field)&&is(Promise)(module)))
-,infer("replace",/.*\//,""),".js",collect,infer("join","")
+ source.startsWith(field)&&is(Promise)(module))
+,compose(crop(1),"not subject of bundling",collect,infer("join"," "),Error,exit))
+,0,infer("replace",/.*\//,""),".js",collect,infer("join","")
 );
  let format=compose
 (combine(infer(),compose(swap(sources),"default",resolve,Object.keys)),(source,sources)=>
@@ -244,14 +247,14 @@ rm(path,{recursive:true})).then(done=>path);
 ,source=>resolve("path","resolve",relation,source)
 ,infer()
 )(source);
- //if(url||path)console.log("\x1b[36m"+internal+"\x1b[0m\n"+source)
  if(internal)
  merge(scope,{[target]:{imports:new Set([absolute])}},0);
  let invoke=infer(Function.call,scope,absolute,target);
  let proceed=infer(resolve,context,next);
  let discard=wether(same(absolute),compose(context,next),compose(drop(-1),exit));
+ let fail=compose(drop(2),each("message"),collect,",\n","join",Error,exit);
  let module=command?import(source):either(precedent,compose
-(either(next,compose(recovery,invoke,proceed),compose(backtrack,discard))
+(either(next,compose(recovery,invoke,proceed),compose(backtrack,discard),fail)
 ,shortcircuit,{imports:new Set()},merge,absolute,describe,slip(scope),merge
 ,[absolute,"resolve"],tether(search)
 ))(absolute,context);
@@ -260,7 +263,7 @@ rm(path,{recursive:true})).then(done=>path);
  [source,...context]=primary?process.argv.slice(1):Array.from(arguments);
  let suspense=primary&&!process.execArgv.includes("--watch")?10*60*1000:0;
  return compose(infer(...context),terms=>
- primary?compose.call(terms,note,wait(suspense),swap(0),process.exit):terms)(module);
+ primary?compose.call(terms,note,wait(suspense),drop(),0,process.exit):terms)(module);
 };
 
  function extend(absolute)
@@ -312,7 +315,8 @@ rm(path,{recursive:true})).then(done=>path);
 (swap(2),"Collecting source of \""+relative+"\" for",dependent+"...",tether(note),swap(this)
  // expose assembly promise to inform redirects to source, and retries in case of their unlikely outpace by its purge. 
 ,scope=>merge(scope,{[target]:entries.reduce(record(assemble),[]).catch(fail=>purge(target).finally(done=>exit(fail)))})
-,target//,combine(infer(),([{source}])=>resolve(source))
+ // perform a full resolution before bundling to forego being outpaced by purge. 
+,target,combine(infer(),([{source}])=>resolve(source).then(note))
  // not returning bundle promise after assembly to unblock immediate resolution from source. 
 ,parts=>void(compose.call
 (parts.reduce(record(({source,format})=>bundle(source,format)),[])
@@ -384,6 +388,52 @@ rm(path,{recursive:true})).then(done=>path);
  return {source,format};
 };
 
+ export async function bundle(source,format)
+{if(!source)return;
+ source=[source].flat();
+ let path=await import("path");
+ let relation=path.dirname(source[0])
+ let multientry=source.length > 1;
+ if(multientry)format["./Harris_2015_multientry.js"]={};
+ let plugins=await Object.entries(format).filter(([field])=>
+ /^\./.test(field)).reduce(record(([plugin,settings])=>resolve(plugin,"default",settings)),
+[{name:"interface"
+ ,transform:(source,address)=>
+ multientry&&address.endsWith("virtual:multi-entry.js")
+?false
+:stream("url","pathToFileURL",address,resolve,"href",Reflect.get
+,{format:merge(
+ {alias:Object.fromEntries(Object.entries(format.alias||{}).map(([source,alias])=>
+ [source,/^\./.test(alias)
+?[relation,path.resolve(location,alias)].map(address=>
+ path.relative(location,address).split("/")).reduce(([bundle],[route])=>
+ // aliases are relative to "location", so offset them to resolve statically from the bundle entry, unless they route internally. 
+ route!==bundle?"./"+path.relative(location,path.resolve(relation,alias)):alias)
+:alias]))
+ },format,false)
+ }
+,load,code=>({code,map:{mappings:''}}))
+ ,resolveId:(source,client)=>client
+?Object.values(format.alias||{}).includes("./"+path.relative(relation,path.resolve(path.dirname(client),source)))||
+ multientry&&source.endsWith("virtual:multi-entry.js")
+?false
+:/^\./.test(source)
+?["","/index.js","/index.ts",".js",".ts"].map(extension=>
+ path.resolve(path.dirname(client),source.replace(/\/$/,"")+extension)).reduce((source,alias)=>
+ source.then(source=>source||access(alias).then(file=>file.isDirectory()?exit():alias).catch(fail=>null))
+,Promise.resolve(null))
+:null
+:null
+ }
+]);
+ note.call(3,"bundling "+source+"...");
+ let {rollup}=await import("./Harris_2015_rollup.js");
+ let input=multientry?{include:source}:source[0];
+ let bundle=await rollup({input,plugins,...format.input});
+ let {output:[{code}]}=await bundle.generate({format:"module",inlineDynamicImports:true,...format.output});
+ return code;
+};
+
  export async function load(source,context,next)
 {// access source as module specifier, ie. 
  // compose(source,true,access,interpret,format,sanitize,serialize,modularize). 
@@ -448,52 +498,6 @@ rm(path,{recursive:true})).then(done=>path);
 );
  return module;
 };
-
- export async function bundle(source,format)
-{if(!source)return;
- source=[source].flat();
- let path=await import("path");
- let relation=path.dirname(source[0])
- let multientry=source.length > 1;
- if(multientry)format["./Harris_2015_multientry.js"]={};
- let plugins=await Object.entries(format).filter(([field])=>
- /^\./.test(field)).reduce(record(([plugin,settings])=>resolve(plugin,"default",settings)),
-[{name:"interface"
- ,transform:(source,address)=>
- multientry&&address.endsWith("virtual:multi-entry.js")
-?false
-:stream("url","pathToFileURL",address,resolve,"href",Reflect.get
-,{format:merge(
- {alias:Object.fromEntries(Object.entries(format.alias||{}).map(([source,alias])=>
- [source,/^\./.test(alias)
-?[relation,path.resolve(location,alias)].map(address=>
- path.relative(location,address).split("/")).reduce(([bundle],[route])=>
- // aliases are relative to "location", so offset them to resolve statically from the bundle entry, unless they route internally. 
- route!==bundle?"./"+path.relative(location,path.resolve(relation,alias)):alias)
-:alias]))
- },format,false)
- }
-,load,code=>({code,map:{mappings:''}}))
- ,resolveId:(source,client)=>client
-?Object.values(format.alias||{}).includes("./"+path.relative(relation,path.resolve(path.dirname(client),source)))||
- multientry&&source.endsWith("virtual:multi-entry.js")
-?false
-:/^\./.test(source)
-?["","/index.js","/index.ts",".js",".ts"].map(extension=>
- path.resolve(path.dirname(client),source.replace(/\/$/,"")+extension)).reduce((source,alias)=>
- source.then(source=>source||access(alias).then(file=>file.isDirectory()?exit():alias).catch(fail=>null))
-,Promise.resolve(null))
-:null
-:null
- }
-]);
- note.call(3,"bundling "+source+"...");
- let {rollup}=await import("./Harris_2015_rollup.js");
- let input=multientry?{include:source}:source[0];
- let bundle=await rollup({input,plugins,...format.input});
- let {output:[{code}]}=await bundle.generate({format:"module",inlineDynamicImports:true,...format.output});
- return code;
-}
 
 export async function checkout(remote, target, branch, path) {
   // git clone remote branch to target, restricted to subfolder if present. (to be replaced with js-git)

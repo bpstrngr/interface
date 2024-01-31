@@ -267,7 +267,7 @@
 
  export function each(term,...context)
 {if(!defined(this))
- return tether(...arguments);
+ return tether(each,...arguments);
  return compose(collect,infer("map",infer(term)),provide)(this,...context);
 };
 

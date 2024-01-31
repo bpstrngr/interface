@@ -229,7 +229,7 @@
     },
     "edit":{
       "scripts/generateMappingTable.js":{"main\\(\\)\\.catch":"module.exports=main().catch"},
-      "scripts/generateRegexes.js":{"main\\(\\)\\.catch":"module.exports=main().catch","(`.*)\\${unicodeVersion}(.*`)":"$115.0.0$2"}
+      "scripts/generateRegexes.js":{"main\\(\\)\\.catch":"module.exports=main().catch","`(.*)\\${unicodeVersion}(.*)`":"\"$115.0.0$2\""}
     },
     "./Harris_2015_json.js": {}
   }]}},
@@ -390,7 +390,8 @@
     "scripts":"./domenic_2017_domexception_webidl2js-wrapper/0/scripts/generate.js",
     "alias":{"webidl-conversions":"./domenic_2014_webidl.js","webidl2js":"./domenic_2022_jsdom_webidl2js.js"},
     "./Harris_2015_json.js": {},
-    "comment":"generate.js called during domexception/webidl2js-wrapper bundling, so will be resolved from source: no need to adjust __dirname locations for persistent bundle."
+    "edit":{"scripts/generate.js":{"transformer\\.generate": "module.exports=transformer.generate"}},
+    "comment":"commonjs executes synchronously, so its thread needs to be exported to track after modularization."
   }]}},
   "jonathanong_2014_mimedb.js":{"https://github.com/jshttp/mime-db":{"v1.24.0":["index.js",{"syntax":"commonjs","./Harris_2015_json.js":{}}]}},
   "felixge_2011_delayedstream.js":{"https://github.com/felixge/node-delayed-stream":{"1.0.0":["lib/delayed_stream.js",{"syntax":"commonjs"}]}},
@@ -412,12 +413,15 @@
   "TooTallNate_2015_http_proxy_agent.js":{"https://github.com/TooTallNate/proxy-agents/packages/http-proxy-agent":{"http-proxy-agent@6.0.1":["packages/http-proxy-agent/src/index.ts",{
     "alias":{"agent-base":"./TooTallNate_2015_agent_base.js","debug":"./Holowaychuk_2011_debug.js"},
     "edit":{"src/index.ts":{"export class HttpProxyAgent":"export default class HttpProxyAgent"}},
-    "comment":"JSDOM default imports version 5.0.0 with ambiguous type/namespace import of 'http' module (import name AND import type {type} from 'http'!). Upgraded to namespace import of 6.2.0 where this was fixed. Otherwise this would require much excess handling."
+    "comment":"JSDOM default imports version 5.0.0 with ambiguous type/namespace import of 'http' module (import name AND import type {type} from 'http'!). Upgraded to namespace import of 6.2.0 where this was mostly fixed. The ambiguity would cause excessive edits or polyphyletic generalization (which tsc normalized)."
   }]}},
   "TooTallNate_2015_https_proxy_agent.js":{"https://github.com/TooTallNate/proxy-agents/packages/https-proxy-agent":{"https-proxy-agent@6.2.0":["packages/https-proxy-agent/src/index.ts",{
     "alias":{"agent-base":"./TooTallNate_2015_agent_base.js","debug":"./Holowaychuk_2011_debug.js"},
-    "edit":{"src/index.ts":{"export class HttpsProxyAgent":"export default class HttpsProxyAgent"}},
-    "comment":"JSDOM default imports version 5.0.0 with ambiguous type/namespace import of 'http' module (import name AND import type {type} from 'http'!). Upgraded to namespace import of 6.2.0 where this was fixed. Otherwise this would require much excess handling."
+    "edit":{
+      "src/index.ts":{"export class HttpsProxyAgent":"export default class HttpsProxyAgent"},
+      "src/parse-proxy-response.ts":{"import { IncomingHttpHeaders }":"import { type IncomingHttpHeaders }"}
+    },
+    "comment":"JSDOM default imports version 5.0.0 with ambiguous type/namespace import of 'http' module (import name AND import type {type} from 'http'!). Upgraded to namespace import of 6.2.0 where this was mostly fixed. The ambiguity would cause excessive edits or polyphyletic generalization (which tsc normalized)."
   }]}},
   "Bynens_2016_potential_customelementname.js":{"https://github.com/mathiasbynens/is-potential-custom-element-name":{"v1.0.1":["index.js",{"syntax":"commonjs"}]}},
   "dperini_2017_nwsapi.js":{"https://github.com/dperini/nwsapi":{"8d71cdfcdeb85800d7c0578476e8bca31d36285b":["src/nwsapi.js",{"syntax":"commonjs"}]}},
@@ -428,7 +432,7 @@
       "entities/lib/escape.js":"./Boehm_2014_entities_escape.js",
       "entities/lib/decode.js":"./Boehm_2014_entities_decode.js"
     },
-    "edit":{"from '\\.(.*?)\\.js'":"from '.$1.ts'","lib/index.ts":{
+    "edit":{"from '\\.(.*?)\\.js'":"from '.$1'","lib/index.ts":{
       "import { Parser, type ParserOptions } from '.\\/parser\\/index.ts';\\n":"",
       "import type { DefaultTreeAdapterMap } from '.\\/tree-adapters\\/default.ts';\\n":"",
       "import type { TreeAdapterTypeMap } from '.\\/tree-adapters\\/interface.ts';\\n":"",
