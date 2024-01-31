@@ -26,7 +26,7 @@
 (({port1})=>new Promise(message=>observe.call(port1,{message}))
 ,({port2})=>resolve("module","register",address,import.meta.url,{data:{socket:port2},transferList:[port2]})
 )// promise resolves on message from registration port. 
-,crop(1),note.bind(3)
+,crop(1),note.bind(2)
 );
 
  if(worker)
@@ -316,7 +316,7 @@ rm(path,{recursive:true})).then(done=>path);
  // expose assembly promise to inform redirects to source, and retries in case of their unlikely outpace by its purge. 
 ,scope=>merge(scope,{[target]:entries.reduce(record(assemble),[]).catch(fail=>purge(target).finally(done=>exit(fail)))})
  // perform a full resolution before bundling to forego being outpaced by purge. 
-,target,combine(infer(),([{source}])=>resolve(source).then(note))
+,target,combine(infer(),([{source}])=>resolve(source))
  // not returning bundle promise after assembly to unblock immediate resolution from source. 
 ,parts=>void(compose.call
 (parts.reduce(record(({source,format})=>bundle(source,format)),[])
