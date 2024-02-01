@@ -116,6 +116,7 @@
       "v4.1.2": [
         "lib/cookie.js", {
           "./Harris_2015_json.js": {},
+          "edit":{"lib/utilHelper.js":{"require\\(\"util\"\\)":"null"}},
           "alias": {
             "punycode/": "./Bynens_2011_punycode.js","url-parse":"./unshiftio_2014_urlparse.js","universalify":"./ryanzim_2017_universalify.js",
             "psl":"./lupomontero_2019_psl.js"
@@ -186,10 +187,11 @@
           },
           "detach":["prettier"],
           "edit":{"lib/transformer.js":{
-            "_prettify\\(source\\) \\{": "_prettify(source){return source;"
+            "_prettify\\(source\\) \\{": "_prettify(source){return source;",
+            "\"output/utils.js\"":"\"../../../domenic_2022_jsdom_webidl2js_output_utils.js\""
           }},
           "replace": {
-            "lib/transformer.js":{"Literal":{"output/utils.js":"domenic_2022_jsdom_webidl2js_output_utils.js"}}
+            "lib/transformer.js":{"Literal":{"../../../domenic_2022_jsdom_webidl2js_output_utils.js":"domenic_2022_jsdom_webidl2js_output_utils.js"}}
           },
           "./Harris_2015_json.js": {},
           "comment":"prettier was easy to detach with one small edit."
@@ -433,9 +435,9 @@
       "entities/lib/decode.js":"./Boehm_2014_entities_decode.js"
     },
     "edit":{"from '\\.(.*?)\\.js'":"from '.$1'","lib/index.ts":{
-      "import { Parser, type ParserOptions } from '.\\/parser\\/index.ts';\\n":"",
-      "import type { DefaultTreeAdapterMap } from '.\\/tree-adapters\\/default.ts';\\n":"",
-      "import type { TreeAdapterTypeMap } from '.\\/tree-adapters\\/interface.ts';\\n":"",
+      "import { Parser, type ParserOptions } from '.\\/parser\\/index';\\n":"",
+      "import type { DefaultTreeAdapterMap } from '.\\/tree-adapters\\/default';\\n":"",
+      "import type { TreeAdapterTypeMap } from '.\\/tree-adapters\\/interface';\\n":"",
       "export ([*{])":"import $1",
       "^((?:.*[\n$])*)": "$1\nexport default {defaultTreeAdapter,serialize,serializeOuter,ErrorCodes,foreignContent,html,Token,Tokenizer,TokenizerMode,parse,parseFragment};"
     }},

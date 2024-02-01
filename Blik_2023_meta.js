@@ -170,7 +170,8 @@ let address=new URL(import.meta.url).pathname;
  return grammar;
 };
 
- var synchronous=({1:term})=>"FunctionDeclaration/FunctionExpression/ArrowFunctionExpression".split("/").includes(term?.type)&&term.async?undefined:term;
+ var functional=term=>"FunctionDeclaration/FunctionExpression/ArrowFunctionExpression".split("/").includes(term?.type);
+ var synchronous=({1:term})=>functional(term)&&term.async?undefined:term;
  var requirecall=term=>term?.type==="CallExpression"&&term.callee?.name==="require";
  var linear=(scope,field,index,path)=>scope[field].type==="TryStatement"?!path.splice(index):scope[field];
 
@@ -180,16 +181,18 @@ let address=new URL(import.meta.url).pathname;
  {require:
  {condition(term,field,path)
 {let toplevel=path.length===1;
- let asynchronous=!toplevel&&"FunctionDeclaration/FunctionExpression/ArrowFunctionExpression".split("/").includes(term?.type)&&term.async;
+ let asynchronous=!toplevel&&functional(term)&&term.async;
  if(!toplevel&&!asynchronous)return;
  let scope=prune.call(term,synchronous);
  let requires=search.call({scope},({1:term})=>requirecall(term));
  return Object.keys(requires).length;
-},ecma(term)
+},ecma(term,field,path)
 {let scope=prune.call(term,synchronous);
  let requires=search.call(scope,({1:term})=>requirecall(term));
- let dynamic=term.async||term.type==="TryStatement";
- let values=Object.entries(requires).map(([path,{arguments:[source]}])=>dynamic||!path.split("/").reduce(linear,scope)
+ let modulescope=!functional(term);
+ let dynamic=term.async;
+ let values=Object.entries(requires).map(([path,{arguments:[source]}])=>
+ dynamic||(modulescope&&![0,path.split("/")].flat().reduce(linear,[scope]))
 ?{type:"AwaitExpression",argument:
  {type:"CallExpression",callee:
  {type:"MemberExpression"
@@ -208,16 +211,16 @@ let address=new URL(import.meta.url).pathname;
 ]}
  }
 :{type:"Identifier",name:source.value.replace(/[^a-zA-Z]/g,"")+"_exports"});
- term=values.reduce((term,value,index)=>
+ let expression=values.reduce((term,value,index)=>
  merge(term,value,Object.keys(requires)[index].split("/")),term);
- if(dynamic)return term;
+ if(dynamic)return expression;
  let imports=Object.entries(requires).map(([path,require],index)=>
- !path.split("/").reduce(linear,scope)?undefined
+ modulescope&&![0,path.split("/")].flat().reduce(linear,[scope])?undefined
 :{type:"ImportDeclaration",source:require.arguments[0]
  ,specifiers:
 [{type:"ImportDefaultSpecifier",local:values[index],imported:values[index]}
-]});
- return provide([...imports,term]);
+]}).filter(Boolean);
+ return provide([...imports,expression]);
 }}
   // module.exports exportdefaultdeclaration prepended to scope instead. 
 //  ,export:
