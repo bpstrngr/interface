@@ -521,7 +521,7 @@
           "living/geometry/DOMRectReadOnly-impl.js":{"const (DOMRectReadOnly) = (require\\(\"..\\/generated\\/DOMRectReadOnly\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"},
           "living/geometry/DOMRect-impl.js":{"const (DOMRect) = (require\\(\"..\\/generated\\/DOMRect\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"},
           "XMLHttpRequest-impl.js":{"(const syncWorkerFile =) .*\n":"$1 null;"},
-          "lib/api.js":{"^((?:.*[\n$])*)":"$1\nexport default new Promise(resolve=>setTimeout(time=>resolve(module.exports),3000));"}
+          "lib/api.js":{"^((?:.*[\n$])*)":"$1\nexport default new Promise(resolve=>setTimeout(time=>resolve(module.exports),import.meta.url.endsWith(\"api.js\")?10000:3000));"}
         },
         "./Harris_2015_json.js": {},
         "comment":"circular static requires need to be edited dynamic for module. AbortSignal seems to be the last file in the bundle."

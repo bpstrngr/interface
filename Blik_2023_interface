@@ -1,12 +1,5 @@
 Ecmascript module interface for clients/imports/functions. 
 
-Loading modules requires 3 steps: 
- 1. locate (download, bundle and delete source if not found despite entry, or just redirect if bundling in progress), 
- 2. access (+interpret and serialize if foreign dialect recognised or specified), 
- 3. modularise (splitting "load" into access + modularise with an implementation using "vm" module is a pending feature). 
- (4. test, if the namespace exposes cases for itself). 
- (5. infer arguments if provided by client). 
-
 The semantically flexible javascript platform has been commonly constrained by several 
 syntactic/semantic variations in its ecosystem (commonjs, flow, typescript, jsx, purescript etc.) 
 that have required growing amounts of configuration and compilation from you to manage. 
@@ -19,9 +12,17 @@ With the advent of a modular loader interface in the node.js implementation,
 these dialects can finally be compiled (and tested) dynamically and deterministically, 
 without a need for volatile configurations or a new platform bloated by heterogeneity (deno, bun). 
 
+Loading modules requires 3 steps: 
+ 1. locate (download, bundle and delete source if not found despite entry, or just redirect to source if available), 
+ 2. access (+interpret and serialize if foreign dialect recognised or specified), 
+ 3. modularise (not exposed by nodejs; splitting "load" into access + modularise with an implementation using "vm" module is a pending feature). 
+
 Although ecmascript allows polluting modules with procedures, it is advised to keep them modular. 
 Doing so leaves us without access to invoke their functions, hence this module 
-extends the 3 steps with an inference of arguments provided by a client (shell/function). 
+extends the 3 steps with an inference of arguments provided by a client (shell/function): 
+
+ 4. test, if the namespace exposes cases for itself. 
+ 5. infer arguments if provided by client. 
 
 Keeping the scope of these functions pure and specific makes them composable, 
 for which you can find generic combinators in the inference module. 

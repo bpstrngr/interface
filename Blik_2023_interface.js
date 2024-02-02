@@ -485,7 +485,7 @@ rm(path,{recursive:true})).then(done=>path);
  // using acorn's Parser methods (parse) until interpretation reducer is complete. 
  let edits=Object.fromEntries(Object.entries(definition.edit||{}).flatMap(([field,value])=>
  string(value)?[[field,value]]:source.endsWith(field)?Object.entries(value):[]));
- let patriate=foreign?[syntax,{source},parse,definition,sanitize,serialize,syntax,{source},parse,serialize]:[];
+ let patriate=foreign?[syntax,{source},parse,definition,sanitize,serialize/*,syntax,{source},parse,serialize*/]:[];
  let module=await buffer
 (compose(access,edits,edit,...patriate)
 ,fail=>note.call(1,"Failed to patriate "+syntax+" \""+source+"\" due to",fail)&&exit(fail)
