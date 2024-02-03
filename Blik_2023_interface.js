@@ -1,4 +1,4 @@
- import {note,collect,same,slip,something,observe,describe,expect,trace,array,compound,apply,stream,record,provide,tether,differ,wether,pattern,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,match,wait,string,defined,compose,combine,exit} from "./Blik_2023_inference.js";
+ import {note,collect,prompt,same,slip,something,observe,describe,expect,trace,array,compound,apply,stream,record,provide,tether,differ,wether,pattern,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,match,wait,string,defined,compose,combine,exit} from "./Blik_2023_inference.js";
  import {merge,stringify,search,edit} from "./Blik_2023_search.js";
  import {parse,sanitize,serialize,compile,test} from "./Blik_2023_meta.js";
  import {fetch,forward} from "./Blik_2023_host.js";
@@ -361,7 +361,11 @@ rm(path,{recursive:true})).then(done=>path);
 ?response.arrayBuffer().then(buffer=>persist(Buffer.from(buffer),asset)).catch(fail=>note(fail)&&access(asset))
 :exit(response.status))).then(compressed=>
  compose.call({},depot,persist,swap(asset),decompress,depot,decompress,swap(asset),purge))
-:await checkout(address,depot,branch,route).catch(note.bind(1)).then(done=>
+:await expect(buffer(checkout,combine
+(compose([],({stack},record)=>record.push(note.call(1,record.length+1+"/3 attempt to checkout "+address+": "+stack)))
+,combine(swap(depot),buffer(purge))
+,exit
+)),0,2)(address,depot,branch,route).catch(note).then(done=>
  access(depot,false).then(done=>note.call(2,"Source downloaded:",address,"->",depot)).catch(fail=>exit(done)));
  let relation=remote?depot:location;
  let entries=await [input].flat().reduce(record(input=>typeof input==="string"
@@ -383,7 +387,7 @@ rm(path,{recursive:true})).then(done=>path);
  note.call(3,"running "+script+" for "+target+"...")&&
  compose.call(path.dirname(target),script,path.resolve,resolve,"default",module=>
  note.call(2,script+" for "+target+":",module)))
-,[]).catch(combine(note,exit));
+,[]).catch(combine(note.bind(1,scripts.join(", ")+":"),exit));
  return {source,format};
 };
 
@@ -517,11 +521,11 @@ export async function checkout(remote, target, branch, path) {
   if(commit)
   clone=await spawn("git","-C",target,"checkout",branch);
   if(!path.length)
-  return clone;
+  return target;
   clone=await spawn("git","-C", target, "sparse-checkout", "add", ...[path.join("/").split(" ")].flat());
   if(!commit&&branch)
   clone=await spawn("git","-C", target, "checkout", branch);
-  return clone;
+  return target;
 }
 
 export function patch(repository, patch) {

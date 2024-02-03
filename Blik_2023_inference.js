@@ -422,7 +422,7 @@
 };
 
  export function expect(condition=something,interval=500,limit=Infinity)
-{// hold thread until factor satisfies condition. 
+{// hold thread until context satisfies condition. 
  if(!defined(this))
  return refer(expect,...arguments);
  if(!limit)return infer(condition)(this);

@@ -188,13 +188,14 @@
           "detach":["prettier"],
           "edit":{"lib/transformer.js":{
             "_prettify\\(source\\) \\{": "_prettify(source){return source;",
-            "\"output/utils.js\"":"\"../../../domenic_2022_jsdom_webidl2js_output_utils.js\""
+            "\"output/utils.js\"":"\"../../../domenic_2022_jsdom_webidl2js_output_utils.js\"",
+            "(utilsText = await )(.*?);":"$1new Promise(function expect_utils_bundle(resolve){$2.then(resolve).catch(fail=>console.log(\"Awaiting webidl output_utils bundle for \"+import.meta.url+\"...\")||setTimeout(time=>expect_utils_bundle(resolve),2500))})"
           }},
           "replace": {
             "lib/transformer.js":{"Literal":{"../../../domenic_2022_jsdom_webidl2js_output_utils.js":"domenic_2022_jsdom_webidl2js_output_utils.js"}}
           },
           "./Harris_2015_json.js": {},
-          "comment":"prettier was easy to detach with one small edit."
+          "comment":"prettier was easy to detach with one small edit. libs/output/utils.js asset is preserved in a separate bundle, and therefore awaited in case it's preceded by usage."
         }
       ]
     }
