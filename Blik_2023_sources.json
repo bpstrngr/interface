@@ -320,7 +320,8 @@
             "iconv-lite":"./ashtuchkin_2012_iconv_lite.js"
           },
           "edit": {"scripts/update.js": {
-            "main\\(\\)\\.catch":"module.exports=main().catch"
+            "(res = await (fetch\\((.*)\\)));":"$1.catch(fail=>console.log(\"1/2 attempt to fetch \"+$3+\": \"+fail.stack)||$2)",
+            "(main\\(\\)\\.catch)":"module.exports=$1"
           }},
           "./Harris_2015_json.js": {}
         }
@@ -363,6 +364,7 @@
         "scripts": ["./Sakas_2018_cssstyle/0/scripts/download_latest_properties.js","./Sakas_2018_cssstyle/0/scripts/generate_implemented_properties.js","./Sakas_2018_cssstyle/0/scripts/generate_properties.js"],
         "edit":{
           "scripts/download_latest_properties.js":{
+            "(res = await fetch\\(url\\))":"$1.catch(fail=>console.log(\"1/2 attempt to fetch \"+url+\": \"+fail.stack)||fetch(url))",
             "main\\(\\)\\.catch":"module.exports=main().catch",
             "(out_file.end\\(function \\(err\\) {)":"return new Promise(resolve=>$1resolve(err);",
             "(ties.\\'\\);\n  }\\))":"$1)"
@@ -376,7 +378,7 @@
         },
         "alias": {"rrweb-cssom": "./rrweb_2010_cssom.js","minipass-fetch":"./isaacs_2019_minipass_fetch.js"},
         "./Harris_2015_json.js": {},
-        "comment":"generate_implemented_properties originally generates an imperative script from ast (with babel!) instead of simply iterating directly.... \n generate_properties is a simple bundler: parses property files listing their dependencies, sorts external dependencies above local, reconciles namespace of exports and imports, exports function to extend a prototype with property namespace entries, in dashed and camel case. the last step is sufficient input for an external bundler."
+        "comment":"generate_implemented_properties originally generates an imperative script from ast literal, with babel (!), instead of simply iterating directly.... \n generate_properties is a simple bundler: parses property files listing their dependencies, sorts external dependencies above local, reconciles namespace of exports and imports, exports function to extend a prototype with property namespace entries, in dashed and camel case. the last step is sufficient input for an external bundler."
       }
     ]
   }},
