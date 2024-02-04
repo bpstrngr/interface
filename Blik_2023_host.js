@@ -1,4 +1,4 @@
- import {note,prompt,describe,clock,observe,is,something,compound,infer,tether,wether,collect,provide,route,buffer,compose,combine,either,drop,crop,swap,record,wait,exit} from "./Blik_2023_inference.js";
+ import {note,prompt,describe,clock,observe,is,has,same,something,compound,infer,tether,wether,collect,provide,route,buffer,compose,combine,either,drop,crop,swap,record,wait,exit} from "./Blik_2023_inference.js";
  import local,{resolve,access,list,classify} from "./Blik_2023_interface.js";
  import {search,merge,sum} from "./Blik_2023_search.js";
 
@@ -36,7 +36,7 @@
  function send(response)
 {let distinction=({url,headers})=>url+(headers?.cookie||"");
  let retrieve=remember?compose(record(fetch,distinction),distinction(this)):tether(fetch);
- return compose(retrieve,note,response||this,tether(submit))(source.default,this);
+ return compose(retrieve,response||this,tether(submit))(source.default,this);
 };
  function listen(port)
 {let agent=protocol.globalAgent.protocol+"//"+(this._connectionKey||port)+"/";
@@ -49,7 +49,7 @@
 
  export var {window,fetch}=globalThis.window?globalThis
 :{async window(location)
-{let {JSDOM}=await compose.call("./domenic_2022_jsdom_rollup.js",resolve,"default");
+{let {JSDOM}=await resolve("./domenic_2022_jsdom_rollup.js","default");
  await wait(3000);
  return {window}=new JSDOM("",{url:location});
 },async fetch(request,header)
@@ -82,7 +82,6 @@
 )(response);
  let type=response?.type||response?.nodeName?.toLowerCase()||
  request.url.match(/\.([^\.\/]*)$/)?.slice(1)[0]||(compound(response)?"json":"txt");
- if(fail)note(response);
  let report=(status==200?32:31)+"m"+clock()+"@"+[address,status,type].join(" ")+": \""+String(body).replace(/^([\s\S]{20})[\s\S]*$/,(...match)=>match[1]+"...")+"\"";
  console.log("\x1b["+report+"\x1b[0m");
  return (
@@ -121,8 +120,8 @@
  },JSON.stringify,JSON.parse
 );
  response.setHeader?response.writeHead(status,header):response.respond(header);
- let body=type==="json"?this.text():this.arrayBuffer();
- return response.end(body);
+ let body=wether(compose("type",same("json")),"text","arrayBuffer");
+ return compose(body,response.end.bind(response))(this);
 };
 
  export function forward(file,request)
