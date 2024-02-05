@@ -88,11 +88,11 @@ or, if all new files you need have been included under gitignore:
 Installing Node.js: 
  which node;
 if [ $? -eq 1 ];then 
- version="20.5.1";
+ version="21.1.0";
  release=node-v$version-$(uname|tr '[:upper:]' '[:lower:]')-$([[ $(uname -m) -eq aarch64 ]] && echo "arm64" || uname -m );
  curl -O https://nodejs.org/download/release/v$version/$release.tar.gz;
  tar xf $release.tar.gz -C . --strip-components=2 $release/bin/node;
- rm $release;
+ rm $release.tar.gz;
 for command in node;do 
  alias $command=$(pwd)/$command;
 done;

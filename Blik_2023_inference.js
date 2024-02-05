@@ -429,7 +429,11 @@
  let context=collect(this);
  let repeat=compose(wait(interval),swap(provide(context)),expect(condition,interval,limit-1));
  return either(condition,repeat)(provide(context));
-}
+};
+
+ export function invert(resolve,...context)
+{return new Promise(infer(resolve,...context));
+};
 
  export function exit(fail){throw fail;}
 

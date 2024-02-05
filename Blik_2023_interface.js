@@ -26,11 +26,9 @@
 ,({port2})=>resolve("module","register",address,import.meta.url,{data:{socket:port2},transferList:[port2]})
 )// promise resolves on message from registration port. 
 ,crop(1),note.bind(2)
-);
+),compose(buffer(resolve),note)(...process.argv.slice(1));
 
- if(worker)
- compose(buffer(resolve),note)(...process.argv.slice(1));
- else if(!loader&&process.argv[1].endsWith(file))
+ if(!worker&&!loader&&process.argv[1].endsWith(file))
  // without either loader flag, context begins at second index. 
  resolve(...process.argv.slice(2));
 
@@ -214,7 +212,7 @@ rm(path,{recursive:true})).then(done=>path);
 );
  let format=compose
 (combine(infer(),compose(swap(sources),"default",resolve,Object.keys)),(source,sources)=>
- sources.find(field=>source.startsWith([location,field.replace(/\.js$/,"")].join("/"))),"format",describe
+ sources.find(field=>source.startsWith([location,field.replace(/\.js$/,"/")].join("/"))),"format",describe
 );
  let modulepath=when(is(match(/^[\/\.]/),not(match(RegExp(sources+"$")))));
  let shortcircuit=compose

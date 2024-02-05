@@ -1,4 +1,4 @@
- import {note,prompt,describe,clock,observe,is,has,same,something,compound,infer,tether,wether,collect,provide,route,buffer,compose,combine,either,drop,crop,swap,record,wait,exit} from "./Blik_2023_inference.js";
+ import {note,prompt,describe,invert,clock,observe,is,has,same,something,compound,infer,tether,wether,collect,provide,route,buffer,compose,combine,either,drop,crop,swap,record,wait,exit} from "./Blik_2023_inference.js";
  import local,{resolve,access,list,classify} from "./Blik_2023_interface.js";
  import {search,merge,sum} from "./Blik_2023_search.js";
 
@@ -19,39 +19,43 @@
  encrypt(parameters.hmac);
  await window([protocol,"//localhost",parameters.port].join(":"));
  protocol=await import(protocol);
- source=await import(source);
+ source=await import(source).catch(note);
  let certificates=protocol.globalAgent.protocol=="https:"?[certify(Object.values(parameters.certification)[0],parameters.distinguishedname)]:[];
- let open=infer("createServer",...certificates,respond);
  let virtualize=Object.entries(parameters.certification||{}).slice(1).map(([name,certificate])=>
- compose(name,certify(certificate),combine("addContext",either()),drop(1)));
- let channel=await compose(open,infer("listen",parameters.port,listen),...virtualize)(protocol);
+ compose(name,certify(certificate),combine("addContext",crop(1)),drop(1)));
+ let channel=await compose
+(infer("createServer",...certificates,compose(source,remember,receive))
+,infer("listen",parameters.port,listen),...virtualize
+,note ,invert((close,channel)=>observe.call(channel,{close}))
+)(protocol);
  //compose("default",protocol.open)(import("./Blik_2020_room.js"));
- return new Promise(resolve=>channel.on("close",resolve));
- function respond(request,response)
-{return observe.call(request
-,{data(data){this.body+=decoder.write(data);}
- ,end:send.bind(request,response)
- });
 };
- function send(response)
-{let distinction=({url,headers})=>url+(headers?.cookie||"");
- let retrieve=remember?compose(record(fetch,distinction),distinction(this)):tether(fetch);
- return compose(retrieve,response||this,tether(submit))(source.default,this);
-};
+
  function listen(port)
-{let agent=protocol.globalAgent.protocol+"//"+(this._connectionKey||port)+"/";
+{console.log(this);let agent=protocol.globalAgent.protocol+"//"+(this._connectionKey||port)+"/";
  return note.call(2,agent,"open");
  let response={end(body){return {...this.header,body};},setHeader(header){this.header={header}},writeHead(){}};
  compose(prompt,agent,"url",describe,{headers:{},method:"get"},merge
-,response,tether(send),note,swap(this),port,tether(listen))({[agent]:undefined});
+,response,source,remember,tether(respond),note,swap(this),port,tether(listen))({[agent]:undefined});
 };
+
+function receive(request,response,source,remember)
+{return observe.call(request
+,{data(data){this.body+=decoder.write(data);}
+ ,end:respond.bind(...arguments)
+ });
+};
+
+ function respond(response,source,remember)
+{let distinction=({url,headers})=>url+(headers?.cookie||"");
+ let retrieve=remember?compose(record(fetch,distinction),distinction(this)):tether(fetch);
+ return compose(retrieve,response||this,tether(submit))(source.default,this);
 };
 
  export var {window,fetch}=globalThis.window?globalThis
 :{async window(location)
 {let {JSDOM}=await resolve("./domenic_2022_jsdom_rollup.js","default");
- await wait(3000);
- return {window}=new JSDOM("",{url:location});
+ return {window}=Reflect.construct(JSDOM,["",{url:location}]);
 },async fetch(request,header)
 {request=compound(request)?request:
  {response:{},url:request||"",method:"get",...header||{}
@@ -80,8 +84,8 @@
 ,"message","outerHTML",either("body",crop(1))
 ,swap(["missing source: \"",path,"\""].join(""))
 )(response);
- let type=response?.type||response?.nodeName?.toLowerCase()||
- request.url.match(/\.([^\.\/]*)$/)?.slice(1)[0]||(compound(response)?"json":"txt");
+ let type=!fail?response?.type||response?.nodeName?.toLowerCase()||
+ request.url.match(/\.([^\.\/]*)$/)?.slice(1)[0]||(compound(response)?"json":"txt"):"txt";
  let report=(status==200?32:31)+"m"+clock()+"@"+[address,status,type].join(" ")+": \""+String(body).replace(/^([\s\S]{20})[\s\S]*$/,(...match)=>match[1]+"...")+"\"";
  console.log("\x1b["+report+"\x1b[0m");
  return (
