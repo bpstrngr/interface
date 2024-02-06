@@ -1,18 +1,20 @@
-import {record, compose, provide, defined,string,functor, describe} from "./Blik_2023_inference.js";
+import {something,record,stream,plural,defined,string,describe} from "./Blik_2023_inference.js";
 
 export function random(length,domain="abcdefghijklmnopqrstuvwxyz_"){
   return Array(length).fill(domain).map(domain=>
   domain.charAt(Math.floor(Math.random()*domain.length))).join("");
 }
 
-export function assert(term, condition, control) {
-  // express term as true if defined or satisfies condition.
-  if (condition instanceof Function) return condition(term, control);
-  return (term ?? undefined) !== undefined;
-}
-
 export var stringify = (scope) =>
   scope && Symbol.iterator in Object(scope) ? String(scope) : JSON.stringify(scope);
+
+ export function edit(source,edits)
+{return Object.entries(edits||{}).reduce((source, [field,value]) =>
+ source.replace(new RegExp(field,"g"),(match, ...groups) =>
+ [value, ...groups.slice(0,-2)].reduce((value, group, index) =>
+ value.replaceAll("$"+index, group)))
+,source);
+};
 
 export function sum(...context) {
   // cumulate context values.
@@ -22,7 +24,7 @@ export function sum(...context) {
     .reduce((sum, value) => sum + value, 0);
 }
 
-export function search(term, recursive = false,path=[]) {
+export function search(term,recursive=false,path=[]){
   // traverse scope for entries satisfying a term (condition or singular path).
   // recursive search includes ranges in recursion domain.
   const scope = this;
@@ -44,45 +46,6 @@ export function search(term, recursive = false,path=[]) {
     ]),
   );
   return Object.fromEntries([range, subrange].flat());
-}
-
-export function trace(term, path = []) {
-  // trace term in scope or stack.
-  let scope = this;
-  if (!assert(term))
-    return compose(
-      [Infinity, Error.stackTraceLimit].reduce(
-        ({ stack }, stackTraceLimit) =>
-          (Object.assign(Error, { stackTraceLimit }) && stack) || Error(),
-        {}
-      ),
-      compose(
-        {
-          functor: /at (?:async )*([^ ]*)/,
-          file: /(?:.*[\(_|\/])*(.*?)/,
-          location: /(?:.js)*(?::[0-9]+){0,2}/,
-        },
-        Object.values,
-        (expressions) => expressions.map(({ source }) => source).join(""),
-        RegExp
-      ),
-      (stack, details) =>
-        stack
-          .split(/\n */)
-          .slice(1)
-          .map((stack) => stack.match(details) || [stack]),
-      (details) => details.map((details) => details.slice(1, 3).concat(details.input).reverse()),
-      (details) => details.slice(details.findIndex(({ 2: term }) => term === trace.name))
-    );
-  if (scope === term || !scope) return path;
-  return Object.entries(scope).reduce(
-    (hit, [track, scope]) =>
-      hit ||
-      [term === scope, path.concat(track)].reduce((hit, path) =>
-        hit ? path : typeof scope == "object" ? trace.call(scope, term, path) : undefined
-      ),
-    undefined
-  );
 }
 
 export function route(scope, term, path) {
@@ -118,8 +81,8 @@ export function route(scope, term, path) {
  if(pluck&&!collapse)
  return [];
  let plant=pluck&&collapse;
- let plural=[...provide(plant?scope:value)].map(scope=>prune.call(scope,term,collapse,plant?path:path.concat(field)));
- return plural.flatMap(scope=>plant?Object.entries(scope):[[field, scope]]);
+ let range=[...plural(plant?scope:value)].map(scope=>prune.call(scope,term,collapse,plant?path:path.concat(field)));
+ return range.flatMap(scope=>plant?Object.entries(scope):[[field, scope]]);
 });
  let array=entries.length&&!entries.some(([field],index,entries)=>isNaN(field)||[entries[index-1]?.[0],field].map(Number).reduce((past,next)=>next<past));
  if(array)
@@ -153,16 +116,55 @@ export function merge(target, source, override = 1) {
   if (Group) return override?source:new Group([source, target].flatMap((part) => Array.from(part)));
   let extensible=Array.isArray(target)&&!override;
   if (extensible) return target.concat(source);
-  if (!assert(source)) return [target, source][index];
+  if (!something(source)) return [target, source][index];
   return Object.entries(source).reduce(function (target, [field, next]) {
     const last = target[field];
-    const value = assert(last) ? merge(last, next, override) : next;
+    const value = something(last) ? merge(last, next, override) : next;
     // mutation warning - reduce on an empty target to copy.
     if(value!==undefined)
     return Object.assign(target, { [field]: value });
     delete target[field];
     return target;
   }, target);
+}
+
+export function trace(term, path = []) {
+  // trace term in scope or stack.
+  let scope = this;
+  if (!something(term))
+    return stream(
+      [Infinity, Error.stackTraceLimit].reduce(
+        ({ stack }, stackTraceLimit) =>
+          (Object.assign(Error, { stackTraceLimit }) && stack) || Error(),
+        {}
+      ),
+      stream(
+        {
+          functor: /at (?:async )*([^ ]*)/,
+          file: /(?:.*[\(_|\/])*(.*?)/,
+          location: /(?:.js)*(?::[0-9]+){0,2}/,
+        },
+        Object.values,
+        (expressions) => expressions.map(({ source }) => source).join(""),
+        RegExp
+      ),
+      (stack, details) =>
+        stack
+          .split(/\n */)
+          .slice(1)
+          .map((stack) => stack.match(details) || [stack]),
+      (details) => details.map((details) => details.slice(1, 3).concat(details.input).reverse()),
+      (details) => details.slice(details.findIndex(({ 2: term }) => term === trace.name))
+    );
+  if (scope === term || !scope) return path;
+  return Object.entries(scope).reduce(
+    (hit, [track, scope]) =>
+      hit ||
+      [term === scope, path.concat(track)].reduce((hit, path) =>
+        hit ? path : typeof scope == "object" ? trace.call(scope, term, path) : undefined
+      ),
+    undefined
+  );
 }
 
 export function clone(scope) {
@@ -180,9 +182,14 @@ export function isolate(path) {
 ,{context:[{a:{}},2,"a/b/c".split("/")],terms:[{a:{b:{c:2}}}],condition:["deepEqual"]}
 ,{context:[undefined,{b:2}],terms:[{b:2}],condition:["deepEqual"]}
 ,{context:[undefined,{b:2},true],terms:[{b:2}],condition:["deepEqual"]}
-],search:{tether:{a:{b:2}},context:[({1:value})=>value===2],terms:[{"a/b":2}],condition:"deepEqual"}
- ,prune:
-[{tether:{a:{b:{c:3}}},context:[([field,value])=>field!=='b'?value:undefined],terms:[{a:{}}],condition:"deepEqual"}
-,{tether:{a:{b:{b:2,c:3}}},context:[([field,value])=>field!=='b'?value:undefined,true],terms:[{a:{c:3}}],condition:"deepEqual"}
-,{tether:{a:{b:{c:{d:1},f:2}},e:3},context:[([field,value],path)=>path.length<2?value:undefined],terms:[{a:{b:{}},e:3}],condition:"deepEqual"}
+],search:
+[{scope:{a:{b:2}},context:[({1:value})=>value===2],terms:[{"a/b":2}],condition:"deepEqual"}
+,{scope:{a:{b:1}},context:["abc".split("")],terms:[term=>term===undefined],condition:"ok"}
+,{scope:{a:{b:1}},context:[["a","b"]],terms:[1],condition:["equal"]}
+,{scope:{a:{b:1}},context:[entry=>entry,true],terms:[{a:{b:1},"a/b":1}],condition:["deepEqual"]}
+,{scope:{a:{b:1}},context:[([field,value])=>!isNaN(value)],terms:[{"a/b":1}],condition:["deepEqual"]}
+],prune:
+[{scope:{a:{b:{c:3}}},context:[([field,value])=>field!=='b'?value:undefined],terms:[{a:{}}],condition:"deepEqual"}
+,{scope:{a:{b:{b:2,c:3}}},context:[([field,value])=>field!=='b'?value:undefined,true],terms:[{a:{c:3}}],condition:"deepEqual"}
+,{scope:{a:{b:{c:{d:1},f:2}},e:3},context:[([field,value],path)=>path.length<2?value:undefined],terms:[{a:{b:{}},e:3}],condition:"deepEqual"}
 ]};

@@ -123,20 +123,6 @@ function generateTsKwTokenType() {
 const 
 // Up to 0b00100000000 is reserved in acorn.
 TS_SCOPE_OTHER = 0b01000000000, TS_SCOPE_TS_MODULE = 0b10000000000;
-// These flags are meant to be _only_ used inside the Scope class (or subclasses).
-// prettier-ignore
-const BIND_KIND_VALUE = 1, BIND_KIND_TYPE = 2, 
-BIND_SCOPE_LEXICAL = 8, // Let- or const-style binding
-// bound inside the function
-// Misc flags
-BIND_FLAGS_NONE = 64, BIND_FLAGS_CLASS = 128, BIND_FLAGS_TS_EXPORT_ONLY = 1024;
-// These flags are meant to be _only_ used by Scope consumers
-// prettier-ignore
-/*                              =    is value?    |    is type?    |      scope          |    misc flags    */
-const BIND_LEXICAL = BIND_KIND_VALUE | 0 | BIND_SCOPE_LEXICAL | 0, BIND_TS_INTERFACE = 0 | BIND_KIND_TYPE | 0 | BIND_FLAGS_CLASS, BIND_TS_TYPE = 0 | BIND_KIND_TYPE | 0 | 0, // These bindings don't introduce anything in the scope. They are used for assignments and
-// function expressions IDs.
-BIND_NONE = 0 | 0 | 0 | BIND_FLAGS_NONE, BIND_TS_NAMESPACE = 0 | 0 | 0 | BIND_FLAGS_TS_EXPORT_ONLY;
-const SCOPE_ARROW = 16;
 
 const skipWhiteSpaceInLine = /(?:[^\S\n\r\u2028\u2029]|\/\/.*|\/\*.*?\*\/)*/y;
 // Skip whitespace and single-line comments, including /* no newline here */.
@@ -629,10 +615,10 @@ function generateJsxParser(acorn, acornTypeScript, Parser, jsxOptions) {
     const tok = acornTypeScript.tokTypes;
     const isNewLine = acorn.isNewLine;
     const isIdentifierChar = acorn.isIdentifierChar;
-    const options = {
-        allowNamespaces: (Boolean(jsxOptions === null || jsxOptions === void 0 ? void 0 : jsxOptions.allowNamespaces)) !== false,
-        allowNamespacedObjects: !!(jsxOptions === null || jsxOptions === void 0 ? void 0 : jsxOptions.allowNamespacedObjects)
-    };
+    const options = Object.assign({
+        allowNamespaces: true,
+        allowNamespacedObjects: true
+    }, jsxOptions || {});
     return class JsxParser extends Parser {
         // Reads inline JSX contents token.
         jsx_readToken() {
@@ -1014,7 +1000,17 @@ const acornScope = {
     BIND_LEXICAL: 2,
     BIND_FUNCTION: 3,
     BIND_SIMPLE_CATCH: 4,
-    BIND_OUTSIDE: 5 // Special case for function names as bound inside the
+    BIND_OUTSIDE: 5,
+    BIND_TS_TYPE: 6,
+    BIND_TS_INTERFACE: 7,
+    BIND_TS_NAMESPACE: 8,
+    BIND_FLAGS_TS_EXPORT_ONLY: 1024,
+    BIND_FLAGS_TS_IMPORT: 4096,
+    BIND_KIND_VALUE: 0,
+    BIND_KIND_TYPE: 0,
+    BIND_FLAGS_TS_ENUM: 256,
+    BIND_FLAGS_TS_CONST_ENUM: 512,
+    BIND_FLAGS_CLASS: 128
     // function
 };
 function functionFlags(async, generator) {
@@ -1080,7 +1076,7 @@ function keywordTypeFromName(value) {
     }
 }
 function tsPlugin(options) {
-    const { dts = false } = options || {};
+    const { dts = false, allowSatisfies = false } = options || {};
     const disallowAmbiguousJSXLike = false;
     return function (Parser) {
         const _acorn = Parser.acorn || acornNamespace;
@@ -1122,6 +1118,7 @@ function tsPlugin(options) {
                 this.shouldParseArrowReturnType = undefined;
                 this.shouldParseAsyncArrowReturnType = undefined;
                 this.decoratorStack = [[]];
+                this.importsStack = [[]];
                 /**
                  * we will only parse one import node or export node at same time.
                  * default kind is undefined
@@ -1304,7 +1301,7 @@ function tsPlugin(options) {
                     : undefined;
             }
             tsTryParseGenericAsyncArrowFunction(startPos, startLoc, forInit) {
-                if (!this.match(tt.relational)) {
+                if (!this.tsMatchLeftRelational()) {
                     return undefined;
                 }
                 const oldMaybeInArrowParameters = this.maybeInArrowParameters;
@@ -1842,7 +1839,7 @@ function tsPlugin(options) {
                     case 'TupleElementTypes':
                         return this.match(tt.bracketR);
                     case 'TypeParametersOrArguments':
-                        return this.match(tt.relational) && this.value === '>';
+                        return this.tsMatchRightRelational();
                 }
             }
             /**
@@ -1977,7 +1974,7 @@ function tsPlugin(options) {
                 return false;
             }
             tsIsStartOfFunctionType() {
-                if (this.match(tt.relational)) {
+                if (this.tsMatchLeftRelational()) {
                     return true;
                 }
                 return (this.match(tt.parenL) &&
@@ -2237,7 +2234,7 @@ function tsPlugin(options) {
                     // qualifier, so allow it to be a reserved word as well.
                     node.qualifier = this.tsParseEntityName();
                 }
-                if (this.match(tt.relational)) {
+                if (this.tsMatchLeftRelational()) {
                     node.typeParameters = this.tsParseTypeArguments();
                 }
                 return this.finishNode(node, 'TSImportType');
@@ -2251,7 +2248,7 @@ function tsPlugin(options) {
                 else {
                     node.exprName = this.tsParseEntityName();
                 }
-                if (!this.hasPrecedingLineBreak() && this.match(tt.relational)) {
+                if (!this.hasPrecedingLineBreak() && this.tsMatchLeftRelational()) {
                     node.typeParameters = this.tsParseTypeArguments();
                 }
                 return this.finishNode(node, 'TSTypeQuery');
@@ -2372,10 +2369,16 @@ function tsPlugin(options) {
             tsParseTypeReference() {
                 const node = this.startNode();
                 node.typeName = this.tsParseEntityName();
-                if (!this.hasPrecedingLineBreak() && this.match(tt.relational) && this.value === '<') {
+                if (!this.hasPrecedingLineBreak() && this.tsMatchLeftRelational()) {
                     node.typeParameters = this.tsParseTypeArguments();
                 }
                 return this.finishNode(node, 'TSTypeReference');
+            }
+            tsMatchLeftRelational() {
+                return this.match(tt.relational) && this.value === '<';
+            }
+            tsMatchRightRelational() {
+                return this.match(tt.relational) && this.value === '>';
             }
             tsParseParenthesizedType() {
                 const node = this.startNode();
@@ -2582,7 +2585,7 @@ function tsPlugin(options) {
             }
             tsParseTypeParameters(parseModifiers) {
                 const node = this.startNode();
-                if (this.match(tt.relational) || this.matchJsx('jsxTagStart')) {
+                if (this.tsMatchLeftRelational() || this.matchJsx('jsxTagStart')) {
                     this.next();
                 }
                 else {
@@ -2601,7 +2604,7 @@ function tsPlugin(options) {
                 return this.finishNode(node, 'TSTypeParameterDeclaration');
             }
             tsTryParseTypeParameters(parseModifiers) {
-                if (this.match(tt.relational)) {
+                if (this.tsMatchLeftRelational()) {
                     return this.tsParseTypeParameters(parseModifiers);
                 }
             }
@@ -2781,7 +2784,7 @@ function tsPlugin(options) {
                 const delimitedList = this.tsParseDelimitedList('HeritageClauseElement', () => {
                     const node = this.startNode();
                     node.expression = this.tsParseEntityName();
-                    if (this.match(tt.relational)) {
+                    if (this.tsMatchLeftRelational()) {
                         node.typeParameters = this.tsParseTypeArguments();
                     }
                     return this.finishNode(node, 'TSExpressionWithTypeArguments');
@@ -2816,12 +2819,12 @@ function tsPlugin(options) {
                 if (this.eat(tt.question))
                     node.optional = true;
                 const nodeAny = node;
-                if (this.match(tt.parenL) || this.match(tt.relational)) {
+                if (this.match(tt.parenL) || this.tsMatchLeftRelational()) {
                     if (readonly) {
                         this.raise(node.start, TypeScriptError.ReadonlyForMethodSignature);
                     }
                     const method = nodeAny;
-                    if (method.kind && this.match(tt.relational)) {
+                    if (method.kind && this.tsMatchLeftRelational()) {
                         this.raise(this.start, TypeScriptError.AccesorCannotHaveTypeParameters);
                     }
                     this.tsFillSignature(tt.colon, method);
@@ -2876,13 +2879,13 @@ function tsPlugin(options) {
             }
             tsParseTypeMember() {
                 const node = this.startNode();
-                if (this.match(tt.parenL) || this.match(tt.relational)) {
+                if (this.match(tt.parenL) || this.tsMatchLeftRelational()) {
                     return this.tsParseSignatureMember('TSCallSignatureDeclaration', node);
                 }
                 if (this.match(tt._new)) {
                     const id = this.startNode();
                     this.next();
-                    if (this.match(tt.parenL) || this.match(tt.relational)) {
+                    if (this.match(tt.parenL) || this.tsMatchLeftRelational()) {
                         return this.tsParseSignatureMember('TSConstructSignatureDeclaration', node);
                     }
                     else {
@@ -2939,7 +2942,7 @@ function tsPlugin(options) {
                     node.declare = true;
                 if (tokenIsIdentifier(this.type)) {
                     node.id = this.parseIdent();
-                    this.checkLValSimple(node.id, BIND_TS_INTERFACE);
+                    this.checkLValSimple(node.id, acornScope.BIND_TS_INTERFACE);
                 }
                 else {
                     node.id = null;
@@ -3068,7 +3071,7 @@ function tsPlugin(options) {
             tsParseModuleOrNamespaceDeclaration(node, nested = false) {
                 node.id = this.parseIdent();
                 if (!nested) {
-                    this.checkLValSimple(node.id, BIND_TS_NAMESPACE);
+                    this.checkLValSimple(node.id, acornScope.BIND_TS_NAMESPACE);
                 }
                 if (this.eat(tt.dot)) {
                     const inner = this.startNode();
@@ -3082,9 +3085,12 @@ function tsPlugin(options) {
                 }
                 return this.finishNode(node, 'TSModuleDeclaration');
             }
+            checkLValSimple(expr, bindingType = acornScope.BIND_NONE, checkClashes) {
+                return super.checkLValSimple(expr, bindingType, checkClashes);
+            }
             tsParseTypeAliasDeclaration(node) {
                 node.id = this.parseIdent();
-                this.checkLValSimple(node.id, BIND_TS_TYPE);
+                this.checkLValSimple(node.id, acornScope.BIND_TS_TYPE);
                 node.typeAnnotation = this.tsInType(() => {
                     node.typeParameters = this.tsTryParseTypeParameters(this.tsParseInOutModifiers.bind(this));
                     this.expect(tt.eq);
@@ -3142,7 +3148,7 @@ function tsPlugin(options) {
             tsParseImportEqualsDeclaration(node, isExport) {
                 node.isExport = isExport || false;
                 node.id = this.parseIdent();
-                this.checkLValSimple(node.id, BIND_LEXICAL);
+                this.checkLValSimple(node.id, acornScope.BIND_LEXICAL);
                 super.expect(tt.eq);
                 const moduleReference = this.tsParseModuleReference();
                 if (node.importKind === 'type' &&
@@ -3319,21 +3325,29 @@ function tsPlugin(options) {
             }
             parseExprOp(left, leftStartPos, leftStartLoc, minPrec, forInit) {
                 if (tt._in.binop > minPrec &&
-                    !this.hasPrecedingLineBreak() &&
-                    this.isContextual('as')) {
-                    const node = this.startNodeAt(leftStartPos, leftStartLoc);
-                    node.expression = left;
-                    const _const = this.tsTryNextParseConstantContext();
-                    if (_const) {
-                        node.typeAnnotation = _const;
+                    !this.hasPrecedingLineBreak()) {
+                    let nodeType;
+                    if (this.isContextual('as')) {
+                        nodeType = 'TSAsExpression';
                     }
-                    else {
-                        node.typeAnnotation = this.tsNextThenParseType();
+                    if (allowSatisfies && this.isContextual('satisfies')) {
+                        nodeType = 'TSSatisfiesExpression';
                     }
-                    this.finishNode(node, 'TSAsExpression');
-                    // rescan `<`, `>` because they were scanned when this.state.inType was true
-                    this.reScan_lt_gt();
-                    return this.parseExprOp(node, leftStartPos, leftStartLoc, minPrec, forInit);
+                    if (nodeType) {
+                        const node = this.startNodeAt(leftStartPos, leftStartLoc);
+                        node.expression = left;
+                        const _const = this.tsTryNextParseConstantContext();
+                        if (_const) {
+                            node.typeAnnotation = _const;
+                        }
+                        else {
+                            node.typeAnnotation = this.tsNextThenParseType();
+                        }
+                        this.finishNode(node, nodeType);
+                        // rescan `<`, `>` because they were scanned when this.state.inType was true
+                        this.reScan_lt_gt();
+                        return this.parseExprOp(node, leftStartPos, leftStartLoc, minPrec, forInit);
+                    }
                 }
                 return super.parseExprOp(left, leftStartPos, leftStartLoc, minPrec, forInit);
             }
@@ -4129,7 +4143,7 @@ function tsPlugin(options) {
             parseClassSuper(node) {
                 super.parseClassSuper(node);
                 // handle `extends f<<T>
-                if (node.superClass && (this.match(tt.relational) || this.match(tt.bitShift))) {
+                if (node.superClass && (this.tsMatchLeftRelational() || this.match(tt.bitShift))) {
                     node.superTypeParameters = this.tsParseTypeArgumentsInExpression();
                 }
                 if (this.eatContextual('implements')) {
@@ -4164,7 +4178,7 @@ function tsPlugin(options) {
                 }
                 // origin parseArrowExpression
                 let oldYieldPos = this.yieldPos, oldAwaitPos = this.awaitPos, oldAwaitIdentPos = this.awaitIdentPos;
-                this.enterScope(functionFlags(isAsync, false) | SCOPE_ARROW);
+                this.enterScope(functionFlags(isAsync, false) | acornScope.SCOPE_ARROW);
                 this.initFunction(node);
                 const oldMaybeInArrowParameters = this.maybeInArrowParameters;
                 if (this.options.ecmaVersion >= 8)
@@ -4247,7 +4261,7 @@ function tsPlugin(options) {
                 let state;
                 let jsx;
                 let typeCast;
-                if (this.matchJsx('jsxTagStart') || this.match(tt.relational)) {
+                if (this.matchJsx('jsxTagStart') || this.tsMatchLeftRelational()) {
                     // Prefer to parse JSX if possible. But may be an arrow fn.
                     state = this.cloneCurLookaheadState();
                     jsx = this.tryParse(() => this.parseMaybeAssignOrigin(forInit, refExpressionErrors, afterLeftParse), state);
@@ -4269,7 +4283,7 @@ function tsPlugin(options) {
                         context.pop();
                     }
                 }
-                if (!(jsx === null || jsx === void 0 ? void 0 : jsx.error) && !this.match(tt.relational)) {
+                if (!(jsx === null || jsx === void 0 ? void 0 : jsx.error) && !this.tsMatchLeftRelational()) {
                     return this.parseMaybeAssignOrigin(forInit, refExpressionErrors, afterLeftParse);
                 }
                 // Either way, we're looking at a '<': tt.jsxTagStart or relational.
@@ -4398,7 +4412,7 @@ function tsPlugin(options) {
                 }
                 return elt;
             } // AssignmentPattern
-            checkLValInnerPattern(expr, bindingType = BIND_NONE, checkClashes) {
+            checkLValInnerPattern(expr, bindingType = acornScope.BIND_NONE, checkClashes) {
                 switch (expr.type) {
                     case 'TSParameterProperty':
                         this.checkLValInnerPattern(expr.parameter, bindingType, checkClashes);
@@ -4468,6 +4482,7 @@ function tsPlugin(options) {
                     case 'ParenthesizedExpression':
                         return this.toAssignableParenthesizedExpression(node, isBinding, refDestructuringErrors);
                     case 'TSAsExpression':
+                    case 'TSSatisfiesExpression':
                     case 'TSNonNullExpression':
                     case 'TSTypeAssertion':
                         if (isBinding) ;
@@ -4494,6 +4509,7 @@ function tsPlugin(options) {
             toAssignableParenthesizedExpression(node, isBinding, refDestructuringErrors) {
                 switch (node.expression.type) {
                     case 'TSAsExpression':
+                    case 'TSSatisfiesExpression':
                     case 'TSNonNullExpression':
                     case 'TSTypeAssertion':
                     case 'ParenthesizedExpression':
@@ -4734,7 +4750,7 @@ function tsPlugin(options) {
                     this.next();
                 }
                 // handles 'f<<T>'
-                if (this.match(tt.relational) || this.match(tt.bitShift)) {
+                if (this.tsMatchLeftRelational() || this.match(tt.bitShift)) {
                     let missingParenErrorLoc;
                     // tsTryParseAndCatch is expensive, so avoid if not necessary.
                     // There are number of things we are going to "maybe" parse, like type arguments on
@@ -4756,11 +4772,10 @@ function tsPlugin(options) {
                             missingParenErrorLoc = this.curPosition();
                             return base;
                         }
-                        if (tokenIsTemplate(this.type)) {
+                        if (tokenIsTemplate(this.type) || this.type === tt.backQuote) {
                             const result = this.parseTaggedTemplateExpression(base, startPos, startLoc, _optionalChained);
                             result.typeParameters = typeArguments;
-                            base = result;
-                            return base;
+                            return result;
                         }
                         if (!noCalls && this.eat(tt.parenL)) {
                             let refDestructuringErrors = new DestructuringErrors;
@@ -4781,7 +4796,7 @@ function tsPlugin(options) {
                         const tokenType = this.type;
                         if (
                         // a<b>>c is not (a<b>)>c, but a<(b>>c)
-                        tokenType === tt.relational ||
+                        this.tsMatchRightRelational() ||
                             // a<b>>>c is not (a<b>)>>c, but a<(b>>>c)
                             tokenType === tt.bitShift ||
                             // a<b>c is (a<b)>c
@@ -4789,13 +4804,12 @@ function tsPlugin(options) {
                                 tokenCanStartExpression(tokenType) &&
                                 !this.hasPrecedingLineBreak())) {
                             // Bail out.
-                            return base;
+                            return;
                         }
                         const node = this.startNodeAt(startPos, startLoc);
                         node.expression = base;
                         node.typeParameters = typeArguments;
-                        base = this.finishNode(node, 'TSInstantiationExpression');
-                        return base;
+                        return this.finishNode(node, 'TSInstantiationExpression');
                     });
                     if (missingParenErrorLoc) {
                         this.unexpected(missingParenErrorLoc);
@@ -5173,7 +5187,7 @@ function tsPlugin(options) {
                     node[rightOfAsKey] = this.copyNode(node[leftOfAsKey]);
                 }
                 if (isImport) {
-                    this.checkLValSimple(node[rightOfAsKey], BIND_LEXICAL);
+                    this.checkLValSimple(node[rightOfAsKey], acornScope.BIND_LEXICAL);
                 }
             }
             raiseCommonCheck(pos, message, recoverable) {
@@ -5237,6 +5251,109 @@ function tsPlugin(options) {
                 node.selfClosing = this.eat(tt.slash);
                 this.expect(tokTypes.jsxTagEnd);
                 return this.finishNode(node, nodeName ? 'JSXOpeningElement' : 'JSXOpeningFragment');
+            }
+            enterScope(flags) {
+                if (flags === TS_SCOPE_TS_MODULE) {
+                    this.importsStack.push([]);
+                }
+                super.enterScope(flags);
+                const scope = super.currentScope();
+                scope.types = [];
+                scope.enums = [];
+                scope.constEnums = [];
+                scope.classes = [];
+                scope.exportOnlyBindings = [];
+            }
+            exitScope() {
+                const scope = super.currentScope();
+                if (scope.flags === TS_SCOPE_TS_MODULE) {
+                    this.importsStack.pop();
+                }
+                super.exitScope();
+            }
+            hasImport(name, allowShadow) {
+                const len = this.importsStack.length;
+                if (this.importsStack[len - 1].indexOf(name) > -1) {
+                    return true;
+                }
+                if (!allowShadow && len > 1) {
+                    for (let i = 0; i < len - 1; i++) {
+                        if (this.importsStack[i].indexOf(name) > -1)
+                            return true;
+                    }
+                }
+                return false;
+            }
+            maybeExportDefined(scope, name) {
+                if (this.inModule && scope.flags & acornScope.SCOPE_TOP) {
+                    this.undefinedExports.delete(name);
+                }
+            }
+            isRedeclaredInScope(scope, name, bindingType) {
+                if (!(bindingType & acornScope.BIND_KIND_VALUE))
+                    return false;
+                if (bindingType & acornScope.BIND_LEXICAL) {
+                    return (scope.lexical.indexOf(name) > -1 ||
+                        scope.functions.indexOf(name) > -1 ||
+                        scope.var.indexOf(name) > -1);
+                }
+                if (bindingType & acornScope.BIND_FUNCTION) {
+                    return (scope.lexical.indexOf(name) > -1 ||
+                        (!super.treatFunctionsAsVarInScope(scope) && scope.var.indexOf(name) > -1));
+                }
+                return ((scope.lexical.indexOf(name) > -1 &&
+                    // Annex B.3.4
+                    // https://tc39.es/ecma262/#sec-variablestatements-in-catch-blocks
+                    !(scope.flags & acornScope.SCOPE_SIMPLE_CATCH &&
+                        scope.lexical[0] === name)) ||
+                    (!this.treatFunctionsAsVarInScope(scope) && scope.functions.indexOf(name) > -1));
+            }
+            checkRedeclarationInScope(scope, name, bindingType, loc) {
+                if (this.isRedeclaredInScope(scope, name, bindingType)) {
+                    this.raise(loc, `Identifier '${name}' has already been declared.`);
+                }
+            }
+            declareName(name, bindingType, pos) {
+                if (bindingType & acornScope.BIND_FLAGS_TS_IMPORT) {
+                    if (this.hasImport(name, true)) {
+                        this.raise(pos, `Identifier '${name}' has already been declared.`);
+                    }
+                    this.importsStack[this.importsStack.length - 1].push(name);
+                    return;
+                }
+                const scope = this.currentScope();
+                if (bindingType & acornScope.BIND_FLAGS_TS_EXPORT_ONLY) {
+                    this.maybeExportDefined(scope, name);
+                    scope.exportOnlyBindings.push(name);
+                    return;
+                }
+                super.declareName(name, bindingType, pos);
+                if (bindingType & acornScope.BIND_KIND_TYPE) {
+                    if (!(bindingType & acornScope.BIND_KIND_VALUE)) {
+                        // "Value" bindings have already been registered by the superclass.
+                        this.checkRedeclarationInScope(scope, name, bindingType, pos);
+                        this.maybeExportDefined(scope, name);
+                    }
+                    scope.types.push(name);
+                }
+                if (bindingType & acornScope.BIND_FLAGS_TS_ENUM)
+                    scope.enums.push(name);
+                if (bindingType & acornScope.BIND_FLAGS_TS_CONST_ENUM)
+                    scope.constEnums.push(name);
+                if (bindingType & acornScope.BIND_FLAGS_CLASS)
+                    scope.classes.push(name);
+            }
+            checkLocalExport(id) {
+                const { name } = id;
+                if (this.hasImport(name))
+                    return;
+                const len = this.scopeStack.length;
+                for (let i = len - 1; i >= 0; i--) {
+                    const scope = this.scopeStack[i];
+                    if (scope.types.indexOf(name) > -1 || scope.exportOnlyBindings.indexOf(name) > -1)
+                        return;
+                }
+                super.checkLocalExport(id);
             }
         }
         return TypeScriptParser;

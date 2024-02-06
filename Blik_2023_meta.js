@@ -1,50 +1,44 @@
-import path from "path";
-import { access, resolve, note } from "./Blik_2023_interface.js";
-import { compose, record, provide, compound, tether, string } from "./Blik_2023_inference.js";
-import { search, merge, prune, route, random } from "./Blik_2023_search.js";
+import {note,wait,buffer,compose,collect,stream,record,provide,compound,tether,bind,string,is,not,iterable} from "./Blik_2023_inference.js";
+import {search,merge,prune,route,random} from "./Blik_2023_search.js";
 let address=new URL(import.meta.url).pathname;
 
-export async function parse(source, syntax = "javascript", options = {}) {
-  // interpret language syntax.
-  if(typeof source!=="string")
-  return Error("can't parse "+typeof source);
-  if(source instanceof Buffer)
-  source=source.toString();
-  if (syntax === "json") return JSON.parse(source);
-  let { Parser } = await import("./haverbeke_2012_acorn.js");
-  if(syntax=="typescript")
-  Parser=await import("./tyrealhu_2023_acorn_typescript.js").then(({default:plugin})=>
-  Parser.extend(plugin({dts:options.source?.endsWith(".d.ts")})));
-  else if(!/xtuc_2020_acorn_importattributes/.test(options.source))
-  Parser=await import("./xtuc_2020_acorn_importattributes.js").then(({importAttributes:plugin})=>
-  Parser.extend(plugin));
-  let comments = [];
-  let scope = Parser.parse(source, {
-    ecmaVersion: 2022,
-    sourceType: "module",
-    onComment: comments,
-    locations: syntax === "typescript",
-  });
-  comments
-    .map((comment) => Object.assign(comment, { type: comment.type + "Comment" }))
-    .forEach((comment) => route(scope, comment, path));
-  if (options.source) scope.meta = { url: options.source.startsWith("file:/")?new URL(options.source):await resolve("url","pathToFileURL",options.source)};
-  return scope;
-  function descendant(scope) {
-    return scope.start < this.start && this.end < scope.end;
-  }
-  function sibling(scope, index, scopes) {
-    return (scopes[index - 1]?.end ?? -1) < this.start && this.end < scope.start;
-  }
-  function path(scope, comment) {
-    Array.isArray(scope)
-      ? [descendant, sibling, undefined].reduce(
-          (found, find) => (found < 0 ? find && scope.findIndex(find.bind(comment)) : found),
-          -1
-        )
-      : descendant.call(comment, scope) &&
-        ["body", "declaration", "consequent"].find((field) => scope[field]);
-  }
+ export async function parse(source, syntax = "javascript", options = {})
+{// interpret language syntax.
+ if(!string(source))
+ return Error("can't parse "+typeof source);
+ if(is(Buffer)(source))
+ source=source.toString();
+ if(syntax==="json")return JSON.parse(source);
+ let {Parser}=await import("./haverbeke_2012_acorn.js");
+ let typescript=syntax==="typescript";
+ if(typescript)
+ Parser=await import("./tyrealhu_2023_acorn_typescript.js").then(({default:plugin})=>
+ Parser.extend(plugin({dts:options.source?.endsWith(".d.ts")})));
+ else if(!/xtuc_2020_acorn_importattributes/.test(options.source))
+ // the typescript plugin includes support for importattributes. 
+ Parser=await import("./xtuc_2020_acorn_importattributes.js").then(({importAttributes:plugin})=>
+ Parser.extend(plugin));
+ let comments=[];
+ let scope=Parser.parse(source,{ecmaVersion:2022,sourceType:"module",onComment:comments,locations:typescript});
+ comments.map(comment=>
+ Object.assign(comment,{type:comment.type+"Comment"})).forEach(comment=>
+ route(scope,comment,path));
+ if(options.source)scope.meta=
+ {url:options.source.startsWith("file:/")
+?new URL(options.source)
+:await import("url").then(({pathToFileURL:url})=>url(options.source))
+ };
+ return scope;
+ function descendant(scope){return scope.start<this.start&&this.end<scope.end;}
+ function sibling(scope,index,scopes){return (scopes[index-1]?.end??-1)<this.start&&this.end<scope.start;}
+ function path(scope,comment)
+{Array.isArray(scope)
+?[descendant,sibling,undefined].reduce((found,find)=>
+ found<0?find&&scope.findIndex(find.bind(comment)):found
+,-1)
+:descendant.call(comment,scope)&&
+ ["body","declaration","consequent"].find((field)=>scope[field]);
+}
 }
 
  export async function sanitize(grammar,format)
@@ -115,7 +109,7 @@ export async function parse(source, syntax = "javascript", options = {}) {
  if(/^Export/.test(boundary))
  statements.push({type:"ExportNamedDeclaration",specifiers:value.specifiers?.map(specifier=>({...specifier,local:specifier.exported}))||
  [{type:"ExportSpecifier",local,exported:local}]});
- return provide(...statements);
+ return provide(statements);
 });
  if(/\.d\.ts$/.test(grammar.meta?.url.pathname))
  grammar=prune.call(grammar,function initialized({1:value})
@@ -170,80 +164,63 @@ export async function parse(source, syntax = "javascript", options = {}) {
  // })
  await ["banner","footer"].map(extension=>
  output?.[extension]).reduce(record((extension,index)=>
- extension&&compose(extension,parse,({body})=>
+ extension&&stream(extension,parse,({body})=>
  grammar.body[index?"push":"unshift"](...body)))
 ,[]);
  return grammar;
 };
 
+ var functional=term=>"FunctionDeclaration/FunctionExpression/ArrowFunctionExpression".split("/").includes(term?.type);
+ var synchronous=({1:term})=>functional(term)&&term.async?undefined:term;
+ var requirecall=term=>term?.type==="CallExpression"&&term.callee?.name==="require";
+ var linear=(scope,field,index,path)=>scope[field].type==="TryStatement"?!path.splice(index):scope[field];
+
  export var estree=
  // sort by decreasing specificity for declarative disjunction (Object.values(estree.dialect)). 
  {commonjs:
- {dynamicblock:
- {condition(value,field,path)
-{return ["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(value?.type)&&[value.body.body||value.body].flat().some((value,index)=>
- estree.commonjs.dynamicrequire.condition(value,index,[path,field,"body"].flat()));
-},ecma(value){return {...value,async:true};}
- }
- ,require:
- {condition(value,field,path)
-{if(path?.length>1)return;
- let values=value?.type==="VariableDeclaration"
-?value.declarations.map(({init})=>init?.type==="MemberExpression"?init.object:init)
-:value?.type==="ExpressionStatement"
-?[value.expression]
-:[];
- return values.some(value=>Object.keys(search.call({value:prune.call(value,({1:value})=>
- ["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(value?.type)?undefined:value)}
-,({1:value})=>value?.callee?.name==="require")).length);
-},ecma(value,field,path)
-{let scope=prune.call(value,({1:value})=>
- ["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(value?.type)?undefined:value);
- let requires=search.call(scope,({1:value})=>value?.callee?.name==="require");
- let id=value=>value.replace(/[^a-zA-Z]/g,"")+"_exports";
- let imports=Object.values(requires).map(require=>(
- {type:"ImportDeclaration",source:require.arguments[0]
- ,specifiers:["ImportDefaultSpecifier",{type:"Identifier",name:id(require.arguments[0].value)}].reduce((type,local)=>
-[{type,local,imported:local}
-])}));
- let statement=Object.keys(requires).reduce((value,path,index)=>
- merge(value,imports[index].specifiers[0].local,path.split("/")),value);
- return provide(...imports,statement);
-}}
- ,dynamicrequire:
+ {require:
  {condition(term,field,path)
-{if(path.length<2)return;
- path={VariableDeclaration:"declarations",ExpressionStatement:["expression","right"],CallExpression:"arguments",AssignmentExpression:"right",MemberExpression:"object",Property:[]}[term?.type];
- term=prune.call(term,({1:value})=>
- ["FunctionDeclaration","FunctionExpression","ArrowFunctionExpression"].includes(value?.type)?undefined:value);
- let value=[search.call(term,path)].flat();
- return value.some(value=>Object.keys(search.call({value},({1:value})=>value?.callee?.name==="require")).length);
-},ecma(value)
-{let depth={VariableDeclaration:3,ExpressionStatement:2,CallExpression:2,Property:0}[value.type]||1;
- let statements=Object.entries(search.call({value},({1:value})=>value?.callee?.name==="require")).map(function([field,require])
-{let path=field.split("/").slice(1);
- let expressionpath=path.slice(0,depth);
- let expression=search.call(value,expressionpath);
- if(expression.type==="ObjectExpression")
- // Properties should be found individually. 
- return [expressionpath,expression];
- let properties=[{type:"Property",kind:"init",key:{type:"Identifier",name:"default"},value:{type:"Identifier",name:"module"}}];
- let importexpression={type:"ImportExpression",source:require.arguments[0]};
- let requirepath=path.slice(depth);
- let argument=
+{let toplevel=path.length===1;
+ let asynchronous=!toplevel&&functional(term)&&term.async;
+ if(!toplevel&&!asynchronous)return;
+ let scope=prune.call(term,synchronous);
+ let requires=search.call({scope},({1:term})=>requirecall(term));
+ return Object.keys(requires).length;
+},ecma(term,field,path)
+{let scope=prune.call(term,synchronous);
+ let requires=search.call(scope,({1:term})=>requirecall(term));
+ let modulescope=!functional(term);
+ let dynamic=term.async;
+ let values=Object.entries(requires).map(([path,{arguments:[source]}])=>
+ dynamic||(modulescope&&![0,path.split("/")].flat().reduce(linear,[scope]))
+?{type:"AwaitExpression",argument:
  {type:"CallExpression",callee:
  {type:"MemberExpression"
- ,object:importexpression
+ ,object:{type:"ImportExpression",source}
  ,property:{type:"Identifier",name:"then"}
  },arguments:
 [{type:"ArrowFunctionExpression",expression:true
- ,params:[{type:"ObjectPattern",properties}]
- ,body:merge(expression,{type:"Identifier",name:"module"},requirepath)
+ ,params:[{type:"ObjectPattern",properties:
+[{type:"Property",kind:"init"
+ ,key:{type:"Identifier",name:"default"}
+ ,value:{type:"Identifier",name:"module"}
  }
-]};
- return [expressionpath,{type:"AwaitExpression",argument}];
-});
- return statements.reduce((value,[path,expression])=>merge(value,expression,path),value);
+]}]
+ ,body:{type:"Identifier",name:"module"}
+ }
+]}
+ }
+:{type:"Identifier",name:source.value.replace(/[^a-zA-Z]/g,"")+"_exports"});
+ let expression=values.reduce((term,value,index)=>
+ merge(term,value,Object.keys(requires)[index].split("/")),term);
+ if(dynamic)return expression;
+ let imports=Object.entries(requires).map(([path,require],index)=>
+ modulescope&&![0,path.split("/")].flat().reduce(linear,[scope])?undefined
+:{type:"ImportDeclaration",source:require.arguments[0]
+ ,specifiers:
+[{type:"ImportDefaultSpecifier",local:values[index],imported:values[index]}
+]}).filter(Boolean);
+ return provide([...imports,expression]);
 }}
   // module.exports exportdefaultdeclaration prepended to scope instead. 
 //  ,export:
@@ -360,32 +337,57 @@ export async function serialize(syntax, format = "astring", options) {
   return import(module).then(module=>module[term](syntax, options));
 }
 
- export async function modularise(resource,identifier,context={})
-{// uses --experimental-vm-modules 
- let {SourceTextModule,createContext,isContext}=await import("vm");
- let {default:{resolve}}=await import("path");
- if(!isContext(context))
- context=createContext(
- {cache:new Map(),imports:new Map()
- ,importModuleDynamically:identifer=>({})
- ,initializeImportMeta:meta=>Object.assign(meta,{url:identifier})
- })
- let module=new SourceTextModule(resource||"",{identifier,context});
- context.cache.set(identifier,module);
- await module.link((identifier,{context})=>
- context.cache.has(identifier)
-?context.cache.get(identifier)
-:import(identifier).then(module=>
- context.imports.set(identifier,module)&&
- modularise(Object.getOwnPropertyNames(module).sort(name=>
- name!="default"||-1).map((name,index,exports)=>name=="default"
-?"export default imports.get(\""+identifier+"\").default;"
-:"export const {"+exports.splice(index).join(",")+`}=
- imports.get("`+identifier+"\");").join("\n")
-,identifier,context)));
- await module.evaluate();
- return module;
+ export function namespace(declarations,references,procedures)
+{// translate abstract syntax tree or runtime namespace into javascript;
+ [declarations,references]=
+ [declarations,references].map((argument,index)=>
+ typeof argument==="string"?JSON.parse(argument):argument);
+ let {type,body,sourceType}=declarations;
+ if(sourceType==="typescript")
+ declarations=prune(declarations,(field,value)=>!value?.type?.startsWith("TS"));
+ if(type==="Program")
+ return import("./davidbonnet_2015_astring.js").then(({generate})=>generate(declarations));
+ declarations=!declarations?""
+:Promise.all([import("./Yahoo_2014_serialize.js"),declarations]).then(([{__moduleExports:serialize},declarations])=>
+ Object.entries(declarations||{}).map(([field,functor])=>
+ "export "+({default:field}[field]||("var "+field+"="))+serialize(functor)).join("\n\n")).then(module=>
+ // apply formatting. 
+ module.replace(/(\}\})(,\"[^\"]*\":)(\{)/g,(...match)=>match.slice(1,4).join("\n ")))
+,references=Object.entries(references||{}).reduce((support,[module,functors])=>support
++"import "+functors.map((functor,index,{length})=>(
+ {"1":"{"+functor,[length-1]:(length==2?"{":"")+functor+"}"}[String(index||"")]||functor)).filter(Boolean).join(",")
++" from \""+module+"\""+(/\.json$/.test(module)?" assert {type:\"json\"}":"")+";\n"
+,"")
+,procedures=String(procedures||"").replace(/(^function *\w*\([\w,\n]*\)\n* *\{\n*)|(\}$)/g,"");
+ return compose(collect,"\n","join")(references,declarations,procedures);
 };
+
+//  export async function modularise(resource,identifier,context={})
+// {// uses --experimental-vm-modules 
+//  let {SourceTextModule,createContext,isContext}=await import("vm");
+//  let {default:{resolve}}=await import("path");
+//  if(!isContext(context))
+//  context=createContext(
+//  {cache:new Map(),imports:new Map()
+//  ,importModuleDynamically:identifer=>({})
+//  ,initializeImportMeta:meta=>Object.assign(meta,{url:identifier})
+//  })
+//  let module=new SourceTextModule(resource||"",{identifier,context});
+//  context.cache.set(identifier,module);
+//  await module.link((identifier,{context})=>
+//  context.cache.has(identifier)
+// ?context.cache.get(identifier)
+// :import(identifier).then(module=>
+//  context.imports.set(identifier,module)&&
+//  modularise(Object.getOwnPropertyNames(module).sort(name=>
+//  name!="default"||-1).map((name,index,exports)=>name=="default"
+// ?"export default imports.get(\""+identifier+"\").default;"
+// :"export const {"+exports.splice(index).join(",")+`}=
+//  imports.get("`+identifier+"\");").join("\n")
+// ,identifier,context)));
+//  await module.evaluate();
+//  return module;
+// };
 
  function set(options, namespace)
 {return Object.entries(namespace).reduce(
@@ -467,20 +469,21 @@ export async function compile(address, dialect = "prettier", options = {}) {
 
 export async function imports(syntax,format={}) {
   if(typeof syntax==="string")
-  syntax=await compose(syntax,true,access,format.syntax,{...format,source:await resolve("url","pathToFileURL",syntax)},parse);
+  syntax=await stream(syntax,true,access,format.syntax,{...format,source:await import("url").then(({pathToFileURL:url})=>url(syntax))},parse);
+  let path=await import("path");
   let terms = search.call(syntax,([field,scope])=>["Declaration", "Expression"].map((type) => "Import" + type).includes(scope?.type));
   let sources = Object.values(terms)
     .map(({ source }) => source.value)
     .filter((source) => source?.startsWith("."))
     .map((peer) => path.resolve(path.dirname(syntax.meta.url.pathname), peer));
   sources = await sources.reduce(record(async source=>
-  compose(source,format,imports)), []);
+  stream(source,format,imports)), []);
   return { [syntax.meta.url.pathname]: sources.reduce(merge, {}) };
 }
 
 export async function exports(source) {
-  let module = await resolve(source);
-  let sources = await compose(imports(source), source, Reflect.get);
+  let module = await import(source);
+  let sources = await stream(imports(source), source, Reflect.get);
   await prune.call(sources, ([path, term]) =>
     exports(path).then((exports) => [term, exports].reduce(merge))
   );
@@ -496,99 +499,84 @@ export function scope(module) {
   return Object.fromEntries(entries);
 }
 
-export async function test(scope, tests, path = []) {
-  // compose tests defined in scope. 
-  let assert = await import("assert");
-  if (typeof scope === "string" && !path.length) scope = await import(scope);
-  tests = tests || scope.tests || {};
-  let fails = await Object.entries(tests).reduce(
-    record(async ([term, value]) => {
-      let traverse=!value.condition||compound(value.condition)||value.condition?.some?.(condition=>condition.condition);
-      if (traverse) return test(scope[term] ?? scope, value, path.concat(term));
-      let { tether, context = [], terms = [], condition } = value;
-      if(!context.length) context.push(undefined);
-      try {
-        await compose(...[context].flat(), (scope[term] ?? scope).bind(tether), ...[terms].flat(), assert[condition] || condition);
-      } catch (fail) {
-        let field = path.concat(term).join("/");
-        let { stack } = fail;
-        console.log(field + ": \x1b[31m" + stack + "\x1b[0m");
-        return { [field]: stack };
-      }
-      return {};
-    }),
-    []
-  );
-  fails = fails.reduce(merge, {});
-  if (path.length) return fails;
-  let format = (item, order, items) =>
-    compose(
-      Math.max(...items.map(({ length }) => length)),
-      (length) =>
-        item +
-        (order % Math.floor(process.stdout.columns / length)
-          ? " ".repeat(length - item.length)
-          : "\n")
-    );
-  let report =
-    [fails, tests, scope]
-      .map((subject, index) => [
-        "\x1b[" + ["31mFAIL:", "32mPASS:", "34mSKIP:"][index],
-        ...Object.keys(subject).map(
-          index ? (field) => field : (field) => field.match(/(.*?)(\/|$)/)[1]
-        ),
-      ])
-      .map((subject, index, subjects) =>
-        subject
-          .filter((test) => !subjects.slice(0, index).flat().includes(test))
-          .slice(0, 15)
-          .concat(subject.length < 16 ? (!subject.length ? "-" : []) : "...")
-          .map(format)
-          .join("")
-      ).filter(subject=>subject.length>11)
-      .join("\n") + "\x1b[0m\n";
-  if (Object.keys(fails).length) throw report;
-  return report;
+ export async function test(namespace,tests,path=[])
+{// compose tests defined in namespace. 
+ let assert=await import("assert");
+ if(typeof namespace==="string"&&!path.length)namespace=await import(namespace);
+ tests=tests||namespace.tests||{};
+ let fails=await Object.entries(tests).reduce(record(async([term,value])=>
+{let traverse=!value.condition||is(compound,not(iterable))(value.condition)||value.condition?.some?.(condition=>condition.condition);
+ if(traverse)return test(namespace[term]??namespace,value,path.concat(term));
+ let {tether,scope,context=[],terms=[],condition}=value;
+ scope=scope||tether;
+ context=[context].flat();
+ if(!context.length)context.push(undefined);
+ try
+{await compose.call(...context,buffer((namespace[term]??namespace).bind(scope)),...[terms].flat(),assert[condition]||condition);
+}catch(fail)
+{let field=path.concat(term).join("/");
+ let {stack}=fail;
+ console.log(field+": \x1b[31m"+stack+"\x1b[0m");
+ return {[field]:stack};
+}
+ return {};
+})
+,[]);
+ fails=fails.reduce(merge,{});
+ if(path.length)return fails;
+ let format=(item,order,items)=>stream(
+ Math.max(...items.map(({length})=>length))
+,length=>item+(order%Math.floor(process.stdout.columns/length)? " ".repeat(length-item.length):"\n"));
+ let report=[fails,tests,namespace].map((subject,index)=>
+["\x1b["+["31mFAIL:","32mPASS:","34mSKIP:"][index]
+,...Object.keys(subject).map(index?field=>field:field=>field.match(/(.*?)(\/|$)/)[1]),
+]).map((subject,index,subjects)=>
+ subject.filter(test=>
+ !subjects.slice(0,index).flat().includes(test)).slice(0,15).concat(subject.length<16
+?(!subject.length?"-":[])
+:"...").map(format).join("")).filter(subject=>subject.length>11).join("\n")+"\x1b[0m\n";
+ if(Object.keys(fails).length)throw report;
+ return report;
 }
 
 export const tests=
- {parse:{context:[import.meta.url,true,access],terms:["type",Reflect.get,"Program"],condition:"equal"}
+ {parse:
+ {empty:{context:[""],terms:["type","Program"],condition:"equal"}
+ }
  ,sanitize:
-[{context:["var a=!function(){a=require('')}()",parse,{syntax:"commonjs"}],terms:[serialize,"let exports = {}, module = {\n  exports\n};\nvar a = !(async function () {\n  a = await import('').then(({default: module}) => module);\n})();\nexport default module.exports;\n"],condition:"equal"}
-,{context:["setTimeout(time=>a=require(''),3000)",parse,{syntax:"commonjs"}],terms:[serialize,"let exports = {}, module = {\n  exports\n};\nsetTimeout(3000, async time => a = await import('').then(({default: module}) => module));\nexport default module.exports;\n"],condition:"equal"}
-],estree:
+ {dynamicrequire:
+ {block:{context:["var a=!async function(){a=require('')}()",parse,{syntax:"commonjs"}],terms:[serialize,"let exports = {}, module = {\n  exports\n};\nvar a = !(async function () {\n  a = await import('').then(({default: module}) => module);\n})();\nexport default module.exports;\n"],condition:"equal"}
+ ,lambda:{context:["setTimeout(async time=>a=require(''),3000)",parse,{syntax:"commonjs"}],terms:[serialize,"let exports = {}, module = {\n  exports\n};\nsetTimeout(async time => a = await import('').then(({default: module}) => module), 3000);\nexport default module.exports;\n"],condition:"equal"}
+ }
+ }
+ ,estree:
  {commonjs:
  {require:
  {condition:
-[{context:["a.b=require('')",parse,["body",0],tether(search),"0",["body"]],terms:[true],condition:"equal"}
-,{context:["require('')",parse,["body",0],tether(search),"0",["body"]],terms:[true],condition:"equal"}
-],ecma:
-[{context:["require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\n_exports;\n"],condition:"equal"}
-,{context:["require('')()",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\n_exports();\n"],condition:"equal"}
-,{context:["a=require('')()",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na = _exports();\n"],condition:"equal"}
-,{context:["a.b=require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na.b = _exports;\n"],condition:"equal"}
-,{context:["const a=require('');",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\nconst a = _exports;\n"],condition:"equal"}
+ {static:
+[{context:["a.b=require('')",parse,tether(search,["body",0]),"0",["body"]],terms:[true],condition:"equal"}
+,{context:["require('')",parse,tether(search,["body",0]),"0",["body"]],terms:[true],condition:"equal"}
 ]}
- ,dynamicrequire:
- {ecma:
-[{context:["const a=require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"const a = await import('').then(({default: module}) => module);\n"],condition:"equal"}
-,{context:["a=require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('').then(({default: module}) => module);\n"],condition:"equal"}
-,{context:["a=require('')()",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('').then(({default: module}) => module());\n"],condition:"equal"}
-,{context:["a=require('').map()",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = await import('').then(({default: module}) => module.map());\n"],condition:"equal"}
-,{context:["a.b=require('')",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a.b = await import('').then(({default: module}) => module);\n"],condition:"equal"}
-,{context:["a={a:require('')}",parse,["body",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a = {\n  a: require('')\n};\n"],condition:"equal"}
-,{context:["a={a:require('')}",parse,["body",0,"expression","right","properties",0],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"a: await import('').then(({default: module}) => module)\n"],condition:"equal"}
-,{context:["compose({a:require('')})",parse,["body",0,"expression"],tether(search)],terms:[(...body)=>({type:"Program",body}),serialize,"compose({\n  a: require('')\n})\n"],condition:"equal"}
+ ,ecma:
+ {static:
+[{context:["require('')",parse,tether(search,["body",0])],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\n_exports;\n"],condition:"equal"}
+,{context:["require('')()",parse,tether(search,["body",0])],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\n_exports();\n"],condition:"equal"}
+,{context:["a=require('')()",parse,tether(search,["body",0])],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na = _exports();\n"],condition:"equal"}
+,{context:["a.b=require('')",parse,tether(search,["body",0])],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\na.b = _exports;\n"],condition:"equal"}
+,{context:["const a=require('');",parse,tether(search,["body",0])],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\nconst a = _exports;\n"],condition:"equal"}
+,{context:["function a(){compose({a:require('')})}",parse,tether(search,["body",0])],terms:[(...body)=>({type:"Program",body}),serialize,"import _exports from '';\nfunction a() {\n  compose({\n    a: _exports\n  });\n}\n"],condition:"equal"}
+],dynamic:
+[{context:["async function a(){const a=require('')}",parse,tether(search,["body",0])],terms:[(...body)=>({type:"Program",body}),serialize,"async function a() {\n  const a = await import('').then(({default: module}) => module);\n}\n"],condition:"equal"}
+,{context:["async function a(){compose({a:require('')})}",parse,tether(search,["body",0])],terms:[(...body)=>({type:"Program",body}),serialize,"async function a() {\n  compose({\n    a: await import('').then(({default: module}) => module)\n  });\n}\n"],condition:"equal"}
+,{context:["try{b=require('')}catch(fail){}",parse,tether(search,["body",0])],terms:[(...body)=>({type:"Program",body}),serialize,"try {\n  b = await import('').then(({default: module}) => module);\n} catch (fail) {}\n"],condition:"equal"}
 ]}
- ,dynamicblock:[[true],["async",Reflect.get,true]].map((terms)=>
-[{context:["function a(){const a=require('');}",parse,["body",0],tether(search)],terms,condition:"equal"}
-,{context:["function a(){a=require('');}",parse,["body",0],tether(search)],terms,condition:"equal"}
-]).reduce((condition,ecma)=>({condition,ecma}))
+ }
  }
  ,typescript:
  {typeimport:{condition:
-[{context:["import type {a} from 'a'","typescript",parse,["body",0],tether(search)],terms:[true],condition:"equal"}
-,{context:["import type a from 'a'","typescript",parse,["body",0],tether(search)],terms:[true],condition:"equal"}
+[{context:["import type {a} from 'a'","typescript",parse,tether(search,["body",0])],terms:[true],condition:"equal"}
+,{context:["import type a from 'a'","typescript",parse,tether(search,["body",0])],terms:[true],condition:"equal"}
+,{context:["import a from 'a'","typescript",parse,tether(search,["body",0])],terms:[false],condition:"equal"}
 ]}
  }
  }

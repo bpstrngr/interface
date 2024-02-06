@@ -1,33 +1,23 @@
 {
-  "haverbeke_2012_acorn.js": {
-    "https://github.com/acornjs/acorn": {
-      "8.9.0": [
-        "acorn/src/index.js"
-      ]
-    }
-  },
+  "digitalbazaar_2013_nodeforge.js":{"https://github.com/digitalbazaar/forge":{"v1.3.1":["lib/pki.js",{"syntax":"commonjs"}]}},
+  "haverbeke_2012_acorn.js":{"https://github.com/acornjs/acorn":{"8.9.0":["acorn/src/index.js"]}},
   "haverbeke_2012_acorn_walk.js":{"https://github.com/acornjs/acorn/acorn-walk":{"8.9.0":"acorn-walk/src/index.js"}},
-  "davidbonnet_2015_astring.js": {"https://github.com/davidbonnet/astring": {"v1.8.6": ["src/astring.js"]}},
-  "xtuc_2020_acorn_importattributes.js": {"https://github.com/xtuc/acorn-import-attributes/tarball/v1.9.2": ["src/index.js",{"alias": {"acorn": "./haverbeke_2012_acorn.js"}}]},
-  "xtuc_2020_acorn_importassertions.js": {"https://github.com/xtuc/acorn-import-attributes/tarball/v1.7.6": ["src/index.js",{"alias": {"acorn": "./haverbeke_2012_acorn.js"}}]},
+  "davidbonnet_2015_astring.js":{"https://github.com/davidbonnet/astring":{"v1.8.6":["src/astring.js"]}},
+  "xtuc_2020_acorn_importattributes.js":{"https://github.com/xtuc/acorn-import-attributes":{"v1.9.2":["src/index.js",{"alias":{"acorn":"./haverbeke_2012_acorn.js"}}]}},
+  "xtuc_2020_acorn_importassertions.js":{"https://github.com/xtuc/acorn-import-attributes":{"v1.7.6":["src/index.js",{"alias":{"acorn":"./haverbeke_2012_acorn.js"}}]}},
   "eslint_2019_typescript_estree.js":{"https://github.com/typescript-eslint/typescript-eslint/packages/typescript-estree":{"v6.4.1":["src/parser.ts"]}},
   "microsoft_2014_typescript.js":{"https://github.com/microsoft/TypeScript":{"v5.1.6":["src/compiler/_namespaces/ts.ts",{"syntax":"typescript"}]}},
   "jridgewell_2015_sourcemap_codec.js":{"https://github.com/jridgewell/sourcemap-codec":{"v1.4.13":["src/sourcemap-codec.ts"]}},
-  "rich_harris_2014_magic_string.js":{"https://github.com/rich-harris/magic-string":{"v0.27.0":["src/index.js",{
-    "replace":{"Identifier":{"DEBUG":"false"}},
-    "alias":{"@jridgewell/sourcemap-codec":"./jridgewell_2015_sourcemap_codec.js"}
+  "Harris_2014_magic_string.js":{"https://github.com/rich-harris/magic-string":{"v0.27.0":["src/index.js",{
+    "alias":{"@jridgewell/sourcemap-codec":"./jridgewell_2015_sourcemap_codec.js"},
+    "edit":{"DEBUG":"false"}
   }]}},
-  "rich_harris_2016_is_reference.js":{"https://github.com/Rich-Harris/is-reference":{"v3.0.1":["src/index.js",{"output":{"footer":"export const NodeWithFieldDefinition=undefined;"}}]}},
-  "rich_harris_2015_estree_walker.js":{"https://github.com/Rich-Harris/estree-walker":{"v2.0.2":["src/index.js"]}},
-  "rich_harris_2016_locate_character.js":{"https://github.com/Rich-Harris/locate-character":{"v3.0.0":[
-      "src/index.js"
-  ]}},
+  "Harris_2016_is_reference.js":{"https://github.com/Rich-Harris/is-reference":{"v3.0.1":["src/index.js"]}},
+  "Harris_2015_estree_walker.js":{"https://github.com/Rich-Harris/estree-walker":{"v2.0.2":["src/index.js"]}},
+  "Harris_2016_locate_character.js":{"https://github.com/Rich-Harris/locate-character":{"v3.0.0":["src/index.js"]}},
   "lukeed_2019_flru.js":{"https://github.com/lukeed/flru":{"v1.0.2":["src/index.js"]}},
-  "sindresorhus_2015_builtin_modules_static.js":{"https://github.com/sindresorhus/builtin-modules":{"v3.3.0":["builtin-modules.json",{
-    "syntax":"commonjs",
-    "./Harris_2015_json.js":{}
-  }]}},
-  "sindresorhus_2015_builtin_modules.js":{"https://github.com/sindresorhus/builtin-modules":{"v3.3.0":["index.js",{"syntax":"commonjs","./Harris_2015_noderesolve.js":{}}]}},
+  "sindresorhus_2015_builtin_modules_static.js":{"https://github.com/sindresorhus/builtin-modules":{"v3.3.0":["builtin-modules.json",{"syntax":"commonjs","./Harris_2015_json.js":{}}]}},
+  "sindresorhus_2015_builtin_modules.js":{"https://github.com/sindresorhus/builtin-modules":{"v3.3.0":["index.js",{"syntax":"commonjs"}]}},
   "sindresorhus_2015_is-builtin-module.js":{"https://github.com/sindresorhus/is-builtin-module":{"v3.2.1":["index.js",{"syntax":"commonjs","alias":{"builtin-modules":"./sindresorhus_2015_builtin_modules.js"}}]}},
   "micromatch_2018_picomatch.js":{"https://github.com/micromatch/picomatch":{"2.3.0":["lib/picomatch.js",{"syntax":"commonjs"}]}},
   "definitely_2015_estree.js":{"https://registry.npmjs.org/@types/estree/-/estree-1.0.0.tgz":["index.d.ts"]},
@@ -46,16 +36,16 @@
   "timaschew_2014_is-module.js":{"https://github.com/component/is-module":{"1.0.0":["index.js",{"syntax":"commonjs"}]}},
   "Fisher_2012_deepmerge.js":{"https://github.com/TehShrike/deepmerge":{"v4.2.2":["index.js",{"syntax":"commonjs","alias":{"is-mergeable-object":"./TehStrike_2017_is-mergeable-object.js"}}]}},
   "TehStrike_2017_is-mergeable-object.js":{"https://github.com/TehShrike/is-mergeable-object":{"v1.1.0":["index.js",{"syntax":"commonjs"}]}},
-  "Harris_2015_rollup.js":{"https://github.com/rollup/rollup/src cli browser":{"v3.28.1":["src/node-entry.ts",{"./Harris_2015_noderesolve.js":{},"./Harris_2015_json.js":{},"alias":{
+  "Harris_2015_rollup.js":{"https://github.com/rollup/rollup/src cli browser":{"v3.28.1":["src/node-entry.ts",{"./Harris_2015_json.js":{},"alias":{
     "package.json":"./Harris_2015_rollup/0/package.json",
     "acorn":"./haverbeke_2012_acorn.js",
-    "locate-character":"./rich_harris_2016_locate_character.js",
+    "locate-character":"./Harris_2016_locate_character.js",
     "acorn-import-assertions":"./xtuc_2020_acorn_importassertions.js",
     "@rollup/pluginutils":"./Harris_2015_pluginutils.js",
-    "magic-string":"./rich_harris_2014_magic_string.js",
+    "magic-string":"./Harris_2014_magic_string.js",
     "acorn-walk":"./haverbeke_2012_acorn_walk.js",
     "flru":"./lukeed_2019_flru.js",
-    "is-reference":"./rich_harris_2016_is_reference.js",
+    "is-reference":"./Harris_2016_is_reference.js",
     "@jridgewell/sourcemap-codec":"./jridgewell_2015_sourcemap_codec.js",
     "builtin-modules/static":"./sindresorhus_2015_builtin_modules_static.js",
     "colorette":"./jorgebucaran_2018_colorette.js",
@@ -65,7 +55,7 @@
     "packages/pluginutils/src/index.ts",
     {"alias":{
       "estree":"./definitely_2015_estree.js",
-      "estree-walker":"./rich_harris_2015_estree_walker.js",
+      "estree-walker":"./Harris_2015_estree_walker.js",
       "picomatch":"./micromatch_2018_picomatch.js"
     }}
   ]}},
@@ -102,8 +92,7 @@
         "src/index.ts",
         {
           "syntax":"commonjs",
-          "./Harris_2015_alias.js": {"entries": [{"find": "^(.*)\\.js$", "replacement": "$1.ts"}]},
-          "./Harris_2015_noderesolve.js":{}
+          "./Harris_2015_alias.js": {"entries": [{"find": "^(.*)\\.js$", "replacement": "$1.ts"}]}
         }
       ]
     }
@@ -128,7 +117,7 @@
       "v4.1.2": [
         "lib/cookie.js", {
           "./Harris_2015_json.js": {},
-          "./Harris_2015_noderesolve.js": {},
+          "edit":{"lib/utilHelper.js":{"require\\(\"util\"\\)":"null"}},
           "alias": {
             "punycode/": "./Bynens_2011_punycode.js","url-parse":"./unshiftio_2014_urlparse.js","universalify":"./ryanzim_2017_universalify.js",
             "psl":"./lupomontero_2019_psl.js"
@@ -138,39 +127,16 @@
       ]
     }
   },
-  "domenic_2014_webidl.js": {
-    "https://github.com/jsdom/webidl-conversions": {
-      "v7.0.0": [
-        "lib/index.js", {
-          "syntax":"commonjs",
-          "./Harris_2015_noderesolve.js": {}
-        }
-      ]
-    }
-  },
-  "domenic_2016_html_encodingsniffer.js": {"https://github.com/jsdom/html-encoding-sniffer": {"v3.0.0": ["lib/html-encoding-sniffer.js",{"syntax":"commonjs","alias":{"whatwg-encoding":"./domenic_2016_whatwg_encoding.js"}}]}},
+  "domenic_2014_webidl.js":{"https://github.com/jsdom/webidl-conversions":{"v7.0.0":["lib/index.js",{"syntax":"commonjs"}]}},
+  "domenic_2016_html_encodingsniffer.js":{"https://github.com/jsdom/html-encoding-sniffer": {"v3.0.0": ["lib/html-encoding-sniffer.js",{"syntax":"commonjs","alias":{"whatwg-encoding":"./domenic_2016_whatwg_encoding.js"}}]}},
   "isaacs_2015_yallist.js":{"https://github.com/isaacs/yallist":{"v4.0.0":["yallist.js",{"syntax":"commonjs"}]}},
   "isaacs_2017_minipass.js":{"https://github.com/isaacs/minipass": {"v3.1.0": ["index.js", {
     "syntax":"commonjs",
-    "alias":{"yallist":"./isaacs_2015_yallist.js"},
-    "./Harris_2015_noderesolve.js":{}
+    "alias":{"yallist":"./isaacs_2015_yallist.js"}
   }]}},
-  "isaacs_2019_minipass_sized.js":{
-    "https://github.com/isaacs/minipass-sized":{
-      "v1.0.3":["index.js", {
-        "syntax":"commonjs",
-        "alias": {"minipass": "./isaacs_2017_minipass.js"},
-        "./Harris_2015_noderesolve.js": {}
-      }]
-    }
-  },
-  "isaacs_2017_minizlib.js":{"https://github.com/isaacs/minizlib": {"v2.0.0": ["index.js", {
-    "syntax":"commonjs",
-    "alias": {"minipass": "./isaacs_2017_minipass.js"},
-    "./Harris_2015_noderesolve.js": {}
-  }]}},
-  "isaacs_2019_minipass_fetch.js":{"https://github.com/npm/minipass-fetch": {"v1.4.1": [
-    "lib/index.js",
+  "isaacs_2019_minipass_sized.js":{"https://github.com/isaacs/minipass-sized":{"v1.0.3":["index.js",{"syntax":"commonjs","alias":{"minipass":"./isaacs_2017_minipass.js"}}]}},
+  "isaacs_2017_minizlib.js":{"https://github.com/isaacs/minizlib":{"v2.0.0":["index.js",{"syntax":"commonjs","alias":{"minipass":"./isaacs_2017_minipass.js"}}]}},
+  "isaacs_2019_minipass_fetch.js":{"https://github.com/npm/minipass-fetch":{"v1.4.1":["lib/index.js",
     {
       "syntax":"commonjs",
       "alias": {
@@ -179,7 +145,6 @@
         "minipass-sized": "./isaacs_2019_minipass_sized.js"
       },
       "./Harris_2015_json.js": {},
-      "./Harris_2015_noderesolve.js": {},
       "comment":"encoding is an optional dependency, its failed resolution is handled by the module"
     }
   ]}},
@@ -205,7 +170,6 @@
     "https://github.com/w3c/webidl2.js": {
       "v24.4.0": [
         "index.js", {
-          "./Harris_2015_noderesolve.js": {},
           "edit":{"w3c_2016_webidl2/0/index.js":{"export":"import","^((?:.*[\n$])*)": "$1\nexport default {parse,write,validate,WebIDLParseError};"}},
           "comment":"webidl2js requires (aka default-imports) this module, despite it only re-exports namespaces. re-exported namespaces can't be default exported, hence the conversion to imports before the new default export."
         }
@@ -215,8 +179,7 @@
   "domenic_2022_jsdom_webidl2js.js": {
     "https://github.com/jsdom/webidl2js": {
       "v17.1.0": [
-        "lib/transformer.js",
-        {
+        "lib/transformer.js", {
           "scripts": "./domenic_2022_jsdom_webidl2js_output_utils.js",
           "syntax":"commonjs",
           "alias": {
@@ -224,20 +187,22 @@
             "webidl-conversions": "./domenic_2014_webidl.js"
           },
           "detach":["prettier"],
-          "edit":{"domenic_2022_jsdom_webidl2js/0/lib/transformer.js":{
-            "_prettify\\(source\\) \\{": "_prettify(source){return source;"
+          "edit":{"lib/transformer.js":{
+            "_prettify\\(source\\) \\{": "_prettify(source){return source;",
+            "\"output/utils.js\"":"\"../../../domenic_2022_jsdom_webidl2js_output_utils.js\"",
+            "(utilsText = await )(.*?);":"$1new Promise(function expect_utils_bundle(resolve){$2.then(resolve).catch(fail=>console.log(\"Awaiting webidl output_utils bundle for \"+import.meta.url+\"...\")||setTimeout(time=>expect_utils_bundle(resolve),2500))})"
           }},
           "replace": {
-            "domenic_2022_jsdom_webidl2js/0/lib/transformer.js":{"Literal":{"output/utils.js":"domenic_2022_jsdom_webidl2js_output_utils.js"}}
+            "lib/transformer.js":{"Literal":{"../../../domenic_2022_jsdom_webidl2js_output_utils.js":"domenic_2022_jsdom_webidl2js_output_utils.js"}}
           },
           "./Harris_2015_json.js": {},
-          "./Harris_2015_noderesolve.js": {}
+          "comment":"prettier was easy to detach with one small edit. libs/output/utils.js asset is preserved in a separate bundle, and therefore awaited in case it's preceded by usage."
         }
       ]
     }
   },
   "domenic_2022_jsdom_webidl2js_output_utils.js": {
-    "https://github.com/jsdom/webidl2js/lib/output/utils/utils.js": {
+    "https://github.com/jsdom/webidl2js/lib/output/utils.js": {
       "v17.1.0": [
         "lib/output/utils.js",{
           "syntax":"commonjs",
@@ -248,7 +213,7 @@
   },
   "Mayr_2017_tr46.js":{"https://github.com/jsdom/tr46":{"v4.1.1":["index.js",{
     "syntax":"commonjs",
-    "scripts":["Mayr_2017_tr46_generateMappingTable.js","Mayr_2017_tr46_generateRegexes.js"],
+    "scripts":["Mayr_2017_tr46/0/scripts/generateMappingTable.js","Mayr_2017_tr46/0/scripts/generateRegexes.js"],
     "alias":{
       "punycode/":"./Bynens_2011_punycode.js",
       "minipass-fetch":"./isaacs_2019_minipass_fetch.js",
@@ -266,221 +231,158 @@
       "@unicode/unicode-15.0.0/Bidi_Class/Other_Neutral/code-points.js":"./Bynens_2022_unicode_Neutral.js",
       "@unicode/unicode-15.0.0/Bidi_Class/Arabic_Number/code-points.js":"./Bynens_2022_unicode_Arabic_number.js"
     },
+    "edit":{
+      "scripts/generateMappingTable.js":{"main\\(\\)\\.catch":"module.exports=main().catch"},
+      "scripts/generateRegexes.js":{"main\\(\\)\\.catch":"module.exports=main().catch","`(.*)\\${unicodeVersion}(.*)`":"\"$115.0.0$2\""}
+    },
     "./Harris_2015_json.js": {}
   }]}},
-  "Mayr_2017_tr46_generateMappingTable.js":["Mayr_2017_tr46/0/scripts/generateMappingTable.js",{
-    "syntax":"commonjs",
-    "alias":{"minipass-fetch":"./isaacs_2019_minipass_fetch.js"},
-    "edit":{"main\\(\\)\\.catch":"module.exports=main().catch"}
-  }],
-  "Mayr_2017_tr46_generateRegexes.js":["Mayr_2017_tr46/0/scripts/generateRegexes.js",{
-    "syntax":"commonjs",
-    "edit":{"main\\(\\)\\.catch":"module.exports=main().catch","(`.*)\\${unicodeVersion}(.*`)":"$115.0.0$2"}
-  }],
-  "Bynens_2022_unicode_Mark.js":{"https://github.com/node-unicode/unicode-15.0.0/General_Category/Mark/code-points.js":{"v1.3.1":["General_Category/Mark/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_LTR.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Left_To_Right/code-points.js":{"v1.3.1":["Bidi_Class/Left_To_Right/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_RTL.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Right_To_Left/code-points.js":{"v1.3.1":["Bidi_Class/Right_To_Left/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_Arabic.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Arabic_Letter/code-points.js":{"v1.3.1":["Bidi_Class/Arabic_Letter/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_EU_number.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/European_Number/code-points.js":{"v1.3.1":["Bidi_Class/European_Number/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_EU_separator.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/European_Separator/code-points.js":{"v1.3.1":["Bidi_Class/European_Separator/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_EU_terminator.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/European_Terminator/code-points.js":{"v1.3.1":["Bidi_Class/European_Terminator/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_Common_separator.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Common_Separator/code-points.js":{"v1.3.1":["Bidi_Class/Common_Separator/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_Nonspacing_mark.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Nonspacing_Mark/code-points.js":{"v1.3.1":["Bidi_Class/Nonspacing_Mark/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_Neutral_Boundary.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Boundary_Neutral/code-points.js":{"v1.3.1":["Bidi_Class/Boundary_Neutral/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_Neutral.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Other_Neutral/code-points.js":{"v1.3.1":["Bidi_Class/Other_Neutral/code-points.js",{"syntax":"commonjs"}]}},
-  "Bynens_2022_unicode_Arabic_number.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Arabic_Number/code-points.js":{"v1.3.1":["Bidi_Class/Arabic_Number/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_Mark.js":{"https://github.com/node-unicode/unicode-15.0.0/General_Category/Mark":{"v1.3.1":["General_Category/Mark/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_LTR.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Left_To_Right":{"v1.3.1":["Bidi_Class/Left_To_Right/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_RTL.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Right_To_Left":{"v1.3.1":["Bidi_Class/Right_To_Left/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_Arabic.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Arabic_Letter":{"v1.3.1":["Bidi_Class/Arabic_Letter/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_EU_number.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/European_Number":{"v1.3.1":["Bidi_Class/European_Number/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_EU_separator.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/European_Separator":{"v1.3.1":["Bidi_Class/European_Separator/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_EU_terminator.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/European_Terminator":{"v1.3.1":["Bidi_Class/European_Terminator/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_Common_separator.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Common_Separator":{"v1.3.1":["Bidi_Class/Common_Separator/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_Nonspacing_mark.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Nonspacing_Mark":{"v1.3.1":["Bidi_Class/Nonspacing_Mark/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_Neutral_Boundary.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Boundary_Neutral":{"v1.3.1":["Bidi_Class/Boundary_Neutral/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_Neutral.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Other_Neutral":{"v1.3.1":["Bidi_Class/Other_Neutral/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_Arabic_number.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Arabic_Number":{"v1.3.1":["Bidi_Class/Arabic_Number/code-points.js",{"syntax":"commonjs"}]}},
   "Bynens_2013_regenerate.js":{"https://github.com/mathiasbynens/regenerate":{"v1.4.2":["regenerate.js",{"syntax":"commonjs"}]}},
   "Isonen_2014_jss.js":{"https://github.com/cssinjs/jss/packages/jss":{"v10.10.0":["packages/jss/src/index.js",{
     "alias":{"is-in-browser":"./Anderson_2016_isinbrowser.js","tiny-warning":"./Reardon_2018_tinywarning.js"}
   }]}},
-  "Isonen_2014_jss_nested.js":{"https://github.com/cssinjs/jss/packages/jss-plugin-nested":{"v10.10.0":["packages/jss-plugin-nested/src/index.js",{"alias":{
-    "tiny-warning":"./Reardon_2018_tinywarning.js"
-  }}]}},
-  "Isonen_2014_jss_extend.js":{"https://github.com/cssinjs/jss/packages/jss-plugin-extend":{"v10.10.0":["packages/jss-plugin-extend/src/index.js",{"alias":{
-    "tiny-warning":"./Reardon_2018_tinywarning.js"
-  }}]}},
-  "Isonen_2014_jss_global.js":{"https://github.com/cssinjs/jss/packages/jss-plugin-global":{"v10.10.0":["packages/jss-plugin-global/src/index.js",{"alias":{
-    "jss":"./Isonen_2014_jss.js"
-  }}]}},
+  "Isonen_2014_jss_nested.js":{"https://github.com/cssinjs/jss/packages/jss-plugin-nested":{"v10.10.0":["packages/jss-plugin-nested/src/index.js",{"alias":{"tiny-warning":"./Reardon_2018_tinywarning.js"}}]}},
+  "Isonen_2014_jss_extend.js":{"https://github.com/cssinjs/jss/packages/jss-plugin-extend":{"v10.10.0":["packages/jss-plugin-extend/src/index.js",{"alias":{"tiny-warning":"./Reardon_2018_tinywarning.js"}}]}},
+  "Isonen_2014_jss_global.js":{"https://github.com/cssinjs/jss/packages/jss-plugin-global":{"v10.10.0":["packages/jss-plugin-global/src/index.js",{"alias":{"jss":"./Isonen_2014_jss.js"}}]}},
   "Anderson_2016_isinbrowser.js":{"https://github.com/tuxsudo/is-in-browser":{"v.2.0.0":["src/index.ts"]}},
+  "Reardon_2018_tinywarning.js":{"https://github.com/alexreardon/tiny-warning":{"v1.0.3":["src/index.js",{"syntax":"typescript"}]}},
   "domenic_2015_whatwg_url.js": {
     "https://github.com/jsdom/whatwg-url": {
       "v12.0.0": [
         "index.js", {
           "syntax":"commonjs",
-          "scripts": ["./domenic_2015_whatwg_url_transform.js","./domenic_2015_whatwg_url_webidl_wrapper.js"],
-          "alias":{"webidl-conversions":"./domenic_2014_webidl.js","tr46":"./Mayr_2017_tr46.js"},
-          "./Harris_2015_json.js": {},
-          "./Harris_2015_noderesolve.js": {}
+          "scripts": ["./domenic_2015_whatwg_url/0/scripts/transform.js"],
+          "alias":{
+            "webidl-conversions":"./domenic_2014_webidl.js","tr46":"./Mayr_2017_tr46.js",
+            "rimraf": "./isaacs_2011_rimraf.js",
+            "webidl2js": "./domenic_2022_jsdom_webidl2js.js",
+            "minipass-fetch": "./isaacs_2019_minipass_fetch.js"
+          },
+          "edit": {"scripts/transform.js": {
+            "transformer\\.generate": "module.exports=transformer.generate"
+          }},
+          "comment":"commonjs executes synchronously, so its thread needs to be exported to track after modularization.",
+          "./Harris_2015_json.js": {}
         }
       ]
     }
   },
-  "Reardon_2018_tinywarning.js":{"https://github.com/alexreardon/tiny-warning":{"v1.0.3":["src/index.js",{"syntax":"typescript"}]}},
   "domenic_2015_whatwg_url_webidl_wrapper.js": {
-    "https://github.com/jsdom/whatwg-url": {"v12.0.0": ["webidl2js-wrapper.js",{
-      "scripts": ["./domenic_2015_whatwg_url_webidl_wrapper_transform.js"],
-      "alias":{"webidl-conversions":"./domenic_2014_webidl.js","tr46":"./Mayr_2017_tr46.js"},
-      "syntax":"commonjs"
-    }]}
+    "https://github.com/jsdom/whatwg-url": {
+      "v12.0.0": [
+        "webidl2js-wrapper.js", {
+          "syntax":"commonjs",
+          "scripts": ["./domenic_2015_whatwg_url_webidl_wrapper/0/scripts/transform.js"],
+          "alias":{
+            "webidl-conversions":"./domenic_2014_webidl.js","tr46":"./Mayr_2017_tr46.js",
+            "rimraf": "./isaacs_2011_rimraf.js",
+            "webidl2js": "./domenic_2022_jsdom_webidl2js.js",
+            "minipass-fetch": "./isaacs_2019_minipass_fetch.js"
+          },
+          "edit": {"scripts/transform.js": {
+            "transformer\\.generate": "module.exports=transformer.generate"
+          }},
+          "comment":"commonjs executes synchronously, so its thread needs to be exported to track after modularization.",
+          "./Harris_2015_json.js": {}
+        }
+      ]
+    }
   },
-  "domenic_2015_whatwg_url_transform.js": [
-    "domenic_2015_whatwg_url/0/scripts/transform.js", {
-      "syntax":"commonjs",
-      "input": { "external": ["prettier"] },
-      "alias": {
-        "rimraf": "./isaacs_2011_rimraf.js",
-        "webidl-conversions": "./domenic_2014_webidl.js",
-        "webidl2js": "./domenic_2022_jsdom_webidl2js.js",
-        "minipass-fetch": "./isaacs_2019_minipass_fetch.js"
-      },
-      "edit": {"domenic_2015_whatwg_url/0/scripts/transform.js": {
-        "transformer\\.generate": "module.exports=transformer.generate"
-      }},
-      "comment":"commonjs executes synchronously, so its thread needs to be exported to track after modularization.",
-      "./Harris_2015_json.js": {},
-      "./Harris_2015_noderesolve.js": {}
-    }
-  ],
-  "domenic_2015_whatwg_url_webidl_wrapper_transform.js": [
-    "domenic_2015_whatwg_url_webidl_wrapper/0/scripts/transform.js", {
-      "syntax":"commonjs",
-      "input": { "external": ["prettier"] },
-      "alias": {
-        "rimraf": "./isaacs_2011_rimraf.js",
-        "webidl-conversions": "./domenic_2014_webidl.js",
-        "webidl2js": "./domenic_2022_jsdom_webidl2js.js",
-        "minipass-fetch": "./isaacs_2019_minipass_fetch.js"
-      },
-      "edit": {"domenic_2015_whatwg_url/0/scripts/transform.js": {
-        "transformer\\.generate": "module.exports=transformer.generate"
-      }},
-      "comment":"commonjs executes synchronously, so its thread needs to be exported to track after modularization.",
-      "./Harris_2015_json.js": {},
-      "./Harris_2015_noderesolve.js": {}
-    }
-  ],
-  "facebook_2014_flow_parser.js":{"https://registry.npmjs.org/flow-parser/-/flow-parser-0.216.1.tgz":[
-    "flow_parser.js"
-  ]},
-  "facebook_2013_react.js":{"https://github.com/facebook/react/packages/react":{"v18.2.0":[
-    "packages/react/src/React.js",{"syntax":"typescript"}
-  ]}},
-  "facebook_2013_react_dom_client.js":{"https://github.com/facebook/react/packages/react-dom":{"v18.2.0":[
-    "packages/react-dom/src/client/ReactDOM.js",{"syntax":"typescript"}
-  ]}},
-  "facebook_2013_react_dom_server.js":{"https://github.com/facebook/react/packages/react-dom":{"v18.2.0":[
-    "packages/react-dom/src/server/ReactDOMFizzServerNode.js",{"syntax":"typescript"}
-  ]}},
-  "remix_2014_react_router_dom.js":{"https://github.com/remix-run/react-router/packages/react-router-dom":{"v6.3.0":[
-    "packages/react-router-dom/index.tsx",{"syntax":"typescript"}
-  ]}},
-  "remix_2014_react_router_dom_server.js":{"https://github.com/remix-run/react-router/packages/react-router-dom":{"v6.3.0":[
-    "packages/react-router-dom/server.tsx",{"syntax":"typescript"}
-  ]}},
+  "facebook_2014_flow_parser.js":{"https://registry.npmjs.org/flow-parser/-/flow-parser-0.216.1.tgz":["flow_parser.js"]},
+  "facebook_2013_react.js":{"https://github.com/facebook/react/packages/react":{"v18.2.0":["packages/react/src/React.js",{"syntax":"typescript"}]}},
+  "facebook_2013_react_dom_client.js":{"https://github.com/facebook/react/packages/react-dom":{"v18.2.0":["packages/react-dom/src/client/ReactDOM.js",{"syntax":"typescript"}]}},
+  "facebook_2013_react_dom_server.js":{"https://github.com/facebook/react/packages/react-dom":{"v18.2.0":["packages/react-dom/src/server/ReactDOMFizzServerNode.js",{"syntax":"typescript"}]}},
+  "remix_2014_react_router_dom.js":{"https://github.com/remix-run/react-router/packages/react-router-dom":{"v6.3.0":["packages/react-router-dom/index.tsx",{"syntax":"typescript"}]}},
+  "remix_2014_react_router_dom_server.js":{"https://github.com/remix-run/react-router/packages/react-router-dom":{"v6.3.0":["packages/react-router-dom/server.tsx",{"syntax":"typescript"}]}},
   "mui_2014_material.js":{"https://github.com/mui/material-ui/packages/mui-material":{"v5.14.10":[
     "src/index.ts",
-    {"comment":"dependencies go to deep, let's just not use this okay? why do you need babel as runtime dependency in a layout library?"}
+    {"comment":"dependencies go to deep, let's just not use this okay? do really you need babel as runtime dependency for a layout library?"}
   ]}},
   "domenic_2016_whatwg_encoding.js": {
     "https://github.com/jsdom/whatwg-encoding": {
       "v2.0.0": [
         "lib/whatwg-encoding.js",
-        { "scripts": "./domenic_2016_whatwg_encoding_update.js",
+        { "scripts": "./domenic_2016_whatwg_encoding/0/scripts/update.js",
           "syntax":"commonjs",
           "alias": {
             "minipass-fetch": "./isaacs_2019_minipass_fetch.js",
             "iconv-lite":"./ashtuchkin_2012_iconv_lite.js"
           },
-          "./Harris_2015_json.js": {},
-          "./Harris_2015_noderesolve.js": {}
+          "edit": {"scripts/update.js": {
+            "(res = await (fetch\\((.*)\\)));":"$1.catch(fail=>console.log(\"1/2 attempt to fetch \"+$3+\": \"+fail.stack)||$2)",
+            "(main\\(\\)\\.catch)":"module.exports=$1"
+          }},
+          "./Harris_2015_json.js": {}
         }
       ]
     }
   },
-  "domenic_2016_whatwg_encoding_update.js":[
-    "domenic_2016_whatwg_encoding/0/scripts/update.js", {
-      "syntax":"commonjs",
-      "alias": {
-        "minipass-fetch": "./isaacs_2019_minipass_fetch.js",
-        "iconv-lite":"./ashtuchkin_2012_iconv_lite.js"
-      },
-      "edit": {"domenic_2016_whatwg_encoding/0/scripts/update.js": {
-        "main\\(\\)\\.catch":"module.exports=main().catch"
-      }},
-      "./Harris_2015_json.js": {},
-      "./Harris_2015_noderesolve.js": {}
-    }
-  ],
-  "domenic_2016_whatwg_mimetype.js": {
-    "https://github.com/jsdom/whatwg-mimetype": {
-      "v3.0.0": [
-        "lib/mime-type.js",{"syntax":"commonjs"}
-      ]
-    }
-  },
+  "domenic_2016_whatwg_mimetype.js":{"https://github.com/jsdom/whatwg-mimetype":{"v3.0.0":["lib/mime-type.js",{"syntax":"commonjs"}]}},
   "Skovoroda_2018_saferbuffer.js":{"https://github.com/ChALkeR/safer-buffer":{"v2.1.2":["safer.js",{"syntax":"commonjs"}]}},
   "ashtuchkin_2012_iconv_lite.js":{"https://github.com/ashtuchkin/iconv-lite":{"v0.6.3":["lib/index.js",{
     "syntax":"commonjs",
     "alias":{"safer-buffer":"./Skovoroda_2018_saferbuffer.js"},
     "edit":{"ashtuchkin_2012_iconv_lite/0/encodings/index.js":{"var module = modules":"let module=modules"}},
     "./Harris_2015_json.js": {},
-    "./Harris_2015_noderesolve.js": {},
     "comment":"hoisted commonjs variable named 'module' edited to local scope to not conflict with inserted module variable in module scope after standardization."
   }]}},
   "rrweb_2010_cssom.js": {"https://github.com/rrweb-io/CSSOM": {"a469aae2f92e454e669aec821781626924f98d17": ["lib/index.js", {
-    "scripts":["./rrweb_2010_cssom_build.js"],
+    "scripts":["./rrweb_2010_cssom/0/build.js"],
     "syntax":"commonjs",
     "edit":{
-      "lib/parse.js":{"(CSSOM\\.CSSStyleDeclaration = require\\('\\.\\/CSSStyleDeclaration'\\).CSSStyleDeclaration)":"!function(){$1}()"},
+      "lib/parse.js":{"(CSSOM\\.CSSStyleDeclaration = require\\('\\.\\/CSSStyleDeclaration'\\).CSSStyleDeclaration)":"!async function(){$1}()"},
       "lib/CSSStyleSheet.js":{
-        "CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSStyleSheet.prototype =(?:.*\n)*)(exports.CSSStyleSheet =)":"CSSOM={};!function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4",
-        "(CSSOM\\.parse = require\\('\\.\\/parse'\\).parse)":"!function(){$1}()"
+        "CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSStyleSheet.prototype =(?:.*\n)*)(exports.CSSStyleSheet =)":"CSSOM={};!async function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4",
+        "(CSSOM\\.parse = require\\('\\.\\/parse'\\).parse)":"!async function(){$1}()"
       },
-      "lib/CSSStyleRule.js":{"var CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSStyleRule.prototype =(?:.*\n)*)(CSSOM.CSSStyleRule.parse =)":"var CSSOM={};\n!function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4"},
-      "lib/CSSFontFaceRule.js":{"var CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSFontFaceRule.prototype =(?:.*\n)*)(exports.CSSFontFaceRule =)":"var CSSOM={};\n!function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4"},
-      "lib/CSSKeyframeRule.js":{"var CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSKeyframeRule.prototype =(?:.*\n)*)(exports.CSSKeyframeRule =)":"var CSSOM={};\n!function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4"}
+      "lib/CSSStyleRule.js":{"var CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSStyleRule.prototype =(?:.*\n)*)(CSSOM.CSSStyleRule.parse =)":"var CSSOM={};\n!async function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4"},
+      "lib/CSSFontFaceRule.js":{"var CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSFontFaceRule.prototype =(?:.*\n)*)(exports.CSSFontFaceRule =)":"var CSSOM={};\n!async function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4"},
+      "lib/CSSKeyframeRule.js":{"var CSSOM = ({(?:.*\n)*?});((?:.*\n)*)(CSSOM.CSSKeyframeRule.prototype =(?:.*\n)*)(exports.CSSKeyframeRule =)":"var CSSOM={};\n!async function(){Object.assign(CSSOM,$1);\n$3}();\n$2$4"},
+      "build.js":{
+          "__dirname":"PATH.dirname(new URL(import.meta.url).pathname)",
+          "process.stdout":"module.exports=process.stdout",
+          ", 0755":""
+      }
     },
-    "comment":"circular requires made dynamic to resolve horrific circular dependency. there must be a generic way to modularize synchronous circular imports without these edits (rollup's commonjs plugin may have hints). This way, some throttling is expected before the module is ready to use. Hopefully not many commonjs dependencies have such an insane structure for this to need general support."
+    "comment":"circular requires edited dynamic to resolve horrific circular dependency. there must be a generic way to modularize synchronous circular imports without these edits (rollup's commonjs plugin may have hints). This way, some throttling is expected before the module is ready to use. Hopefully not many commonjs dependencies have such an insane structure for this to need general support."
   }]}},
-  "rrweb_2010_cssom_build.js":["rrweb_2010_cssom/0/build.js",{"syntax":"commonjs","edit":{
-    "__dirname":"PATH.dirname(new URL(import.meta.url).pathname)",
-    "process.stdout":"module.exports=process.stdout",
-    ", 0755":""
-  }}],
   "Sakas_2018_cssstyle.js": {"https://github.com/jsdom/cssstyle": {
     "v3.0.0": [
       "lib/CSSStyleDeclaration.js", {
         "syntax":"commonjs",
-        "scripts": ["./Sakas_2018_cssstyle_allproperties.js","./Sakas_2018_cssstyle_someproperties.js","./Sakas_2018_cssstyle_properties.js"],
-        "alias": {"rrweb-cssom": "./rrweb_2010_cssom.js"},
-        "./Harris_2015_json.js": {}
+        "scripts": ["./Sakas_2018_cssstyle/0/scripts/download_latest_properties.js","./Sakas_2018_cssstyle/0/scripts/generate_implemented_properties.js","./Sakas_2018_cssstyle/0/scripts/generate_properties.js"],
+        "edit":{
+          "scripts/download_latest_properties.js":{
+            "(res = await fetch\\(url\\))":"$1.catch(fail=>console.log(\"1/2 attempt to fetch \"+url+\": \"+fail.stack)||fetch(url))",
+            "main\\(\\)\\.catch":"module.exports=main().catch",
+            "(out_file.end\\(function \\(err\\) {)":"return new Promise(resolve=>$1resolve(err);",
+            "(ties.\\'\\);\n  }\\))":"$1)"
+          },
+          "scripts/generate_implemented_properties.js":{
+            "^((?:.*[\n$])*)":" let [{promises:{readdir:r,writeFile:w}},{dirname:d,basename:b}]=await Promise.all(['fs','path'].map(m=>import(m)))\n,l=d(new URL(import.meta.url).pathname)\n,f=await r(l+'/../lib/properties').then(f=>\n new Set(f.flatMap(f=>/\\.js$/.test(f)?b(f,'.js').replace(/[A-Z]/,'-$&').replace(/^([^-]+)-/,(m,g)=>\n ['o','moz','ms','webkit'].includes(g)?'-'+m:m).toLowerCase():[])));\n module.exports=w(l+'/../lib/implementedProperties.js','module.exports=new Set('+JSON.stringify(Array.from(f))+')');"
+          },
+          "scripts/generate_properties.js":{
+            "^((?:.*[\n$])*)":"let [{promises:{readdir:r,writeFile:w}},{dirname:d,basename:b}]=await Promise.all(['fs','path'].map(m=>import(m)))\n,l=d(new URL(import.meta.url).pathname)\n,f=await r(l+'/../lib/properties').then(f=>\n Array.from(new Set(f.flatMap((f,n)=>[n=b(f,'.js'),n.replace(/[A-Z]/,'-$&').replace(/^([^-]+)-/,(m,g)=>\n ['o','moz','ms','webkit'].includes(g)?'-'+m:m).toLowerCase()].map(n=>'\"'+n+'\":require(\"./properties/'+f+'\").definition')))));\n f='const properties={'+f+'};module.exports=function(prototype){Object.defineProperties(prototype,properties);}';\n module.exports=w(l+'/../lib/properties.js',f)"
+          }
+        },
+        "alias": {"rrweb-cssom": "./rrweb_2010_cssom.js","minipass-fetch":"./isaacs_2019_minipass_fetch.js"},
+        "./Harris_2015_json.js": {},
+        "comment":"generate_implemented_properties originally generates an imperative script from ast literal, with babel (!), instead of simply iterating directly.... \n generate_properties is a simple bundler: parses property files listing their dependencies, sorts external dependencies above local, reconciles namespace of exports and imports, exports function to extend a prototype with property namespace entries, in dashed and camel case. the last step is sufficient input for an external bundler."
       }
     ]
   }},
-  "Sakas_2018_cssstyle_allproperties.js": [
-    "Sakas_2018_cssstyle/0/scripts/download_latest_properties.js",{
-      "syntax":"commonjs",
-      "edit":{
-        "main\\(\\)\\.catch":"module.exports=main().catch",
-        "(out_file.end\\(function \\(err\\) {)":"return new Promise(resolve=>$1resolve(err);",
-        "(ties.\\'\\);\n  }\\))":"$1)"
-      },
-      "alias":{"minipass-fetch":"./isaacs_2019_minipass_fetch.js"}
-    }
-  ],
-  "Sakas_2018_cssstyle_someproperties.js": [
-    "Sakas_2018_cssstyle/0/scripts/generate_implemented_properties.js",{
-      "edit":{"^((?:.*[\n$])*)":" let [{promises:{readdir:r,writeFile:w}},{dirname:d,basename:b}]=await Promise.all(['fs','path'].map(m=>import(m)))\n,l=d(new URL(import.meta.url).pathname)\n,f=await r(l+'/../lib/properties').then(f=>\n new Set(f.flatMap(f=>/\\.js$/.test(f)?b(f,'.js').replace(/[A-Z]/,'-$&').replace(/^([^-]+)-/,(m,g)=>\n ['o','moz','ms','webkit'].includes(g)?'-'+m:m).toLowerCase():[])));\n export default w(l+'/../lib/implementedProperties.js','module.exports=new Set('+JSON.stringify(Array.from(f))+')');"},
-      "comment":"the file originally generates an imperative script from ast (with babel!) instead of simply iterating directly...."
-    }
-  ],
-  "Sakas_2018_cssstyle_properties.js": [
-    "Sakas_2018_cssstyle/0/scripts/generate_properties.js", {
-      "edit":{"^((?:.*[\n$])*)":"let [{promises:{readdir:r,writeFile:w}},{dirname:d,basename:b}]=await Promise.all(['fs','path'].map(m=>import(m)))\n,l=d(new URL(import.meta.url).pathname)\n,f=await r(l+'/../lib/properties').then(f=>\n Array.from(new Set(f.flatMap((f,n)=>[n=b(f,'.js'),n.replace(/[A-Z]/,'-$&').replace(/^([^-]+)-/,(m,g)=>\n ['o','moz','ms','webkit'].includes(g)?'-'+m:m).toLowerCase()].map(n=>'\"'+n+'\":require(\"./properties/'+f+'\").definition')))));\n f='const properties={'+f+'};module.exports=function(prototype){Object.defineProperties(prototype,properties);}';\n export default w(l+'/../lib/properties.js',f)"},
-      "comment": "this file is a simple bundler: parses property files listing their dependencies, sorts external dependencies above local, reconciles namespace of exports and imports, exports function to extend a prototype with property namespace entries, in dashed and camel case. the last step is sufficient input for an external bundler."
-    }
-  ],
   "McKenzie_2014_babel_types.js": {"https://github.com/babel/babel/packages/babel-types": {"v6.13.0": ["src/index.js",{"syntax": "typescript"}]}},
   "domenic_2018_dataurls.js":{"https://github.com/jsdom/data-urls":{"v4.0.0":["lib/parser.js",{"syntax":"commonjs","alias":{
     "whatwg-url": "./domenic_2015_whatwg_url.js",
@@ -491,15 +393,12 @@
   "wel_2015_symbol_tree.js":{"https://github.com/jsdom/js-symbol-tree":{"v3.2.4":["lib/SymbolTree.js",{"syntax":"commonjs"}]}},
   "domenic_2017_domexception_webidl2js-wrapper.js":{"https://github.com/jsdom/domexception":{"v4.0.0":["webidl2js-wrapper.js",{
     "syntax":"commonjs",
-    "scripts":"./domenic_2017_domexception_webidl2js-wrapper_generate.js",
-    "alias":{"webidl-conversions":"./domenic_2014_webidl.js"},
-    "./Harris_2015_json.js": {}
+    "scripts":"./domenic_2017_domexception_webidl2js-wrapper/0/scripts/generate.js",
+    "alias":{"webidl-conversions":"./domenic_2014_webidl.js","webidl2js":"./domenic_2022_jsdom_webidl2js.js"},
+    "./Harris_2015_json.js": {},
+    "edit":{"scripts/generate.js":{"transformer\\.generate": "module.exports=transformer.generate"}},
+    "comment":"commonjs executes synchronously, so its thread needs to be exported to track after modularization."
   }]}},
-  "domenic_2017_domexception_webidl2js-wrapper_generate.js":["domenic_2017_domexception_webidl2js-wrapper/0/scripts/generate.js",{
-    "syntax":"commonjs",
-    "alias":{"webidl2js":"./domenic_2022_jsdom_webidl2js.js"},
-    "comment":"called during domexception/webidl2js-wrapper bundling, so will be resolved from source: no need to adjust __dirname locations for persistent bundle."
-  }],
   "jonathanong_2014_mimedb.js":{"https://github.com/jshttp/mime-db":{"v1.24.0":["index.js",{"syntax":"commonjs","./Harris_2015_json.js":{}}]}},
   "felixge_2011_delayedstream.js":{"https://github.com/felixge/node-delayed-stream":{"1.0.0":["lib/delayed_stream.js",{"syntax":"commonjs"}]}},
   "jonathanong_2014_mimetypes.js":{"https://github.com/jshttp/mime-types":{"2.1.12":["index.js",{"syntax":"commonjs","alias":{"mime-db":"./jonathanong_2014_mimedb.js"}}]}},
@@ -520,12 +419,15 @@
   "TooTallNate_2015_http_proxy_agent.js":{"https://github.com/TooTallNate/proxy-agents/packages/http-proxy-agent":{"http-proxy-agent@6.0.1":["packages/http-proxy-agent/src/index.ts",{
     "alias":{"agent-base":"./TooTallNate_2015_agent_base.js","debug":"./Holowaychuk_2011_debug.js"},
     "edit":{"src/index.ts":{"export class HttpProxyAgent":"export default class HttpProxyAgent"}},
-    "comment":"JSDOM default imports version 5.0.0 with ambiguous type/namespace import of 'http' module (import name AND import type {type} from 'http'!). Upgraded to namespace import of 6.2.0 where this was fixed. Otherwise this would require much excess handling."
+    "comment":"JSDOM default imports version 5.0.0 with ambiguous type/namespace import of 'http' module (import name AND import type {type} from 'http'!). Upgraded to namespace import of 6.2.0 where this was mostly fixed. The ambiguity would cause excessive edits or polyphyletic generalization (which tsc has normalized)."
   }]}},
   "TooTallNate_2015_https_proxy_agent.js":{"https://github.com/TooTallNate/proxy-agents/packages/https-proxy-agent":{"https-proxy-agent@6.2.0":["packages/https-proxy-agent/src/index.ts",{
     "alias":{"agent-base":"./TooTallNate_2015_agent_base.js","debug":"./Holowaychuk_2011_debug.js"},
-    "edit":{"src/index.ts":{"export class HttpsProxyAgent":"export default class HttpsProxyAgent"}},
-    "comment":"JSDOM default imports version 5.0.0 with ambiguous type/namespace import of 'http' module (import name AND import type {type} from 'http'!). Upgraded to namespace import of 6.2.0 where this was fixed. Otherwise this would require much excess handling."
+    "edit":{
+      "src/index.ts":{"export class HttpsProxyAgent":"export default class HttpsProxyAgent"},
+      "src/parse-proxy-response.ts":{"import { IncomingHttpHeaders }":"import { type IncomingHttpHeaders }"}
+    },
+    "comment":"JSDOM default imports version 5.0.0 with ambiguous type/namespace import of 'http' module (import name AND import type {type} from 'http'!). Upgraded to namespace import of 6.2.0 where this was mostly fixed. The ambiguity would cause excessive edits or polyphyletic generalization (which tsc has normalized)."
   }]}},
   "Bynens_2016_potential_customelementname.js":{"https://github.com/mathiasbynens/is-potential-custom-element-name":{"v1.0.1":["index.js",{"syntax":"commonjs"}]}},
   "dperini_2017_nwsapi.js":{"https://github.com/dperini/nwsapi":{"8d71cdfcdeb85800d7c0578476e8bca31d36285b":["src/nwsapi.js",{"syntax":"commonjs"}]}},
@@ -536,10 +438,10 @@
       "entities/lib/escape.js":"./Boehm_2014_entities_escape.js",
       "entities/lib/decode.js":"./Boehm_2014_entities_decode.js"
     },
-    "edit":{"from '\\.(.*?)\\.js'":"from '.$1.ts'","lib/index.ts":{
-      "import { Parser, type ParserOptions } from '.\\/parser\\/index.ts';\\n":"",
-      "import type { DefaultTreeAdapterMap } from '.\\/tree-adapters\\/default.ts';\\n":"",
-      "import type { TreeAdapterTypeMap } from '.\\/tree-adapters\\/interface.ts';\\n":"",
+    "edit":{"from '\\.(.*?)\\.js'":"from '.$1'","lib/index.ts":{
+      "import { Parser, type ParserOptions } from '.\\/parser\\/index';\\n":"",
+      "import type { DefaultTreeAdapterMap } from '.\\/tree-adapters\\/default';\\n":"",
+      "import type { TreeAdapterTypeMap } from '.\\/tree-adapters\\/interface';\\n":"",
       "export ([*{])":"import $1",
       "^((?:.*[\n$])*)": "$1\nexport default {defaultTreeAdapter,serialize,serializeOuter,ErrorCodes,foreignContent,html,Token,Tokenizer,TokenizerMode,parse,parseFragment};"
     }},
@@ -568,7 +470,7 @@
       "lib/api.js",
       {
         "syntax": "commonjs",
-        "scripts": ["./domenic_2022_jsdom_webidl_convert.js", "./domenic_2022_jsdom_jsglobals.js"],
+        "scripts": ["./domenic_2022_jsdom_rollup/0/scripts/webidl/convert.js", "./domenic_2022_jsdom_rollup/0/scripts/generate-js-globals.js"],
         "alias": {
           "tough-cookie": "./salesforce_2011_toughcookie.js",
           "webidl-conversions": "./domenic_2014_webidl.js",
@@ -593,62 +495,43 @@
           "parse5": "./inikulin_2013_parse5.js",
           "saxes": "./Dubeau_2011_saxes.js",
           "ws": "./einaros_2011_ws.js",
-          "w3c-xmlserializer":"./Mayr_2018_w3c_xmlserializer.js"
+          "w3c-xmlserializer":"./Mayr_2018_w3c_xmlserializer.js",
+          "rimraf": "./isaacs_2011_rimraf.js",
+          "webidl2js": "./domenic_2022_jsdom_webidl2js.js"
         },
+        "input": { "external": ["prettier"] },
         "edit":{
+          "scripts/generate-js-globals.js": {
+            "fs\\.writeFileSync": "module.exports=fs.writeFileSync"
+          },
+          "scripts/webidl/convert.js": {
+            "transformer\\.generate": "module.exports=transformer.generate"
+          },
           "living/nodes/Document-impl.js":{
-            "const (documents) = (require\\(\"..\\/documents.js\"\\))":"var $1;setTimeout(time=>$1=$2,3000)",
-            "const (DOMImplementation) = (require\\(\"..\\/generated\\/DOMImplementation\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"
+            "const (documents) = (require\\(\"..\\/documents.js\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);",
+            "const (DOMImplementation) = (require\\(\"..\\/generated\\/DOMImplementation\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"
           },
-          "living/nodes/HTMLFrameElement-impl.js":{"const (window) = (require\\(\"..\\/..\\/browser\\/Window\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
+          "living/nodes/HTMLFrameElement-impl.js":{"const (window) = (require\\(\"..\\/..\\/browser\\/Window\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"},
           "living/generated/AbortSignal.js":{
-            "const (Impl) = (require\\(\"..\\/aborting\\/AbortSignal-impl.js\"\\))":"var $1;setTimeout(time=>$1=$2,3000)",
-            "const (EventTarget) = (require\\(\".\\/EventTarget.js\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"
+            "const (Impl) = (require\\(\"..\\/aborting\\/AbortSignal-impl.js\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);",
+            "const (EventTarget) = (require\\(\".\\/EventTarget.js\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"
           },
-          "living/generated/MouseEventInit.js":{"const (EventTarget) = (require\\(\".\\/EventTarget.js\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
-          "living/generated/MouseEvent.js":{"const (EventTarget) = (require\\(\".\\/EventTarget.js\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
-          "helpers/create-element.js":{"const (interfaces) = (require\\(\"..\\/interfaces\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
-          "living/range/Range-impl.js":{"const (Range) = (require\\(\"..\\/generated\\/Range\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
-          "living/webstorage/Storage-impl.js":{"const (StorageEvent) = (require\\(\"..\\/generated\\/StorageEvent\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
-          "living/file-api/Blob-impl.js":{"const (Blob) = (require\\(\"..\\/generated\\/Blob\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
-          "living/geometry/DOMRectReadOnly-impl.js":{"const (DOMRectReadOnly) = (require\\(\"..\\/generated\\/DOMRectReadOnly\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
-          "living/geometry/DOMRect-impl.js":{"const (DOMRect) = (require\\(\"..\\/generated\\/DOMRect\"\\))":"var $1;setTimeout(time=>$1=$2,3000)"},
+          "living/generated/MouseEventInit.js":{"const (EventTarget) = (require\\(\".\\/EventTarget.js\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"},
+          "living/generated/MouseEvent.js":{"const (EventTarget) = (require\\(\".\\/EventTarget.js\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"},
+          "helpers/create-element.js":{"const (interfaces) = (require\\(\"..\\/interfaces\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"},
+          "living/range/Range-impl.js":{"const (Range) = (require\\(\"..\\/generated\\/Range\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"},
+          "living/webstorage/Storage-impl.js":{"const (StorageEvent) = (require\\(\"..\\/generated\\/StorageEvent\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"},
+          "living/file-api/Blob-impl.js":{"const (Blob) = (require\\(\"..\\/generated\\/Blob\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"},
+          "living/geometry/DOMRectReadOnly-impl.js":{"const (DOMRectReadOnly) = (require\\(\"..\\/generated\\/DOMRectReadOnly\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"},
+          "living/geometry/DOMRect-impl.js":{"const (DOMRect) = (require\\(\"..\\/generated\\/DOMRect\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"},
           "XMLHttpRequest-impl.js":{"(const syncWorkerFile =) .*\n":"$1 null;"},
-          "lib/api.js":{"^((?:.*[\n$])*)":"$1\nexport default new Promise(resolve=>setTimeout(time=>resolve(module.exports),3000));"}
+          "lib/api.js":{"^((?:.*[\n$])*)":"$1\nexport default new Promise(resolve=>setTimeout(time=>resolve(module.exports),import.meta.url.endsWith(\"api.js\")?10000:3000));"}
         },
         "./Harris_2015_json.js": {},
-        "./Harris_2015_noderesolve.js": {},
         "comment":"circular static requires need to be edited dynamic for module. AbortSignal seems to be the last file in the bundle."
       }
     ]}
   },
-  "domenic_2022_jsdom_jsglobals.js": [
-    "domenic_2022_jsdom_rollup/0/scripts/generate-js-globals.js", {
-      "syntax":"commonjs",
-      "./Harris_2015_json.js": {},
-      "edit": {"domenic_2022_jsdom_rollup/0/scripts/generate-js-globals.js": {
-        "fs\\.writeFileSync": "module.exports=fs.writeFileSync"
-      }},
-      "comment":"called during jsdom bundling, so will be available from source: no need to adjust __dirname locations."
-    }
-  ],
-  "domenic_2022_jsdom_webidl_convert.js": [
-    "domenic_2022_jsdom_rollup/0/scripts/webidl/convert.js",
-    {
-      "syntax": "commonjs",
-      "alias": {
-        "rimraf": "./isaacs_2011_rimraf.js",
-        "webidl-conversions": "./domenic_2014_webidl.js",
-        "webidl2js": "./domenic_2022_jsdom_webidl2js.js"
-      },
-      "input": { "external": ["prettier"] },
-      "./Harris_2015_json.js": {},
-      "./Harris_2015_noderesolve.js": {},
-      "edit": {"domenic_2022_jsdom_rollup/0/scripts/webidl/convert.js": {
-        "transformer\\.generate": "module.exports=transformer.generate"
-      }}
-    }
-  ],
   "jonschlinkert_2015_is_number.js":{"https://github.com/jonschlinkert/is-number":{"7.0.0":["index.js",{"syntax":"commonjs"}]}},
   "jonschlinkert_2015_regex_range.js":{"https://github.com/micromatch/to-regex-range":{"5.0.1":["index.js",{"syntax":"commonjs","alias":{"is-number":"./jonschlinkert_2015_is_number.js"}}]}},
   "jonschlinkert_2014_fill_range.js":{"https://github.com/jonschlinkert/fill-range":{"7.0":["index.js",{"syntax":"commonjs","alias":{"to-regex-range":"./jonschlinkert_2015_regex_range.js"}}]}},
