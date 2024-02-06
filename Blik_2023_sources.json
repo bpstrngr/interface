@@ -1,4 +1,5 @@
 {
+  "digitalbazaar_2013_nodeforge.js":{"https://github.com/digitalbazaar/forge":{"v1.3.1":["lib/pki.js",{"syntax":"commonjs"}]}},
   "haverbeke_2012_acorn.js":{"https://github.com/acornjs/acorn":{"8.9.0":["acorn/src/index.js"]}},
   "haverbeke_2012_acorn_walk.js":{"https://github.com/acornjs/acorn/acorn-walk":{"8.9.0":"acorn-walk/src/index.js"}},
   "davidbonnet_2015_astring.js":{"https://github.com/davidbonnet/astring":{"v1.8.6":["src/astring.js"]}},

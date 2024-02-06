@@ -95,7 +95,7 @@
  let attend=!attach&&defined(scope??undefined)&&!Array.isArray(term)
 ?[Object(scope),detach||term].reduce((domain,term)=>term instanceof Function
 ?fields(domain).find(field=>{try{return Object.is(Reflect.get(domain,field),term);}catch(fail){};})&&term
-:Reflect.get(domain,term))
+:Reflect.get(domain,term?.toString?term:null))
 :undefined;
  let bound=attach||attend;
  if(detach)context.shift();
@@ -431,8 +431,11 @@
  return either(condition,repeat)(provide(context));
 };
 
- export function invert(resolve,...context)
-{return new Promise(infer(resolve,...context));
+ export function revert(resolve)
+{// revert a Promise's inversion of control. 
+ if(!defined(this))
+ return refer(revert,...arguments);
+ return Reflect.construct(Promise,[compose(crop(1),infer(resolve,this))]);
 };
 
  export function exit(fail){throw fail;}
@@ -531,49 +534,49 @@
  export var tests=
  {collect:{context:[1,2,3],terms:[[1,2,3]],condition:["deepEqual"]}
  ,drop:
- {full:{context:[],terms:[1,2,3,tether(Function.call),4,4],condition:"equal"}
+ {full:{context:[],terms:[1,2,3,Function.call,4,4],condition:"equal"}
  ,left:
-[{context:[1],terms:[1,2,3,tether(Function.call),collect,[2,3]],condition:"deepEqual"}
-,{context:[2,1],terms:[1,2,3,tether(Function.call),collect,[1,3]],condition:"deepEqual"}
+[{context:[1],terms:[1,2,3,Function.call,collect,[2,3]],condition:"deepEqual"}
+,{context:[2,1],terms:[1,2,3,Function.call,collect,[1,3]],condition:"deepEqual"}
 ],right:
-[{context:[-1],terms:[1,2,3,tether(Function.call),collect,[3]],condition:"deepEqual"}
-,{context:[-2,-1],terms:[1,2,3,tether(Function.call),collect,[2]],condition:["deepEqual"]}
+[{context:[-1],terms:[1,2,3,Function.call,collect,[3]],condition:"deepEqual"}
+,{context:[-2,-1],terms:[1,2,3,Function.call,collect,[2]],condition:["deepEqual"]}
 ],modular:
-[{context:[-1,1],terms:[1,2,3,tether(Function.call),collect,[1,3]],condition:["deepEqual"]}
-,{context:[1,-1],terms:[1,2,3,tether(Function.call),collect,[2]],condition:["deepEqual"]}
+[{context:[-1,1],terms:[1,2,3,Function.call,collect,[1,3]],condition:["deepEqual"]}
+,{context:[1,-1],terms:[1,2,3,Function.call,collect,[2]],condition:["deepEqual"]}
 ]}
  ,tether:
- {access:{context:["length"],terms:[[1,2],tether(Function.call),2],condition:["equal"]}
- ,invoke:{context:["a"],terms:[{a:a=>a*2},3,tether(Function.call),6],condition:["equal"]}
- ,method:{context:[provide([Array.prototype.map,a=>a*2])],terms:[[1],tether(Function.call),[2]],condition:["deepEqual"]}
- ,idempotence:{context:[provide([function scope(){return this}])],terms:[2,tether(Function.call),2],condition:["equal"]}
+ {access:{context:["length"],terms:[[1,2],Function.call,2],condition:["equal"]}
+ ,invoke:{context:["a"],terms:[{a:a=>a*2},3,Function.call,6],condition:["equal"]}
+ ,method:{context:[provide([Array.prototype.map,a=>a*2])],terms:[[1],Function.call,[2]],condition:["deepEqual"]}
+ ,idempotence:{context:[provide([function scope(){return this}])],terms:[2,Function.call,2],condition:["equal"]}
  }
  ,infer:
- {undefined:{context:[],terms:[tether(Function.call),collect,c=>c.length,0],condition:["equal"]}
- ,identity:{context:[],terms:[0,tether(Function.call),0],condition:["equal"]}
+ {undefined:{context:[],terms:[Function.call,collect,c=>c.length,0],condition:["equal"]}
+ ,identity:{context:[],terms:[0,Function.call,0],condition:["equal"]}
  ,append:
-[{context:[5,1,2],terms:[0,3,4,tether(Function.call),collect,[0,1,2,3,4,5]],condition:["deepEqual"]}
-,{context:[3,4,5],terms:[0,1,2,tether(Function.call),collect,[0,4,5,1,2,3]],condition:["deepEqual"]}
+[{context:[5,1,2],terms:[0,3,4,Function.call,collect,[0,1,2,3,4,5]],condition:["deepEqual"]}
+,{context:[3,4,5],terms:[0,1,2,Function.call,collect,[0,4,5,1,2,3]],condition:["deepEqual"]}
 ],access:{scope:[],context:["length"],terms:[0],condition:["equal"]}
- ,invoke:{context:[isNaN],terms:[{},tether(Function.call),true],condition:["equal"]}
+ ,invoke:{context:[isNaN],terms:[{},Function.call,true],condition:["equal"]}
  ,method:
 [{scope:[1],context:[provide(["map",crop(1)])],terms:[[1]],condition:["deepEqual"]}
 ,{scope:{a:a=>1},context:["a"],terms:[1],condition:["equal"]}
 ]}
  ,buffer:
-[{context:[provide([a=>{throw Error()},fail=>2])],terms:[1,tether(Function.call),2],condition:"equal"}
-,{context:[provide([a=>2,fail=>3])],terms:[1,tether(Function.call),2],condition:"equal"}
-,{context:[provide([exit])],terms:[tether(Function.call),is(Error),false],condition:"equal"}
+[{context:[provide([a=>{throw Error()},fail=>2])],terms:[1,Function.call,2],condition:"equal"}
+,{context:[provide([a=>2,fail=>3])],terms:[1,Function.call,2],condition:"equal"}
+,{context:[provide([exit])],terms:[Function.call,is(Error),false],condition:"equal"}
 ],differ:
 [{context:[provide([a=>a])],terms:[buffer,1,infer(Function.call),is(Error)],condition:"ok"}
 ,{context:[provide([a=>2])],terms:[buffer,1,infer(Function.call),2],condition:"equal"}
 ],either:
- {first:{context:[provide([a=>a*2,a=>a*3])],terms:[1,tether(Function.call),2],condition:["equal"]}
- ,second:{context:[provide([a=>false,a=>a*3])],terms:[1,tether(Function.call),3],condition:["equal"]}
- ,abscond:{context:[provide([a=>false,drop()])],terms:[1,tether(Function.call),collect,c=>c.length,0],condition:["equal"]}
- ,identity:{context:[],terms:[1,tether(Function.call),1],condition:["equal"]}
- ,neither:{context:[provide([differ()])],terms:[buffer,1,2,tether(Function.call),is(Error),true],condition:["equal"]}
- ,promise:{context:[provide([a=>false,a=>2])],terms:[Promise.resolve(1),tether(Function.call),2],condition:["equal"]}
+ {first:{context:[provide([a=>a*2,a=>a*3])],terms:[1,Function.call,2],condition:["equal"]}
+ ,second:{context:[provide([a=>false,a=>a*3])],terms:[1,Function.call,3],condition:["equal"]}
+ ,abscond:{context:[provide([a=>false,drop()])],terms:[1,Function.call,collect,c=>c.length,0],condition:["equal"]}
+ ,identity:{context:[],terms:[1,Function.call,1],condition:["equal"]}
+ ,neither:{context:[provide([differ()])],terms:[buffer,1,2,Function.call,is(Error),true],condition:["equal"]}
+ ,promise:{context:[provide([a=>false,a=>2])],terms:[Promise.resolve(1),Function.call,2],condition:["equal"]}
  }
  ,wether:
  {boolean:
@@ -583,7 +586,7 @@
  ,switch:{context:[provide([[a=>a,a=>true],swap(1),swap(2)])],terms:[null,false,infer(Function.call),2],condition:["equal"]}
  ,fallback:{context:[provide([[a=>a,a=>a],1,2,swap(3)])],terms:[null,false,infer(Function.call),3],condition:["equal"]}
  }
- ,combine:{context:[provide([a=>a*2,a=>a*3,a=>a*4])],terms:[1,tether(Function.call),collect,[2,3,4]],condition:["deepEqual"]}
+ ,combine:{context:[provide([a=>a*2,a=>a*3,a=>a*4])],terms:[1,Function.call,collect,[2,3,4]],condition:["deepEqual"]}
  ,route:
  {path:{scope:{a:{b:c=>c.body}},context:[["a","b"],{method:"post",body:1}],terms:[1],condition:["equal"]}
  ,method:{scope:{a:{get:c=>c.method}},context:[["a"],{method:"get"}],terms:["get"],condition:["equal"]}
@@ -593,9 +596,12 @@
 ,{scope:{a:{b:{get:c=>{throw Error("fail")}}}},context:[["a","b"],{method:"get"}],terms:[is(Error)],condition:["ok"]}
 ]}
  ,is:
- {something:{context:[provide([something])],terms:[0,tether(Function.call),true],condition:["equal"]}
- ,nothing:{context:[],terms:[tether(Function.call),false],condition:["equal"]}
- ,instance:{context:[provide([Function])],terms:[infer(undefined,function(){}),tether(Function.call),true],condition:["equal"]}
- ,multiple:{context:[provide([iterable,a=>a.some(Boolean)])],terms:[[0,1,2],tether(Function.call),true],condition:["equal"]}
+ {something:{context:[provide([something])],terms:[0,Function.call,true],condition:["equal"]}
+ ,nothing:{context:[],terms:[Function.call,false],condition:["equal"]}
+ ,instance:{context:[provide([Function])],terms:[infer(undefined,function(){}),Function.call,true],condition:["equal"]}
+ ,multiple:{context:[provide([iterable,a=>a.some(Boolean)])],terms:[[0,1,2],Function.call,true],condition:["equal"]}
  }
- };
+ ,revert:
+[{context:[provide([(resolve,context)=>resolve(context)])],terms:[2,Function.call,2],condition:["equal"]}
+,{context:[provide([(resolve,context)=>Promise.resolve(context).then(resolve)])],terms:[3,Function.call,3],condition:["equal"]}
+]};

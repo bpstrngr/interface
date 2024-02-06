@@ -1,4 +1,4 @@
- import {note,prompt,describe,invert,clock,observe,is,has,same,something,compound,infer,tether,wether,collect,provide,route,buffer,compose,combine,either,drop,crop,swap,record,wait,exit} from "./Blik_2023_inference.js";
+ import {note,prompt,describe,revert,clock,observe,is,has,same,something,compound,infer,tether,wether,collect,provide,route,buffer,compose,combine,either,drop,crop,swap,record,wait,exit} from "./Blik_2023_inference.js";
  import local,{resolve,access,list,classify} from "./Blik_2023_interface.js";
  import {search,merge,sum} from "./Blik_2023_search.js";
 
@@ -12,39 +12,32 @@
 ].map(compose(drop(0,1),RegExp));
  classify(classified);
  parameters=await compose(resolve,["default",protocol],tether(route))(parameters);
- let missing=["port","hmac",...protocol=="https"?["distinguishedname"]:[]].filter(key=>!parameters[key]);
+ let missing=["port",...protocol=="https"?["hmac","distinguishedname"]:[]].filter(key=>!parameters[key]);
  if(missing.length)
  exit("missing "+missing+" in "+arguments[1]);
  //if(await resolve("cluster","isMaster"))return persistence(),history(),fork();
  encrypt(parameters.hmac);
  await window([protocol,"//localhost",parameters.port].join(":"));
- protocol=await import(protocol);
- source=await import(source).catch(note);
+ [protocol,source]=await resolve([protocol,source]);
  let certificates=protocol.globalAgent.protocol=="https:"?[certify(Object.values(parameters.certification)[0],parameters.distinguishedname)]:[];
  let virtualize=Object.entries(parameters.certification||{}).slice(1).map(([name,certificate])=>
  compose(name,certify(certificate),combine("addContext",crop(1)),drop(1)));
- let channel=await compose
-(infer("createServer",...certificates,compose(source,remember,receive))
-,infer("listen",parameters.port,listen),...virtualize
-,note ,invert((close,channel)=>observe.call(channel,{close}))
-)(protocol);
- //compose("default",protocol.open)(import("./Blik_2020_room.js"));
+ let report=compose(combine(swap(protocol.globalAgent.protocol,"//"),either("_connectionKey",swap(parameters.port))),"/",collect,infer("join",""),"open",note.bind(2));
+ return compose
+("createServer",parameters.port
+,revert((listen,host,port)=>infer("listen")(host,port,infer(listen))),...virtualize
+,combine(infer(),report)
+,revert((close,channel)=>observe.call(channel,{close}))
+)(protocol,...certificates,compose(source,remember,tether(receive)));
+ // compose("default",protocol.open)(import("./Blik_2020_room.js"));
+ // function listen(port)
+ //{let response={end(body){return {...this.header,body};},setHeader(header){this.header={header}},writeHead(){}};
+ // compose(prompt,agent,"url",describe,{headers:{},method:"get"},merge
+ //,response,source,remember,tether(respond),note,swap(this),port,tether(listen))({[agent]:undefined});
+ //};
 };
 
- function listen(port)
-{console.log(this);let agent=protocol.globalAgent.protocol+"//"+(this._connectionKey||port)+"/";
- return note.call(2,agent,"open");
- let response={end(body){return {...this.header,body};},setHeader(header){this.header={header}},writeHead(){}};
- compose(prompt,agent,"url",describe,{headers:{},method:"get"},merge
-,response,source,remember,tether(respond),note,swap(this),port,tether(listen))({[agent]:undefined});
-};
-
-function receive(request,response,source,remember)
-{return observe.call(request
-,{data(data){this.body+=decoder.write(data);}
- ,end:respond.bind(...arguments)
- });
-};
+ function receive(request){observe.call(request,{data(data){this.body+=decoder.write(data);},end:respond.bind(...arguments)});}
 
  function respond(response,source,remember)
 {let distinction=({url,headers})=>url+(headers?.cookie||"");
@@ -56,36 +49,30 @@ function receive(request,response,source,remember)
 :{async window(location)
 {let {JSDOM}=await resolve("./domenic_2022_jsdom_rollup.js","default");
  return {window}=Reflect.construct(JSDOM,["",{url:location}]);
-},async fetch(request,header)
-{request=compound(request)?request:
- {response:{},url:request||"",method:"get",...header||{}
+},async fetch(request)
+{if(!compound(request))request=
+ {end(response){return Object.assign(this.response,response);}
  ,respond(header){Object.assign(this.response,{header});}
- ,end(response){return Object.assign(this.response,response);}
+ ,response:{},url:request||"",method:"get",...header||{}
  };
  let address=request.url.replace(/^/,request.connection?.remoteAddress||"");
  let method=request.method.toLowerCase();
  console.log("\x1b["+({get:36,put:33,delete:33}[method]||35)+"m"+clock()+"@"+address+"...\x1b[0m");
- let {pathname,query}=await resolve("url","parse",request.url,true);
+ let format=either("Content-Type","content-type",swap(undefined))(request);
+ let cookie=Object.fromEntries(request.headers?.cookie?.split(/ *; */).map(entry=>entry.split("="))||[]);
+ let {query,pathname}=await resolve("url","parse",request.url,true);
  let path=compose
 (infer("filter",(step,index)=>(index||step)&&step!==".")
 ,{get:infer("map",step=>step||"interface")}[method]
 )(decodeURIComponent(pathname).split("/"));
- let cookie=Object.fromEntries(request.headers?.cookie?.split(/ *; */).map(entry=>entry.split("="))||[]);
- Object.assign(request,{body:"",path,query,method,cookie});
- let format=buffer(either("Content-Type","content-type"),swap(undefined))(request);
- if(format)
- request.body=await compose(format,request.body,either("parse",swap(request.body)))(parser);
- let response=await buffer(either(tether(route),"error",drop(-1)))(this||local,path,request);
+ let body=await parser[format]?.parse(request.body)||request.body||"";
+ request=Object.assign(request,{body,path,query,method,cookie});
+ let response=await buffer(either(tether(route),"error",drop(-1)))(this||local,request.path,request);
  let fail=is(Error)(response);
+ body=wether([fail,has("nodeName"),something],"message","outerHTML",either("body",crop(1)),swap("missing source: \""+request.path+"\""))(response);
+ let type=!fail?response?.type||response?.nodeName?.toLowerCase()||request.url.match(/\.([^\.\/]*)$/)?.slice(1)[0]||(compound(response)?"json":"txt"):"txt";
  let status=response?fail?500:response.status||200:404;
  let success=status<400;
- let body=wether
-([is(Error),has("nodeName"),something]
-,"message","outerHTML",either("body",crop(1))
-,swap(["missing source: \"",path,"\""].join(""))
-)(response);
- let type=!fail?response?.type||response?.nodeName?.toLowerCase()||
- request.url.match(/\.([^\.\/]*)$/)?.slice(1)[0]||(compound(response)?"json":"txt"):"txt";
  let report=(status==200?32:31)+"m"+clock()+"@"+[address,status,type].join(" ")+": \""+String(body).replace(/^([\s\S]{20})[\s\S]*$/,(...match)=>match[1]+"...")+"\"";
  console.log("\x1b["+report+"\x1b[0m");
  return (
@@ -178,12 +165,11 @@ function receive(request,response,source,remember)
 }
 
  async function certify(certification,distinguishedname)
-{let persistence="./Blik_2020_persistence.js";
- let [key,cert]=await Promise.all(certification.map(certificate=>access(certificate,true)));
- if(([key,cert]).every(pair=>pair&&pair.length))
+{let [key,cert]=await Promise.all(certification.map(certificate=>buffer(access,swap(null))(certificate,true)));
+ if([key,cert].every(Boolean))
  return {key,cert};
  note("creating "+certification+"...");
- [key,cert]=await import(process.execPath.replace("bin/node","lib/node_modules"+"/node-forge/lib/pki.js")).then(async module=>
+ [key,cert]=await import("./digitalbazaar_2013_nodeforge.js").then(async module=>
 {let rsa=module.default.rsa.generateKeyPair(2048);
  let authority=Object.entries(distinguishedname).map(([key,value])=>(
  {[key.match(/^[A-Z]{2}$/)?"shortName":"name"]:key,value}));
@@ -201,10 +187,9 @@ function receive(request,response,source,remember)
 ,{name: 'subjectKeyIdentifier'}
 ]);
  certificate.sign(rsa.privateKey);
- key=await persistence.put({url:[certification[0]],body:module.default.privateKeyToPem(rsa.privateKey)});
- cert=await persistence.put({url:[certification[1]],body:module.default.certificateToPem(certificate)});
- note(key,cert)
- return [key,cert];
+ key=await local.put({url:await resolve("url","pathToFileURL",certification[0]),body:module.default.privateKeyToPem(rsa.privateKey)});
+ cert=await local.put({url:await resolve("url","pathToFileURL",certification[1]),body:module.default.certificateToPem(certificate)});
+ return [key,cert].map(certification=>access(certification,true));
 });
  [key,cert]=await Promise.all([key,cert]);
  if([key,cert].some(pair=>pair instanceof Error))

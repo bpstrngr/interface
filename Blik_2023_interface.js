@@ -57,8 +57,8 @@
  return scope;
 }
 ,put:async function(request)
-{let url=path.join(...request.path);
- return await persist(request.body,url,request.query?.force)
+{let path=decodeURI(new URL(request.url).pathname);
+ return await persist(request.body,path,request.query?.force)
 }
 ,delete:async function(request)
 {let address=Object.fromEntries(request.headers.origin.split(/:\/+|:/g).map((path,index)=>
@@ -107,7 +107,7 @@
 ?[]
 :Promise.resolve(entry.isDirectory()
 ?recursive?list(file+entry.name+"/",recursive,exclude):{}
-:function(){console.log(entry)}).then((content)=>[entry.name,content]))
+:[entry.name,null]))
 ,[]);
  return Object.fromEntries(entries);
 }
