@@ -147,8 +147,8 @@
  return path;
 };
 
-export const purge=path=>import("fs").then(({promises:{rm}})=>
-rm(path,{recursive:true})).then(done=>path);
+ export const purge=path=>import("fs").then(({promises:{rm}})=>
+ rm(path,{recursive:true})).then(done=>path);
 
  export async function modularise(resource,identifier,context={})
 {// uses --experimental-vm-modules 

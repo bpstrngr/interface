@@ -165,7 +165,10 @@
 }
 
  async function certify(certification,distinguishedname)
-{let [key,cert]=await Promise.all(certification.map(certificate=>buffer(access,swap(null))(certificate,true)));
+{let path=await import("path");
+ let location=await compose(resolve,path.dirname)("url","fileURLToPath",import.meta.url);
+ let [key,cert]=await Promise.all(certification.map(certificate=>
+ buffer(access,swap(null))(path.resolve(location,certificate),true)));
  if([key,cert].every(Boolean))
  return {key,cert};
  note("creating "+certification+"...");
@@ -187,9 +190,9 @@
 ,{name: 'subjectKeyIdentifier'}
 ]);
  certificate.sign(rsa.privateKey);
- key=await local.put({url:await resolve("url","pathToFileURL",certification[0]),body:module.default.privateKeyToPem(rsa.privateKey)});
- cert=await local.put({url:await resolve("url","pathToFileURL",certification[1]),body:module.default.certificateToPem(certificate)});
- return [key,cert].map(certification=>access(certification,true));
+ key=await local.put({url:path.resolve(location,certification[0]),body:module.default.privateKeyToPem(rsa.privateKey)});
+ cert=await local.put({url:path.resolve(location,certification[1]),body:module.default.certificateToPem(certificate)});
+ return Promise.all([key,cert].map(certification=>access(certification,true)));
 });
  [key,cert]=await Promise.all([key,cert]);
  if([key,cert].some(pair=>pair instanceof Error))

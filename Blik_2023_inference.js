@@ -383,7 +383,7 @@
 };
  export function has(fields)
 {if(this)
- return fields.every(this.hasOwnProperty.bind(this));
+ return [fields].flat().every(field=>field in this);
  return tether(has,fields);
 };
  export function when(...terms)
