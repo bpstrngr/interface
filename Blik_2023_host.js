@@ -1,6 +1,13 @@
- import {note,prompt,describe,revert,clock,observe,is,has,same,something,compound,infer,tether,wether,collect,provide,route,buffer,compose,combine,either,drop,crop,swap,record,wait,exit} from "./Blik_2023_inference.js";
- import local,{resolve,access,list,classify} from "./Blik_2023_interface.js";
+ import {note,prompt,when,pattern,describe,revert,clock,observe,is,has,same,slip,something,compound,infer,tether,wether,collect,provide,route,buffer,compose,combine,either,drop,crop,swap,record,wait,exit} from "./Blik_2023_inference.js";
+ import {resolve,access,list,window,fetch} from "./Blik_2023_interface.js";
  import {search,merge,sum} from "./Blik_2023_search.js";
+ import local from "./Blik_2024_source.js";
+
+ export var classified=["*.git*"].map(term=>RegExp("^"+term.replace(/\./g,"\\.").replace(/\*/g,".*")+"$"));
+
+ export var classify=compose(when(either(pattern,infer("every",pattern))),file=>
+ [file].flat().forEach(file=>
+ classified.push(file)));
 
  export async function expose(source,parameters,protocol="http",remember)
 {let {default:path}=await import("path");
@@ -25,11 +32,10 @@
  let report=compose(combine(swap(protocol.globalAgent.protocol,"//"),either("_connectionKey",swap(parameters.port))),"/",collect,infer("join",""),"open",note.bind(2));
  return compose
 ("createServer",parameters.port
-,revert((listen,host,port)=>infer("listen")(host,port,infer(listen))),...virtualize
-,combine(infer(),report)
+,revert((listen,host,port)=>host.listen(port,infer(listen))),...virtualize
+,combine(infer(),report,compose(slip("./Blik_2020_room.js","open"),resolve))
 ,revert((close,channel)=>observe.call(channel,{close}))
 )(protocol,...certificates,compose(source,remember,tether(receive)));
- // compose("default",protocol.open)(import("./Blik_2020_room.js"));
  // function listen(port)
  //{let response={end(body){return {...this.header,body};},setHeader(header){this.header={header}},writeHead(){}};
  // compose(prompt,agent,"url",describe,{headers:{},method:"get"},merge
@@ -44,60 +50,6 @@
  let retrieve=remember?compose(record(fetch,distinction),distinction(this)):tether(fetch);
  return compose(retrieve,response||this,tether(submit))(source.default,this);
 };
-
- export var {window,fetch}=globalThis.window?globalThis
-:{async window(location)
-{let {JSDOM}=await resolve("./domenic_2022_jsdom_rollup.js","default");
- return {window}=Reflect.construct(JSDOM,["",{url:location}]);
-},async fetch(request)
-{if(!compound(request))request=
- {end(response){return Object.assign(this.response,response);}
- ,respond(header){Object.assign(this.response,{header});}
- ,response:{},url:request||"",method:"get",...header||{}
- };
- let address=request.url.replace(/^/,request.connection?.remoteAddress||"");
- let method=request.method.toLowerCase();
- console.log("\x1b["+({get:36,put:33,delete:33}[method]||35)+"m"+clock()+"@"+address+"...\x1b[0m");
- let format=either("Content-Type","content-type",swap(undefined))(request);
- let cookie=Object.fromEntries(request.headers?.cookie?.split(/ *; */).map(entry=>entry.split("="))||[]);
- let {query,pathname}=await resolve("url","parse",request.url,true);
- let path=compose
-(infer("filter",(step,index)=>(index||step)&&step!==".")
-,{get:infer("map",step=>step||"interface")}[method]
-)(decodeURIComponent(pathname).split("/"));
- let body=await parser[format]?.parse(request.body)||request.body||"";
- request=Object.assign(request,{body,path,query,method,cookie});
- let response=await buffer(either(tether(route),"error",drop(-1)))(this||local,request.path,request);
- let fail=is(Error)(response);
- body=wether([fail,has("nodeName"),something],"message","outerHTML",either("body",crop(1)),swap("missing source: \""+request.path+"\""))(response);
- let type=!fail?response?.type||response?.nodeName?.toLowerCase()||request.url.match(/\.([^\.\/]*)$/)?.slice(1)[0]||(compound(response)?"json":"txt"):"txt";
- let status=response?fail?500:response.status||200:404;
- let success=status<400;
- let report=(status==200?32:31)+"m"+clock()+"@"+[address,status,type].join(" ")+": \""+String(body).replace(/^([\s\S]{20})[\s\S]*$/,(...match)=>match[1]+"...")+"\"";
- console.log("\x1b["+report+"\x1b[0m");
- return (
- {status,type,body
- ,location:response?.location
- ,cookie:response?.cookie
- ,headers:{get(key){return response?.header[key];}}
- ,json(){return this.text(true);}
- ,text(json)
-{if(this.body.constructor?.name=="Buffer")
- return this.body.toString();
- if(typeof this.body=="object")
- return json?this.body:JSON.stringify(this.body);
- return json?JSON.parse(this.body):this.body;
-},arrayBuffer()
-{return Promise.resolve(this.body.constructor?.name=="Buffer"?this.body:Buffer.from(this.body,"utf-8"));
-}});
-}};
-
- var parser=compose.call
-({JSON,"x-www-form-urlencoded":await import("querystring")}
-,Object.entries
-,infer("map",compose(combine(compose(0,"toLowerCase",/^/,"application/","replace"),1),collect))
-,Object.fromEntries
-);
 
  export function submit(response)
 {let {type,status,location,cookie}=this;
@@ -165,8 +117,8 @@
 }
 
  async function certify(certification,distinguishedname)
-{let path=await import("path");
- let location=await compose(resolve,path.dirname)("url","fileURLToPath",import.meta.url);
+{let [path,url]=await resolve(["path","url"]);
+ let location=path.dirname(url.fileURLToPath(import.meta.url));
  let [key,cert]=await Promise.all(certification.map(certificate=>
  buffer(access,swap(null))(path.resolve(location,certificate),true)));
  if([key,cert].every(Boolean))
@@ -190,8 +142,8 @@
 ,{name: 'subjectKeyIdentifier'}
 ]);
  certificate.sign(rsa.privateKey);
- key=await local.put({url:path.resolve(location,certification[0]),body:module.default.privateKeyToPem(rsa.privateKey)});
- cert=await local.put({url:path.resolve(location,certification[1]),body:module.default.certificateToPem(certificate)});
+ key=await local.put({url:url.pathToFileURL(path.resolve(location,certification[0])),body:module.default.privateKeyToPem(rsa.privateKey)});
+ cert=await local.put({url:url.pathToFileURL(path.resolve(location,certification[1])),body:module.default.certificateToPem(certificate)});
  return Promise.all([key,cert].map(certification=>access(certification,true)));
 });
  [key,cert]=await Promise.all([key,cert]);

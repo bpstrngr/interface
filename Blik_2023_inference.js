@@ -1,5 +1,6 @@
  export const address=new URL(import.meta.url).pathname;
  export const location = address.replace(/\/[^/]*$/,"");
+ var browser=globalThis.window;
  var colors={steady:"\x1b[0m",alarm:"\x1b[31m",ready:"\x1b[32m",busy:"\x1b[33m",bright:"\x1b[1m",dim:"\x1b[2m",underscore:"\x1b[4m", blink:"\x1b[5m", reverse:"\x1b[7m",invisible:"\x1b[8m", black:"\x1b[30m", red:"\x1b[31m", green:"\x1b[32m",yellow:"\x1b[33m",blue:"\x1b[34m", magenta:"\x1b[35m",cyan:"\x1b[36m", white:"\x1b[37m",gray:"\x1b[90m",night:"\x1b[40m",fire:"\x1b[41m",grass:"\x1b[42m",sun:"\x1b[43m",sea:"\x1b[44m",club:"\x1b[45m",sky:"\x1b[46m",milk:"\x1b[47m",fog:"\x1b[100m"};
 
  export function ascend(term)
@@ -319,9 +320,11 @@
  stream(dim+"\x1b[3m "+clock(new Date())+source+blue+stack+neutral+":");
  let steady=colors.steady;
  let phase=colors[this]||Object.values(colors)[this]||steady;
- process.stdout.write(phase);
+ if(!browser)process.stdout.write(phase);
+ else context.unshift(phase),context.push(steady);
  stream(...context);
- process.stdout.write(steady);
+ if(!browser)process.stdout.write(steady);
+ else context.shift(),context.pop();
  return provide(context);
 };
 
@@ -355,7 +358,7 @@
 };
 
  export function defined(term){return term!==undefined;};
- export function compound(term){return typeof term==="object";};
+ export function compound(term){return typeof term==="object"&&term;};
  export function iterable(term){try{return Symbol.iterator in term;}catch(fail){return false}};
  export function array(term){return Array.isArray(term);};
  export function binary(term){return typeof term==="boolean";};
