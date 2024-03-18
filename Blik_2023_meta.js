@@ -62,33 +62,6 @@ let address=new URL(import.meta.url).pathname;
  duplicates=Object.entries(duplicates).flatMap(([name,source])=>imports.filter(value=>
  value.specifiers.some(({local})=>local.name===name)&&value.source.name===source).slice(1));
  duplicates.map(value=>grammar.body.indexOf(value)).sort().reverse().forEach(index=>delete grammar.body[index]);
- if(syntax==="commonjs")
- // declare commonjs module.exports in module scope. 
- [{type:"Identifier",name:"module"},{type:"Identifier",name:"exports"}].reduce((module,exports)=>
- grammar.body.unshift(
- grammar.body.find((statement,index,body)=>
- statement?.kind==="let"&&
- ["exports","module"].map((name,index)=>statement.declarations[index]?.id.name===name).every(Boolean)&&
- delete body[index])||
- {type:"VariableDeclaration",kind:"let",declarations:
-[{type:"VariableDeclarator",id:exports,init:{type:"ObjectExpression",properties:[]}}
-,{type:"VariableDeclarator",id:{type:"Identifier",name:"module"},init:{type:"ObjectExpression",properties:
-[{type:"Property",key:exports,value:exports,shorthand:true,kind:"init"}
-]}
- }
-]})&&
- // expose commonjs module.exports as default export. 
- grammar.body.some(statement=>statement?.type==="ExportNamedDeclaration"&&
- statement.specifiers.some?.(({exported})=>exported?.name==="default"))||
- grammar.body.push(
- grammar.body.find((statement,index,body)=>statement?.type==="ExportDefaultDeclaration"&&
- // statement.declaration.object?.name==="module"&&
- // statement.declaration.property?.name==="exports"&&
- delete body[index])||
- {type:"ExportDefaultDeclaration"
- ,exportKind:"value"
- ,declaration:{type:"MemberExpression",object:module,property:exports}
- }));
  grammar=prune.call(grammar,function jsonnamespace({1:value})
 {let boundary=["Import","ExportNamed","ExportAll"].map(type=>type+"Declaration").find(type=>type===value?.type);
  let json=boundary&&/\.json$/.test(value.source?.value);
@@ -178,7 +151,38 @@ let address=new URL(import.meta.url).pathname;
  export var estree=
  // sort by decreasing specificity for declarative disjunction (Object.values(estree.dialect)). 
  {commonjs:
- {require:
+ {defaultexport:
+ {condition(term,field,path){return !path.length&&field==="body";}
+ ,ecma(term)
+{// declare commonjs module.exports in module scope. 
+ [{type:"Identifier",name:"module"},{type:"Identifier",name:"exports"}].reduce((module,exports)=>
+ term.unshift(
+ term.find((statement,index,body)=>
+ statement?.kind==="let"&&
+ ["exports","module"].map((name,index)=>statement.declarations[index]?.id.name===name).every(Boolean)&&
+ delete body[index])||
+ {type:"VariableDeclaration",kind:"let",declarations:
+[{type:"VariableDeclarator",id:exports,init:{type:"ObjectExpression",properties:[]}}
+,{type:"VariableDeclarator",id:{type:"Identifier",name:"module"},init:{type:"ObjectExpression",properties:
+[{type:"Property",key:exports,value:exports,shorthand:true,kind:"init"}
+]}
+ }
+]})&&
+ // expose commonjs module.exports as default export. 
+ term.some(statement=>statement?.type==="ExportNamedDeclaration"&&
+ statement.specifiers.some?.(({exported})=>exported?.name==="default"))||
+ term.push(
+ term.find((statement,index,body)=>statement?.type==="ExportDefaultDeclaration"&&
+ // statement.declaration.object?.name==="module"&&
+ // statement.declaration.property?.name==="exports"&&
+ delete body[index])||
+ {type:"ExportDefaultDeclaration"
+ ,exportKind:"value"
+ ,declaration:{type:"MemberExpression",object:module,property:exports}
+ }));
+ return term;
+}}
+ ,require:
  {condition(term,field,path)
 {let toplevel=path.length===1;
  let asynchronous=!toplevel&&functional(term)&&term.async;
@@ -294,9 +298,9 @@ let address=new URL(import.meta.url).pathname;
  }
  ,importequals:
  {condition(value){return value?.type==="TSImportEqualsDeclaration";}
- ,ecma({id,moduleReference:{left:object,right:property}})
+ ,ecma({id,moduleReference:{left:object,right:property,expression}})
 {return {type:"VariableDeclaration",kind:"const",declarations:
-[{type:"VariableDeclarator",id,init:{type:"MemberExpression",object,property}}
+[{type:"VariableDeclarator",id,init:expression||{type:"MemberExpression",object,property}}
 ]};
 }}
  ,genericinstance:{condition(value){return value?.type==="TSInstantiationExpression";},ecma(value){return value.expression;}}
@@ -337,10 +341,10 @@ export async function serialize(syntax, format = "astring", options) {
   return import(module).then(module=>module[term](syntax, options));
 }
 
- export function namespace(declarations,references,procedures)
+ export function namespace(declarations,modules,procedures)
 {// translate abstract syntax tree or runtime namespace into javascript;
- [declarations,references]=
- [declarations,references].map((argument,index)=>
+ [declarations,modules]=
+ [declarations,modules].map((argument,index)=>
  typeof argument==="string"?JSON.parse(argument):argument);
  let {type,body,sourceType}=declarations;
  if(sourceType==="typescript")
@@ -353,13 +357,17 @@ export async function serialize(syntax, format = "astring", options) {
  "export "+({default:field}[field]||("var "+field+"="))+serialize(functor)).join("\n\n")).then(module=>
  // apply formatting. 
  module.replace(/(\}\})(,\"[^\"]*\":)(\{)/g,(...match)=>match.slice(1,4).join("\n ")))
-,references=Object.entries(references||{}).reduce((support,[module,functors])=>support
+,modules=Object.entries(modules||{}).reduce((support,[module,functors])=>support
 +"import "+functors.map((functor,index,{length})=>(
  {"1":"{"+functor,[length-1]:(length==2?"{":"")+functor+"}"}[String(index||"")]||functor)).filter(Boolean).join(",")
 +" from \""+module+"\""+(/\.json$/.test(module)?" assert {type:\"json\"}":"")+";\n"
 ,"")
 ,procedures=String(procedures||"").replace(/(^function *\w*\([\w,\n]*\)\n* *\{\n*)|(\}$)/g,"");
- return compose(collect,"\n","join")(references,declarations,procedures);
+ return compose(collect,"\n","join")(modules,declarations,procedures);
+};
+
+ export function format(json)
+{return JSON.stringify(json).replace(/:{|},|}}|}]/g,match=>match[0]+"\n "+match.substring(1))
 };
 
 //  export async function modularise(resource,identifier,context={})

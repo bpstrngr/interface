@@ -1,17 +1,17 @@
- import {note,collect,prompt,same,slip,something,observe,describe,expect,trace,array,compound,apply,stream,record,provide,tether,differ,wether,pattern,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,match,wait,string,defined,compose,combine,exit} from "./Blik_2023_inference.js";
+ import {note,collect,prompt,same,has,slip,something,observe,describe,expect,trace,array,compound,apply,stream,record,provide,tether,differ,wether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,match,wait,string,defined,compose,combine,exit,clock,route} from "./Blik_2023_inference.js";
  import {merge,stringify,search,edit} from "./Blik_2023_search.js";
  import {parse,sanitize,serialize,compile,test} from "./Blik_2023_meta.js";
- import {fetch,forward} from "./Blik_2023_host.js";
  export const address=new URL(import.meta.url).pathname;
  export const location=address.replace(/\/[^/]*$/,"");//path.dirname(address);
  export const file=address.replace(/.*\//,"");//path.basename(address);
- var classified=["*.git*"].map(term=>RegExp("^"+term.replace(/\./g,"\\.").replace(/\*/g,".*")+"$"));
+ var browser=globalThis.window;
  var sources="./Blik_2023_sources.json";
- var scope={};
+ export var scope={};
+
 
  // --import flag registers loader module on separate thread unlike 
  // --loader, where context is available directly on the primary thread. 
- let [worker,loader]=["import","loader"].map(name=>!globalThis.window&&
+ let [worker,loader]=["import","loader"].map(name=>!browser&&
  process.execArgv.some(flag=>new RegExp("^--"+name+"[= ][^ ]*"+file).test(flag)));
 
  if(worker&&await resolve("worker_threads","isMainThread"))
@@ -28,164 +28,10 @@
 ,crop(1),note.bind(2)
 ),compose(buffer(resolve),note)(...process.argv.slice(1));
 
- if(!worker&&!loader&&process.argv[1].endsWith(file))
+ if(!worker&&!loader&&!browser&&process.argv[1].endsWith(file))
  // without either loader flag, context begins at second index. 
  resolve(...process.argv.slice(2));
 
- export var classify=compose(when(either(pattern,infer("every",pattern))),file=>
- [file].flat().forEach(file=>
- classified.push(file)));
-
- export var permit=(name,classified)=>!classified.some(term=>term.test(name));
-
- export default
-{async get(request,mode)
-{mode=request.query?.mode||"binary";
- if(typeof request!="object")
- request={url:request};
- if(/^http/.test(request.url))
- return forward(request.url,request);
- let scope=await module(this||{});
- let path=await import("path");
- let address=request.url.replace(/^\//,"./");
- if(!permit(address,classified))
- throw Error("Classified");
- let file=await access(address);
- if(!file.isDirectory())
- return access(address,1);
- scope=await list(address,true,classified);
- return scope;
-}
-,put:async function(request)
-{let path=decodeURI(new URL(request.url).pathname);
- return await persist(request.body,path,request.query?.force)
-}
-,delete:async function(request)
-{let address=Object.fromEntries(request.headers.origin.split(/:\/+|:/g).map((path,index)=>
- [["protocol","hostname","port"][index],path+(!index?":":"")]));
- let [match,authority]=request.headers.cookie.match(/authority=([^;]*);/)||[];
- let get=path=>new Promise(resolve=>import(address[0].substring(0,-1)).then(({request})=>
- request(note({...address,path,method:"get"}),response=>
- response.setEncoding("utf8").on("data",compose(JSON.parse,resolve))).end())).then(note)
- let {author}=authority&&await get("/authority/"+authority);
- let {rank}=author&&await get("/mind/"+author);
- if(rank!="ranger")
- return Error("unauthorised");
- return purge(path.resolve(...request.path));
-}
-};
-
- export async function access(file, encoding, content)
-{// access folder/file's metadata, content with specified encoding, or overwrite its content.
- if(file.startsWith("http"))
- return request(file);
- if(/^file:\/\//.test(file))
- file=new URL(file).pathname;
- let {promises:fs}=await import("fs");
- if(!encoding)
- return fs.stat(file);
- if(/\/$/.test(file))
- return fs.readdir(file,{withFileTypes:true});
- if(content)
- return fs.writeFile(file,...typeof content==="boolean"?[encoding,'utf8']:[content,encoding]).then((written)=>file);
- let buffer=await fs.readFile(file);
- if(["binary",1].includes(encoding))
- return buffer;
- if(encoding===true)encoding="utf8";
- content=buffer.toString(encoding);
- if(encoding==="object")
- return JSON.parse(content);
- return content;
-}
-
- export async function list(file,recursive=true,exclude=[])
-{if(!/\/$/.test(file))file=file.replace(/$/,"/");
- let {promises:fs}=await import("fs");
- let files=await fs.readdir(file,{withFileTypes:true});
- let entries=await files.reduce(record((entry)=>
- exclude.some(exclusion=>RegExp(exclusion).test(file+entry.name))
-?[]
-:Promise.resolve(entry.isDirectory()
-?recursive?list(file+entry.name+"/",recursive,exclude):{}
-:[entry.name,null]))
-,[]);
- return Object.fromEntries(entries);
-}
-
- export async function persist(body,path,force)
-{if(!path)throw Error("Unspecified persistence target");
- if(!(body instanceof Buffer))
- if(typeof body!=="string")
- return persist("",path.replace(/[^\/]$/,end=>end+"/")).then(path=>
- Object.entries(body).reduce((folder,[field,file])=>
- folder.then(folder=>file
-?Array.isArray(file)
-?persist(file.join(""),path+field).catch(fail=>fail.message)
-:persist(file,path+field+"/").catch(({message})=>({}))
-:null).then(file=>Object.assign(folder,{[field]:file}))
-,Promise.resolve({})));
- let {promises:fs}=await import("fs");
- let directory=/\/$/.test(path);
- if(directory)return fs.mkdir(path).catch(fail=>fail).then(done=>path);
- let transaction=force?fs.appendFile:fs.writeFile;
- let descriptor=await fs.open(path,"wx").catch(fail=>fail);
- process.stdout.clearLine?.();
- process.stdout.write(("\rwriting "+path).slice(0,process.stdout.columns));
- if(!(descriptor instanceof Error))
- return await descriptor.writeFile(body).finally(descriptor.close.bind(descriptor)).then(write=>path);
- if(!force)throw descriptor;
- let append={append:"a"}[force];
- descriptor=await fs.open(path,append||"r+");
- if(descriptor instanceof Error)return descriptor;
- close=descriptor.close.bind(descriptor);
- if(!append)
- truncate=await descriptor.truncate().catch(fail=>fail).finally(close);
- if(truncate instanceof Error)throw truncate;
- let fail=transaction.call(descriptor,body,"utf-8").catch(fail=>fail).finally(close);
- if(fail instanceof Error)
- throw fail;
- return path;
-};
-
-export const purge=path=>import("fs").then(({promises:{rm}})=>
-rm(path,{recursive:true})).then(done=>path);
-
- export async function modularise(resource,identifier,context={})
-{// uses --experimental-vm-modules 
- let {SourceTextModule,SyntheticModule,createContext,isContext}=await import("vm");
- let {default:{resolve}}=await import("path");
- let {pathToFileURL}=await import("url");
- identifier=resolve(identifier)
- if(!isContext(context))
- context=createContext({imports:new Map(),URL,TextEncoder,TextDecoder,Buffer,global,...context});
- let options=
- {identifier,context
- ,importModuleDynamically:identifier=>import(identifier)
- ,initializeImportMeta:meta=>Object.assign(meta,{url:pathToFileURL(identifier)})
- ,cachedData:context.imports.get(identifier)
- };
- let module=new SourceTextModule(resource||"",options);
- context.imports.set(identifier,module.createCachedData());
- await module.link((identifier,{context})=>
- /^[a-z]/.test(identifier)
-?import(identifier).then(module=>new SyntheticModule(Object.keys(module),function()
-{Object.entries(module).reduce((module,entry)=>module.setExport(...entry)||module,this);
-},{identifier,context}))
-:access(identifier,true).then(source=>
- modularise(source,identifier,context)));
- await module.evaluate().catch(compose(note,exit));
- return module;
-};
-
- export async function require(path)
-{// to be deprecated in favor of commonjs compilation. 
- let instance=globalThis.require||require.instance;
- //path=new URL(note(path)).pathname;
- if(instance)
- return instance(path);
- require.instance=await resolve("module","createRequire",import.meta.url);
- return require.instance(path);
-};
 
 // https://nodejs.org/api/esm.html#esm_loaders 
 
@@ -241,7 +87,7 @@ rm(path,{recursive:true})).then(done=>path);
  let absolute=await wether
 ([url,path]
 ,source=>resolve("url","fileURLToPath",source)
-,source=>resolve("path","resolve",relation,source)
+,source=>browser?relation+"/"+source:resolve("path","resolve",relation,source)
 ,infer()
 )(source);
  if(internal)
@@ -524,14 +370,24 @@ export async function checkout(remote, target, branch, path) {
   if(!commit&&branch)
   clone=await spawn("git","-C", target, "checkout", branch);
   return target;
-}
+};
 
 export function patch(repository, patch) {
   return [patch].flat().reduce(
     record((patch) => spawn("git", "-C", repository, "apply", patch)),
     []
   );
-}
+};
+
+ export async function shrink(log,replace)
+{let stash=access(log,"binary");
+ let zlib=await import("zlib");
+ try{let buffer=zlib.gzipSync(JSON.stringify(stash));}catch(fail){debug(fail);}
+ let descriptor=save(log.replace(".log","_"+Date.now()+".gz.b64"),buffer.toString('base64'),"force");
+ if(replace)
+ erase(log);
+ return debug(descriptor)
+};
 
  export async function decompress(file,target)
 {let [zip,tar]=[/\.(gz|zip)$/,/\.tar$/].map(pattern=>pattern.test(file));
@@ -579,6 +435,165 @@ export function patch(repository, patch) {
 }*/
 };
 
+ export async function access(file, encoding, content)
+{// access folder/file's metadata, content with specified encoding, or overwrite its content.
+ if(file.startsWith("http"))
+ return request(file);
+ if(/^file:\/\//.test(file))
+ file=new URL(file).pathname;
+ let {promises:fs}=await import("fs");
+ if(!encoding)
+ return fs.stat(file);
+ if(/\/$/.test(file))
+ return fs.readdir(file,{withFileTypes:true});
+ if(content)
+ return fs.writeFile(file,...typeof content==="boolean"?[encoding,'utf8']:[content,encoding]).then((written)=>file);
+ let buffer=await fs.readFile(file);
+ if(["binary",1].includes(encoding))
+ return buffer;
+ if(encoding===true)encoding="utf8";
+ content=buffer.toString(encoding);
+ if(encoding==="object")
+ return JSON.parse(content);
+ return content;
+}
+
+ export async function list(file,recursive=true,exclude=[])
+{if(!/\/$/.test(file))file=file.replace(/$/,"/");
+ let {promises:fs}=await import("fs");
+ let files=await fs.readdir(file,{withFileTypes:true});
+ let entries=await files.reduce(record(entry=>
+ exclude.some(exclusion=>RegExp(exclusion).test(file+entry.name))
+?[]
+:Promise.resolve(entry.isDirectory()
+?recursive?list(file+entry.name+"/",recursive,exclude).then(files=>[entry.name,files]):[]
+:[entry.name,null]))
+,[]);
+ return Object.fromEntries(entries);
+}
+
+ export async function persist(body,path,force)
+{if(!path)throw Error("Unspecified persistence target");
+ if(!(body instanceof Buffer))
+ if(typeof body!=="string")
+ return persist("",path.replace(/[^\/]$/,end=>end+"/")).then(path=>
+ Object.entries(body).reduce((folder,[field,file])=>
+ folder.then(folder=>file
+?Array.isArray(file)
+?persist(file.join(""),path+field).catch(fail=>fail.message)
+:persist(file,path+field+"/").catch(({message})=>({}))
+:null).then(file=>Object.assign(folder,{[field]:file}))
+,Promise.resolve({})));
+ let {promises:fs}=await import("fs");
+ let directory=/\/$/.test(path);
+ if(directory)return fs.mkdir(path).catch(fail=>fail).then(done=>path);
+ let transaction=force?fs.appendFile:fs.writeFile;
+ let descriptor=await fs.open(path,"wx").catch(fail=>fail);
+ process.stdout.clearLine?.();
+ process.stdout.write(("\rwriting "+path).slice(0,process.stdout.columns));
+ if(!(descriptor instanceof Error))
+ return await descriptor.writeFile(body).finally(descriptor.close.bind(descriptor)).then(write=>path);
+ if(!force)throw descriptor;
+ let append={append:"a"}[force];
+ descriptor=await fs.open(path,append||"r+");
+ if(descriptor instanceof Error)return descriptor;
+ close=descriptor.close.bind(descriptor);
+ if(!append)
+ truncate=await descriptor.truncate().catch(fail=>fail).finally(close);
+ if(truncate instanceof Error)throw truncate;
+ let fail=transaction.call(descriptor,body,"utf-8").catch(fail=>fail).finally(close);
+ if(fail instanceof Error)
+ throw fail;
+ return path;
+};
+
+ export const purge=path=>import("fs").then(({promises:{rm}})=>
+ rm(path,{recursive:true})).then(done=>path);
+
+ export async function modularise(resource,identifier,context={})
+{// uses --experimental-vm-modules 
+ let {SourceTextModule,SyntheticModule,createContext,isContext}=await import("vm");
+ let {default:{resolve}}=await import("path");
+ let {pathToFileURL}=await import("url");
+ identifier=resolve(identifier)
+ if(!isContext(context))
+ context=createContext({imports:new Map(),URL,TextEncoder,TextDecoder,Buffer,global,...context});
+ let options=
+ {identifier,context
+ ,importModuleDynamically:identifier=>import(identifier)
+ ,initializeImportMeta:meta=>Object.assign(meta,{url:pathToFileURL(identifier)})
+ ,cachedData:context.imports.get(identifier)
+ };
+ let module=new SourceTextModule(resource||"",options);
+ context.imports.set(identifier,module.createCachedData());
+ await module.link((identifier,{context})=>
+ /^[a-z]/.test(identifier)
+?import(identifier).then(module=>new SyntheticModule(Object.keys(module),function()
+{Object.entries(module).reduce((module,entry)=>module.setExport(...entry)||module,this);
+},{identifier,context}))
+:access(identifier,true).then(source=>
+ modularise(source,identifier,context)));
+ await module.evaluate().catch(compose(note,exit));
+ return module;
+};
+
+ export async function require(path)
+{// to be deprecated in favor of commonjs compilation. 
+ let instance=globalThis.require||require.instance;
+ //path=new URL(note(path)).pathname;
+ if(instance)
+ return instance(path);
+ require.instance=await resolve("module","createRequire",import.meta.url);
+ return require.instance(path);
+};
+
+ export var {window,fetch}=globalThis.window?globalThis
+:{async window(location)
+{let {JSDOM}=await resolve("./domenic_2022_jsdom_rollup.js","default");
+ return {window}=Reflect.construct(JSDOM,["",{url:location}]);
+},async fetch(request,header)
+{if(!compound(request))request=
+ {end(response){return Object.assign(this.response,response);}
+ ,respond(header){Object.assign(this.response,{header});}
+ ,response:{},url:request||"",method:"get",...header||{}
+ };
+ let address=request.url.replace(/^/,request.connection?.remoteAddress||"");
+ let method=request.method.toLowerCase();
+ console.log("\x1b["+({get:36,put:33,delete:33}[method]||35)+"m"+clock()+"@"+address+"...\x1b[0m");
+ let format=either("Content-Type","content-type",swap(undefined))(request);
+ let cookie=Object.fromEntries(request.headers?.cookie?.split(/ *; */).map(entry=>entry.split("="))||[]);
+ let {query,pathname}=await resolve("url","parse",request.url,true);
+ let path=compose
+(infer("filter",(step,index)=>(index||step)&&step!==".")
+,{get:infer("map",step=>step||"interface")}[method]
+)(decodeURIComponent(pathname).split("/"));
+ let body=await compose.call(parser[format],resolve,request.body,either("parse",swap(request.body),swap("")));
+ request=Object.assign(request,{body,path,query,method,cookie});
+ let local=this||await import("./Blik_2024_source.js").then(({default:local})=>local);
+ let response=await buffer(either(tether(route),"error",drop(-1)))(local,path,request);
+ let fail=is(Error)(response);
+ body=wether([fail,has("nodeName"),something],compose(note.bind(1),"message"),"outerHTML",either("body",crop(1)),swap("missing source: \""+request.path+"\""))(response);
+ let type=!fail?response?.type||response?.nodeName?.toLowerCase()||request.url.match(/\.([^\.\/]*)$/)?.slice(1)[0]||(compound(response)?"json":"txt"):"txt";
+ let status=response?fail?500:response.status||200:404;
+ let success=status<400;
+ let report=(status==200?32:31)+"m"+clock()+"@"+[address,status,type].join(" ");//+": \""+String(body).replace(/^([\s\S]{20})[\s\S]*$/,(...match)=>match[1]+"...")+"\"";
+ console.log("\x1b["+report+"\x1b[0m");
+ return (
+ {status,type,body
+ ,location:response?.location
+ ,cookie:response?.cookie
+ ,headers:{get(key){return response?.header[key];}}
+ ,json(){return this.text(true);}
+ ,text(json)
+{let text=this.body.constructor?.name=="Buffer"?this.body.toString():this.body;
+ if(compound(text))
+ return json?text:JSON.stringify(text);
+ return json?JSON.parse(text):text;
+},arrayBuffer()
+{return Promise.resolve(this.body.constructor?.name=="Buffer"?this.body:Buffer.from(this.body,"utf-8"));
+}});
+}};
+
  export async function spawn(command, ...context)
 {// bound scope defines output color: undefined=quiet, other=default
  note.call(3,command, ...context, "...");
@@ -587,7 +602,14 @@ export function patch(repository, patch) {
  if(this)
  streams.forEach((stream,index,[out])=>stream.on("data", (data) => console[index?"error":"log"](data.toString("utf8"))));
  return new Promise((resolve, reject)=>process.on("exit", (exit) => (exit ? reject(Error(exit)) : resolve())));
-}
+};
+
+ var parser=compose.call
+({JSON,"x-www-form-urlencoded":"querystring"}
+,Object.entries
+,infer("map",compose(combine(compose(0,"toLowerCase",/^/,"application/","replace"),1),collect))
+,Object.fromEntries
+);
 
  export function mime(file)
 {return stream
@@ -608,12 +630,6 @@ export function patch(repository, patch) {
 :undefined
 ,terms=>terms?.join("/")
 );
-};
-
- export function module(source)
-{//return JSON.parse(JSON.stringify(source));
- return Object.fromEntries(Object.entries(source.default||source).map(([key,value])=>
- [key,value&&typeof value=="object"?module(value):value?value.toString():value]))
 };
 
  export var tests=

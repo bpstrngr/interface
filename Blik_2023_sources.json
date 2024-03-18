@@ -555,5 +555,12 @@
     "is-glob":"./jonschlinkert_2015_is_glob.js",
     "normalize-path":"./jonschlinkert_2015_normalize_path.js",
     "readdirp":"./paulmillr_2012_readdirp.js"
+  }}]}},
+  "rauch_2010_socketio.js":{"https://github.com/socketio/socket.io":{"4.7.4":["lib/index.ts",{"syntax":"typescript","alias":{
+    "debug":"./Holowaychuk_2011_debug.js"
+  },"edit":{"lib/index.ts":{",\n  BroadcastOperator,\n  RemoteSocket,":""}}}]}},
+  "rauch_2010_socketio_client.js":{"https://github.com/socketio/socket.io-client":{"4.7.4":["lib/index.ts",{"syntax":"typescript","alias":{
+    "accepts":"~1.3.4","base64id":"~2.0.0","cors":"~2.8.5","debug":"./Holowaychuk_2011_debug.js",
+    "engine.io":"~6.5.2","socket.io-adapter":"~2.5.2","socket.io-parser":"~4.2.4"
   }}]}}
 }
