@@ -1,13 +1,13 @@
- import {note,prompt,when,pattern,describe,revert,clock,observe,is,has,same,slip,something,compound,infer,tether,wether,collect,provide,route,buffer,compose,combine,either,drop,crop,swap,record,wait,exit} from "./Blik_2023_inference.js";
+ import {note,prompt,when,pattern,revert,clock,observe,is,has,same,slip,something,compound,infer,tether,wether,collect,provide,route,buffer,compose,combine,either,drop,crop,swap,record,wait,exit,pass} from "./Blik_2023_inference.js";
  import {resolve,access,list,window,fetch} from "./Blik_2023_interface.js";
  import {search,merge,sum} from "./Blik_2023_search.js";
- import local from "./Blik_2024_source.js";
+ import local from "./Blik_2023_host.js";
 
  export var classified=["*.git*"].map(term=>RegExp("^"+term.replace(/\./g,"\\.").replace(/\*/g,".*")+"$"));
-
  export var classify=compose(when(either(pattern,infer("every",pattern))),file=>
  [file].flat().forEach(file=>
  classified.push(file)));
+ export var permit=(name,classified)=>!classified.some(term=>term.test(name));
 
  export async function expose(source,parameters,protocol="http",remember)
 {let {default:path}=await import("path");
@@ -46,10 +46,17 @@
  function receive(request){observe.call(request,{data(data){this.body+=decoder.write(data);},end:respond.bind(...arguments)});}
 
  function respond(response,source,remember)
-{let distinction=({url,headers})=>url+(headers?.cookie||"");
- let retrieve=remember?compose(record(fetch,distinction),distinction(this)):tether(fetch);
- return compose(retrieve,response||this,tether(submit))(source.default,this);
+{let retrieve=remember?compose(note,record(fetch,distinction),distinction(this)):tether(fetch);
+ return compose(combine(notify,retrieve),pass(report),drop(1,3),response||this,tether(submit))(source.default,this);
 };
+ var distinction=({url,headers})=>url+(headers?.cookie||"");
+ var address=compose(drop(1),combine("url",swap(/^/),either(tether(search,["connection","remoteAddress"]),swap(""))),"replace");
+ var color=compose(combine(swap({get:36,put:33,delete:33}),compose(drop(1),"method","toLowerCase")),either(tether(search),swap(35)),"m");
+ var notify=compose(combine(swap("\x1b["),color,compose(drop(),clock),swap("@"),address),"...\x1b[0m",collect,infer("join",""),pass(console.log));
+ var recolor=compose(combine(crop(1),compose(drop(1),"status",wether(is(200),swap(32),swap(31)))),infer("replace",/[0-9]{2}/),infer("slice",0,-7));
+ var redate=compose(combine(infer(),compose(drop(),clock,"@","concat")),infer("replace",/(?:[0-9]{2}[:@]){3}/));
+ var inform=compose(drop(1),combine("status","type",swap("\x1b[0m")));//+": \""+String(body).replace(/^([\s\S]{20})[\s\S]*$/,(...match)=>match[1]+"...")+"\"";
+ var report=compose(combine(compose(recolor,redate),inform),collect,infer("join"," "),console.log);
 
  export function submit(response)
 {let {type,status,location,cookie}=this;
@@ -174,6 +181,39 @@ export var digest=hash=>value=>
  ["application",extension]
 ,infer("join","/")
 );
+
+ export default
+ {async get(request="/")
+{if(typeof request!="object")
+ request={url:request};
+ if(/^http/.test(request.url))
+ return forward(request.url,request);
+ let {pathname}=await resolve("url","parse",request.url,true);
+ let address=await resolve("path","resolve","./"+decodeURI(pathname));
+ if(!permit(address,classified))
+ throw Error("Classified");
+ let file=await access(address);
+ if(!file.isDirectory())
+ return access(address,request.query?.encoding||"binary");
+ return compose.call(address,true,classified,list,module(this||{}),merge);
+},put(request)
+{let address=decodeURI(new URL(request.url).pathname);
+ if(!permit(address,classified))
+ throw Error("Classified");
+ return persist(request.body,address,request.query?.force);
+},delete:async function(request)
+{let address=Object.fromEntries(request.headers.origin.split(/:\/+|:/g).map((path,index)=>
+ [["protocol","hostname","port"][index],path+(!index?":":"")]));
+ let [match,authority]=request.headers.cookie.match(/authority=([^;]*);/)||[];
+ let get=path=>new Promise(resolve=>import(address[0].substring(0,-1)).then(({request})=>
+ request(note({...address,path,method:"get"}),response=>
+ response.setEncoding("utf8").on("data",compose(JSON.parse,resolve))).end())).then(note)
+ let {author}=authority&&await get("/authority/"+authority);
+ let {rank}=author&&await get("/mind/"+author);
+ if(rank!="ranger")
+ return Error("unauthorised");
+ return purge(path.resolve(...request.path));
+}};
 
 // export async function express(script) {
 //   const bootstrapScriptContent = "import('"+script+"').then(({default:peer,reactivate})=>reactivate(peer))";

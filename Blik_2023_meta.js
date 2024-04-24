@@ -1,4 +1,4 @@
-import {note,wait,buffer,compose,collect,stream,record,provide,compound,tether,bind,string,is,not,iterable} from "./Blik_2023_inference.js";
+import {note,wait,infer,buffer,compose,collect,stream,record,provide,compound,tether,bind,string,is,not,iterable} from "./Blik_2023_inference.js";
 import {search,merge,prune,route,random} from "./Blik_2023_search.js";
 let address=new URL(import.meta.url).pathname;
 
@@ -39,7 +39,7 @@ let address=new URL(import.meta.url).pathname;
 :descendant.call(comment,scope)&&
  ["body","declaration","consequent"].find((field)=>scope[field]);
 }
-}
+};
 
  export async function sanitize(grammar,format)
 {if(!Object.keys(format||{}).length)
@@ -331,17 +331,18 @@ let address=new URL(import.meta.url).pathname;
  }
  };
 
-export async function serialize(syntax, format = "astring", options) {
-  // convert abstract syntax tree to javascript;
-  if (typeof syntax === "string") syntax = JSON.parse(syntax);
-  let [module, term] = {
-    astring: ["./davidbonnet_2015_astring.js", "generate"],
-    babel: ["./node_modules/@babel/generator/lib/index.js", "default"],
-  }[format] || [format];
-  return import(module).then(module=>module[term](syntax, options));
-}
+ export async function serialize(syntax, format = "astring", options)
+{// convert abstract syntax tree to javascript;
+ if(typeof syntax==="string")
+ syntax=JSON.parse(syntax);
+ let [module,term]=
+{astring:["./davidbonnet_2015_astring.js","generate"],
+ babel:["./node_modules/@babel/generator/lib/index.js","default"],
+}[format]||[format];
+ return import(module).then(module=>module[term](syntax,options));
+};
 
- export function namespace(declarations,modules,procedures)
+ export function namespace(declarations,modules,procedure)
 {// translate abstract syntax tree or runtime namespace into javascript;
  [declarations,modules]=
  [declarations,modules].map((argument,index)=>
@@ -351,19 +352,24 @@ export async function serialize(syntax, format = "astring", options) {
  declarations=prune(declarations,(field,value)=>!value?.type?.startsWith("TS"));
  if(type==="Program")
  return import("./davidbonnet_2015_astring.js").then(({generate})=>generate(declarations));
- declarations=!declarations?""
+ modules=Object.entries(modules||{}).map(([module,functors])=>!module.endsWith(".json")
+?" import "+functors.map((functor,index,{length})=>(
+ {"1":"{"+functor,[length-1]:(length==2?"{":"")+functor+"}"}[String(index||"")]||functor)).filter(Boolean).join(",")
++" from \""+module+"\""+(/\.json$/.test(module)?" with {type:\"json\"}":"")+";"
+:(" var {default:"+functors[0]+"}=await resolve(\""+module+"\");")).join("\n")
+,declarations=!declarations?""
 :Promise.all([import("./Yahoo_2014_serialize.js"),declarations]).then(([{__moduleExports:serialize},declarations])=>
  Object.entries(declarations||{}).map(([field,functor])=>
- "export "+({default:field}[field]||("var "+field+"="))+serialize(functor)).join("\n\n")).then(module=>
+ "export "+({default:field+" "}[field]||("var "+field+"="))+serialize(functor)).join("\n\n")).then(module=>
  // apply formatting. 
- module.replace(/(\}\})(,\"[^\"]*\":)(\{)/g,(...match)=>match.slice(1,4).join("\n ")))
-,modules=Object.entries(modules||{}).reduce((support,[module,functors])=>support
-+"import "+functors.map((functor,index,{length})=>(
- {"1":"{"+functor,[length-1]:(length==2?"{":"")+functor+"}"}[String(index||"")]||functor)).filter(Boolean).join(",")
-+" from \""+module+"\""+(/\.json$/.test(module)?" assert {type:\"json\"}":"")+";\n"
-,"")
-,procedures=String(procedures||"").replace(/(^function *\w*\([\w,\n]*\)\n* *\{\n*)|(\}$)/g,"");
- return compose(collect,"\n","join")(modules,declarations,procedures);
+ module.replace(/(\}\})(,\"[^\"]*\":)(\{)/g,(...match)=>match.slice(1,4).join("\n "))+"\n");
+ return compose(collect,infer("filter",Boolean),"\n\n","join")(procedure,modules,declarations);
+};
+
+ export function proceduralize(term)
+{if(term instanceof Function)
+ return String(term||"").replace(/(^function *\w*\([\w,\n]*\)\n* *\{\n*)|(\}$)/g,"");
+ throw Error("can't proceduralize "+typeof term);
 };
 
  export function format(json)
@@ -397,28 +403,16 @@ export async function serialize(syntax, format = "astring", options) {
 //  return module;
 // };
 
- function set(options, namespace)
-{return Object.entries(namespace).reduce(
-    (defaults, [field, kinds]) =>
-      Object.assign(defaults, {
-        [field]: options[field]
-          ? Object.entries(kinds)
-              .find(([kind]) =>
-                [kind, options[field]].map((kind) => kind.toLowerCase()).reduce(Object.is)
-              )
-              ?.pop() ||
-            Error(
-              [
-                String(options[field]),
-                'not in "' + field + '" options',
-                Object.keys(kinds),
-              ].join(" ")
-            )
-          : defaults[field],
-      }),
-    this
-  );
-}
+ function set(options,namespace)
+{return Object.entries(namespace).reduce((defaults,[field,kinds])=>
+ Object.assign(defaults
+,{[field]:options[field]
+?Object.entries(kinds).find(([kind])=>
+ [kind,options[field]].map((kind)=>kind.toLowerCase()).reduce(Object.is))?.pop()||
+ Error([String(options[field]),'not in "'+field+'" options',Object.keys(kinds),].join(" "))
+:defaults[field],
+ }),this);
+};
 
 export async function compile(address, dialect = "prettier", options = {}) {
   // parse and serialize (third party tools without modular parser/serializer).

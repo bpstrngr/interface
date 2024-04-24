@@ -90,10 +90,11 @@
  if(!defined(term))
  return provide(context);
  let [scope]=context;
+ let prebound=term instanceof Function&&/^bound /.test(term.name);
  let prefix=/^tether /;
  let detach=string(term)&&prefix.test(term)&&term.replace(prefix,"");
  let attach=term instanceof Function&&prefix.test(term.name)&&term;
- let attend=!attach&&defined(scope??undefined)&&!Array.isArray(term)
+ let attend=!prebound&&!attach&&defined(scope??undefined)&&!Array.isArray(term)
 ?[Object(scope),detach||term].reduce((domain,term)=>term instanceof Function
 ?fields(domain).find(field=>{try{return Object.is(Reflect.get(domain,field),term);}catch(fail){};})&&term
 :Reflect.get(domain,term?.toString?term:null))
@@ -110,7 +111,7 @@
  export function differ(term)
 {// infer without allowing identity. 
  if(!defined(this))
- return refer(differ,term);
+ return confer(differ,term);
  let context=collect(this)
  let fail=compose(swap([term?.name||String(term),"yielded identity of",JSON.stringify(this)].join(" ")),Error,exit);
  return compose.call(this,infer(term,provide(context)),wether(same(provide(context)),fail,infer()));
@@ -119,22 +120,22 @@
  export function buffer(term,quit=provide)
 {// alternative inference for failure. 
  if(!defined(this))
- return refer(buffer,term,quit);
+ return confer(buffer,term,quit);
  try
 {let context=infer(term)(this);
  return context instanceof Promise?context.catch(quit):context;
 }catch(fail){return quit(fail);};
 };
 
- export function refer(combinator,...terms)
-{// bind term to context to keep terms distinguished. 
+ export function confer(term,...terms)
+{// call term on collected dynamic context without prepending it with terms. 
  if(!defined(this))
  return describe(function(...context)
 {if(defined(this))
  context.unshift(this);
- return refer.call(provide(collect(...context),true),combinator,...terms);
-},combinator,...terms);
- return combinator.call(this,...terms);
+ return confer.call(provide(collect(...context),true),term,...terms);
+},term,...terms);
+ return term.call(this,...terms);
 };
 
  export function tether(term,...context)
@@ -148,7 +149,7 @@
  export function either(functor,...functors)
 {// alternative difference before last inference (errors cumulate in context)
  if(!defined(this))
- return refer(either,...arguments);
+ return confer(either,...arguments);
  let context=collect(this);
  let next=functors.length?buffer(differ(functor)):functor;
  return compose(provide,next,function proceed(...terms)
@@ -181,7 +182,7 @@
  export function wether(condition,...functors)
 {// conditional inference. 
  if(!defined(this))
- return refer(wether,...arguments);
+ return confer(wether,...arguments);
  let context=collect(this);
  let conditions=[condition].flat();
  return compose.call
@@ -202,7 +203,7 @@
  export function compose(...terms)
 {// recursive inference agnostic of dynamic context. 
  if(!defined(this))
- return refer(compose,...arguments);
+ return confer(compose,...arguments);
  let inference=describe((context,term)=>infer(term)(context),compose);
  return terms.reduce(inference,this);
 };
@@ -210,7 +211,7 @@
  export function combine(...functors)
 {// parallel inference/multiplication (church arithmetic). 
  if(!defined(this))
- return refer(combine,...arguments);
+ return confer(combine,...arguments);
  let context=collect(this);
  let [factor]=context;
  let records=Object.entries(Object(factor));
@@ -237,11 +238,11 @@
  if(term instanceof Function)
  return tether(function record(...context)
 {let field=compose(tether(distinction),collect,"pop")(this,...context);
- if(something(this[field]))
+ if(!defined(field)||something(this[field]))
  return this;
  return compose.call(this,combine
 (infer()
-,compose(tether(term,...context),term=>something(term)?describe(term,field):{})
+,compose(tether(term,...context),term=>something(term)?refer(term,field):{})
 ),Object.assign
 );
 });
@@ -300,6 +301,12 @@
  export var slip=drop.bind(null,0,0);
  export var swap=drop.bind(null,Infinity,0);
 
+ export function pass(term)
+{return describe(function(...terms)
+{return compose(combine(infer(),term),crop(terms.length))(...terms);
+},pass,term);
+};
+
  export function note(...context)
 {// expose context in console. (combine(compose(note,drop()),infer()))
  let stack=trace().slice(0,-1);
@@ -338,7 +345,7 @@
 {// name term after a bound prefix and context in its closure. 
  let functor=term instanceof Function;
  if(!functor)
- return context.flat().reverse().reduce((scope,field)=>({[field]:scope}),term);
+ exit("can't describe "+term);
  let prefix=String(this||"");
  let eponymous=context.shift();
  let name=[prefix,eponymous?.name||eponymous].filter(Boolean).join("");
@@ -357,6 +364,12 @@
  return Object.defineProperty(term,"name",{value});
 };
 
+ export function refer(term,...context)
+{// ember scope in an object path.
+ return context.flat().filter(something).reverse().reduce((scope,field)=>({[field]:scope}),term);
+};
+
+
  export function defined(term){return term!==undefined;};
  export function compound(term){return typeof term==="object"&&term;};
  export function iterable(term){try{return Symbol.iterator in term;}catch(fail){return false}};
@@ -364,20 +377,48 @@
  export function binary(term){return typeof term==="boolean";};
  export function string(term){return typeof term==="string";};
  export function numeric(term){return typeof term==="number"};
+ export function ascending(past,next){return (past<next)-1;};
  export function aye(term){return Object.is(term,true);};
  export function nay(term){return Object.is(term,false);};
  export var something=compose(term=>term??undefined,defined);
  export var nothing=not(something);
  export var pattern=is(RegExp);
  export var promise=is(Promise);
+ export function when(...terms)
+{// demand conditions on context. 
+ if(!defined(this))
+ return confer(when,...terms);
+ let context=collect(this);
+ terms=[terms].flat().flatMap(term=>compound(term)?Object.values(term):term);
+ let index=terms.findIndex((term,index)=>!is(term)(context[index]));
+ if(index+1)
+ throw Error(terms[index].name+": "+context[index]);
+ return provide(context,true);
+};
+ export function match(...expressions)
+{if(!defined(this))
+ return tether(match,...expressions);
+ if(!string(this))
+ throw Error("can't match regular expressions on ",this);
+ return expressions.every(expression=>expression.test(this));
+}
+ export function same(...context)
+{if(!defined(this))
+ return confer(same,...context);
+ return compose
+(collect,collect(...context),(terms,context)=>
+ context.length<terms.length||
+ context.every((term,index)=>terms[index]===term)
+)(this);
+};
  export function is(...terms)
 {// express context as true if defined or satisfies terms.
  if(!defined(this))
- return refer(is,...terms);
+ return confer(is,...terms);
  let context=collect(this);
- let conditions=terms.map(term=>term
-?compose(provide,/^[A-Z]/.test(term.name)
-?scope=>scope instanceof term:term)(context):false);
+ let conditions=terms.map(term=>something(term)
+?compose(provide,term instanceof Function?/^[A-Z]/.test(term.name)?scope=>scope instanceof term:term:scope=>Object.is(scope,term))(context)
+:false);
  return compose(provide,collect,infer("every",Boolean))(conditions);
 };
  export function not(...terms)
@@ -389,45 +430,18 @@
  return [fields].flat().every(field=>field in this);
  return tether(has,fields);
 };
- export function when(...terms)
-{// demand conditions on context. 
- if(!defined(this))
- return refer(when,...terms);
- let context=collect(this);
- terms=[terms].flat().flatMap(term=>compound(term)?Object.values(term):term);
- let index=terms.findIndex((term,index)=>!is(term)(context[index]));
- if(index+1)
- throw Error(terms[index].name+": "+context[index]);
- return provide(context,true);
-};
- export function same(...context)
-{if(!defined(this))
- return refer(same,...context);
- return compose
-(collect,collect(...context),(terms,context)=>
- context.length<terms.length||
- context.every((term,index)=>terms[index]===term)
-)(this);
-};
- export function match(...expressions)
-{if(!defined(this))
- return tether(match,...expressions);
- if(!string(this))
- throw Error("can't match regular expressions on ",this);
- return expressions.every(expression=>expression.test(this));
-}
 
  export function wait(time)
 {// hold context for time period.
  if(!defined(this))
- return refer(wait,time)
+ return confer(wait,time)
  return new Promise(resolve=>setTimeout(resolve,time)).then(infer.bind(this));
 };
 
  export function expect(condition=something,interval=500,limit=Infinity)
 {// hold thread until context satisfies condition. 
  if(!defined(this))
- return refer(expect,...arguments);
+ return confer(expect,...arguments);
  if(!limit)return infer(condition)(this);
  let context=collect(this);
  let repeat=compose(wait(interval),swap(provide(context)),expect(condition,interval,limit-1));
@@ -437,7 +451,7 @@
  export function revert(resolve)
 {// revert a Promise's inversion of control. 
  if(!defined(this))
- return refer(revert,...arguments);
+ return confer(revert,...arguments);
  return Reflect.construct(Promise,[compose(crop(1),infer(resolve,this))]);
 };
 
@@ -480,7 +494,7 @@
 (Error,combine
  // collect stack trace. 
 (infer()
-,compose(...combine(2)("stackTraceLimit"),describe)
+,compose(...combine(2)("stackTraceLimit"),refer)
 ,compose
 ({stackTraceLimit:Infinity},Object.assign
 ,Function.call,"stack",/\n */,"split",infer("slice",1)

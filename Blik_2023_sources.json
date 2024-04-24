@@ -556,11 +556,26 @@
     "normalize-path":"./jonschlinkert_2015_normalize_path.js",
     "readdirp":"./paulmillr_2012_readdirp.js"
   }}]}},
+  "sindresorhus_2014_vary.js":{"https://github.com/jshttp/vary":{"v1.1.2":[{"syntax":"commonjs"}]}},
+  "sindresorhus_2014_objectassign.js":{"https://github.com/sindresorhus/object-assign":{"v4.1.1":[{"syntax":"commonjs"}]}},
+  "Goode_2012_express_cors.js":{"https://github.com/expressjs/cors":{"v2.8.5":["lib/index.js",{"syntax":"commonjs","alias":{"object-assign":"./sindresorhus_2014_objectassign.js","vary":"./sindresorhus_2014_vary.js"}}]}},
+  "rauch_2012_socketio_emitter.js":{"https://github.com/socketio/emitter":{"3.1.0":["index.mjs"]}},
+  "rauch_2014_socketio_parser.js":{"https://github.com/socketio/socket.io-parser":{"4.2.4":["lib/index.ts",{
+    "alias":{"debug":"./Holowaychuk_2011_debug.js","@socket.io/component-emitter":"./rauch_2012_socketio_emitter.js"}
+  }]}},
+  "rauch_2014_socketio_adapter.js":{"https://github.com/socketio/socket.io-adapter":{"2.5.2":["lib/index.ts",{
+    "alias":{"ws":"./einaros_2011_ws.js"}
+  }]}},
+  "rauch_2014_engineio_parser.js":{"https://github.com/socketio/engine.io-parser":{"5.2.1":["lib/index.ts",{}]}},
+  "rauch_2012_engineio.js":{"https://github.com/socketio/engine.io":{"6.5.2":["lib/engine.io.ts",{"alias":{
+    "engine.io-parser":"./rauch_2014_engineio_parser.js"
+  }}]}},
   "rauch_2010_socketio.js":{"https://github.com/socketio/socket.io":{"4.7.4":["lib/index.ts",{"syntax":"typescript","alias":{
-    "debug":"./Holowaychuk_2011_debug.js"
+    "accepts":"~1.3.4","base64id":"~2.0.0",
+    "cors":"./Goode_2012_express_cors.js","debug":"./Holowaychuk_2011_debug.js","engine.io":"./rauch_2012_engineio.js",
+    "socket.io-parser":"./rauch_2014_socketio_parser.js","socket.io-adapter":"./rauch_2014_socketio_adapter.js"
   },"edit":{"lib/index.ts":{",\n  BroadcastOperator,\n  RemoteSocket,":""}}}]}},
   "rauch_2010_socketio_client.js":{"https://github.com/socketio/socket.io-client":{"4.7.4":["lib/index.ts",{"syntax":"typescript","alias":{
-    "accepts":"~1.3.4","base64id":"~2.0.0","cors":"~2.8.5","debug":"./Holowaychuk_2011_debug.js",
-    "engine.io":"~6.5.2","socket.io-adapter":"~2.5.2","socket.io-parser":"~4.2.4"
-  }}]}}
+  }}]}},
+  "haverbeke_2020_codemirror.js":{"https://github.com/codemirror/codemirror5":{"5.65.16":["src/codemirror.js"]}}
 }

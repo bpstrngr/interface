@@ -1,4 +1,4 @@
-import {something,record,stream,plural,defined,string,describe} from "./Blik_2023_inference.js";
+import {something,record,stream,plural,defined,string,refer} from "./Blik_2023_inference.js";
 
 export function random(length,domain="abcdefghijklmnopqrstuvwxyz_"){
   return Array(length).fill(domain).map(domain=>
@@ -22,6 +22,10 @@ export function sum(...context) {
     .flat()
     .map((term) => Number(term) || 0)
     .reduce((sum, value) => sum + value, 0);
+}
+
+ export function extreme(series)
+{return ["min","max"].map(key=>Math[key](...[series].flat()))
 }
 
 export function search(term,recursive=false,path=[]){
@@ -173,7 +177,11 @@ export function clone(scope) {
 
 export function isolate(path) {
   // reduce scope to specified path.
-  return describe(search.call(this, path), path);
+  return refer(search.call(this, path), path);
+}
+
+ export function extract(fields)
+{return [fields].flat().reduce((term,field)=>merge(term,{[field]:this[field]}),{});
 }
 
  export const tests=

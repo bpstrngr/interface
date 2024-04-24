@@ -1,4 +1,4 @@
- import {note,collect,prompt,same,has,slip,something,observe,describe,expect,trace,array,compound,apply,stream,record,provide,tether,differ,wether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,match,wait,string,defined,compose,combine,exit,clock,route} from "./Blik_2023_inference.js";
+ import {note,collect,prompt,same,has,slip,something,observe,describe,refer,expect,trace,array,compound,apply,stream,record,provide,tether,differ,wether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,binary,match,wait,string,defined,compose,combine,exit,clock,route} from "./Blik_2023_inference.js";
  import {merge,stringify,search,edit} from "./Blik_2023_search.js";
  import {parse,sanitize,serialize,compile,test} from "./Blik_2023_meta.js";
  export const address=new URL(import.meta.url).pathname;
@@ -28,7 +28,7 @@
 ,crop(1),note.bind(2)
 ),compose(buffer(resolve),note)(...process.argv.slice(1));
 
- if(!worker&&!loader&&!browser&&process.argv[1].endsWith(file))
+ if(!worker&&!loader&&!browser&&process.argv[1]?.endsWith(file))
  // without either loader flag, context begins at second index. 
  resolve(...process.argv.slice(2));
 
@@ -58,12 +58,12 @@
 );
  let format=compose
 (combine(infer(),compose(swap(sources),"default",resolve,Object.keys)),(source,sources)=>
- sources.find(field=>source.startsWith([location,field.replace(/\.js$/,"/")].join("/"))),"format",describe
+ sources.find(field=>source.startsWith([location,field.replace(/\.js$/,"/")].join("/"))),"format",refer
 );
  let modulepath=when(is(match(/^[\/\.]/),not(match(RegExp(sources+"$")))));
  let shortcircuit=compose
 (combine(infer(),either(compose(respecify,modulepath,format),swap({}))),merge
-,{shortCircuit:true},merge,"resolve",describe
+,{shortCircuit:true},merge,"resolve",refer
 );
 
  export async function resolve(source,context,next)
@@ -78,7 +78,7 @@
  let loading=next?.name==="nextResolve";
  let command=!loading||!internal;
  let primary=loading&&!internal;
- if(primary&&!await resolve("worker_threads","isMainThread"))
+ if(primary&&worker&&!await resolve("worker_threads","isMainThread"))
  // suppress primary import on loader thread (registered with --import) in favor of explicit inference with context available only on main. 
  return next("worker_threads",context);
  let target=internal?decodeURI(new URL(internal).pathname):address;
@@ -96,9 +96,10 @@
  let proceed=infer(resolve,context,next);
  let discard=wether(same(absolute),compose(context,next),compose(drop(-1),exit));
  let fail=compose(drop(2),each("message"),collect,",\n","join",Error,exit);
- let module=command?import(source):either(precedent,compose
+ let json=source.endsWith(".json")||undefined;
+ let module=command?import(source,json&&{assert:{type:"json"}}):either(precedent,function(){debugger},compose
 (either(next,compose(recovery,invoke,proceed),compose(backtrack,discard),fail)
-,shortcircuit,{imports:new Set()},merge,absolute,describe,slip(scope),merge
+,shortcircuit,{imports:new Set()},merge,absolute,refer,slip(scope),merge
 ,[absolute,"resolve"],tether(search)
 ))(absolute,context);
  if(loading&&internal)
@@ -159,7 +160,7 @@
  // expose assembly promise to inform redirects to source, and retries in case of their unlikely outpace by its purge. 
 ,scope=>merge(scope,{[target]:entries.reduce(record(assemble),[]).catch(fail=>purge(target).finally(done=>exit(fail)))})
  // perform a full resolution before bundling to forego being outpaced by purge. 
-,target,combine(infer(),([{source}])=>resolve(source))
+,target,combine(infer(),([{source}])=>resolve(source).catch(note))
  // not returning bundle promise after assembly to unblock immediate resolution from source. 
 ,parts=>void(compose.call
 (parts.reduce(record(({source,format})=>bundle(source,format)),[])
@@ -201,15 +202,15 @@
  // download. 
  compressed
 ?await access(asset).catch(fail=>
- compose.call(remote,buffer(expect(fetch,0,3),compose(remote,note,exit)),response=>response.status===200
+ compose.call(remote,buffer(expect(fetch,0,5),compose(remote,note,exit)),response=>response.status===200
 ?response.arrayBuffer().then(buffer=>persist(Buffer.from(buffer),asset)).catch(fail=>note(fail)&&access(asset))
 :exit(response.status))).then(compressed=>
  compose.call({},depot,persist,swap(asset),decompress,depot,decompress,swap(asset),purge))
 :await expect(buffer(checkout,combine
-(compose([],({stack},record)=>record.push(note.call(1,record.length+1+"/3 attempt to checkout "+address+": "+stack)))
+(compose([],({stack},record)=>record.push(note.call(1,record.length+1+"/5 attempt to checkout "+address+": "+stack)))
 ,combine(swap(depot),buffer(purge))
 ,exit
-)),0,2)(address,depot,branch,route).catch(note).then(done=>
+)),0,5)(address,depot,branch,route).catch(note).then(done=>
  access(depot,false).then(done=>note.call(2,"Source downloaded:",address,"->",depot)).catch(fail=>exit(done)));
  let relation=remote?depot:location;
  let entries=await [input].flat().reduce(record(input=>typeof input==="string"
@@ -308,12 +309,11 @@
  if(native&&next)
  return compose.call
 (source,context,next,{shortCircuit:true},merge
-,[target,"module"],describe,slip(scope),merge,target,"module"
+,[target,"module"],refer,slip(scope),merge,target,"module"
 ,module=>module.format==="module"
  //read(source).then(module=>modularise(module,source)).then(({namespace:module})=>prove.call(module,module.proof))
  // dispatch new import thread for tests until modularization halts on self-referential imports. 
-?import(source).then(module=>module.tests&&
- test(source).catch(fail=>fail).then(result=>
+?import(source).then(module=>module.tests&&buffer(test)(source).then(result=>
  console.log("\x1b[4m"+source+"\x1b[0m:\n"+result)))&&module
 :module
 );
@@ -341,7 +341,7 @@
  return compose.call
 ({source:module,format:{json:"json"}[syntax]||"module",shortCircuit:true}
  // persist shortCircuit on scope to support loading from source while bundling. 
-,[target,"module"],describe,slip(scope),merge,target,"module"
+,[target,"module"],refer,slip(scope),merge,target,"module"
 );
  return module;
 };
@@ -435,7 +435,7 @@ export function patch(repository, patch) {
 }*/
 };
 
- export async function access(file, encoding, content)
+ export async function access(file,encoding,content)
 {// access folder/file's metadata, content with specified encoding, or overwrite its content.
  if(file.startsWith("http"))
  return request(file);
@@ -447,7 +447,7 @@ export function patch(repository, patch) {
  if(/\/$/.test(file))
  return fs.readdir(file,{withFileTypes:true});
  if(content)
- return fs.writeFile(file,...typeof content==="boolean"?[encoding,'utf8']:[content,encoding]).then((written)=>file);
+ return fs.writeFile(file,...typeof content==="boolean"?[encoding,'utf8']:[content,encoding]).then(written=>file);
  let buffer=await fs.readFile(file);
  if(["binary",1].includes(encoding))
  return buffer;
@@ -557,9 +557,7 @@ export function patch(repository, patch) {
  ,respond(header){Object.assign(this.response,{header});}
  ,response:{},url:request||"",method:"get",...header||{}
  };
- let address=request.url.replace(/^/,request.connection?.remoteAddress||"");
  let method=request.method.toLowerCase();
- console.log("\x1b["+({get:36,put:33,delete:33}[method]||35)+"m"+clock()+"@"+address+"...\x1b[0m");
  let format=either("Content-Type","content-type",swap(undefined))(request);
  let cookie=Object.fromEntries(request.headers?.cookie?.split(/ *; */).map(entry=>entry.split("="))||[]);
  let {query,pathname}=await resolve("url","parse",request.url,true);
@@ -567,25 +565,28 @@ export function patch(repository, patch) {
 (infer("filter",(step,index)=>(index||step)&&step!==".")
 ,{get:infer("map",step=>step||"interface")}[method]
 )(decodeURIComponent(pathname).split("/"));
- let body=await compose.call(parser[format],resolve,request.body,either("parse",swap(request.body),swap("")));
+ let body=await either(compose(differ(format),resolve,request.body,either("parse",swap(request.body),swap(""))),swap(request.body))(parser);
  request=Object.assign(request,{body,path,query,method,cookie});
- let local=this||await import("./Blik_2024_source.js").then(({default:local})=>local);
+ let local=this||await import("./Blik_2023_host.js").then(({default:local})=>local);
  let response=await buffer(either(tether(route),"error",drop(-1)))(local,path,request);
  let fail=is(Error)(response);
  body=wether([fail,has("nodeName"),something],compose(note.bind(1),"message"),"outerHTML",either("body",crop(1)),swap("missing source: \""+request.path+"\""))(response);
  let type=!fail?response?.type||response?.nodeName?.toLowerCase()||request.url.match(/\.([^\.\/]*)$/)?.slice(1)[0]||(compound(response)?"json":"txt"):"txt";
+ // let importing=request.headers?.["sec-fetch-dest"]==="script";
+//  if(importing&&type==="json")
+//  body="export default "+JSON.stringify(JSON.parse(body.constructor?.name=="Buffer"?body.toString():body))+";"
+// ,type="js";
  let status=response?fail?500:response.status||200:404;
  let success=status<400;
- let report=(status==200?32:31)+"m"+clock()+"@"+[address,status,type].join(" ");//+": \""+String(body).replace(/^([\s\S]{20})[\s\S]*$/,(...match)=>match[1]+"...")+"\"";
- console.log("\x1b["+report+"\x1b[0m");
  return (
  {status,type,body
  ,location:response?.location
  ,cookie:response?.cookie
  ,headers:{get(key){return response?.header[key];}}
  ,json(){return this.text(true);}
- ,text(json)
-{let text=this.body.constructor?.name=="Buffer"?this.body.toString():this.body;
+ ,text(json=false)
+{if(!binary(json))json=false;
+ let text=this.body.constructor?.name=="Buffer"?this.body.toString():this.body;
  if(compound(text))
  return json?text:JSON.stringify(text);
  return json?JSON.parse(text):text;
@@ -607,7 +608,7 @@ export function patch(repository, patch) {
  var parser=compose.call
 ({JSON,"x-www-form-urlencoded":"querystring"}
 ,Object.entries
-,infer("map",compose(combine(compose(0,"toLowerCase",/^/,"application/","replace"),1),collect))
+,infer("map",compose(combine(compose(0,"toLowerCase",/^/,"application/","replace"),infer(1)),collect))
 ,Object.fromEntries
 );
 
