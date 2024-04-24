@@ -96,7 +96,7 @@
  let attach=term instanceof Function&&prefix.test(term.name)&&term;
  let attend=!prebound&&!attach&&defined(scope??undefined)&&!Array.isArray(term)
 ?[Object(scope),detach||term].reduce((domain,term)=>term instanceof Function
-?fields(domain).find(field=>{try{return Object.is(Reflect.get(domain,field),term);}catch(fail){};})&&term
+?fields(domain?.constructor?.name==="Buffer"?Object.getPrototypeOf(domain):domain).find(field=>{try{return Object.is(Reflect.get(domain,field),term);}catch(fail){};})&&term
 :Reflect.get(domain,term?.toString?term:null))
 :undefined;
  let bound=attach||attend;
