@@ -110,14 +110,14 @@
  let limited=numeric(selector);
  if(limited&&!selector)
  return [this];
- let matching=!limited&&
- // match selectors on node. 
+ let matching=!limited&&(!/[\.#]/.test(selector)?node.nodeName.toLowerCase()===selector
+:// match selectors on node. 
 [qualify(qualify(node)),search.call(qualify(selector),({1:value})=>
  Object.keys(value).every(field=>["id","class"].includes(field)))
 ].map(Object.entries).reduce(([[nodename,node]],[[name,selector]])=>
  (!name||nodename===name)&&
  Object.entries(selector).every(([field,value])=>
- value.every(value=>node[field]?.includes(value))));
+ value.every(value=>node[field]?.includes(value)))));
  if(matching)
  return [this];
  let parent=node.parentNode;
