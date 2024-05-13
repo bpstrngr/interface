@@ -11,19 +11,19 @@
  ,"feComposite":{"in":"SourceGraphic","in2":"goo","operator":"atop"}
  }}}
  ,"shadow":{"defs":{"filter":
- {"id":"shadow","height":"130%"
- ,"feGaussianBlur":{"in":"SourceAlpha","stdDeviation":"3"}
+ {"id":"shadow","height":"150%"
+ ,"feGaussianBlur":{"in":"SourceAlpha","stdDeviation":"0.5"}
  ,"feMerge":{"feMergeNode":[{},{"in":"SourceGraphic"}]}
  }}}
  ,"shadow_white":{"defs":{"filter":
- {"id":"shadow_white","height":"115%"
- ,"feGaussianBlur":{"in":"SourceAlpha","stdDeviation":"1"}
+ {"id":"shadow_white","height":"150%"
+ ,"feGaussianBlur":{"in":"SourceAlpha","stdDeviation":"0.5"}
  ,"feColorMatrix":{"id":"recolor","type":"matrix","values":"0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0","result":"glow"}
  ,"feMerge":{"feMergeNode":[{},{"in":"glow"},{"in":"SourceGraphic"}]}
  }}}
  ,"shadow_amber":{"defs":{"filter":
- {"id":"shadow_amber","height":"115%"
- ,"feGaussianBlur":{"in":"SourceAlpha","stdDeviation":"1"}
+ {"id":"shadow_amber","height":"150%"
+ ,"feGaussianBlur":{"in":"SourceAlpha","stdDeviation":"0.5"}
  ,"feColorMatrix":{"id":"recolor","type":"matrix","values":"0.75 0.75 0.75 0.75 0  0.35 0.35 0.35 0.35 0  0 0 1 0 0  0 0 0 1 0","result":"glow"}
  ,"feMerge":{"feMergeNode":[{},{"in":"glow"},{"in":"SourceGraphic"}]}
  }}}

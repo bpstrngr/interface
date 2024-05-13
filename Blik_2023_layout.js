@@ -237,7 +237,7 @@
  ,goo:
  {"@keyframes waltz":Object.fromEntries(Array(5).fill(70).map((offset,index,{length})=>
 [index/(length-1)*100+"%"
-,{transform:"translate("+(index%2?offset:0)+"%) rotate("+360*((index+1)/length)+"deg)"}
+,{transform:"translate("+(index%2?offset:0)*(index<2?-1:1)+"%)"}
 ]))
  ,"@keyframes scaler":Object.fromEntries(Array(3).fill(30).map((r,index,{length})=>
  [index/(length-1)*100+"%",{r:r/(index%2?2:1),"z-index":index%2}]))
