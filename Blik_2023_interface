@@ -1,4 +1,8 @@
+Interface@Blik_2023_interface.svg
+
 Ecmascript module interface for clients/imports/functions. 
+
+2024
 
 The semantically flexible javascript platform has been commonly constrained by several 
 syntactic/semantic variations in its ecosystem (commonjs, typescript, flow, jsx, purescript etc.) 
@@ -13,8 +17,8 @@ these dialects can finally be standardized (and tested) dynamically and determin
 without a need for volatile configurations or a new platform bloated by heterogeneity (deno, bun). 
 
 Loading modules requires 3 steps: 
- 1. locate (download, bundle and delete source if not found despite source format definition, or just redirect to source if available), 
- 2. access (+interpret and serialize if foreign dialect recognised or specified), 
+ 1. locate (download, bundle and delete source if not found despite source format definition, or just redirect to source if available. exposed by nodejs as "resolve".), 
+ 2. access (+interpret and serialize if foreign dialect recognised or specified. exposed by nodejs as "load".), 
  3. modularise (not exposed by nodejs; splitting "load" into access + modularise with an implementation using "vm" module is a pending feature). 
  +. test, if the namespace exposes cases for itself. 
 

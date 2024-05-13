@@ -321,7 +321,7 @@
             "iconv-lite":"./ashtuchkin_2012_iconv_lite.js"
           },
           "edit": {"scripts/update.js": {
-            "(res = await (fetch\\((.*)\\)));":"$1.catch(fail=>console.log(\"1/2 attempt to fetch \"+$3+\": \"+fail.stack)||$2)",
+            "(res = await (fetch\\((.*)\\)));":"$1.catch(function retry(fail,index=1){if(index<5)return console.log(index+\"/5 attempt to fetch \"+$3+\": \"+fail.stack),$2.catch(fail=>retry(fail,index+1));throw fail;})",
             "(main\\(\\)\\.catch)":"module.exports=$1"
           }},
           "./Harris_2015_json.js": {}
@@ -365,7 +365,7 @@
         "scripts": ["./Sakas_2018_cssstyle/0/scripts/download_latest_properties.js","./Sakas_2018_cssstyle/0/scripts/generate_implemented_properties.js","./Sakas_2018_cssstyle/0/scripts/generate_properties.js"],
         "edit":{
           "scripts/download_latest_properties.js":{
-            "(res = await fetch\\(url\\))":"$1.catch(fail=>console.log(\"1/2 attempt to fetch \"+url+\": \"+fail.stack)||fetch(url))",
+            "(res = await (fetch\\(url\\)));":"$1.catch(function retry(fail,index=1){if(index<5)return console.log(index+\"/5 attempt to fetch \"+url+\": \"+fail.stack),$2.catch(fail=>retry(fail,index+1));throw fail;})",
             "main\\(\\)\\.catch":"module.exports=main().catch",
             "(out_file.end\\(function \\(err\\) {)":"return new Promise(resolve=>$1resolve(err);",
             "(ties.\\'\\);\n  }\\))":"$1)"
@@ -556,6 +556,50 @@
     "normalize-path":"./jonschlinkert_2015_normalize_path.js",
     "readdirp":"./paulmillr_2012_readdirp.js"
   }}]}},
+  "Bostock_2011_internmap.js":{"https://github.com/mbostock/internmap":{"v2.0.3":"src/index.js"}},
+  "Bostock_2011_d3.js":{
+    "https://github.com/d3/d3-array":{"v3.2.0":["src/index.js",{"alias":{"internmap":"./Bostock_2011_internmap.js"}}]},
+    "https://github.com/d3/d3-time":{"v3.0.0":["src/index.js",{"alias":{"d3-array":"./Bostock_2011_d3/0/src/index.js"}}]},
+    "https://github.com/d3/d3-time-format": {"v4.1.0":["src/index.js",{"alias": {"d3-time": "./Bostock_2011_d3/1/src/index.js"}}]},
+    "https://github.com/d3/d3-color": {"v3.0.1": "src/index.js"},
+    "https://github.com/d3/d3-interpolate": {"v3.0.1": ["src/index.js",{"alias": {"d3-color": "./Bostock_2011_d3/3/src/index.js"}}]},
+    "https://github.com/d3/d3-format": {"v3.1.0": "src/index.js"},
+    "https://github.com/d3/d3-scale":{"v4.0.2":["src/index.js",{"alias":{
+      "d3-array": "./Bostock_2011_d3/0/src/index.js",
+      "d3-time": "./Bostock_2011_d3/1/src/index.js",
+      "d3-time-format": "./Bostock_2011_d3/2/src/index.js",
+      "d3-interpolate": "./Bostock_2011_d3/4/src/index.js",
+      "d3-format": "./Bostock_2011_d3/5/src/index.js"
+    }}]},
+    "https://github.com/d3/d3-quadtree":{"v3.0.1":"src/index.js"},
+    "https://github.com/d3/d3-dispatch":{"v3.0.1":"src/index.js"},
+    "https://github.com/d3/d3-timer":{"v3.0.1":"src/index.js"},
+    "https://github.com/d3/d3-force":{"v3.0.0":["src/index.js",{"alias":{
+      "d3-quadtree":"./Bostock_2011_d3/7/src/index.js",
+      "d3-dispatch":"./Bostock_2011_d3/8/src/index.js",
+      "d3-timer":"./Bostock_2011_d3/9/src/index.js"
+    }}]},
+    "https://github.com/d3/d3-hierarchy":{"v3.1.2":"src/index.js"},
+    "https://github.com/d3/d3-selection":{"v3.0.0":"src/index.js"},
+    "https://github.com/d3/d3-path":{"v3.0.1":"src/index.js"},
+    "https://github.com/d3/d3-drag":{"v3.0.0":["src/index.js",{"alias":{"d3-dispatch":"./Bostock_2011_d3/8/src/index.js","d3-selection":"./Bostock_2011_d3/12/src/index.js"}}]},
+    "https://github.com/d3/d3-shape":{"v3.1.0":["src/index.js",{"alias":{"d3-path":"./Bostock_2011_d3/13/src/index.js"}}]},
+    "https://github.com/d3/d3-zoom":{"v3.0.0":["src/index.js",{"alias":{
+      "d3-dispatch":"./Bostock_2011_d3/8/src/index.js",
+      "d3-drag":"./Bostock_2011_d3/14/src/index.js",
+      "d3-interpolate":"./Bostock_2011_d3/4/src/index.js",
+      "d3-selection":"./Bostock_2011_d3/12/src/index.js",
+      "d3-transition":"./Bostock_2011_d3/17/src/index.js"
+    }}]},
+    "https://github.com/d3/d3-transition":{"v3.0.1":["src/index.js",{"alias":{
+      "d3-color":"./Bostock_2011_d3/3/src/index.js",
+      "d3-dispatch":"./Bostock_2011_d3/8/src/index.js",
+      "d3-ease":"./Bostock_2011_d3/18/src/index.js",
+      "d3-interpolate":"./Bostock_2011_d3/4/src/index.js",
+      "d3-timer":"./Bostock_2011_d3/9/src/index.js"
+    }}]},
+    "https://github.com/d3/d3-ease":{"v3.0.1":"src/index.js"}
+  },
   "sindresorhus_2014_vary.js":{"https://github.com/jshttp/vary":{"v1.1.2":[{"syntax":"commonjs"}]}},
   "sindresorhus_2014_objectassign.js":{"https://github.com/sindresorhus/object-assign":{"v4.1.1":[{"syntax":"commonjs"}]}},
   "Goode_2012_express_cors.js":{"https://github.com/expressjs/cors":{"v2.8.5":["lib/index.js",{"syntax":"commonjs","alias":{"object-assign":"./sindresorhus_2014_objectassign.js","vary":"./sindresorhus_2014_vary.js"}}]}},
@@ -577,5 +621,6 @@
   },"edit":{"lib/index.ts":{",\n  BroadcastOperator,\n  RemoteSocket,":""}}}]}},
   "rauch_2010_socketio_client.js":{"https://github.com/socketio/socket.io-client":{"4.7.4":["lib/index.ts",{"syntax":"typescript","alias":{
   }}]}},
-  "haverbeke_2020_codemirror.js":{"https://github.com/codemirror/codemirror5":{"5.65.16":["src/codemirror.js"]}}
+  "haverbeke_2020_codemirror.js":{"https://github.com/codemirror/codemirror5/src":{"5.48.4":["src/codemirror.js"]}},
+  "haverbeke_2020_codemirror_jsmode.js":{"https://github.com/codemirror/codemirror5/mode/javascript":{"5.48.4":["mode/javascript/javascript.js"]}}
 }

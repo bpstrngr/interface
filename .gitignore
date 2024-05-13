@@ -9,20 +9,27 @@
 !Blik_2023_interface
 !Blik_2023_interface.svg
 !Blik_2023_sources.json
-!isaacs_2011_node-tar.js
-!tyrealhu_2023_acorn_typescript.js
-!rauch_2014_socketio_rollup.js
-!rauch_2014_socket.io.slim.js
-!Yahoo_2014_serialize.js
 !README.md
 
 !Blik_2023_host.js
 !Blik_2023_d4.js
 !Blik_2023_fragment.js
-!Blik_2024_source.js
+!Blik_2024_static.js
 !Blik_2024_network.js
 
-!Blik_2023_source.js
+!Blik_2023_form.js
 !Blik_2023_layout.js
 !Blik_2024_script.js
 !Blik_2020_svg.json
+
+!isaacs_2011_node-tar.js
+!tyrealhu_2023_acorn_typescript.js
+!rauch_2014_socketio_rollup.js
+!rauch_2014_socket.io.slim.js
+!Yahoo_2014_serialize.js
+!mozilla_2010_pdf_brightspace.js
+!mozilla_2010_pdf_link_service_brightspace.js
+!mozilla_2010_pdf_viewer_brightspace.js
+!mozilla_2010_pdf_worker_brightspace.js
+!haverbeke_2020_codemirror.js
+!haverbeke_2020_codemirror_jsmode.js

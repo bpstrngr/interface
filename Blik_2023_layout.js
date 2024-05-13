@@ -121,15 +121,22 @@
  {"& .pdfjs":{"max-height":"670px",overflow:"scroll","max-width":"90vw",margin:"auto"}
  }
  ,"div.pdfjs":
- {margin:"auto","max-height":"95vh",overflow:"scroll"
- ,"&>div#viewer>div.page":
- {"background-image":"url('icon/blackboard.png')",margin:"auto"
+ {margin:"auto","max-height":"95vh","max-width":"50vw",overflow:"scroll"
+ ,"&:hover":{transform:"scale(1.2)"}
+ ,"&>div#viewer":
+ {width:"50vw",height:"95vh"
+ ,"&>div.page":
+ {margin:"auto",width:"100% !important",height:"auto !important"
+ ,"background-image":"url('icon/blackboard.png')"
  ,"&>.loadingIcon":{content:"",fill:"red","border-radius":"50%",width:"20px",height:"20px"}
  ,"&~div.page>div.canvasWrapper>svg image":{opacity:0.3}
  ,"&>div.canvasWrapper":
- {"&>svg tspan":{fill:"var(--text,#dbd1b4)"}
+ {width:"100% !important",height:"auto !important"
+ ,"&>svg":{width:"100% !important",height:"auto !important"}
+ ,"&>svg tspan":{fill:"var(--text,#dbd1b4)"}
  ,"&>svg image":{opacity:0.3}
  ,"&>svg path":{fill:"rgba(33,33,33,0.533)"}
+ }
  }
  }
  }

@@ -1,4 +1,4 @@
-import {note,wait,infer,buffer,compose,collect,stream,record,provide,compound,tether,bind,string,is,not,iterable} from "./Blik_2023_inference.js";
+import {note,wait,drop,infer,buffer,compose,combine,collect,stream,record,provide,compound,tether,bind,string,is,not,iterable} from "./Blik_2023_inference.js";
 import {search,merge,prune,route,random} from "./Blik_2023_search.js";
 let address=new URL(import.meta.url).pathname;
 
@@ -95,8 +95,8 @@ let address=new URL(import.meta.url).pathname;
  string(value)?[[field,value]]:grammar.meta.url.pathname.endsWith(field)?Object.entries(value):[]));
  if(Object.keys(alias).length)
  grammar=prune.call(grammar,function({1:value})
-{let candidate=["ImportDeclaration","ImportExpression"].includes(value?.type);
- let source=candidate&&alias[value.source.value];
+{let candidate=["Import","Import","ExportNamed","ExportAll"].map((type,index)=>type+(index?"Declaration":"Expression")).includes(value?.type);
+ let source=candidate&&alias[value.source?.value];
  if(!source) return value;
  source=/^\./.test(source)?"./"+path.relative(relation,path.resolve(location,source)):source;
  source=["value","raw"].map(field=>
@@ -342,11 +342,11 @@ let address=new URL(import.meta.url).pathname;
  return import(module).then(module=>module[term](syntax,options));
 };
 
- export function namespace(declarations,modules,procedure)
+ export function namespace(declarations,modules,...procedures)
 {// translate abstract syntax tree or runtime namespace into javascript;
  [declarations,modules]=
  [declarations,modules].map((argument,index)=>
- typeof argument==="string"?JSON.parse(argument):argument);
+ string(argument)?JSON.parse(argument):argument);
  let {type,body,sourceType}=declarations;
  if(sourceType==="typescript")
  declarations=prune(declarations,(field,value)=>!value?.type?.startsWith("TS"));
@@ -363,12 +363,12 @@ let address=new URL(import.meta.url).pathname;
  "export "+({default:field+" "}[field]||("var "+field+"="))+serialize(functor)).join("\n\n")).then(module=>
  // apply formatting. 
  module.replace(/(\}\})(,\"[^\"]*\":)(\{)/g,(...match)=>match.slice(1,4).join("\n "))+"\n");
- return compose(collect,infer("filter",Boolean),"\n\n","join")(procedure,modules,declarations);
+ return compose(collect,infer("filter",Boolean),"\n\n","join")(modules,declarations,...procedures);
 };
 
  export function proceduralize(term)
 {if(term instanceof Function)
- return String(term||"").replace(/(^function *\w*\([\w,\n]*\)\n* *\{\n*)|(\}$)/g,"");
+ return String(term||"").replace(/(^(async ){0,1}function *\w*\([\w,\n]*\)\n* *\{\n*)|(\}$)/g,"");
  throw Error("can't proceduralize "+typeof term);
 };
 
@@ -483,15 +483,39 @@ export async function imports(syntax,format={}) {
   return { [syntax.meta.url.pathname]: sources.reduce(merge, {}) };
 }
 
-export async function exports(source) {
-  let module = await import(source);
-  let sources = await stream(imports(source), source, Reflect.get);
-  await prune.call(sources, ([path, term]) =>
-    exports(path).then((exports) => [term, exports].reduce(merge))
-  );
-  let scopes = scope(module);
-  return [sources, scopes].reduce(merge);
-}
+ export async function exports(source)
+{let path=await import("path");
+ if(!string(source))
+ return compose.call
+(source,tether(search,({1:value})=>/^Export(Named|All)Declaration$/.test(value?.type)),Object.values
+,infer("map",({specifiers,declaration,source:reexport})=>specifiers||declaration
+?[["./"+path.relative(address.replace(/\/.*?$/,""),source.meta.url.pathname),specifiers.length&&specifiers?.map(({exported:{name}})=>name)||
+ [declaration.declarations||declaration].flat().map(({id})=>id.name)]]
+:[[source.meta.url.pathname.replace(/\/.*?$/,"/")+reexport.value,"*"]])
+,infer("map",Object.fromEntries)
+,infer("reduce",(exports,entry)=>merge(exports,entry,0))
+,Object.entries
+,infer("map",([source,names])=>[source,["",names].flat()])
+,Object.fromEntries
+);
+ let module = await import(source);
+ let sources = await stream(imports(source), source, Reflect.get);
+ await prune.call(sources, ([path, term]) =>
+ exports(path).then((exports) => [term, exports].reduce(merge))
+ );
+ let scopes = scope(module);
+ return [sources, scopes].reduce(merge);
+};
+
+ export async function reexport(modules,relation)
+{let path=relation?await import("path"):undefined;
+ let statements=Object.entries(modules).map(([source,names])=>
+ names.reduce((exports,name,index,names)=>
+ exports+(index&&names[index-1]?",":"")+(index===1?"{":"")+name
+," export ")+(names.length>1?"}":"")
++" from \"./"+(path?.relative(relation,path.resolve(source))||source)+"\";");
+ return statements.join("\n ");
+};
 
 export function scope(module) {
   let entries = Object.entries(module).map(([path, term]) => [

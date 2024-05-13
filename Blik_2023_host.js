@@ -1,6 +1,6 @@
  import {note,prompt,when,pattern,revert,clock,observe,is,has,same,slip,something,compound,infer,tether,wether,collect,provide,route,buffer,compose,combine,either,drop,crop,swap,record,wait,exit,pass} from "./Blik_2023_inference.js";
- import {resolve,access,list,window,fetch} from "./Blik_2023_interface.js";
- import {search,merge,sum} from "./Blik_2023_search.js";
+ import {resolve,access,list,window,fetch,mime,persist} from "./Blik_2023_interface.js";
+ import {search,merge,sum,module} from "./Blik_2023_search.js";
  import local from "./Blik_2023_host.js";
 
  export var classified=["*.git*"].map(term=>RegExp("^"+term.replace(/\./g,"\\.").replace(/\*/g,".*")+"$"));
@@ -8,6 +8,39 @@
  [file].flat().forEach(file=>
  classified.push(file)));
  export var permit=(name,classified)=>!classified.some(term=>term.test(name));
+
+ export default
+ {async get(request="/")
+{if(typeof request!="object")
+ request={url:request};
+ if(/^http/.test(request.url))
+ return forward(request.url,request);
+ let {pathname}=await resolve("url","parse",request.url,true);
+ let address=await resolve("path","resolve","./"+decodeURI(pathname));
+ if(!permit(address,classified))
+ throw Error("Classified");
+ let file=await access(address);
+ if(!file.isDirectory())
+ return access(address,request.query?.encoding||"binary");
+ return compose.call(address,true,classified,list);//,module(this||{}),merge); // recorded responses are overloading scope with payloads. 
+},put(request)
+{let address=decodeURI(new URL(request.url).pathname);
+ if(!permit(address,classified))
+ throw Error("Classified");
+ return persist(request.body,address,request.query?.force);
+},delete:async function(request)
+{let address=Object.fromEntries(request.headers.origin.split(/:\/+|:/g).map((path,index)=>
+ [["protocol","hostname","port"][index],path+(!index?":":"")]));
+ let [match,authority]=request.headers.cookie.match(/authority=([^;]*);/)||[];
+ let get=path=>new Promise(resolve=>import(address[0].substring(0,-1)).then(({request})=>
+ request(note({...address,path,method:"get"}),response=>
+ response.setEncoding("utf8").on("data",compose(JSON.parse,resolve))).end())).then(note)
+ let {author}=authority&&await get("/authority/"+authority);
+ let {rank}=author&&await get("/mind/"+author);
+ if(rank!="ranger")
+ return Error("unauthorised");
+ return purge(path.resolve(...request.path));
+}};
 
  export async function expose(source,parameters,protocol="http",remember)
 {let {default:path}=await import("path");
@@ -28,7 +61,7 @@
  [protocol,source]=await resolve([protocol,source]);
  let certificates=protocol.globalAgent.protocol=="https:"?[certify(Object.values(parameters.certification)[0],parameters.distinguishedname)]:[];
  let virtualize=Object.entries(parameters.certification||{}).slice(1).map(([name,certificate])=>
- compose(name,certify(certificate),combine("addContext",crop(1)),drop(1)));
+ compose(name,certify(certificate,parameters.distinguishedname),combine("addContext",crop(1)),drop(1)));
  let report=compose(combine(swap(protocol.globalAgent.protocol,"//"),either("_connectionKey",swap(parameters.port))),"/",collect,infer("join",""),"open",note.bind(2));
  return compose
 ("createServer",parameters.port
@@ -46,7 +79,7 @@
  function receive(request){observe.call(request,{data(data){this.body+=decoder.write(data);},end:respond.bind(...arguments)});}
 
  function respond(response,source,remember)
-{let retrieve=remember?compose(note,record(fetch,distinction),distinction(this)):tether(fetch);
+{let retrieve=remember?compose(record(fetch,distinction),distinction(this)):tether(fetch);
  return compose(combine(notify,retrieve),pass(report),drop(1,3),response||this,tether(submit))(source.default,this);
 };
  var distinction=({url,headers})=>url+(headers?.cookie||"");
@@ -55,22 +88,23 @@
  var notify=compose(combine(swap("\x1b["),color,compose(drop(),clock),swap("@"),address),"...\x1b[0m",collect,infer("join",""),pass(console.log));
  var recolor=compose(combine(crop(1),compose(drop(1),"status",wether(is(200),swap(32),swap(31)))),infer("replace",/[0-9]{2}/),infer("slice",0,-7));
  var redate=compose(combine(infer(),compose(drop(),clock,"@","concat")),infer("replace",/(?:[0-9]{2}[:@]){3}/));
- var inform=compose(drop(1),combine("status","type",swap("\x1b[0m")));//+": \""+String(body).replace(/^([\s\S]{20})[\s\S]*$/,(...match)=>match[1]+"...")+"\"";
+ var inform=compose(drop(1),combine("status",compose("headers",infer("get","Content-Type")),swap("\x1b[0m")));//+": \""+String(body).replace(/^([\s\S]{20})[\s\S]*$/,(...match)=>match[1]+"...")+"\"";
  var report=compose(combine(compose(recolor,redate),inform),collect,infer("join"," "),console.log);
 
  export function submit(response)
-{let {type,status,location,cookie}=this;
+{let {status,location,cookie}=this;
+ let type=this.headers.get("Content-Type");
  let header=compose.call
 ({status:response.setHeader?status:undefined
  ,"Access-Control-Allow-Origin":"*"
  ,"X-Frame-Options":"DENY"
  ,"Location":location
  ,"Set-Cookie":Object.entries(cookie||{}).map(([key,value])=>key+"="+value).join(";")||undefined
- ,"Content-Type":mime(type)
+ ,"Content-Type":type
  },JSON.stringify,JSON.parse
 );
  response.setHeader?response.writeHead(status,header):response.respond(header);
- let body=wether(compose("type",same("json")),"text","arrayBuffer");
+ let body=wether(compose("headers",infer("get","Content-Type"),mime("json"),Object.is),"text","arrayBuffer");
  return compose(body,response.end.bind(response))(this);
 };
 
@@ -131,11 +165,11 @@
  if([key,cert].every(Boolean))
  return {key,cert};
  note("creating "+certification+"...");
- [key,cert]=await import("./digitalbazaar_2013_nodeforge.js").then(async module=>
-{let rsa=module.default.rsa.generateKeyPair(2048);
+ let {default:forge}=await import("./digitalbazaar_2013_nodeforge.js");
+ let rsa=forge.rsa.generateKeyPair(2048);
  let authority=Object.entries(distinguishedname).map(([key,value])=>(
  {[key.match(/^[A-Z]{2}$/)?"shortName":"name"]:key,value}));
- let certificate=module.default.createCertificate();
+ let certificate=forge.createCertificate();
  Object.assign(certificate,{publicKey:rsa.publicKey,serialNumber:"01"});
  Object.assign(certificate.validity,{notBefore:new Date(),notAfter:new Date()});
  certificate.validity.notAfter.setFullYear(certificate.validity.notBefore.getFullYear()+1);
@@ -149,71 +183,19 @@
 ,{name: 'subjectKeyIdentifier'}
 ]);
  certificate.sign(rsa.privateKey);
- key=await local.put({url:url.pathToFileURL(path.resolve(location,certification[0])),body:module.default.privateKeyToPem(rsa.privateKey)});
- cert=await local.put({url:url.pathToFileURL(path.resolve(location,certification[1])),body:module.default.certificateToPem(certificate)});
- return Promise.all([key,cert].map(certification=>access(certification,true)));
-});
- [key,cert]=await Promise.all([key,cert]);
+ key=await local.put({url:url.pathToFileURL(path.resolve(location,certification[0])),body:forge.privateKeyToPem(rsa.privateKey)});
+ cert=await local.put({url:url.pathToFileURL(path.resolve(location,certification[1])),body:forge.certificateToPem(certificate)});
+ [key,cert]=await Promise.all([key,cert].map(certification=>access(certification,true)));
  if([key,cert].some(pair=>pair instanceof Error))
  note("invalid certification:",key,cert)&&process.exit(0);
  return {key,cert};
 };
 
-export var digest=hash=>value=>
+ export var digest=hash=>value=>
  import("crypto").then(({createHash,createHmac})=>
  (Array.isArray(hash)?createHmac(...hash):createHash(hash)).update(value,"utf-8").digest("hex"));
 
  export var encrypt=value=>digest=digest("sha256",value);
-
- export var mime=compose
-(infer("replace",/.*\./,"")
-,{text:{plain:["txt"],javascript:["js","cjs"],typescript:["ts"],"":["html","css"]}
- ,image:{jpeg:["jpg","jpeg"],"x-icon":"ico","svg+xml":"svg","":["gif","png"]}
- ,audio:{mpeg:"mp3"}
- }
-,(extension,mime)=>
- Object.entries(mime).reduce((mime,[type,subtypes])=>mime||
- Object.entries(subtypes).reduce((mime,[subtype,extensions])=>mime||
- [extensions].flat().includes(extension)&&
- [type,subtype||extension]
-,mime)
-,extension.includes("/")&&extension.split("/"))||
- ["application",extension]
-,infer("join","/")
-);
-
- export default
- {async get(request="/")
-{if(typeof request!="object")
- request={url:request};
- if(/^http/.test(request.url))
- return forward(request.url,request);
- let {pathname}=await resolve("url","parse",request.url,true);
- let address=await resolve("path","resolve","./"+decodeURI(pathname));
- if(!permit(address,classified))
- throw Error("Classified");
- let file=await access(address);
- if(!file.isDirectory())
- return access(address,request.query?.encoding||"binary");
- return compose.call(address,true,classified,list,module(this||{}),merge);
-},put(request)
-{let address=decodeURI(new URL(request.url).pathname);
- if(!permit(address,classified))
- throw Error("Classified");
- return persist(request.body,address,request.query?.force);
-},delete:async function(request)
-{let address=Object.fromEntries(request.headers.origin.split(/:\/+|:/g).map((path,index)=>
- [["protocol","hostname","port"][index],path+(!index?":":"")]));
- let [match,authority]=request.headers.cookie.match(/authority=([^;]*);/)||[];
- let get=path=>new Promise(resolve=>import(address[0].substring(0,-1)).then(({request})=>
- request(note({...address,path,method:"get"}),response=>
- response.setEncoding("utf8").on("data",compose(JSON.parse,resolve))).end())).then(note)
- let {author}=authority&&await get("/authority/"+authority);
- let {rank}=author&&await get("/mind/"+author);
- if(rank!="ranger")
- return Error("unauthorised");
- return purge(path.resolve(...request.path));
-}};
 
 // export async function express(script) {
 //   const bootstrapScriptContent = "import('"+script+"').then(({default:peer,reactivate})=>reactivate(peer))";

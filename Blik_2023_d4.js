@@ -1,8 +1,9 @@
- import * as d3 from './Bostock_2020_d3v6_rollup.js';
+ import * as d3 from './Bostock_2011_d3.js';
  import {fail,trace} from './Blik_2023_sort.js';
  import {merge,search} from './Blik_2023_search.js';
  import {window} from "./Blik_2023_interface.js";
- import {numeric,note,refer,defined} from "./Blik_2023_inference.js";
+ import {numeric,note,defined,simple} from "./Blik_2023_inference.js";
+ import {qualify} from "./Blik_2023_fragment.js";
 
 // Data-Driven Document Declarations (D4).
 
@@ -88,29 +89,18 @@
 }
 }};
 
- export function qualify(node)
-{// extract css selectors from node/fragment, or vice versa.
- if(typeof node==="string")
- return refer(node.match(/[#\.][^#\.]+/g)?.reduce((node,selector)=>
- merge(node,{[["id","class"]["#.".indexOf(selector[0])]]:[selector.slice(1)]})
-,{})||{},node.match(/^[^#\.]+/));
- let selection=node.constructor.name==="Selection";
- let fragment=selection?node.node():node;
- let name=node.nodeName?.toLowerCase()||"";
- let selectors=name?{id:"#",classList:"."}:{id:'#',class:'.',classed:'.'};
- return name+Object.entries(selectors).flatMap(([attribute,selector])=>
- [attribute==="classList"?Array.from(node[attribute]):node[attribute]].flat().filter((value)=>
- typeof value==='string').flatMap((value)=>
- value?.split(' ').map((value)=>selector+value))).join('');
-};
-
- export function ascend(selector="svg")
+ export function ascend(selector,descendants=new Set())
 {let fragment=this instanceof window.Node;
- let node=fragment?this:this.node();
+ let selection=!fragment&&!simple(this);
+ let node=fragment?this:selection?this.node():this;
+ if((selection||fragment)&&!defined(selector))selector="svg";
  let limited=numeric(selector);
  if(limited&&!selector)
  return [this];
- let matching=!limited&&(!/[\.#]/.test(selector)?node.nodeName.toLowerCase()===selector
+ let matching=!limited&&(!/[\.#]/.test(selector)
+?node.nodeName.toLowerCase()===selector
+:is(Function)(selector)
+?selector(this)
 :// match selectors on node. 
 [qualify(qualify(node)),search.call(qualify(selector),({1:value})=>
  Object.keys(value).every(field=>["id","class"].includes(field)))
@@ -120,8 +110,10 @@
  value.every(value=>node[field]?.includes(value)))));
  if(matching)
  return [this];
- let parent=node.parentNode;
- return parent?[...ascend.call(fragment?parent:d3.select(parent),limited?selector-1:selector),this]:[this];
+ let parent=fragment||selection?node.parentNode:node.parent;
+ return !descendants.has(node)&&parent
+?[...ascend.call(selection?d3.select(parent):parent,limited?selector-1:selector,descendants.add(node)),this]
+:[this];
 };
 
 export function jss(style) {

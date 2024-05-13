@@ -1,4 +1,4 @@
-import {something,record,stream,plural,defined,string,refer} from "./Blik_2023_inference.js";
+import {something,record,stream,plural,defined,string,refer,compound,tether,is} from "./Blik_2023_inference.js";
 
 export function random(length,domain="abcdefghijklmnopqrstuvwxyz_"){
   return Array(length).fill(domain).map(domain=>
@@ -103,33 +103,34 @@ export function route(scope, term, path) {
  return array?Object.assign(Array(0),scope):scope;
 };
 
-export function merge(target, source, override = 1) {
-  // unite scopes (assign if path specified to override).
-  let path=[override].flat();
-  if(!path.length)return source;
-  if (path.some((path) => typeof path === 'string'))
-    return [target, ...path, source].reduce((scope, field, index, route) =>
-      route.length - index - 1
-        ? (scope[field] = route.length - index > 2 ? scope[field] || {} : route[index + 1])
-        : route[0],
-    );
-  let index=Number(Boolean(override));
-  let primitive=typeof target !== "object";
-  if (primitive) return [target, source][index];
-  let Group = [Map, Set].find((group) => [target, source].every((part) => part instanceof group));
-  if (Group) return override?source:new Group([source, target].flatMap((part) => Array.from(part)));
-  let extensible=Array.isArray(target)&&!override;
-  if (extensible) return target.concat(source);
-  if (!something(source)) return [target, source][index];
-  return Object.entries(source).reduce(function (target, [field, next]) {
-    const last = target[field];
-    const value = something(last) ? merge(last, next, override) : next;
-    // mutation warning - reduce on an empty target to copy.
-    if(value!==undefined)
-    return Object.assign(target, { [field]: value });
-    delete target[field];
-    return target;
-  }, target);
+ export function merge(target, source, override = 1)
+{// unite scopes (assign if path specified to override).
+ let path=[override].flat();
+ if(!path.length)return source;
+ let assign=path.some((path) => typeof path === 'string');
+ if(assign)
+ return [target, ...path, source].reduce((scope, field, index, route) =>
+ route.length - index - 1
+?(scope[field] = route.length - index > 2 ? scope[field] || {} : route[index + 1])
+:route[0],
+ );
+ let Group = [Map, Set].find((group) => target instanceof group);//[target, source].every((part) => part instanceof group));
+ if (Group) return override?source:new Group([source, target].flatMap((part) => Array.from(part)));
+ let extensible=Array.isArray(target)&&!override;
+ if (extensible) return target.concat(source);
+ let index=Number(Boolean(override));
+ let primitive=[target,source].some(term=>!compound(term));
+ if (primitive) return [target, source][index];
+ if (!something(source)) return [target, source][index];
+ return Object.entries(source).reduce(function (target, [field, next])
+{const last = target[field];
+ const value = something(last) ? merge(last, next, override) : next;
+ // mutation warning - reduce on an empty target to copy.
+ if(value!==undefined)
+ return Object.assign(target, { [field]: value });
+ delete target[field];
+ return target;
+}, target);
 }
 
 export function trace(term, path = []) {
@@ -169,20 +170,48 @@ export function trace(term, path = []) {
       ),
     undefined
   );
-}
+};
 
-export function clone(scope) {
-  return merge(JSON.parse(JSON.stringify(scope)), scope);
-}
+ export function parse(records,separator="\",\"")
+{return records.split("\n").map(record=>
+ record.split(separator)).reduce((fields,record,index,records)=>
+ records.splice(index).map(record=>
+ Object.fromEntries(fields.map((field,index)=>[field,record[index]]))));
+};
 
-export function isolate(path) {
-  // reduce scope to specified path.
-  return refer(search.call(this, path), path);
-}
+ export function cluster(records,{field="Year"})
+{return records.reduce((clusters,record)=>record[field]
+?Object.assign(clusters,{[record[field]]:sum(clusters[record[field]],1)})
+:clusters
+,{});
+};
+
+ export function unfold(field,ancestors=new Set())
+{if(!this||ancestors.has(this))
+ return [];
+ ancestors.add(this);
+ let fold=[field].flat().flatMap(field=>field instanceof Function?field(this):this?.[field]||[]);
+ return [this,fold.flatMap(scope=>unfold.call(scope,field,ancestors))].flat();
+};
+
+export function clone(scope)
+{return merge(JSON.parse(JSON.stringify(scope)),scope);
+};
+
+export function isolate(path)
+{// reduce scope to specified path.
+ return refer(search.call(this,path),path);
+};
 
  export function extract(fields)
-{return [fields].flat().reduce((term,field)=>merge(term,{[field]:this[field]}),{});
-}
+{if(!this)return tether(extract,fields);
+ return [fields].flat().reduce((term,field)=>merge(term,{[field]:this[field]}),{});
+};
+
+ export function module(source)
+{return Object.fromEntries(Object.entries(source).map(([field,term])=>
+ [field,compound(term)?module(term):term?String(term):term]))
+};
 
  export const tests=
  {merge:
