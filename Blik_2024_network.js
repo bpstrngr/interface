@@ -215,7 +215,7 @@
  let tension=complexity;
  let spacing=scale(population/complexity||1);
  combine
-(infer(),infer("alpha",1)
+(infer(),infer("alpha",1)//,infer("alphaDecay",0.3)
 ,infer("nodes",nodes,nodeindex)
 ,infer("force","center",d3.forceCenter(0,0).strength(density*2))
 ,infer("force","x",d3.forceX(0).strength(0))

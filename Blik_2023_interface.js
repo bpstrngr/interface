@@ -1,17 +1,25 @@
  import {note,collect,prompt,same,has,pass,slip,something,observe,describe,refer,expect,trace,array,compound,simple,apply,stream,record,provide,tether,differ,wether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,binary,match,wait,string,defined,compose,combine,exit,clock,route} from "./Blik_2023_inference.js";
  import {merge,stringify,search,edit,prune} from "./Blik_2023_search.js";
  import {parse,sanitize,serialize,compile,namespace,exports,reexport,test} from "./Blik_2023_meta.js";
+
  export const address=new URL(import.meta.url).pathname;
  export const location=address.replace(/\/[^/]*$/,"");//path.dirname(address);
  export const file=address.replace(/.*\//,"");//path.basename(address);
- var browser=globalThis.window;
+ var agent=globalThis.window?.navigator.userAgent.match(/[\w\.]+\/(\.{0,1}\d+){1,2}/g).map(agent=>
+ agent.split("/")).map(([name,version])=>({[name]:Number(version)})).reduce(merge)||
+ prune.call(process.versions,({1:value})=>string(value)?Number(value.match(/(\.{0,1}\d+){1,2}/)[0]):value);
+ var feature=prune.call
+({attributes:{node:21,Chrome:123}
+ },([feature,condition])=>isNaN(condition)?condition:
+ Object.entries(condition).every(([name,version])=>version<=agent[name])
+);
  var sources="./Blik_2023_sources.json";
  export var scope={};
 
 
  // --import flag registers loader module on separate thread unlike 
  // --loader, where context is available directly on the primary thread. 
- let [worker,loader]=["import","loader"].map(name=>!browser&&
+ let [worker,loader]=["import","loader"].map(name=>agent.node&&
  process.execArgv.some(flag=>new RegExp("^--"+name+"[= ][^ ]*"+file).test(flag)));
 
  if(worker&&await resolve("worker_threads","isMainThread"))
@@ -28,7 +36,7 @@
 ,crop(1),note.bind(2)
 ),compose(buffer(resolve),note)(...process.argv.slice(1));
 
- if(!worker&&!loader&&!browser&&process.argv[1]?.endsWith(file))
+ if(!worker&&!loader&&agent.node&&process.argv[1]?.endsWith(file))
  // without either loader flag, context begins at second index. 
  resolve(...process.argv.slice(2));
 
@@ -39,7 +47,7 @@
 {socket?.postMessage("Module loader registered:\n"+import.meta.url);
 };
 
- let precedent=compose(crop(1),"resolve",collect,search.bind(scope));
+ let precedent=compose(crop(1),"resolution",collect,slip(scope),tether(search));
  let respecify=compose("url",collect,slip(URL),Reflect.construct,"pathname",decodeURI);
  let recovery=compose
 (drop(-1,1),combine(infer(),(source,{message})=>message.includes("'"+source+"'"))
@@ -63,7 +71,7 @@
  let modulepath=when(is(match(/^[\/\.]/),not(match(RegExp(sources+"$")))));
  let shortcircuit=compose
 (combine(infer(),either(compose(respecify,modulepath,format),swap({}))),merge
-,{shortCircuit:true},merge,"resolve",refer
+,{shortCircuit:true},merge,"resolution",refer
 );
 
  export async function resolve(source,context,next)
@@ -87,7 +95,7 @@
  let absolute=await wether
 ([url,path]
 ,source=>resolve("url","fileURLToPath",source)
-,source=>browser?relation+"/"+source:resolve("path","resolve",relation,source)
+,source=>!agent.node?relation+"/"+source:resolve("path","resolve",relation,source)
 ,infer()
 )(source);
  if(internal)
@@ -97,10 +105,10 @@
  let discard=wether(same(absolute),compose(context,next),compose(drop(-1),exit));
  let fail=compose(drop(2),each("stack"),"The above errors occured while trying to locate "+source+".",collect,"\n","join",Error,exit);
  let json=source.endsWith(".json")||undefined;
- let module=command?import(source,json&&{assert:{type:"json"}}):either(precedent,compose
+ let module=command?import(source,json&&{[feature.attributes?"with":"assert"]:{type:"json"}}):either(precedent,compose
 (either(next,compose(recovery,invoke,proceed),compose(backtrack,discard),fail)
 ,shortcircuit,{imports:new Set()},merge,absolute,refer,slip(scope),merge
-,[absolute,"resolve"],tether(search)
+,[absolute,"resolution"],tether(search)
 ))(absolute,context);
  if(loading&&internal)
  return module;
@@ -260,8 +268,7 @@
 :alias);
  let relativeformat=[format].reduce(merge,{alias});
  let plugins=await Object.entries(format).filter(([field])=>
- /^\./.test(field)).reduce(record(([plugin,settings])=>resolve(plugin,"default",settings)),[]);
- plugins.push(
+ /^\./.test(field)).reduce(record(([plugin,settings])=>resolve(plugin,"default",settings)),[
  {name:"interface"
  ,transform:(source,address)=>compose.call
 ("url","pathToFileURL",address,resolve,"href"
@@ -276,7 +283,7 @@
 ,Promise.resolve(null))
 :null
 :null
- });
+ }]);
  note.call(3,"bundling "+source+"...");
  let {rollup}=await import("./Harris_2015_rollup.js");
  let bundle=await rollup({input,plugins,...format.input});
