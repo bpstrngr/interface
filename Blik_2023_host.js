@@ -22,7 +22,7 @@
  let file=await access(address);
  if(!file.isDirectory())
  return access(address,request.query?.encoding||"binary");
- return compose.call(address,true,classified,list);//,module(this||{}),merge); // recorded responses are overloading scope with payloads. 
+ return compose.call(address,true,classified,list,module(this||{}),merge);
 },put(request)
 {let address=decodeURI(new URL(request.url).pathname);
  if(!permit(address,classified))
@@ -79,7 +79,7 @@
  function receive(request){observe.call(request,{data(data){this.body+=decoder.write(data);},end:respond.bind(...arguments)});}
 
  function respond(response,source,remember)
-{let retrieve=remember?compose(record(fetch,distinction),distinction(this)):tether(fetch);
+{let retrieve=remember?compose(record(compose(crop(1),fetch),distinction).bind({}),distinction(this)):tether(fetch);
  return compose(combine(notify,retrieve),pass(report),drop(1,3),response||this,tether(submit))(source.default,this);
 };
  var distinction=({url,headers})=>url+(headers?.cookie||"");
