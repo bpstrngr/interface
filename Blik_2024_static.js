@@ -9,17 +9,21 @@
  {body:{load:function(){console.log("abc")}}
  };
 
+ var style=
+ {body:{background:"black",color:"white"}
+ };
+
  export default
  {...local
  ,routes:compose
-(crop(1),"get",{spread:"right"},fragment.network,throttle,{style:"background:#222222"},tether(document)
-),icon:compose
-(drop(),{svg:{viewBox:"0 0 1 1",width:"10px",height:"10px",circle:{cx:"0.5",cy:"0.5",r:"0.3"}}},document
+(crop(1),"get",{spread:"force"},fragment.network,throttle,{style:"background:#222222"},tether(document)
+),interface:compose
+(drop(),{div:{"#text":"interface"}},"interface","icon","./actions","./style",hypertext,document,actions,activate
 ),style:compose
-(drop(),{body:{background:"black",color:"white"}},true,stylesheet,"body",describe,{type:"css"},merge
+(drop(),style,true,stylesheet,"body",describe,{type:"css"},merge,note
 ),actions:compose
 (drop(),{default:actions},{"./actions":["actions"],"./Blik_2023_search.js":[,"merge"]},String(expose)
 ,namespace,"body",describe,{type:"js"},merge
-),interface:compose
-(drop(),{div:{"#text":"Interface"}},"concept","icon","./actions","./style",hypertext,document,actions,activate
+),icon:compose
+(drop(),{svg:{viewBox:"0 0 1 1",width:"10px",height:"10px",circle:{cx:"0.5",cy:"0.5",r:"0.3"}}},document
 )};
