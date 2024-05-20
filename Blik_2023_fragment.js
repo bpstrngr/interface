@@ -1,19 +1,8 @@
  import {resolve,modularise,window,fetch} from "./Blik_2023_interface.js";
  import {note,provide,collect,infer,either,tether,buffer,compose,refer,record,combine,wether,swap,compound,something,string,defined,simple,exit,route,drop,crop,same,binary,is,array} from "./Blik_2023_inference.js";
  import {search,merge,prune,parse as records,cluster} from "./Blik_2023_search.js";
- import script from "./Blik_2024_script.js";
- import fragment from "./Blik_2023_fragment.js";
- import network,{Graph} from "./Blik_2024_network.js";
- import * as chart from "./Blik_2024_chart.js";
  import {proceduralize} from "./Blik_2023_meta.js";
  var {default:svg}=await resolve("./Blik_2020_svg.json");
-
- export default
- {document,media,portfolio
- ,canvas:compose(image,canvas)
- ,vector,network,script,...chart
- ,plot:compose(combine(cluster,drop(1)),chart.plot)
- };
 
  export function document(source,namespace,language)
 {if(this)
@@ -72,194 +61,6 @@
  return nodes.length?provide([fragment,...nodes]):fragment;
 };
 
- export async function transform({incumbent,resource,...fields})
-{let source=fields.source||"get";
- let response=await fetch(source);
- let mime=response.headers.get("Content-Type");
- let {json,xml,pdf,csv}={[mime?.split("/")[1]]:true};
- if(!resource)
- resource=await response[pdf?"arrayBuffer":json?"json":"text"]();
- resource=pdf?await print(resource)
-:csv?records(resource)
-:(xml||resource.startsWith?.("<?xml "))
-?await new window.DOMParser().parseFromString(resource,xml?mime:"application/xml")
-:resource;
- var presets=
- {network:
- {spread:["force","left","right","up","down","radius"]
- ,title:["name","image","wiki image"]
- //,relations:presets.layout=="network"&&[resource].map(function repetitive(value,sample){let entry=Object.entries(value).find(([key,value])=>Array.isArray(value)&&((key==sample)||value.some(value=>repetitive(value,key))));return entry&&entry[0];},spread)
- }
- };
- let get=[profile(resource),presets[fields.layout]].reduce(merge);
- if(this)
- fields=compose(form.bind(this),fill.bind(this,fields))({get});
- let process=fragment[fields.layout||"media"];
- let product=await compose(process,{id:fields.source},merge)(resource,fields,incumbent||window);
- return product;
- let values=this?.elements?.source?.parentNode?.querySelector("ul");
- if(values)
- d3.select(values).datum(resource.descendants?resource.descendants():fields.source);
- //new Array(file.numpages).reduce((canvas,phase,index)=>file.getPage(index+1).then(page=>
-//{let view=page.getViewport({scale:1.5});canvas.width=canvas.width<view.width?view.width:canvas.width;canvas.height=(canvas.height||0)+view.height;
- //page.render({canvasContext:canvas.getContext('2d'),viewport:view});return canvas;
-//}),document.createElement('canvas')))
-};
-
- export function profile(resource)
-{if(string(resource)||is(Error)(resource))
- return {layout:["media","script"]};
- let matrix=Object.keys(resource).filter(function record(key)
-{return Object.values(resource[key]||{}).every(value=>
- array(value)?record(value):!isNaN(value));
-});
- return {source:resource
- ,layout:Object.entries(fragment).map(([key])=>key)
- ,matrix:matrix.length?matrix:undefined
- };
-};
-
- export function form(fields,labels)
-{let group=Object.entries(fields).reduce((group,[key,value],index)=>
- typeof value=="object"&&!Array.isArray(value)&&!index&&key,false);
- if(group)
- fields=fields[group];
- labels=this&&!labels?JSON.parse(this.dataset.labels):string(labels)?JSON.parse(labels):labels;
- let label=Object.entries(fields).map(([id,value])=>
-{if(!defined(value))return;
- let type=wether([is(Date),is(Set),either(array,compound),binary]
-,...["date","radio","select","checkbox","text"].map(type=>swap(type)))(value);
- let field=
- {for:id,title:id
- ,class:[group,type,{checkbox:value?"checked":""}[type]].filter(Boolean).join(" ")||undefined
- ,input:
- {type:["select","date"].includes(type)?"text":type,id,name:id
- ,value:type=="date"?clock(value,"datetime"):(type=="text"&&value&&String(value))||(array(value)?value[0]:compound(value)?Object.keys(value)[0]:value)
- ,checked:{checkbox:value?value.toString():undefined}[type]
- ,autocomplete:"off"
- }
- ,ul:type!=="text"?type==="date"
-?clockwork(value)
-:{li:prune.call([value].flat(),([field,value])=>!["ul","li","#text"].includes(field)
-?compose(infer("map",([field,value])=>(
- {"#text":string(value)?value:field
- ,ul:value&&!string(value)?{li:[value]}:undefined
- })),provide)(compound(value)?Object.entries(value):[[field,value]])
-:value)
- }:undefined
- ,...tag(labels,typeof labels[id]=="function"?labels[id](value):id)
- };
- return JSON.parse(JSON.stringify(field));
-});
- if(this)
- label.filter(Boolean).forEach(label=>
-{let input=this.elements[label.for];
- if(something(input?.value))
- label.input.value=input?.value;
- this[(input?"replace":"append")+"Child"](document({label}),input?.closest("label"));
- if(label.input.type=="text")
- this.elements[label.for]?.dispatchEvent(new window.Event("change",{bubbles:true}));
-});
- return {label};
-};
-
-
- export function fill(fields)
-{Object.entries(fields||{}).filter(([field,value])=>
- !compound(value)&&this.elements[field]).forEach(([field,value])=>
- this.elements[field].value=value);
- return Object.fromEntries([...new this.ownerDocument.defaultView.FormData(this)]);
-};
-
- var tag=(labels,id)=>typeof id!="string"
-?id
-:typeof labels[id]=="object"
-?labels[id]
-:(labels[id]&&labels[id][0]=="<")
-?{"#text":labels[id]}
-:{span:{"#text":typeof labels[id]=="string"?labels[id]:id}};
-
- export function print(file)
-{return resolve(
-["./mozilla_2010_pdf_viewer_brightspace.js"
-,"./mozilla_2010_pdf_link_service_brightspace.js"
-,"./mozilla_2010_pdf_brightspace.js"
-]).then(async function([{PDFViewer},{PDFLinkService},pdf])
-{pdf.default.GlobalWorkerOptions.workerSrc="mozilla_2010_pdf_worker_brightspace.js";
- let container=document({"div":{"class":"pdfjs","div":{"id":"viewer"}}});
- let viewer=new PDFViewer(
- {linkService:new PDFLinkService(),container,renderer:"svg"
- ,textLayerMode:0,disableRange:true,forceRendering:true
- });
- viewer.linkService.setViewer(viewer);
- await pdf.getDocument(file).promise.then(pdf=>
- viewer.setDocument(pdf));
- return viewer.container;
-});
-};
-
- export function image(src)
-{if(/image/i.test(src.nodeName))return src;
- return new Promise((resolve,reject)=>
- Object.assign(document({img:{crossOrigin:"anonymous"}})
-,{onload(){resolve(this);}
- ,onerror:reject
- ,src
- }));
- //if(!colors[color])svg.select("circle#"+id).attr("fill",["rgb(",...new Vibrant(this).swatches()["Vibrant"].rgb].reduce((hex,hue,index)=>hex+hue+(index<2?",":")")));
-};
-
- export function canvas(image)
-{let canvas=document({canvas:{width:image.naturalWidth,height:image.naturalHeight}});
- canvas.getContext("2d").drawImage(image,0,0);
- return canvas;
-}
-
- export function vector(node)
-{if(node.nodeName.toLowerCase()=="svg")
- return node;
- let attributes=demarkup(node);
- let {r,x,y,cx,cy,dx,dy,width,height}=attributes;
- let font=Number(attributes["font-size"]?.replace(/[^0-9\.]*/g,""));
- let align=attributes["text-anchor"];
- //if(!isNaN(font))document.call(node,{dy:(Number(dy)||0)+font});
- x=cx?cx-r:x||0;
- y=cy?cy-r:y||0;
- width=width||r*2||font||0;
- height=height||r*2||font||0;
- let rotation=detransform(node,"rotate")*180/Math.PI;
- let transform="rotate("+rotation+")";
- if(rotation)document.call(node,{transform:""});
- return fragment.document
-({svg:
- {id:node.closest("g")?.getAttribute("id")
- ,viewBox:[x,y,width,height].join(" ")
- ,width,height,x,y
- ,style:"overflow:visible"
- ,...rotation&&{transform}
- ,.../svg$/.test(node.namespaceURI)
-?{node}
-:{foreignObject:
- {x,y,width,height
- ,node
- }
- }
- }
- }
-);
-};
-
- export var stringify=node=>node.innerHTML||
- Array.from(node.childNodes).map(function outerXML({nodeType,nodeName,attributes,childNodes})
-{let tag=()=>"<"+nodeName+
- Array.from(attributes).map(({nodeName,nodeValue})=>" "+nodeName+"=\""+(nodeValue||"").toString()+"\"").join("")+
- (childNodes.length?">"+Array.from(childNodes).map(outerXML).join("")+"</"+nodeName+">":"/>");
- let text=()=>nodeValue;
- let cdata=()=>"<![CDATA["+nodeValue+"]]>";
- let value={1:tag,3:text,4:cdata}[node.nodeType];
- return value?value():"";
-}).join("");
-
  export function markup(object,indentation)
 {let xml="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
  Object.entries(object).map(function markup([key,value],indentation)
@@ -317,6 +118,188 @@
  return [attributes,...children].filter(Boolean).reduce(merge);
 };
 
+ export var metamarkup=object=>object&&
+ Object.fromEntries
+((object.nodeName)
+?Object.entries(object.dataset).map(([key,value])=>
+ [key,isNaN(Number(value))?JSON.parse(value):Number(value)])
+:Object.entries(object).map(([key,value])=>["data-"+key,isNaN(value)?JSON.stringify(value):String(value)])
+);
+
+ export function form(fields,labels)
+{let group=Object.entries(fields).reduce((group,[key,value],index)=>
+ typeof value=="object"&&!Array.isArray(value)&&!index&&key,false);
+ if(group)
+ fields=fields[group];
+ labels=this&&!labels?JSON.parse(this.dataset.labels):string(labels)?JSON.parse(labels):labels;
+ let label=Object.entries(fields).map(([id,value])=>
+{if(!defined(value))return;
+ let type=wether([is(Date),is(Set),either(array,compound),binary]
+,...["date","radio","select","checkbox","text"].map(type=>swap(type)))(value);
+ let field=
+ {for:id,title:id
+ ,class:[group,type,{checkbox:value?"checked":""}[type]].filter(Boolean).join(" ")||undefined
+ ,input:
+ {type:["select","date"].includes(type)?"text":type,id,name:id
+ ,value:type=="date"?clock(value,"datetime"):(type=="text"&&value&&String(value))||(array(value)?value[0]:compound(value)?Object.keys(value)[0]:value)
+ ,checked:{checkbox:value?value.toString():undefined}[type]
+ ,autocomplete:"off"
+ }
+ ,ul:type!=="text"?type==="date"
+?clockwork(value)
+:{li:prune.call([value].flat(),([field,value])=>!["ul","li","#text"].includes(field)
+?compose(infer("map",([field,value])=>(
+ {"#text":string(value)?value:field
+ ,ul:value&&!string(value)?{li:[value]}:undefined
+ })),provide)(compound(value)?Object.entries(value):[[field,value]])
+:value)
+ }:undefined
+ ,...tag(labels,typeof labels[id]=="function"?labels[id](value):id)
+ };
+ return JSON.parse(JSON.stringify(field));
+});
+ if(this)
+ label.filter(Boolean).forEach(label=>
+{let input=this.elements[label.for];
+ if(something(input?.value))
+ label.input.value=input?.value;
+ this[(input?"replace":"append")+"Child"](document({label}),input?.closest("label"));
+ if(label.input.type=="text")
+ this.elements[label.for]?.dispatchEvent(new window.Event("change",{bubbles:true}));
+});
+ return {label};
+};
+
+ export function fill(fields)
+{Object.entries(fields||{}).filter(([field,value])=>
+ !compound(value)&&this.elements[field]).forEach(([field,value])=>
+ this.elements[field].value=value);
+ return Object.fromEntries([...new this.ownerDocument.defaultView.FormData(this)]);
+};
+
+ var tag=(labels,id)=>typeof id!="string"
+?id
+:typeof labels[id]=="object"
+?labels[id]
+:(labels[id]&&labels[id][0]=="<")
+?{"#text":labels[id]}
+:{span:{"#text":typeof labels[id]=="string"?labels[id]:id}};
+
+ var modules={};
+
+ export async function transform({incumbent,resource,...fields})
+{let source=fields.source||"get";
+ let response=await fetch(source);
+ let mime=response.headers.get("Content-Type");
+ let {json,xml,pdf,csv}={[mime?.split("/")[1]]:true};
+ if(!resource)
+ resource=await response[pdf?"arrayBuffer":json?"json":"text"]();
+ resource=pdf?await print(resource)
+:csv?records(resource)
+:(xml||resource.startsWith?.("<?xml "))
+?await new window.DOMParser().parseFromString(resource,xml?mime:"application/xml")
+:resource;
+ if(this)
+ fields=compose(form.bind(this),fill.bind(this,fields))({get:fields});
+ let [module,feature="default"]=fields.layout?.split("/")||["./Blik_2023_fragment.js","media"];
+ if(!module.includes("_"))
+ module=await [2020,new Date().getFullYear()].reduce((min,max)=>
+ Array(max-min).fill(max).map((year,index)=>year-index)).flatMap((year)=>
+ ["Blik"].map(author=>"./"+[author,year,module].join("_")+".js")).reduce((file,module)=>
+ file.catch(fail=>modules[module]=modules[module]||fetch(module).then(swap(module)))
+,Promise.reject());
+ let product=await compose(resolve,{id:fields.source},merge)(module,feature,resource,fields,incumbent||window);
+ return product;
+ let values=this?.elements?.source?.parentNode?.querySelector("ul");
+ if(values)
+ d3.select(values).datum(resource.descendants?resource.descendants():fields.source);
+ //new Array(file.numpages).reduce((canvas,phase,index)=>file.getPage(index+1).then(page=>
+//{let view=page.getViewport({scale:1.5});canvas.width=canvas.width<view.width?view.width:canvas.width;canvas.height=(canvas.height||0)+view.height;
+ //page.render({canvasContext:canvas.getContext('2d'),viewport:view});return canvas;
+//}),document.createElement('canvas')))
+};
+
+ export function print(file)
+{return resolve(
+["./mozilla_2010_pdf_viewer_brightspace.js"
+,"./mozilla_2010_pdf_link_service_brightspace.js"
+,"./mozilla_2010_pdf_brightspace.js"
+]).then(async function([{PDFViewer},{PDFLinkService},pdf])
+{pdf.default.GlobalWorkerOptions.workerSrc="mozilla_2010_pdf_worker_brightspace.js";
+ let container=document({"div":{"class":"pdfjs","div":{"id":"viewer"}}});
+ let viewer=new PDFViewer(
+ {linkService:new PDFLinkService(),container,renderer:"svg"
+ ,textLayerMode:0,disableRange:true,forceRendering:true
+ });
+ viewer.linkService.setViewer(viewer);
+ await pdf.getDocument(file).promise.then(pdf=>
+ viewer.setDocument(pdf));
+ return viewer.container;
+});
+};
+
+ export function image(src)
+{if(/image/i.test(src.nodeName))return src;
+ return new Promise((resolve,reject)=>
+ Object.assign(document({img:{crossOrigin:"anonymous"}})
+,{onload(){resolve(this);}
+ ,onerror:reject
+ ,src
+ }));
+ //if(!colors[color])svg.select("circle#"+id).attr("fill",["rgb(",...new Vibrant(this).swatches()["Vibrant"].rgb].reduce((hex,hue,index)=>hex+hue+(index<2?",":")")));
+};
+
+ export function canvas(image)
+{let canvas=document({canvas:{width:image.naturalWidth,height:image.naturalHeight}});
+ canvas.getContext("2d").drawImage(image,0,0);
+ return canvas;
+}
+
+ export function vector(node)
+{if(node.nodeName.toLowerCase()=="svg")
+ return node;
+ let attributes=demarkup(node);
+ let {r,x,y,cx,cy,dx,dy,width,height}=attributes;
+ let font=Number(attributes["font-size"]?.replace(/[^0-9\.]*/g,""));
+ let align=attributes["text-anchor"];
+ //if(!isNaN(font))document.call(node,{dy:(Number(dy)||0)+font});
+ x=cx?cx-r:x||0;
+ y=cy?cy-r:y||0;
+ width=width||r*2||font||0;
+ height=height||r*2||font||0;
+ let rotation=detransform(node,"rotate")*180/Math.PI;
+ let transform="rotate("+rotation+")";
+ if(rotation)document.call(node,{transform:""});
+ return document
+({svg:
+ {id:node.closest("g")?.getAttribute("id")
+ ,viewBox:[x,y,width,height].join(" ")
+ ,width,height,x,y
+ ,style:"overflow:visible"
+ ,...rotation&&{transform}
+ ,.../svg$/.test(node.namespaceURI)
+?{node}
+:{foreignObject:
+ {x,y,width,height
+ ,node
+ }
+ }
+ }
+ }
+);
+};
+
+ export var stringify=node=>node.innerHTML||
+ Array.from(node.childNodes).map(function outerXML({nodeType,nodeName,attributes,childNodes})
+{let tag=()=>"<"+nodeName+
+ Array.from(attributes).map(({nodeName,nodeValue})=>" "+nodeName+"=\""+(nodeValue||"").toString()+"\"").join("")+
+ (childNodes.length?">"+Array.from(childNodes).map(outerXML).join("")+"</"+nodeName+">":"/>");
+ let text=()=>nodeValue;
+ let cdata=()=>"<![CDATA["+nodeValue+"]]>";
+ let value={1:tag,3:text,4:cdata}[node.nodeType];
+ return value?value():"";
+}).join("");
+
 export async function deform(resource)
 {// text{style} text@source text#tag text/json#transform text#transform(text/json)
  let text=new RegExp(/[A-Za-zÁÉÍÓÖŐÚŰÜáéíóöőúűü\d\:\.\;\/\?\=\&\-\'_#\%\!\@]/);
@@ -340,7 +323,7 @@ export async function deform(resource)
 })
 }try{input={source,...JSON.parse(input)}}catch(fail){input={source}}
  source=fragment[document]
-?fragment[document].constructor==Function
+?fragment[document].constructor===Function
 ?await transform({source,layout:document,...input})
 :defer({layout:document,...input})
 :reference(title,source,document||(source==title&&"span"))||match;
@@ -382,14 +365,6 @@ export async function deform(resource)
  };
  return Object.assign(attributes,polyfill);
 };
-
- export var metamarkup=object=>object&&
- Object.fromEntries
-((object.nodeName)
-?Object.entries(object.dataset).map(([key,value])=>
- [key,isNaN(Number(value))?JSON.parse(value):Number(value)])
-:Object.entries(object).map(([key,value])=>["data-"+key,isNaN(value)?JSON.stringify(value):String(value)])
-);
 
  export function stretch(target,extend)
 {if(!this||!target)return;

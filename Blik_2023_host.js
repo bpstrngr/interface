@@ -79,7 +79,7 @@
  function receive(request){observe.call(request,{data(data){this.body+=decoder.write(data);},end:respond.bind(...arguments)});}
 
  function respond(response,source,remember)
-{let retrieve=remember?compose(record(compose(crop(1),fetch),distinction).bind({}),distinction(this)):tether(fetch);
+{let retrieve=remember?compose(record(compose(drop(1),tether(fetch)),compose(drop(2),distinction)).bind({}),distinction(this)):tether(fetch);
  return compose(combine(notify,retrieve),pass(report),drop(1,3),response||this,tether(submit))(source.default,this);
 };
  var distinction=({url,headers})=>url+(headers?.cookie||"");
