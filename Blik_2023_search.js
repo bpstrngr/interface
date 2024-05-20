@@ -131,7 +131,18 @@ export function route(scope, term, path) {
  delete target[field];
  return target;
 }, target);
-}
+};
+
+ function set(options,namespace)
+{return Object.entries(namespace).reduce((defaults,[field,kinds])=>
+ Object.assign(defaults
+,{[field]:options[field]
+?Object.entries(kinds).find(([kind])=>
+ [kind,options[field]].map((kind)=>kind.toLowerCase()).reduce(Object.is))?.pop()||
+ Error([String(options[field]),'not in "'+field+'" options',Object.keys(kinds),].join(" "))
+:defaults[field],
+ }),this);
+};
 
 export function trace(term, path = []) {
   // trace term in scope or stack.

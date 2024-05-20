@@ -1,6 +1,6 @@
  import {note,collect,prompt,same,has,pass,slip,something,observe,describe,refer,expect,trace,array,compound,simple,apply,stream,record,provide,tether,differ,wether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,binary,match,wait,string,defined,compose,combine,exit,clock,route} from "./Blik_2023_inference.js";
  import {merge,stringify,search,edit,prune} from "./Blik_2023_search.js";
- import {parse,sanitize,serialize,compile,namespace,exports,reexport,test} from "./Blik_2023_meta.js";
+ import {parse,sanitize,serialize,namespace,exports,reexport,test} from "./Blik_2023_meta.js";
 
  export const address=new URL(import.meta.url).pathname;
  export const location=address.replace(/\/[^/]*$/,"");//path.dirname(address);
@@ -520,6 +520,8 @@ export function patch(repository, patch) {
 
  export const purge=path=>import("fs").then(({promises:{rm}})=>
  rm(path,{recursive:true})).then(done=>path);
+
+ export var compile=compose(drop(1),load,parse,serialize);
 
  export async function modularise(resource,identifier,context={})
 {// uses --experimental-vm-modules 
