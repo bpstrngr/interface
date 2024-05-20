@@ -1,4 +1,4 @@
-import {note,wait,buffer,compose,collect,stream,record,provide,compound,tether,bind,string,is,not,iterable} from "./Blik_2023_inference.js";
+import {note,wait,drop,infer,buffer,compose,combine,collect,stream,record,provide,compound,tether,bind,string,is,not,iterable} from "./Blik_2023_inference.js";
 import {search,merge,prune,route,random} from "./Blik_2023_search.js";
 let address=new URL(import.meta.url).pathname;
 
@@ -39,7 +39,7 @@ let address=new URL(import.meta.url).pathname;
 :descendant.call(comment,scope)&&
  ["body","declaration","consequent"].find((field)=>scope[field]);
 }
-}
+};
 
  export async function sanitize(grammar,format)
 {if(!Object.keys(format||{}).length)
@@ -62,33 +62,6 @@ let address=new URL(import.meta.url).pathname;
  duplicates=Object.entries(duplicates).flatMap(([name,source])=>imports.filter(value=>
  value.specifiers.some(({local})=>local.name===name)&&value.source.name===source).slice(1));
  duplicates.map(value=>grammar.body.indexOf(value)).sort().reverse().forEach(index=>delete grammar.body[index]);
- if(syntax==="commonjs")
- // declare commonjs module.exports in module scope. 
- [{type:"Identifier",name:"module"},{type:"Identifier",name:"exports"}].reduce((module,exports)=>
- grammar.body.unshift(
- grammar.body.find((statement,index,body)=>
- statement?.kind==="let"&&
- ["exports","module"].map((name,index)=>statement.declarations[index]?.id.name===name).every(Boolean)&&
- delete body[index])||
- {type:"VariableDeclaration",kind:"let",declarations:
-[{type:"VariableDeclarator",id:exports,init:{type:"ObjectExpression",properties:[]}}
-,{type:"VariableDeclarator",id:{type:"Identifier",name:"module"},init:{type:"ObjectExpression",properties:
-[{type:"Property",key:exports,value:exports,shorthand:true,kind:"init"}
-]}
- }
-]})&&
- // expose commonjs module.exports as default export. 
- grammar.body.some(statement=>statement?.type==="ExportNamedDeclaration"&&
- statement.specifiers.some?.(({exported})=>exported?.name==="default"))||
- grammar.body.push(
- grammar.body.find((statement,index,body)=>statement?.type==="ExportDefaultDeclaration"&&
- // statement.declaration.object?.name==="module"&&
- // statement.declaration.property?.name==="exports"&&
- delete body[index])||
- {type:"ExportDefaultDeclaration"
- ,exportKind:"value"
- ,declaration:{type:"MemberExpression",object:module,property:exports}
- }));
  grammar=prune.call(grammar,function jsonnamespace({1:value})
 {let boundary=["Import","ExportNamed","ExportAll"].map(type=>type+"Declaration").find(type=>type===value?.type);
  let json=boundary&&/\.json$/.test(value.source?.value);
@@ -122,8 +95,8 @@ let address=new URL(import.meta.url).pathname;
  string(value)?[[field,value]]:grammar.meta.url.pathname.endsWith(field)?Object.entries(value):[]));
  if(Object.keys(alias).length)
  grammar=prune.call(grammar,function({1:value})
-{let candidate=["ImportDeclaration","ImportExpression"].includes(value?.type);
- let source=candidate&&alias[value.source.value];
+{let candidate=["Import","Import","ExportNamed","ExportAll"].map((type,index)=>type+(index?"Declaration":"Expression")).includes(value?.type);
+ let source=candidate&&alias[value.source?.value];
  if(!source) return value;
  source=/^\./.test(source)?"./"+path.relative(relation,path.resolve(location,source)):source;
  source=["value","raw"].map(field=>
@@ -178,7 +151,38 @@ let address=new URL(import.meta.url).pathname;
  export var estree=
  // sort by decreasing specificity for declarative disjunction (Object.values(estree.dialect)). 
  {commonjs:
- {require:
+ {defaultexport:
+ {condition(term,field,path){return !path.length&&field==="body";}
+ ,ecma(term)
+{// declare commonjs module.exports in module scope. 
+ [{type:"Identifier",name:"module"},{type:"Identifier",name:"exports"}].reduce((module,exports)=>
+ term.unshift(
+ term.find((statement,index,body)=>
+ statement?.kind==="let"&&
+ ["exports","module"].map((name,index)=>statement.declarations[index]?.id.name===name).every(Boolean)&&
+ delete body[index])||
+ {type:"VariableDeclaration",kind:"let",declarations:
+[{type:"VariableDeclarator",id:exports,init:{type:"ObjectExpression",properties:[]}}
+,{type:"VariableDeclarator",id:{type:"Identifier",name:"module"},init:{type:"ObjectExpression",properties:
+[{type:"Property",key:exports,value:exports,shorthand:true,kind:"init"}
+]}
+ }
+]})&&
+ // expose commonjs module.exports as default export. 
+ term.some(statement=>statement?.type==="ExportNamedDeclaration"&&
+ statement.specifiers.some?.(({exported})=>exported?.name==="default"))||
+ term.push(
+ term.find((statement,index,body)=>statement?.type==="ExportDefaultDeclaration"&&
+ // statement.declaration.object?.name==="module"&&
+ // statement.declaration.property?.name==="exports"&&
+ delete body[index])||
+ {type:"ExportDefaultDeclaration"
+ ,exportKind:"value"
+ ,declaration:{type:"MemberExpression",object:module,property:exports}
+ }));
+ return term;
+}}
+ ,require:
  {condition(term,field,path)
 {let toplevel=path.length===1;
  let asynchronous=!toplevel&&functional(term)&&term.async;
@@ -294,9 +298,9 @@ let address=new URL(import.meta.url).pathname;
  }
  ,importequals:
  {condition(value){return value?.type==="TSImportEqualsDeclaration";}
- ,ecma({id,moduleReference:{left:object,right:property}})
+ ,ecma({id,moduleReference:{left:object,right:property,expression}})
 {return {type:"VariableDeclaration",kind:"const",declarations:
-[{type:"VariableDeclarator",id,init:{type:"MemberExpression",object,property}}
+[{type:"VariableDeclarator",id,init:expression||{type:"MemberExpression",object,property}}
 ]};
 }}
  ,genericinstance:{condition(value){return value?.type==="TSInstantiationExpression";},ecma(value){return value.expression;}}
@@ -327,39 +331,49 @@ let address=new URL(import.meta.url).pathname;
  }
  };
 
-export async function serialize(syntax, format = "astring", options) {
-  // convert abstract syntax tree to javascript;
-  if (typeof syntax === "string") syntax = JSON.parse(syntax);
-  let [module, term] = {
-    astring: ["./davidbonnet_2015_astring.js", "generate"],
-    babel: ["./node_modules/@babel/generator/lib/index.js", "default"],
-  }[format] || [format];
-  return import(module).then(module=>module[term](syntax, options));
-}
+ export async function serialize(syntax, format = "astring", options)
+{// convert abstract syntax tree to javascript;
+ if(typeof syntax==="string")
+ syntax=JSON.parse(syntax);
+ let [module,term]=
+{astring:["./davidbonnet_2015_astring.js","generate"],
+ babel:["./node_modules/@babel/generator/lib/index.js","default"],
+}[format]||[format];
+ return import(module).then(module=>module[term](syntax,options));
+};
 
- export function namespace(declarations,references,procedures)
+ export function namespace(declarations,modules,...procedures)
 {// translate abstract syntax tree or runtime namespace into javascript;
- [declarations,references]=
- [declarations,references].map((argument,index)=>
- typeof argument==="string"?JSON.parse(argument):argument);
+ [declarations,modules]=
+ [declarations,modules].map((argument,index)=>
+ string(argument)?JSON.parse(argument):argument);
  let {type,body,sourceType}=declarations;
  if(sourceType==="typescript")
  declarations=prune(declarations,(field,value)=>!value?.type?.startsWith("TS"));
  if(type==="Program")
  return import("./davidbonnet_2015_astring.js").then(({generate})=>generate(declarations));
- declarations=!declarations?""
+ modules=Object.entries(modules||{}).map(([module,functors])=>!module.endsWith(".json")
+?" import "+functors.map((functor,index,{length})=>(
+ {"1":"{"+functor,[length-1]:(length==2?"{":"")+functor+"}"}[String(index||"")]||functor)).filter(Boolean).join(",")
++" from \""+module+"\""+(/\.json$/.test(module)?" with {type:\"json\"}":"")+";"
+:(" var {default:"+functors[0]+"}=await resolve(\""+module+"\");")).join("\n")
+,declarations=!declarations?""
 :Promise.all([import("./Yahoo_2014_serialize.js"),declarations]).then(([{__moduleExports:serialize},declarations])=>
  Object.entries(declarations||{}).map(([field,functor])=>
- "export "+({default:field}[field]||("var "+field+"="))+serialize(functor)).join("\n\n")).then(module=>
+ "export "+({default:field+" "}[field]||("var "+field+"="))+serialize(functor)).join("\n\n")).then(module=>
  // apply formatting. 
- module.replace(/(\}\})(,\"[^\"]*\":)(\{)/g,(...match)=>match.slice(1,4).join("\n ")))
-,references=Object.entries(references||{}).reduce((support,[module,functors])=>support
-+"import "+functors.map((functor,index,{length})=>(
- {"1":"{"+functor,[length-1]:(length==2?"{":"")+functor+"}"}[String(index||"")]||functor)).filter(Boolean).join(",")
-+" from \""+module+"\""+(/\.json$/.test(module)?" assert {type:\"json\"}":"")+";\n"
-,"")
-,procedures=String(procedures||"").replace(/(^function *\w*\([\w,\n]*\)\n* *\{\n*)|(\}$)/g,"");
- return compose(collect,"\n","join")(references,declarations,procedures);
+ module.replace(/(\}\})(,\"[^\"]*\":)(\{)/g,(...match)=>match.slice(1,4).join("\n "))+"\n");
+ return compose(collect,infer("filter",Boolean),"\n\n","join")(modules,declarations,...procedures);
+};
+
+ export function proceduralize(term)
+{if(term instanceof Function)
+ return String(term||"").replace(/(^(async ){0,1}function *\w*\([\w,\n]*\)\n* *\{\n*)|(\}$)/g,"");
+ throw Error("can't proceduralize "+typeof term);
+};
+
+ export function format(json)
+{return JSON.stringify(json).replace(/:{|},|}}|}]/g,match=>match[0]+"\n "+match.substring(1))
 };
 
 //  export async function modularise(resource,identifier,context={})
@@ -389,28 +403,16 @@ export async function serialize(syntax, format = "astring", options) {
 //  return module;
 // };
 
- function set(options, namespace)
-{return Object.entries(namespace).reduce(
-    (defaults, [field, kinds]) =>
-      Object.assign(defaults, {
-        [field]: options[field]
-          ? Object.entries(kinds)
-              .find(([kind]) =>
-                [kind, options[field]].map((kind) => kind.toLowerCase()).reduce(Object.is)
-              )
-              ?.pop() ||
-            Error(
-              [
-                String(options[field]),
-                'not in "' + field + '" options',
-                Object.keys(kinds),
-              ].join(" ")
-            )
-          : defaults[field],
-      }),
-    this
-  );
-}
+ function set(options,namespace)
+{return Object.entries(namespace).reduce((defaults,[field,kinds])=>
+ Object.assign(defaults
+,{[field]:options[field]
+?Object.entries(kinds).find(([kind])=>
+ [kind,options[field]].map((kind)=>kind.toLowerCase()).reduce(Object.is))?.pop()||
+ Error([String(options[field]),'not in "'+field+'" options',Object.keys(kinds),].join(" "))
+:defaults[field],
+ }),this);
+};
 
 export async function compile(address, dialect = "prettier", options = {}) {
   // parse and serialize (third party tools without modular parser/serializer).
@@ -481,15 +483,39 @@ export async function imports(syntax,format={}) {
   return { [syntax.meta.url.pathname]: sources.reduce(merge, {}) };
 }
 
-export async function exports(source) {
-  let module = await import(source);
-  let sources = await stream(imports(source), source, Reflect.get);
-  await prune.call(sources, ([path, term]) =>
-    exports(path).then((exports) => [term, exports].reduce(merge))
-  );
-  let scopes = scope(module);
-  return [sources, scopes].reduce(merge);
-}
+ export async function exports(source)
+{let path=await import("path");
+ if(!string(source))
+ return compose.call
+(source,tether(search,({1:value})=>/^Export(Named|All)Declaration$/.test(value?.type)),Object.values
+,infer("map",({specifiers,declaration,source:reexport})=>specifiers||declaration
+?[["./"+path.relative(address.replace(/\/.*?$/,""),source.meta.url.pathname),specifiers.length&&specifiers?.map(({exported:{name}})=>name)||
+ [declaration.declarations||declaration].flat().map(({id})=>id.name)]]
+:[[source.meta.url.pathname.replace(/\/.*?$/,"/")+reexport.value,"*"]])
+,infer("map",Object.fromEntries)
+,infer("reduce",(exports,entry)=>merge(exports,entry,0))
+,Object.entries
+,infer("map",([source,names])=>[source,["",names].flat()])
+,Object.fromEntries
+);
+ let module = await import(source);
+ let sources = await stream(imports(source), source, Reflect.get);
+ await prune.call(sources, ([path, term]) =>
+ exports(path).then((exports) => [term, exports].reduce(merge))
+ );
+ let scopes = scope(module);
+ return [sources, scopes].reduce(merge);
+};
+
+ export async function reexport(modules,relation)
+{let path=relation?await import("path"):undefined;
+ let statements=Object.entries(modules).map(([source,names])=>
+ names.reduce((exports,name,index,names)=>
+ exports+(index&&names[index-1]?",":"")+(index===1?"{":"")+name
+," export ")+(names.length>1?"}":"")
++" from \"./"+(path?.relative(relation,path.resolve(source))||source)+"\";");
+ return statements.join("\n ");
+};
 
 export function scope(module) {
   let entries = Object.entries(module).map(([path, term]) => [
