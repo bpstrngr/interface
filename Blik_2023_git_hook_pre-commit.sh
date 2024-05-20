@@ -5,8 +5,7 @@
 for file in $(echo $stage);do
 if [[ "$file" = *.js && -e "$file" ]];then 
  echo "Compiling staged $file...";
- cat $file |
- xargs -0 node ./Blik_2023_interface.js ./Blik_2023_meta.js compile > .compilation;
+ node --import=./Blik_2023_interface.js ./Blik_2023_meta.js compile $file > .compilation;
  mv .compilation $file;
  echo $file compiled.;
  node ./Blik_2023_interface.js ./Blik_2023_meta.js test $file;
