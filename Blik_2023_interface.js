@@ -297,7 +297,11 @@
  //let version=process.versions.node.split(".")[0];
  let target=/^file:/.test(source)?await resolve("url","fileURLToPath",source):source;
  let precedent=scope[target]?.module;
- if(precedent&&next?.name==="nextLoad")return precedent;
+ if(precedent&&next?.name==="nextLoad")
+ return precedent.source?.length===0
+ // buffer is mysteriously cleared sometimes, eg. in reimport for tests below. 
+?access(precedent.responseURL,1).then(source=>Object.assign(precedent,{source}))
+:precedent;
  if(string(context))context={format:context};
  let {format,importAttributes:attributes,importAssertions:assertion}=context||{};
  attributes=assertion||attributes||{};
@@ -320,10 +324,11 @@
 (source,context,next,{shortCircuit:true},merge
 ,[target,"module"],refer,slip(scope),merge,target,"module"
 ,module=>module.format==="module"
- //read(source).then(module=>modularise(module,source)).then(({namespace:module})=>prove.call(module,module.proof))
+ //?read(source).then(module=>modularise(module,source)).then(({namespace:module})=>prove.call(module,module.proof))
  // dispatch new import thread for tests until modularization halts on self-referential imports. 
-?import(source).then(module=>module.tests&&buffer(test)(source).then(result=>
- console.log("\x1b[4m"+source+"\x1b[0m:\n"+result)))&&module
+?import(target).then(module=>module.tests&&!scope[target].tests&&(
+ scope[target].tests=buffer(test)(source).then(result=>
+ console.log(scope[target].tests="\x1b[4m"+source+"\x1b[0m:\n"+result))))&&module
 :module
 );
  let {comment,...definition}=
