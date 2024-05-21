@@ -464,7 +464,7 @@ export function scope(module) {
  let assert=await import("assert");
  if(typeof namespace==="string"&&!path.length)namespace=await import(namespace);
  tests=tests||namespace.tests||{};
- let fails=await Object.entries(tests).reduce(record(async([term,value])=>
+ let fails=await Object.entries(tests).reduce(record(async function evaluate([term,value])
 {let traverse=!value.condition||is(compound,not(iterable))(value.condition)||value.condition?.some?.(condition=>condition.condition);
  if(traverse)return test(namespace[term]??namespace,value,path.concat(term));
  let {tether,scope,context=[],terms=[],condition}=value;

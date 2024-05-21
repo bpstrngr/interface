@@ -145,15 +145,7 @@
  ,checked:{checkbox:value?value.toString():undefined}[type]
  ,autocomplete:"off"
  }
- ,ul:type!=="text"?type==="date"
-?clockwork(value)
-:{li:prune.call([value].flat(),([field,value])=>!["ul","li","#text"].includes(field)
-?compose(infer("map",([field,value])=>(
- {"#text":string(value)?value:field
- ,ul:value&&!string(value)?{li:[value]}:undefined
- })),provide)(compound(value)?Object.entries(value):[[field,value]])
-:value)
- }:undefined
+ ,ul:type!=="text"?type==="date"?clockwork(value):{li:list(value)}:undefined
  ,...tag(labels,typeof labels[id]=="function"?labels[id](value):id)
  };
  return JSON.parse(JSON.stringify(field));
@@ -168,6 +160,15 @@
  this.elements[label.for]?.dispatchEvent(new window.Event("change",{bubbles:true}));
 });
  return {label};
+};
+
+ export function list(value)
+{return prune.call([value].flat(),([field,value])=>!["ul","li","#text"].includes(field)
+?compose(infer("map",([field,value],index)=>(
+ {"#text":field==index&&string(value)?value:field
+ ,ul:value&&(!string(value)||field!=index)?{li:[value]}:undefined
+ })),provide)(compound(value)?Object.entries(value):[[field,value]])
+:value);
 };
 
  export function fill(fields)
@@ -636,3 +637,17 @@ function media(resource,{incumbent,source,...fields})
  import(module).then(module=>module.default||module)));
  return jss.use(...plugins.map(plugin=>plugin())).createStyleSheet(global?{"@global":style}:style).toString();
 };
+
+ export var tests=
+ {list:
+[{context:[{a:{b:"c",d:["e","f"]}}]
+ ,terms:[
+[{"#text":"a",ul:
+ {li:
+[{"#text":"b",ul:{li:[{"#text":"c"}]}}
+,{"#text":"d",ul:{li:[{"#text":"e"},{"#text":"f"}]}}
+]}
+ }]
+],condition:"deepEqual"
+ }
+]};
