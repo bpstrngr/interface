@@ -136,9 +136,12 @@ Some of the more git-aware commands to use beyond common implicit push/merge:
  git remote add name url; # naming remotes more accurately than "origin". 
  git remote remove origin;
  git checkout remote/branch; # contribute from detached HEAD. 
- git push remote HEAD:branch. # contribute to branch from detached HEAD;
- git push remote HEAD:refs/heads/branch; # creates new remote branch.
  git switch -c branch remote/branch; # attach head, eg. eponymous branch of remote tracking its stable branch. 
+ git push remote HEAD:branch. # contribute to branch from detached HEAD. 
+ git push remote HEAD:refs/heads/branch; # creates new remote branch. 
+ git pull --rebase; # discard local commits in favor of merged pull request after pushing to new branch. 
+ git branch -d branch; # delete local branch after push. (capital -D if aborting its commits.)
+ git push -d remote branch; # delete remote branch after pull request. 
  git remote -v; # list remotes. 
  git branch -avv; # list branches with tracking information. 
 
