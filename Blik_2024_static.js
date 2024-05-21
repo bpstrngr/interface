@@ -18,7 +18,7 @@
  ,interface:compose
 (crop(1),"get",routes=>({pre:{"#text":JSON.stringify(routes,null,2)}}),"interface","icon","./actions","./style",hypertext,document,actions,activate
 ),style:compose
-(drop(),style,true,stylesheet,"body",refer,{type:"css"},merge,note
+(drop(),style,true,stylesheet,"body",refer,{type:"css"},merge
 ),actions:compose
 (drop(),{default:actions},{"./actions":["actions"],"./Blik_2023_search.js":[,"merge"]},String(expose)
 ,namespace,"body",refer,{type:mime("js")},merge
