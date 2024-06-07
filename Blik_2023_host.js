@@ -1,4 +1,4 @@
- import {note,prompt,when,pattern,revert,clock,observe,is,has,same,slip,something,compound,infer,tether,wether,collect,provide,route,buffer,compose,combine,either,drop,crop,swap,record,wait,exit,pass} from "./Blik_2023_inference.js";
+ import {note,prompt,when,pattern,revert,clock,observe,is,has,same,slip,something,compound,infer,tether,wether,collect,provide,route,buffer,compose,combine,either,drop,crop,swap,record,wait,exit,pass,remember} from "./Blik_2023_inference.js";
  import {resolve,access,list,window,fetch,mime,persist} from "./Blik_2023_interface.js";
  import {search,merge,sum,module} from "./Blik_2023_search.js";
  import local from "./Blik_2023_host.js";
@@ -42,7 +42,7 @@
  return purge(path.resolve(...request.path));
 }};
 
- export async function expose(source,parameters,protocol="http",remember)
+ export async function expose(source,parameters,protocol="http",memorize)
 {let {default:path}=await import("path");
  ({source,parameters,protocol}=await prompt({source,parameters,protocol}));
  let classified=
@@ -68,18 +68,19 @@
 ,revert((listen,host,port)=>host.listen(port,infer(listen))),...virtualize
 ,combine(infer(),report,compose(slip("./Blik_2020_room.js","open"),resolve))
 ,revert((close,channel)=>observe.call(channel,{close}))
-)(protocol,...certificates,compose(source,remember,tether(receive)));
+)(protocol,...certificates,compose(source,memorize,tether(receive)));
  // function listen(port)
  //{let response={end(body){return {...this.header,body};},setHeader(header){this.header={header}},writeHead(){}};
  // compose(prompt,agent,"url",describe,{headers:{},method:"get"},merge
- //,response,source,remember,tether(respond),note,swap(this),port,tether(listen))({[agent]:undefined});
+ //,response,source,memorize,tether(respond),note,swap(this),port,tether(listen))({[agent]:undefined});
  //};
 };
 
  function receive(request){observe.call(request,{data(data){this.body+=decoder.write(data);},end:respond.bind(...arguments)});}
 
- function respond(response,source,remember)
-{let retrieve=remember?compose(record(compose(drop(1),tether(fetch)),compose(drop(2),distinction)).bind({}),distinction(this)):tether(fetch);
+ function respond(response,source,memorize)
+{let attempt=buffer(tether(fetch),compose(note,slip(source.default),"error",tether(fetch)));
+ let retrieve=memorize?remember(compose(drop(1),attempt),compose(drop(2),distinction)):attempt;
  return compose(combine(notify,retrieve),pass(report),drop(1,3),response||this,tether(submit))(source.default,this);
 };
  var distinction=({url,headers})=>url+(headers?.cookie||"");
@@ -91,9 +92,12 @@
  var inform=compose(drop(1),combine("status",compose("headers",infer("get","Content-Type")),swap("\x1b[0m")));//+": \""+String(body).replace(/^([\s\S]{20})[\s\S]*$/,(...match)=>match[1]+"...")+"\"";
  var report=compose(combine(compose(recolor,redate),inform),collect,infer("join"," "),console.log);
 
- export function submit(response)
+ export async function submit(response)
 {let {status,location,cookie}=this;
  let type=this.headers.get("Content-Type");
+ let body=await buffer(type===mime("json")?"text":"arrayBuffer")(this);
+ if(is(Error)(body))
+ body=note.call(1,body).message,status=500,type=mime("txt");
  let header=compose.call
 ({status:response.setHeader?status:undefined
  ,"Access-Control-Allow-Origin":"*"
@@ -101,11 +105,11 @@
  ,"Location":location
  ,"Set-Cookie":Object.entries(cookie||{}).map(([key,value])=>key+"="+value).join(";")||undefined
  ,"Content-Type":type
+ ,...this.headers
  },JSON.stringify,JSON.parse
 );
  response.setHeader?response.writeHead(status,header):response.respond(header);
- let body=wether(compose("headers",infer("get","Content-Type"),mime("json"),Object.is),"text","arrayBuffer");
- return compose(body,response.end.bind(response))(this);
+ return response.end(body);
 };
 
  export function forward(file,request)

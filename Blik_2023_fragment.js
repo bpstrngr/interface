@@ -1,7 +1,8 @@
- import {resolve,modularise,window,fetch} from "./Blik_2023_interface.js";
- import {note,provide,collect,infer,either,tether,buffer,compose,refer,record,combine,wether,swap,compound,something,string,defined,simple,exit,route,drop,crop,same,binary,is,array} from "./Blik_2023_inference.js";
- import {search,merge,prune,parse as records,cluster} from "./Blik_2023_search.js";
+ import {resolve,modularise,window,fetch,mime} from "./Blik_2023_interface.js";
+ import {note,provide,collect,infer,either,each,tether,buffer,differ,compose,refer,record,combine,wether,swap,compound,something,string,defined,simple,exit,route,drop,crop,same,binary,is,array,pdflike} from "./Blik_2023_inference.js";
+ import {search,merge,prune} from "./Blik_2023_search.js";
  import {proceduralize} from "./Blik_2023_meta.js";
+ import layout,{color} from "./Blik_2023_layout.js";
  var {default:svg}=await resolve("./Blik_2020_svg.json");
 
  export function document(source,namespace,language)
@@ -134,14 +135,14 @@
  labels=this&&!labels?JSON.parse(this.dataset.labels):string(labels)?JSON.parse(labels):labels;
  let label=Object.entries(fields).map(([id,value])=>
 {if(!defined(value))return;
- let type=wether([is(Date),is(Set),either(array,compound),binary]
-,...["date","radio","select","checkbox","text"].map(type=>swap(type)))(value);
+ let type=wether([is(Date),is(Set),either(array,compound),either(binary,infer("match",/^(true|false)$/))]
+,...each(type=>swap(type))("date","radio","select","checkbox","text"))(value);
  let field=
  {for:id,title:id
  ,class:[group,type,{checkbox:value?"checked":""}[type]].filter(Boolean).join(" ")||undefined
  ,input:
  {type:["select","date"].includes(type)?"text":type,id,name:id
- ,value:type=="date"?clock(value,"datetime"):(type=="text"&&value&&String(value))||(array(value)?value[0]:compound(value)?Object.keys(value)[0]:value)
+ ,value:type==="checkbox"?String(value)==="true":(type==="date")?clock(value,"datetime"):(type==="text"&&value&&String(value))||(array(value)?value[0]:compound(value)?Object.keys(value)[0]:value)
  ,checked:{checkbox:value?value.toString():undefined}[type]
  ,autocomplete:"off"
  }
@@ -151,22 +152,28 @@
  return JSON.parse(JSON.stringify(field));
 });
  if(this)
- label.filter(Boolean).forEach(label=>
+ label.filter(Boolean).map(label=>
 {let input=this.elements[label.for];
  if(something(input?.value))
  label.input.value=input?.value;
- this[(input?"replace":"append")+"Child"](document({label}),input?.closest("label"));
+ let entry=document({label})
+ let reference=input?.closest("label")||
+ Array.from(this.elements).reverse().find(input=>input.closest("label"))?.closest("label")||
+ Array.from(this.children).at(-1);
+ insert(entry,input?"over":"after",reference);
  if(label.input.type=="text")
- this.elements[label.for]?.dispatchEvent(new window.Event("change",{bubbles:true}));
-});
- return {label};
+ this.elements[label.for]?.dispatchEvent(new window.Event("input",{bubbles:true}));
+ return [Array.from(entry.parentNode.children).indexOf(entry),entry];
+}).forEach(([order,node],index,labels)=>node.parentNode.insertBefore(node
+,labels.slice(index+1).find(([next])=>next<order)?.[1]||node.nextSibling));
+ return {label,input:{id:"extend",type:"text",value:"..."}};
 };
 
  export function list(value)
 {return prune.call([value].flat(),([field,value])=>!["ul","li","#text"].includes(field)
 ?compose(infer("map",([field,value],index)=>(
  {"#text":field==index&&string(value)?value:field
- ,ul:value&&(!string(value)||field!=index)?{li:[value]}:undefined
+ ,ul:value&&(compound(value)||field!=index)?{li:[value]}:undefined
  })),provide)(compound(value)?Object.entries(value):[[field,value]])
 :value);
 };
@@ -188,28 +195,19 @@
 
  var modules={};
 
- export async function transform({incumbent,resource,...fields})
-{let source=fields.source||"get";
- let response=await fetch(source);
- let mime=response.headers.get("Content-Type");
- let {json,xml,pdf,csv}={[mime?.split("/")[1]]:true};
- if(!resource)
- resource=await response[pdf?"arrayBuffer":json?"json":"text"]();
- resource=pdf?await print(resource)
-:csv?records(resource)
-:(xml||resource.startsWith?.("<?xml "))
-?await new window.DOMParser().parseFromString(resource,xml?mime:"application/xml")
-:resource;
+ export async function transform(resource,{incumbent,...fields})
+{if(pdflike(resource))resource=await print(resource);
  if(this)
- fields=compose(form.bind(this),fill.bind(this,fields))({get:fields});
+ form.call(this,{get:{...fields,...simple(resource)||array(resource)&&{source:resource}}})
+,fill.call(this,fields);
  let [module,feature="default"]=fields.layout?.split("/")||["./Blik_2023_fragment.js","media"];
  if(!module.includes("_"))
  module=await [2020,new Date().getFullYear()].reduce((min,max)=>
  Array(max-min).fill(max).map((year,index)=>year-index)).flatMap((year)=>
  ["Blik"].map(author=>"./"+[author,year,module].join("_")+".js")).reduce((file,module)=>
- file.catch(fail=>modules[module]=modules[module]||fetch(module).then(swap(module)))
+ file.catch(fail=>modules[module]=modules[module]||import(module).then(swap(module)))
 ,Promise.reject());
- let product=await compose(resolve,{id:fields.source},merge)(module,feature,resource,fields,incumbent||window);
+ let product=await compose(resolve,either(infer(feature,resource,fields,incumbent||window),drop(-1)))(module);
  return product;
  let values=this?.elements?.source?.parentNode?.querySelector("ul");
  if(values)
@@ -322,11 +320,10 @@ export async function deform(resource)
  json=json+","+piece;
  try{return JSON.parse(json)}catch(fail){return json};
 })
-}try{input={source,...JSON.parse(input)}}catch(fail){input={source}}
- source=fragment[document]
-?fragment[document].constructor===Function
-?await transform({source,layout:document,...input})
-:defer({layout:document,...input})
+}try{input={source,...JSON.parse(input)}}catch(fail){input={source}};
+ let node="h1/h2/h3/h4/h5/h6/h7".split("/").includes(document);
+ source=document?node
+?defer({layout:document,...input}):await compose(fetch,digest,{layout:document,...input},transform)(source)
 :reference(title,source,document||(source==title&&"span"))||match;
  if(source.setAttribute)
  source.setAttribute("style",style);
@@ -390,16 +387,16 @@ export async function deform(resource)
  ,width,height
  });
 
- export var deselect=source=>
- [source,".",":","/"].reduce((source,selector)=>
- source.replace(new RegExp("\\"+selector),"\\"+selector));
+ export var deselect=source=>source.replace(/[^\w]/g,"_");
 
-export var error=compose
-(async function*(text)
-{let style=await stylesheet({body:{background:"black",color:color.red},center:layout.middle});
- yield* [{center:{"#text":String(text)}},"Error","/svg/worm",[],[style]];
-},hypertext,document,route
-);
+ export async function error()
+{let error=Array.from(arguments).at(-1);
+ let style=await stylesheet({body:{background:"black",color:color.red},center:layout.middle});
+ let report=compose.call({center:{"#text":String(error)}},"Error","/svg/worm/document",[],[style],hypertext,document);
+ let body=report.outerHTML;
+ report.innerHTML="";
+ return {body,status:500,type:mime("html")};
+};
 
 function portfolio(source)
 {return document(
@@ -417,7 +414,7 @@ function portfolio(source)
  })
 }
 
-function media(resource,{incumbent,source,...fields})
+ export function media(resource,{incumbent,source,...fields})
 {if(source&&[incumbent?.title,incumbent?.parentNode.title].includes(source))
  return document(incumbent.childNodes);
  if(resource.constructor.name==="Buffer")
@@ -514,7 +511,7 @@ function media(resource,{incumbent,source,...fields})
 {//let size=fragment.querySelectorAll("g.node").length;
  //if(size>progress||!size)
  for(let simulation of [fragment.simulation].flat())
- if(note(Math.floor((1-simulation.alpha())*100),"% throttling "+fragment.getAttribute("title")).next().value<90)
+ if(note(Math.floor((1-simulation.alpha())*100),"% throttling "+fragment.getAttribute("title")).next().value<10)
  return throttle(fragment);
  else fragment.simulation.stop();
  return fragment;
@@ -560,6 +557,32 @@ function media(resource,{incumbent,source,...fields})
  return fragment;
 };
 
+ export function observe(action,register=true)
+{// construct event (pair) fragments for extensions (css pseudoclasses for js)
+ // and (un)register them directly on bound Node.
+ const binary=
+ {hover:['mouseover','mouseout']
+ ,focus:['focusin','focusout'],
+ };
+ let propagate=register>1;
+ const entries=[action].flat().flatMap((action)=>
+ // function names are removed in nextjs builds, so don't use action.name.
+ typeof action==='object'?Object.entries(action):[[action?.name,action]]).flatMap(([name,action])=>
+ binary[name]?.reduce((start,end)=>
+[[start,action]
+,[end,function(event){if(!propagate)event.stopPropagation();this.dispatchEvent(new {focus:FocusEvent,hover:MouseEvent}[name](start,event));}]
+])||[[name,action]]);
+ if(defined(this))
+ entries.reduce((node,[event,action])=>(node[(register?'add':'remove')+'EventListener'](event,action),node),this);
+ return Object.fromEntries(entries);
+};
+
+ export function keyboard(code)
+{let [key]=Object.entries({enter:13,escape:27,space:32,leftright:[37,39],updown:[38,40]}).find(({1:codes})=>
+ [codes].flat().includes(code))||[];
+ return key?{[key]:true}:{};
+};
+
  export function dispose(actions)
 {// extract actions disposed on node/fragment. 
  let fragment=!Boolean(this.ownerDocument);
@@ -603,15 +626,6 @@ function media(resource,{incumbent,source,...fields})
  export function path(name){return (window.location.pathname+(name||"")).replace(/^\/*|\/*$/g,"");}// regexp bracket matching: */
 
  export function retreat(){return window.location=window.location.pathname.split("/").filter(Boolean).slice(0,-1).join("/")+"/";}
-
- export async function identity(name)
-{let signature=window.document.cookie.match(/signature=[^;]+/);
- if(!signature)return;
- signature="/"+signature[0].replace("=","/");
- let resolve=response=>response.status==200&&response.json().then(author=>({author:note(author).author}));
- let body=JSON.stringify(await fetch(signature).then(resolve));
- return await fetch(signature,{method:"put",body}).then(resolve);
-};
 
  export var transition=(node,style,seconds)=>
  !seconds?Object.assign(node.style,style)&&node:compose

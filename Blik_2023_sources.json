@@ -557,70 +557,51 @@
     "readdirp":"./paulmillr_2012_readdirp.js"
   }}]}},
   "Bostock_2011_internmap.js":{"https://github.com/mbostock/internmap":{"v2.0.3":"src/index.js"}},
+  "Bostock_2015_array.js":{"https://github.com/d3/d3-array":{"v3.2.0":["src/index.js",{"alias":{"internmap":"./Bostock_2011_internmap.js"}}]}},
   "Bostock_2011_d3.js":{
-    "https://github.com/d3/d3-array":{"v3.2.0":["src/index.js",{"alias":{"internmap":"./Bostock_2011_internmap.js"}}]},
-    "https://github.com/d3/d3-time":{"v3.0.0":["src/index.js",{"alias":{"d3-array":"./Bostock_2011_d3/0/src/index.js"}}]},
-    "https://github.com/d3/d3-time-format": {"v4.1.0":["src/index.js",{"alias": {"d3-time": "./Bostock_2011_d3/1/src/index.js"}}]},
+    "https://github.com/d3/d3-time":{"v3.0.0":["src/index.js",{"alias":{"d3-array":"./Bostock_2015_array.js"}}]},
+    "https://github.com/d3/d3-time-format": {"v4.1.0":["src/index.js",{"alias": {"d3-time": "./Bostock_2011_d3/0/src/index.js"}}]},
     "https://github.com/d3/d3-color": {"v3.0.1": "src/index.js"},
-    "https://github.com/d3/d3-interpolate": {"v3.0.1": ["src/index.js",{"alias": {"d3-color": "./Bostock_2011_d3/3/src/index.js"}}]},
+    "https://github.com/d3/d3-interpolate": {"v3.0.1": ["src/index.js",{"alias": {"d3-color": "./Bostock_2011_d3/2/src/index.js"}}]},
     "https://github.com/d3/d3-format": {"v3.1.0": "src/index.js"},
     "https://github.com/d3/d3-scale":{"v4.0.2":["src/index.js",{"alias":{
-      "d3-array": "./Bostock_2011_d3/0/src/index.js",
-      "d3-time": "./Bostock_2011_d3/1/src/index.js",
-      "d3-time-format": "./Bostock_2011_d3/2/src/index.js",
-      "d3-interpolate": "./Bostock_2011_d3/4/src/index.js",
-      "d3-format": "./Bostock_2011_d3/5/src/index.js"
+      "d3-array": "./Bostock_2015_array.js",
+      "d3-time": "./Bostock_2011_d3/0/src/index.js",
+      "d3-time-format": "./Bostock_2011_d3/1/src/index.js",
+      "d3-interpolate": "./Bostock_2011_d3/3/src/index.js",
+      "d3-format": "./Bostock_2011_d3/4/src/index.js"
     }}]},
     "https://github.com/d3/d3-quadtree":{"v3.0.1":"src/index.js"},
     "https://github.com/d3/d3-dispatch":{"v3.0.1":"src/index.js"},
     "https://github.com/d3/d3-timer":{"v3.0.1":"src/index.js"},
     "https://github.com/d3/d3-force":{"v3.0.0":["src/index.js",{"alias":{
-      "d3-quadtree":"./Bostock_2011_d3/7/src/index.js",
-      "d3-dispatch":"./Bostock_2011_d3/8/src/index.js",
-      "d3-timer":"./Bostock_2011_d3/9/src/index.js"
+      "d3-quadtree":"./Bostock_2011_d3/6/src/index.js",
+      "d3-dispatch":"./Bostock_2011_d3/7/src/index.js",
+      "d3-timer":"./Bostock_2011_d3/8/src/index.js"
     }}]},
     "https://github.com/d3/d3-hierarchy":{"v3.1.2":"src/index.js"},
     "https://github.com/d3/d3-selection":{"v3.0.0":"src/index.js"},
     "https://github.com/d3/d3-path":{"v3.0.1":"src/index.js"},
-    "https://github.com/d3/d3-drag":{"v3.0.0":["src/index.js",{"alias":{"d3-dispatch":"./Bostock_2011_d3/8/src/index.js","d3-selection":"./Bostock_2011_d3/12/src/index.js"}}]},
-    "https://github.com/d3/d3-shape":{"v3.1.0":["src/index.js",{"alias":{"d3-path":"./Bostock_2011_d3/13/src/index.js"}}]},
+    "https://github.com/d3/d3-drag":{"v3.0.0":["src/index.js",{"alias":{"d3-dispatch":"./Bostock_2011_d3/7/src/index.js","d3-selection":"./Bostock_2011_d3/11/src/index.js"}}]},
+    "https://github.com/d3/d3-shape":{"v3.1.0":["src/index.js",{"alias":{"d3-path":"./Bostock_2011_d3/12/src/index.js"}}]},
     "https://github.com/d3/d3-zoom":{"v3.0.0":["src/index.js",{"alias":{
-      "d3-dispatch":"./Bostock_2011_d3/8/src/index.js",
-      "d3-drag":"./Bostock_2011_d3/14/src/index.js",
-      "d3-interpolate":"./Bostock_2011_d3/4/src/index.js",
-      "d3-selection":"./Bostock_2011_d3/12/src/index.js",
-      "d3-transition":"./Bostock_2011_d3/17/src/index.js"
+      "d3-dispatch":"./Bostock_2011_d3/7/src/index.js",
+      "d3-drag":"./Bostock_2011_d3/13/src/index.js",
+      "d3-interpolate":"./Bostock_2011_d3/3/src/index.js",
+      "d3-selection":"./Bostock_2011_d3/11/src/index.js",
+      "d3-transition":"./Bostock_2011_d3/16/src/index.js"
     }}]},
     "https://github.com/d3/d3-transition":{"v3.0.1":["src/index.js",{"alias":{
-      "d3-color":"./Bostock_2011_d3/3/src/index.js",
-      "d3-dispatch":"./Bostock_2011_d3/8/src/index.js",
-      "d3-ease":"./Bostock_2011_d3/18/src/index.js",
-      "d3-interpolate":"./Bostock_2011_d3/4/src/index.js",
-      "d3-timer":"./Bostock_2011_d3/9/src/index.js"
+      "d3-color":"./Bostock_2011_d3/2/src/index.js",
+      "d3-dispatch":"./Bostock_2011_d3/7/src/index.js",
+      "d3-ease":"./Bostock_2011_d3/17/src/index.js",
+      "d3-interpolate":"./Bostock_2011_d3/3/src/index.js",
+      "d3-timer":"./Bostock_2011_d3/8/src/index.js"
     }}]},
     "https://github.com/d3/d3-ease":{"v3.0.1":"src/index.js"}
   },
-  "sindresorhus_2014_vary.js":{"https://github.com/jshttp/vary":{"v1.1.2":[{"syntax":"commonjs"}]}},
-  "sindresorhus_2014_objectassign.js":{"https://github.com/sindresorhus/object-assign":{"v4.1.1":[{"syntax":"commonjs"}]}},
-  "Goode_2012_express_cors.js":{"https://github.com/expressjs/cors":{"v2.8.5":["lib/index.js",{"syntax":"commonjs","alias":{"object-assign":"./sindresorhus_2014_objectassign.js","vary":"./sindresorhus_2014_vary.js"}}]}},
-  "rauch_2012_socketio_emitter.js":{"https://github.com/socketio/emitter":{"3.1.0":["index.mjs"]}},
-  "rauch_2014_socketio_parser.js":{"https://github.com/socketio/socket.io-parser":{"4.2.4":["lib/index.ts",{
-    "alias":{"debug":"./Holowaychuk_2011_debug.js","@socket.io/component-emitter":"./rauch_2012_socketio_emitter.js"}
-  }]}},
-  "rauch_2014_socketio_adapter.js":{"https://github.com/socketio/socket.io-adapter":{"2.5.2":["lib/index.ts",{
-    "alias":{"ws":"./einaros_2011_ws.js"}
-  }]}},
-  "rauch_2014_engineio_parser.js":{"https://github.com/socketio/engine.io-parser":{"5.2.1":["lib/index.ts",{}]}},
-  "rauch_2012_engineio.js":{"https://github.com/socketio/engine.io":{"6.5.2":["lib/engine.io.ts",{"alias":{
-    "engine.io-parser":"./rauch_2014_engineio_parser.js"
-  }}]}},
-  "rauch_2010_socketio.js":{"https://github.com/socketio/socket.io":{"4.7.4":["lib/index.ts",{"syntax":"typescript","alias":{
-    "accepts":"~1.3.4","base64id":"~2.0.0",
-    "cors":"./Goode_2012_express_cors.js","debug":"./Holowaychuk_2011_debug.js","engine.io":"./rauch_2012_engineio.js",
-    "socket.io-parser":"./rauch_2014_socketio_parser.js","socket.io-adapter":"./rauch_2014_socketio_adapter.js"
-  },"edit":{"lib/index.ts":{",\n  BroadcastOperator,\n  RemoteSocket,":""}}}]}},
-  "rauch_2010_socketio_client.js":{"https://github.com/socketio/socket.io-client":{"4.7.4":["lib/index.ts",{"syntax":"typescript","alias":{
-  }}]}},
+  "Bostock_2016_geo.js":{"https://github.com/d3/d3-geo":{"v3.1.1":["src/index.js",{"alias":{"d3-array":"./Bostock_2015_array.js"}}]}},
+  "Bostock_2016_tiles.js":{"https://github.com/d3/d3-tile":{"v1.0.0":"src/index.js"}},
   "haverbeke_2020_codemirror.js":{"https://github.com/codemirror/codemirror5/src":{"5.48.4":["src/codemirror.js"]}},
   "haverbeke_2020_codemirror_jsmode.js":{"https://github.com/codemirror/codemirror5/mode/javascript":{"5.48.4":["mode/javascript/javascript.js"]}}
 }
