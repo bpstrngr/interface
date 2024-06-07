@@ -1,6 +1,6 @@
  import {note,collect,prompt,same,has,pass,slip,something,observe,describe,refer,expect,trace,array,compound,simple,apply,stream,record,provide,tether,differ,wether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,binary,match,wait,string,defined,compose,combine,exit,clock,route} from "./Blik_2023_inference.js";
- import {merge,stringify,search,edit,prune} from "./Blik_2023_search.js";
- import {parse,sanitize,serialize,namespace,exports,reexport,test} from "./Blik_2023_meta.js";
+ import {merge,stringify,search,edit,prune,parse as records} from "./Blik_2023_search.js";
+ import {parse,sanitize,serialize,exports,reexport,test} from "./Blik_2023_meta.js";
 
  export const address=new URL(import.meta.url).pathname;
  export const location=address.replace(/\/[^/]*$/,"");//path.dirname(address);
@@ -314,6 +314,8 @@
  if(format!=="builtin"&&/^node:/.test(source))
  // builtin format is sometimes omitted by nodejs. 
  Object.assign(context,{format:format="builtin"});
+ if(!format&&/\.ts$/.test(source))
+ Object.assign(context,{format:format="typescript"});
  if(format==="commonjs")
  // don't trust default assumption from nearest package.json as it often refers to inaccessible build outputs. 
  await require(target).catch(fail=>
@@ -346,7 +348,7 @@
  // using acorn's Parser methods (parse) until interpretation reducer is complete. 
  let edits=Object.fromEntries(Object.entries(definition.edit||{}).flatMap(([field,value])=>
  string(value)?[[field,value]]:source.endsWith(field)?Object.entries(value):[]));
- let patriate=foreign?[syntax,{source},parse,definition,sanitize,serialize/*,syntax,{source},parse,serialize*/]:[];
+ let patriate=foreign?[syntax,{source},parse,definition,sanitize,serialize,syntax,{source},parse,serialize]:[];
  let module=await buffer
 (compose(access,edits,edit,...patriate)
 ,fail=>note.call(1,"Failed to patriate "+syntax+" \""+source+"\" due to",fail)&&wait(1000)(fail).then(exit)
@@ -591,7 +593,7 @@ export function patch(repository, patch) {
  let local=this||await import("./Blik_2023_host.js").then(({default:local})=>local);
  let response=await buffer(either(tether(route),"error",drop(-1)))(local,path,request);
  let fail=is(Error)(response);
- let type=!fail?response?.type||mime(response?.nodeName?.toLowerCase()||(simple(response)?"json":request.url)):mime("txt");
+ let type=!fail?response?.type||mime(response?.nodeName?.toLowerCase()||(either(simple,array)(response)?"json":request.url)):mime("txt");
  body=wether([fail,has("nodeName"),something],compose(note.bind(1),"message"),"outerHTML",either("body",crop(1)),swap("missing source: \""+request.path+"\""))(response);
  if(response?.nodeName)response.innerHTML="";
  // let importing=request.headers?.["sec-fetch-dest"]==="script";
@@ -600,7 +602,7 @@ export function patch(repository, patch) {
 // ,type="js";
  let status=response?fail?500:response.status||200:404;
  let success=status<400;
- let headers={"Content-Type":type,get(key){return this[key];}};
+ let headers={"Content-Type":type,...response.headers,get(key){return this[key];}};
  return {status,body,location:request.url,cookie:response?.cookie,headers,json,text,arrayBuffer};
  function json(){return this.text(true);};
  function text(json=false)
@@ -612,6 +614,15 @@ export function patch(repository, patch) {
 };
  function arrayBuffer(){return Promise.resolve(this.body.constructor?.name=="Buffer"?this.body:Buffer.from(this.body,"utf-8"));};
 }};
+
+ export var digest=compose
+(combine(infer(),response=>response.headers.get("Content-Type")?.split("/")[1])
+,{json:"json",csv:compose("text",records),pdf:"arrayBuffer"}
+,(response,mime,parse)=>infer.call(response,parse[mime]||
+ compose("text",text=>mime==="xml"||text.startsWith?.("<?xml ")
+?new window.DOMParser().parseFromString(text,"application/xml")
+:text))
+);
 
  export async function spawn(command, ...context)
 {// bound scope defines output color: undefined=quiet, other=default

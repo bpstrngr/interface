@@ -1,12 +1,12 @@
-import {something,record,stream,plural,defined,string,refer,compound,tether,is} from "./Blik_2023_inference.js";
+ import {something,record,compose,stream,plural,defined,string,refer,compound,tether,is,numeric,array} from "./Blik_2023_inference.js";
 
-export function random(length,domain="abcdefghijklmnopqrstuvwxyz_"){
-  return Array(length).fill(domain).map(domain=>
-  domain.charAt(Math.floor(Math.random()*domain.length))).join("");
-}
+ export function random(length,domain="abcdefghijklmnopqrstuvwxyz_")
+{return Array(length).fill(domain).map(domain=>
+ domain.charAt(Math.floor(Math.random()*domain.length))).join("");
+};
 
-export var stringify = (scope) =>
-  scope && Symbol.iterator in Object(scope) ? String(scope) : JSON.stringify(scope);
+ export var stringify=scope=>
+ scope&&Symbol.iterator in Object(scope)?String(scope):JSON.stringify(scope);
 
  export function edit(source,edits)
 {return Object.entries(edits||{}).reduce((source, [field,value]) =>
@@ -16,17 +16,117 @@ export var stringify = (scope) =>
 ,source);
 };
 
-export function sum(...context) {
-  // cumulate context values.
-  return context
-    .flat()
-    .map((term) => Number(term) || 0)
-    .reduce((sum, value) => sum + value, 0);
-}
+export function sum(...context)
+{// cumulate context values.
+ return context.flat().map((term)=>Number(term)||0).reduce((sum,value)=>sum+value,0);
+};
 
  export function extreme(series)
-{return ["min","max"].map(key=>Math[key](...[series].flat()))
+{return ["min","max"].map(key=>Math[key](...[series].flat()));
+};
+
+export function calendar(timestamps)
+{let year=
+ {January:31,February:(year)=>28+Number(!(year%4)),March:31,April:30,May:31
+ ,June:30,July:31,August:31,September:30,October:31,November:30,December:31
+ };
+ if(!timestamps)return year;
+ return timestamps.reduce((calendar,time)=>
+ (['FullYear','Month','Date'].reduce((calendar,scale)=>
+ [calendar,new Date(time)['get'+scale]()].reduce((calendar,field)=>
+ (calendar[field]=[calendar[field],0].reduce((value)=>(!isNaN(value)?value+1:value))||
+ Object.values(year).map((days)=>Object.fromEntries(Array(days.call?.(null,field)||days).fill(0).map((value,index)=>
+ [index+1,value])))))
+,calendar)
+,calendar)
+,{});
+};
+
+export function date(time) {
+  const date = new Date(time);
+  const [year, month, day] = ['FullYear', 'Month', 'Date'].map((frame) => date['get' + frame]());
+  const [mm, dd] = [month + 1, day].map((frame) =>
+    Object.assign('00'.split(''), String(frame).split('').reverse()).reverse().join(''),
+  );
+  return [mm, dd, String(year)].join('/');
 }
+
+export function time(date) {
+  const [mm, dd, year] = date.split(/[/ ]/);
+  return new Date([mm, dd, year].join('/')).getTime();
+}
+
+export function round(date, up = 0) {
+  // set date to a turn of the month.
+  if (!(date instanceof Date)) date = new Date(date);
+  return new Date(
+    ['FullYear', 'Month']
+      .map((scale, month) => date['get' + scale]() + month + (up && month))
+      .reduce((year, month) => [year + (month > 12), month % 12 || 12].join('/') + '/1 0:0'),
+  ).getTime();
+};
+
+export function normalize(samples, resolution, range) {
+  const grid = range.reduce((min, max) => max - min) / resolution;
+  return samples
+    .map((sample) => [
+      [sample.lon, sample.lat]
+        .map((axis) => Math[axis < 0 ? 'ceil' : 'floor'](axis / grid) * grid)
+        .join(':'),
+      sample,
+    ])
+    .reduce(
+      (clusters, [field, sample]) =>
+        Object.assign(clusters, { [field]: [clusters[field] || [], sample].flat() }),
+      {},
+    );
+}
+
+export function kmeans(samples, bounds, size, projection) {
+  const clusters = bounds.reduce(([left, top], [right, bottom]) =>
+    Array(Math.floor((right - left) / size))
+      .fill(left)
+      .flatMap((left, x) =>
+        Array(Math.floor((bottom - top) / size))
+          .fill(top)
+          .map((top, y) => ({
+            center: projection.invert([left + (x + 0.5) * size, top + (y + 0.5) * size]),
+            nodes: [],
+          })),
+      ),
+  );
+  samples = samples.filter((sample) => {
+    const { lat: y, lon: x } = sample;
+    const distances = clusters.map(
+      ({ center: [cx, cy] }) => Math.pow(cx - x, 2) + Math.pow(cy - y, 2),
+    );
+    const closest = Math.min(Infinity, ...distances);
+    const cluster = clusters.at(distances.indexOf(closest));
+    return !cluster?.nodes.push(sample);
+  });
+  return clusters
+    .filter(({ nodes }) => nodes.length)
+    .flatMap((cluster) => (cluster.nodes.length > 1 ? cluster : cluster.nodes))
+    .concat(samples);
+}
+
+export function nearest(range, value) {
+  const distances = range.map((range) => Math.abs(range - value));
+  const index = distances.indexOf(Math.min(...distances));
+  return range[index];
+};
+
+export const antipode = (point, scale) => point / (scale / 360) - 180;
+
+export const bisection = (point, scale) => (point / (scale / 2) - 1) * -1;
+
+export const gudermannian = (normal) =>((2 * Math.atan(Math.exp(normal * Math.PI)) - Math.PI / 2) * 180) / Math.PI;
+
+export function quadrate(center, width, ratio) {
+  return [-1, 1].map((unit) =>
+    [0, 1].map((axis) => center[axis] + (width / (axis ? ratio : 1) / 2) * unit),
+  );
+};
 
 export function search(term,recursive=false,path=[]){
   // traverse scope for entries satisfying a term (condition or singular path).
@@ -73,23 +173,32 @@ export function route(scope, term, path) {
   );
 }
 
- export function prune(term,collapse,path=[])
+ export function prune(term,collapse,limit=[],path=[])
 {// map entries recursively.
- if(typeof this!=="object"||this===null)return this;
- let entries=Object.entries(this);
- if(!entries.length)for(let field in this)entries.push([field,this[field]]);
- entries=entries.flatMap
-(function([field,scope],index,entries)
-{let value=term.call(Object.fromEntries(entries),[field,scope],path);
+ let scope=this;
+ if(!compound(scope))return scope;
+ let entries=Object.entries(scope);
+ if(!entries.length)
+ for(let field in scope)entries.push([field,scope[field]]);
+ entries=entries.flatMap(function([field,source],index,entries)
+{if(numeric(limit)?path.length===limit:[limit].flat().some(limit=>
+[[limit],[array(limit)?path:[],field]
+].map(compose("flat","/","join")).reduce(Object.is)))
+ return [arguments[0]];
+ let value=term.call(scope,[field,source],path);
  let pluck=!defined(value);
  if(pluck&&!collapse)
  return [];
- let plant=pluck&&collapse;
- let range=[...plural(plant?scope:value)].map(scope=>prune.call(scope,term,collapse,plant?path:path.concat(field)));
- return range.flatMap(scope=>plant?Object.entries(scope):[[field, scope]]);
+ let graft=pluck&&collapse;
+ let range=[...plural(graft?source:value)].map(scope=>
+ prune.call(scope,term,collapse,limit,graft?path:path.concat(field)));
+ return range.flatMap(scope=>graft
+?Object.entries(compound(scope)?scope:{})
+:[[field,scope]]);
 });
- let array=entries.length&&!entries.some(([field],index,entries)=>isNaN(field)||[entries[index-1]?.[0],field].map(Number).reduce((past,next)=>next<past));
- if(array)
+ let iterable=!entries.length||!entries.some(([field],index,entries)=>
+ isNaN(field)||[entries[index-1]?.[0],field].map(Number).reduce((past,next)=>next<past));
+ if(iterable)
  entries.forEach(function([field],index,entries)
 {if(!index)
  // snap first index. 
@@ -99,8 +208,8 @@ export function route(scope, term, path) {
  // spread plural indexes. 
  entries.slice(index).forEach((entry)=>entry[0]=Number(entry[0])+leap);
 });
- let scope=Object.fromEntries(entries);
- return array?Object.assign(Array(0),scope):scope;
+ scope=Object.fromEntries(entries);
+ return iterable?Object.assign(Array(0),scope):scope;
 };
 
  export function merge(target, source, override = 1)

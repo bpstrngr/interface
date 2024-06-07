@@ -1,19 +1,20 @@
- import {document} from "./Blik_2023_fragment.js";
- import {note,compose,observe} from "./Blik_2023_inference.js";
- import {fetch} from "./Blik_2023_interface.js";
+ import {document,observe as activate} from "./Blik_2023_fragment.js";
+ import {note,compose,observe,buffer} from "./Blik_2023_inference.js";
+ import {fetch,resolve} from "./Blik_2023_interface.js";
 
- export async function open(port,room="./Blik_2020_room.js")
-{let socket=await import("./rauch_2014_socketio_rollup.js");
- socket=new socket.__moduleExports.Server(port,{transports:['websocket']});
- return observe.call(socket
-,{async connection(peer)
-{let {referer,cookie}=peer.handshake.headers;note(peer)
+ export async function open(server,room="./Blik_2020_room.js")
+{let {default:{WebSocketServer,OPEN}}=await import("./einaros_2011_ws.js");
+ return observe.call(new WebSocketServer({server})
+,{connection:buffer(async function connection(host,peer,request)
+{let {referer,cookie}=request.headers;
  let author=cookie&&cookie.match(/signature=[^;]+/);
  let url=author&&author[0].replace("=","/");
  ({author}=url?await fetch(url):{author:"anonymous"});
+ activate.call(Object.assign(peer,{author}),await resolve(room,"default"));
  let response={author:system,message:peer.author+" entered"};
- observe.call(Object.assign(peer,{author}),await resolve(room,"default")).broadcast.emit("send",response);
-}});
+ host.clients.forEach(client=>client.readyState===OPEN&&client.send(JSON.stringify(response)));
+},note.bind(1))
+ });
 };
 
  export default
@@ -26,11 +27,12 @@
  return this.adapter.rooms[room];
 },sign(author){this.author=author;}
  ,signal(room){this.server.sockets.in(room).emit("signal",this.author)}
- ,message({author,message,room})
-{message={author:author||{name:this.author},message};note(this)
+ ,message(event)
+{let {author,message,room}=JSON.parse(event.data);
+ note(this)
  if(!author)
- (this.adapter.rooms[room]||this._events.join.bind(this)(room)).messages.push(message);
- this.server.sockets.in(room).emit("message",message);
+ (this.rooms?.[room]||this._events.join.bind(this)(room)).messages.push(message);
+ this.send(event.data);
 },save:async function({room,updates,version})
 {this.room=this.adapter.rooms[room]||this.join(room);
  let {EditorState,collab,receiveUpdates,getSyncedVersion,ChangeSet}=

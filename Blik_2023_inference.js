@@ -143,7 +143,9 @@
  let bound=is(Function)(term)
 ?describe.call("tether ",function(){return term.call(this,...arguments);},term)
 :term;
+ if(defined(this))
  return infer.call(this,bound,...context);
+ return compose(when(defined),infer(bound,...context));
 };
 
  export function either(functor,...functors)
@@ -208,22 +210,22 @@
  return terms.reduce(inference,this);
 };
 
- export function combine(...functors)
+ export function combine(...terms)
 {// parallel inference/multiplication (church arithmetic). 
  if(!defined(this))
  return confer(combine,...arguments);
  let context=collect(this);
  let [factor]=context;
  let records=Object.entries(Object(factor));
- let content=functors.map(functor=>typeof functor!=="number"
-?compose.call(context,provide,functor)
+ let content=terms.map(term=>!numeric(term)
+?compose.call(context,provide,term)
 :Object.assign([]
-,Array(Math.floor(functor)).fill(factor)
-,functor%1&&
- {[Math.floor(functor)]:records.length
-?compose.call(records.slice(0,functor%1*records.length)
-,Object.fromEntries,...Array.isArray(factor)?[Object.values]:[])
-:functor%1*factor
+,Array(Math.floor(term)).fill(factor)
+,term%1&&
+ {[Math.floor(term)]:records.length
+?compose.call(records.slice(0,term%1*records.length)
+,Object.fromEntries,...array(factor)?[Object.values]:[])
+:term%1*factor
  }));
  return provide(collect(...content));
 // length?compose(drop(),functor,Math.ceil,Array,fields,"fill","flat",[]
@@ -249,6 +251,12 @@
  return Array.from(term);
 };
 
+ export function remember(term,distinction="length")
+{// record on an implicit scope. 
+ let scope={};
+ return either(compose(distinction,slip(scope),Reflect.get),compose(combine(record(term,distinction).bind(scope),distinction),Reflect.get));
+};
+
  export function route(term,...context)
 {// compose with static context, methodic and scope-rebound alternatives. 
  if(!this)return tether(route,...arguments);
@@ -269,9 +277,9 @@
 
  export function each(term,...context)
 {if(!defined(this))
- return tether(each,...arguments);
- return compose(collect,infer("map",(value,index)=>
- infer(array(term)?term[index]:term)(value)),provide)(this,...context);
+ return confer(each,...arguments);
+ return compose(collect,infer("map"
+,infer(array(term)?term[index]:term,...context)),provide)(this);
 };
 
  export function drop(stop=Infinity,start=0,...inject)
@@ -404,15 +412,6 @@
  throw Error("can't match regular expressions on ",this);
  return expressions.every(expression=>expression.test(this));
 }
- export function same(...context)
-{if(!defined(this))
- return confer(same,...context);
- return compose
-(collect,collect(...context),(terms,context)=>
- context.length<terms.length||
- context.every((term,index)=>terms[index]===term)
-)(this);
-};
  export function is(...terms)
 {// express context as true if defined or satisfies terms.
  if(!defined(this))
@@ -423,14 +422,28 @@
 :false);
  return compose(provide,collect,infer("every",Boolean))(conditions);
 };
+ export function same(...context)
+{// should be renamed "are", as plural of "is".
+ if(!defined(this))
+ return confer(same,...context);
+ return compose
+(collect,collect(...context),(terms,context)=>
+ context.length<terms.length||
+ context.every((term,index)=>terms[index]===term)
+)(this);
+};
  export function not(...terms)
 {// deny conditions
  return is(...terms.map(term=>compose(term,nay)));
 };
  export function has(fields)
-{if(this)
+{if(defined(this))
  return [fields].flat().every(field=>field in this);
  return tether(has,fields);
+};
+ export function pdflike(buffer)
+{if(!buffer||buffer.length<4)return false;
+ return [0x25,0x50,0x44,0x46].every((code,index)=>buffer[index]===code);
 };
 
  export function wait(time)

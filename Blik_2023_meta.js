@@ -1,8 +1,8 @@
-import {note,wait,drop,infer,buffer,compose,combine,collect,stream,record,provide,compound,tether,bind,string,is,not,iterable} from "./Blik_2023_inference.js";
-import {search,merge,prune,route,random} from "./Blik_2023_search.js";
-let address=new URL(import.meta.url).pathname;
+ import {note,wait,drop,infer,buffer,compose,combine,collect,stream,record,provide,compound,tether,bind,string,is,not,iterable} from "./Blik_2023_inference.js";
+ import {search,merge,prune,route,random} from "./Blik_2023_search.js";
+ let address=new URL(import.meta.url).pathname;
 
- export async function parse(source, syntax = "javascript", options = {})
+ export async function parse(source,syntax="javascript",options={})
 {// interpret language syntax.
  if(!string(source))
  return Error("can't parse "+typeof source);
@@ -331,39 +331,32 @@ let address=new URL(import.meta.url).pathname;
  }
  };
 
- export async function serialize(syntax, format = "astring", options)
-{// convert abstract syntax tree to javascript;
- if(typeof syntax==="string")
+ export async function serialize(syntax,format="astring",options)
+{// convert abstract syntax tree or runtime namespace to javascript;
+ if(string(syntax))
  syntax=JSON.parse(syntax);
- let [module,term]=
-{astring:["./davidbonnet_2015_astring.js","generate"],
- babel:["./node_modules/@babel/generator/lib/index.js","default"],
-}[format]||[format];
- return import(module).then(module=>module[term](syntax,options));
-};
-
- export function namespace(declarations,modules,...procedures)
-{// translate abstract syntax tree or runtime namespace into javascript;
- [declarations,modules]=
- [declarations,modules].map((argument,index)=>
- string(argument)?JSON.parse(argument):argument);
- let {type,body,sourceType}=declarations;
- if(sourceType==="typescript")
- declarations=prune(declarations,(field,value)=>!value?.type?.startsWith("TS"));
+ let {type,body,sourceType}=syntax;
  if(type==="Program")
- return import("./davidbonnet_2015_astring.js").then(({generate})=>generate(declarations));
- modules=Object.entries(modules||{}).map(([module,functors])=>!module.endsWith(".json")
-?" import "+functors.map((functor,index,{length})=>(
- {"1":"{"+functor,[length-1]:(length==2?"{":"")+functor+"}"}[String(index||"")]||functor)).filter(Boolean).join(",")
+ return (
+ {astring:["./davidbonnet_2015_astring.js","generate"]
+ ,babel:["./node_modules/@babel/generator/lib/index.js","default"]
+ }[format]||[format,"default"]).reduce((module,term)=>import(module).then(module=>module[term](syntax,options)));
+ let {exports,imports,procedures}=syntax;
+ imports=Object.entries(imports||{}).map(([module,names])=>[module,[names].flat()]).flatMap(([module,names],index)=>
+[(index=names.findIndex(name=>name.startsWith("*")))>-1?[module,names.splice(index,1)]:[]
+,[module,names]
+]).filter(({1:names})=>names?.join("").length).map(([module,names])=>!module.endsWith(".json")
+?names.reduce((imports,name,index,names)=>imports+(index&&names[index-1]?",":"")+(index===1?"{":"")+name
+," import ")+(names.length>1?"}":"")
 +" from \""+module+"\""+(/\.json$/.test(module)?" with {type:\"json\"}":"")+";"
-:(" var {default:"+functors[0]+"}=await resolve(\""+module+"\");")).join("\n")
-,declarations=!declarations?""
-:Promise.all([import("./Yahoo_2014_serialize.js"),declarations]).then(([{__moduleExports:serialize},declarations])=>
- Object.entries(declarations||{}).map(([field,functor])=>
+:(" var {default:"+names[0]+"}=await resolve(\""+module+"\");")).join("\n")
+,exports=!exports?""
+:Promise.all([import("./Yahoo_2014_serialize.js"),exports]).then(([{__moduleExports:serialize},exports])=>
+ Object.entries(exports||{}).map(([field,functor])=>
  "export "+({default:field+" "}[field]||("var "+field+"="))+serialize(functor)).join("\n\n")).then(module=>
  // apply formatting. 
  module.replace(/(\}\})(,\"[^\"]*\":)(\{)/g,(...match)=>match.slice(1,4).join("\n "))+"\n");
- return compose(collect,infer("filter",Boolean),"\n\n","join")(modules,declarations,...procedures);
+ return compose(collect,infer("filter",Boolean),"\n\n","join")(imports,exports,...[procedures].flat());
 };
 
  export function proceduralize(term)
@@ -449,6 +442,11 @@ export async function imports(syntax,format={}) {
 ," export ")+(names.length>1?"}":"")
 +" from \"./"+(path?.relative(relation,path.resolve(source))||source)+"\";");
  return statements.join("\n ");
+};
+
+ export function coordinates(source,position)
+{return source.slice(0,position).split("\n").reverse().flatMap((line,index,lines)=>
+ [lines.length-1,position-lines.splice(1).join("\n").length-1]);
 };
 
 export function scope(module) {
