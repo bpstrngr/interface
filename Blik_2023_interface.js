@@ -1,5 +1,5 @@
- import {note,collect,prompt,same,has,pass,slip,something,observe,describe,refer,expect,trace,array,compound,simple,apply,stream,record,provide,tether,differ,wether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,binary,match,wait,string,defined,compose,combine,exit,clock,route} from "./Blik_2023_inference.js";
- import {merge,stringify,search,edit,prune,parse as records} from "./Blik_2023_search.js";
+ import {note,collect,prompt,same,has,pass,slip,something,observe,describe,remember,refer,expect,trace,array,compound,simple,apply,stream,record,provide,tether,differ,wether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,binary,match,wait,string,defined,compose,combine,exit,clock,route} from "./Blik_2023_inference.js";
+ import {sum,merge,stringify,search,edit,prune,parse as records} from "./Blik_2023_search.js";
  import {parse,sanitize,serialize,exports,reexport,test} from "./Blik_2023_meta.js";
 
  export const address=new URL(import.meta.url).pathname;
@@ -113,9 +113,10 @@
  if(loading&&internal)
  return module;
  [source,...context]=primary?process.argv.slice(1):Array.from(arguments);
+ let term=context.shift();
+ let inference=combine(...[term].flat().map(term=>infer(term,...context)));
  let suspense=primary&&!process.execArgv.includes("--watch")?10*60*1000:0;
- return compose(infer(...context),terms=>
- primary?compose.call(terms,note,wait(suspense),drop(),0,process.exit):terms)(module);
+ return compose(inference,primary?compose(note,wait(suspense),drop(),0,process.exit):infer())(module);
 };
 
  function extend(absolute)
@@ -575,7 +576,9 @@ export function patch(repository, patch) {
 {if(!compound(request))request=
  {end(response){return Object.assign(this.response,response);}
  ,respond(header){Object.assign(this.response,{header});}
- ,response:{},url:/^http/.test(request)?request:await resolve("path","resolve","/",request||""),method:"get",...header||{}
+ ,response:{}
+ ,url:/^http/.test(request)?request:await resolve("path","resolve","/",request||"")
+ ,method:"get",...header||{}
  };
  let method=request.method.toLowerCase();
  let format=either("Content-Type","content-type",swap(undefined))(request);
@@ -591,10 +594,18 @@ export function patch(repository, patch) {
  let body=await either(compose(differ(format),resolve,request.body,either("parse",swap(request.body),swap(""))),swap(request.body))(parser);
  request=Object.assign(request,{body,path,query,method:methodic?undefined:method,cookie});
  let local=this||await import("./Blik_2023_host.js").then(({default:local})=>local);
- let response=await buffer(either(tether(route),"error",drop(-1)))(local,path,request);
+ let response=/^http/.test(request.url)
+?await buffer(forward)(request.url,request)
+:await buffer(either(tether(route),"error",drop(-1)))(local,path,request);
  let fail=is(Error)(response);
  let type=!fail?response?.type||mime(response?.nodeName?.toLowerCase()||(either(simple,array)(response)?"json":request.url)):mime("txt");
- body=wether([fail,has("nodeName"),something],compose(note.bind(1),"message"),"outerHTML",either("body",crop(1)),swap("missing source: \""+request.path+"\""))(response);
+ body=wether
+([fail,has("nodeName"),something]
+,compose(note.bind(1),"message")
+,"outerHTML"
+,either("body",crop(1))
+,swap("missing source: \""+request.path+"\"")
+)(response);
  if(response?.nodeName)response.innerHTML="";
  // let importing=request.headers?.["sec-fetch-dest"]==="script";
 //  if(importing&&type==="json")
@@ -614,6 +625,44 @@ export function patch(repository, patch) {
 };
  function arrayBuffer(){return Promise.resolve(this.body.constructor?.name=="Buffer"?this.body:Buffer.from(this.body,"utf-8"));};
 }};
+
+ export async function forward(address,request)
+{let {hostname,path}=await resolve("url","parse",address);
+ let method=request?.method?.toUpperCase()||"GET";
+ let protocol=address.match(/[^:]*/)?.[0];
+ let agent=await peer(protocol);
+ request={method,hostname,path,agent};
+ return new Promise((proceed,reject)=>compose
+(infer(resolve,"request",request,response=>
+{let {location}=response.headers;
+ if(location)
+ console.log(request.url,"redirected to",location,"...");
+ let body=[];
+ observe.call(response
+,{data:record(body=>body).bind(body)
+ ,end:end=>location
+?compose.call(location,request,forward,proceed)
+:proceed(
+ {body:Buffer.concat(body,sum(body.map(({length})=>length)))
+ ,status:response.statusCode
+ ,type:response.headers["content-type"]
+ ,json(){return JSON.parse(this.body);}
+ })
+ ,error:reject
+ });
+})
+,tether(observe
+,{error(fail){this.destroy();reject(fail);}
+ ,timeout(fail){this.destroy();reject(fail);}
+ })
+,combine(infer("write",String(request.body||"")),"end")
+)(protocol));
+};
+
+ export var peer=remember(function peer(protocol)
+{return resolve(protocol,"Agent",{keepAlive:true,timeout:60000});
+},protocol=>protocol);
+
 
  export var digest=compose
 (combine(infer(),response=>response.headers.get("Content-Type")?.split("/")[1])

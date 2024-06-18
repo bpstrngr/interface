@@ -1,5 +1,6 @@
  import {note,wait,drop,infer,buffer,compose,combine,collect,stream,record,provide,compound,tether,bind,string,is,not,iterable} from "./Blik_2023_inference.js";
  import {search,merge,prune,route,random} from "./Blik_2023_search.js";
+ let {__moduleExports:reify}=globalThis.window?{}:await import("./Yahoo_2014_serialize.js");
  let address=new URL(import.meta.url).pathname;
 
  export async function parse(source,syntax="javascript",options={})
@@ -331,7 +332,7 @@
  }
  };
 
- export async function serialize(syntax,format="astring",options)
+ export function serialize(syntax,format="astring",options)
 {// convert abstract syntax tree or runtime namespace to javascript;
  if(string(syntax))
  syntax=JSON.parse(syntax);
@@ -351,11 +352,11 @@
 +" from \""+module+"\""+(/\.json$/.test(module)?" with {type:\"json\"}":"")+";"
 :(" var {default:"+names[0]+"}=await resolve(\""+module+"\");")).join("\n")
 ,exports=!exports?""
-:Promise.all([import("./Yahoo_2014_serialize.js"),exports]).then(([{__moduleExports:serialize},exports])=>
- Object.entries(exports||{}).map(([field,functor])=>
- "export "+({default:field+" "}[field]||("var "+field+"="))+serialize(functor)).join("\n\n")).then(module=>
+:[Object.entries(exports||{}).map(([field,term])=>
+ "export "+({default:field+" "}[field]||("var "+field+"="))+reify(term)).join("\n\n").replace(/(\}\})(,\"[^\"]*\":)(\{)/g
  // apply formatting. 
- module.replace(/(\}\})(,\"[^\"]*\":)(\{)/g,(...match)=>match.slice(1,4).join("\n "))+"\n");
+,(...match)=>match.slice(1,4).join("\n "))
+,""].join("\n");
  return compose(collect,infer("filter",Boolean),"\n\n","join")(imports,exports,...[procedures].flat());
 };
 

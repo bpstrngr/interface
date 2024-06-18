@@ -13,8 +13,6 @@
  {async get(request="/")
 {if(typeof request!="object")
  request={url:request};
- if(/^http/.test(request.url))
- return forward(request.url,request);
  let {pathname}=await resolve("url","parse",request.url,true);
  let address=await resolve("path","resolve","./"+decodeURI(pathname));
  if(!permit(address,classified))
@@ -42,7 +40,7 @@
  return purge(path.resolve(...request.path));
 }};
 
- export async function expose(source,parameters,protocol="http",memorize)
+ export async function expose(source,parameters,protocol="http",memory)
 {let {default:path}=await import("path");
  ({source,parameters,protocol}=await prompt({source,parameters,protocol}));
  let classified=
@@ -55,7 +53,8 @@
  let missing=["port",...protocol=="https"?["hmac","distinguishedname"]:[]].filter(key=>!parameters[key]);
  if(missing.length)
  exit("missing "+missing+" in "+arguments[1]);
- //if(await resolve("cluster","isMaster"))return persistence(),history(),fork();
+ // if(await resolve("cluster","isMaster"))
+ // return persistence,history,fork(),"process split.";
  encrypt(parameters.hmac);
  await window([protocol,"//localhost",parameters.port].join(":"));
  [protocol,source]=await resolve([protocol,source]);
@@ -66,9 +65,9 @@
  return compose
 ("createServer",parameters.port
 ,revert((listen,host,port)=>host.listen(port,infer(listen))),...virtualize
-,combine(infer(),report,compose(slip("./Blik_2020_room.js","open"),resolve))
+,combine(infer(),report,compose(slip("./Blik_2024_room.js","open"),resolve))
 ,revert((close,channel)=>observe.call(channel,{close}))
-)(protocol,...certificates,compose(source,memorize,tether(receive)));
+)(protocol,...certificates,compose(source,memory&&{},tether(receive)));
  // function listen(port)
  //{let response={end(body){return {...this.header,body};},setHeader(header){this.header={header}},writeHead(){}};
  // compose(prompt,agent,"url",describe,{headers:{},method:"get"},merge
@@ -78,9 +77,8 @@
 
  function receive(request){observe.call(request,{data(data){this.body+=decoder.write(data);},end:respond.bind(...arguments)});}
 
- function respond(response,source,memorize)
-{let attempt=buffer(tether(fetch),compose(note,slip(source.default),"error",tether(fetch)));
- let retrieve=memorize?remember(compose(drop(1),attempt),compose(drop(2),distinction)):attempt;
+ function respond(response,source,memory)
+{let retrieve=memory?remember.call(memory,compose(drop(1),tether(fetch)),compose(drop(2),distinction)):tether(fetch);
  return compose(combine(notify,retrieve),pass(report),drop(1,3),response||this,tether(submit))(source.default,this);
 };
  var distinction=({url,headers})=>url+(headers?.cookie||"");
@@ -112,42 +110,18 @@
  return response.end(body);
 };
 
- export function forward(file,request)
-{if(request)request.method=request.method?.toUpperCase()||"GET";
- let protocol=file.match(/[^:]*/)?.[0];
- request={method:"GET",...request,...new URL(file)};
- return new Promise(resolve=>compose.call
-(import(protocol)
-,infer("request",file,response=>
-{let {location}=response.headers;
- if(location)
- console.log(request.url,"redirected to",location,"...");
- let body=[];
- response.on("data",record(body=>body).bind(body));
- response.on("end",end=>location
-?compose.call(location,request,forward,resolve)
-:resolve(
- {body:Buffer.concat(body,sum(body.map(({length})=>length)))
- ,status:response.statusCode
- ,type:response.headers["content-type"]
- ,headers:{get:compose("toLowerCase",infer.bind(response.headers))}
- ,json:()=>Promise.resolve(JSON.parse(body))
- ,text:()=>Promise.resolve(body||response.statusMessage)
- }));
-})
-,combine(infer("write",String(request.body||"")),"end")
-));
-};
-
  async function fork()
-{//https://github.com/nodejs/node/issues/35158
+{// https://github.com/nodejs/node/issues/35158
  //if(!process.argv[1])process.argv[1]=import.meta.url;
+ await resolve("cluster","on","exit",(worker,code,signal)=>note.call(code,worker.process.id+" exited with status "+code));
  let os=await import("os");
  let cpus=os.cpus();
  if(!cpus.length)
  cpus=[{model:os.platform()}];
- return cpus.reduce(record((cpu,index,cpus)=>compose.call(wait(index*1000)
-,swap(cluster.fork().id+"/"+cpus.length+" "+cpu.model+(!cpus[index+1]?"":"\nnext fork in a second...")),note.bind(1)))
+ return cpus.reduce(record((cpu,index,cpus)=>
+ compose.call("cluster","fork",resolve,pass(compose
+("id",cpus.length+" "+cpu.model+(!cpus[index+1]?"":"\nnext fork in a second..."),collect,"/","join",note.bind(1)
+)),wait(index*1000)))
 ,[]);
 }
 

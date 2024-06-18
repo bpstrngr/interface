@@ -223,7 +223,7 @@ export function route(scope, term, path) {
 ?(scope[field] = route.length - index > 2 ? scope[field] || {} : route[index + 1])
 :route[0],
  );
- let Group = [Map, Set].find((group) => target instanceof group);//[target, source].every((part) => part instanceof group));
+ let Group = [Set,Map].find((group) => target instanceof group);//[target, source].every((part) => part instanceof group));
  if (Group) return override?source:new Group([source, target].flatMap((part) => Array.from(part)));
  let extensible=Array.isArray(target)&&!override;
  if (extensible) return target.concat(source);
@@ -346,7 +346,7 @@ export function isolate(path)
 ,{scope:{a:{b:1}},context:[entry=>entry,true],terms:[{a:{b:1},"a/b":1}],condition:["deepEqual"]}
 ,{scope:{a:{b:1}},context:[([field,value])=>!isNaN(value)],terms:[{"a/b":1}],condition:["deepEqual"]}
 ],prune:
-[{scope:{a:{b:{c:3}}},context:[([field,value])=>field!=='b'?value:undefined],terms:[{a:{}}],condition:"deepEqual"}
+[{scope:{a:{b:{c:3}}},context:[([field,value])=>field!=='b'?value:undefined],terms:[{a:[]}],condition:"deepEqual"}
 ,{scope:{a:{b:{b:2,c:3}}},context:[([field,value])=>field!=='b'?value:undefined,true],terms:[{a:{c:3}}],condition:"deepEqual"}
-,{scope:{a:{b:{c:{d:1},f:2}},e:3},context:[([field,value],path)=>path.length<2?value:undefined],terms:[{a:{b:{}},e:3}],condition:"deepEqual"}
+,{scope:{a:{b:{c:{d:1},f:2}},e:3},context:[([field,value],path)=>path.length<2?value:undefined],terms:[{a:{b:[]},e:3}],condition:"deepEqual"}
 ]};
