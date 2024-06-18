@@ -1,9 +1,12 @@
  import {resolve,modularise,window,fetch,mime} from "./Blik_2023_interface.js";
- import {note,provide,collect,infer,either,each,tether,buffer,differ,compose,refer,record,combine,wether,swap,compound,something,string,defined,simple,exit,route,drop,crop,same,binary,is,array,pdflike} from "./Blik_2023_inference.js";
+ import {note,provide,collect,slip,infer,either,each,tether,buffer,differ,compose,revert,refer,record,combine,wether,swap,compound,something,string,defined,simple,exit,route,drop,crop,same,binary,is,array,pdflike} from "./Blik_2023_inference.js";
  import {search,merge,prune} from "./Blik_2023_search.js";
- import {proceduralize} from "./Blik_2023_meta.js";
+ import {serialize,proceduralize} from "./Blik_2023_meta.js";
  import layout,{color} from "./Blik_2023_layout.js";
  var {default:svg}=await resolve("./Blik_2020_svg.json");
+ var [jss,...plugins]=await resolve(["","_nested","_extend","_global"].map(plugin=>
+ "./Isonen_2014_jss"+plugin+".js")).then(modules=>
+ modules.map(module=>module.default||module));
 
  export function document(source,namespace,language)
 {if(this)
@@ -29,6 +32,8 @@
 :source);
  let [fragment,...nodes]=Object.entries(source||{}).reduce(function([fragment,...nodes],[name,value])
 {if(!value)return [fragment,...nodes];
+ if(value instanceof Function)
+ value=value.call(source);
  let textnode=name=="#text";
  if(textnode)
  value=!string(value)?value[language]||Object.values(value)[0]:value;
@@ -127,12 +132,18 @@
 :Object.entries(object).map(([key,value])=>["data-"+key,isNaN(value)?JSON.stringify(value):String(value)])
 );
 
- export function form(fields,labels)
+ function tag(labels,id)
+{return !string(id)?id:compound(labels[id])?labels[id]:(labels[id]&&labels[id][0]==="<")
+?{"#text":labels[id]}:{span:{"#text":string(labels[id])?labels[id]:id}};
+};
+
+ export function form(fields={},labels)
 {let group=Object.entries(fields).reduce((group,[key,value],index)=>
  typeof value=="object"&&!Array.isArray(value)&&!index&&key,false);
  if(group)
  fields=fields[group];
- labels=this&&!labels?JSON.parse(this.dataset.labels):string(labels)?JSON.parse(labels):labels;
+ if(!labels)
+ labels=this&&this.dataset.labels&&JSON.parse(this.dataset.labels);
  let label=Object.entries(fields).map(([id,value])=>
 {if(!defined(value))return;
  let type=wether([is(Date),is(Set),either(array,compound),either(binary,infer("match",/^(true|false)$/))]
@@ -140,33 +151,36 @@
  let field=
  {for:id,title:id
  ,class:[group,type,{checkbox:value?"checked":""}[type]].filter(Boolean).join(" ")||undefined
- ,input:
- {type:["select","date"].includes(type)?"text":type,id,name:id
+ ,input:something(value)
+?{type:["select","date"].includes(type)?"text":type,id,name:id
  ,value:type==="checkbox"?String(value)==="true":(type==="date")?clock(value,"datetime"):(type==="text"&&value&&String(value))||(array(value)?value[0]:compound(value)?Object.keys(value)[0]:value)
  ,checked:{checkbox:value?value.toString():undefined}[type]
  ,autocomplete:"off"
- }
+ }:undefined
  ,ul:type!=="text"?type==="date"?clockwork(value):{li:list(value)}:undefined
- ,...tag(labels,typeof labels[id]=="function"?labels[id](value):id)
+ ,...tag(labels,is(Function)(labels?.[id])?labels[id](value):id)
  };
  return JSON.parse(JSON.stringify(field));
 });
  if(this)
  label.filter(Boolean).map(label=>
 {let input=this.elements[label.for];
+ if(!label.input)
+ input?.parentNode.childNodes.forEach(node=>
+ label[node.nodeName.toLowerCase()]=node);
  if(something(input?.value))
  label.input.value=input?.value;
- let entry=document({label})
  let reference=input?.closest("label")||
  Array.from(this.elements).reverse().find(input=>input.closest("label"))?.closest("label")||
  Array.from(this.children).at(-1);
+ let entry=document({label});
  insert(entry,input?"over":"after",reference);
  if(label.input.type=="text")
  this.elements[label.for]?.dispatchEvent(new window.Event("input",{bubbles:true}));
  return [Array.from(entry.parentNode.children).indexOf(entry),entry];
 }).forEach(([order,node],index,labels)=>node.parentNode.insertBefore(node
 ,labels.slice(index+1).find(([next])=>next<order)?.[1]||node.nextSibling));
- return {label,input:{id:"extend",type:"text",value:"..."}};
+ return {label};
 };
 
  export function list(value)
@@ -185,20 +199,14 @@
  return Object.fromEntries([...new this.ownerDocument.defaultView.FormData(this)]);
 };
 
- var tag=(labels,id)=>typeof id!="string"
-?id
-:typeof labels[id]=="object"
-?labels[id]
-:(labels[id]&&labels[id][0]=="<")
-?{"#text":labels[id]}
-:{span:{"#text":typeof labels[id]=="string"?labels[id]:id}};
-
  var modules={};
 
  export async function transform(resource,{incumbent,...fields})
 {if(pdflike(resource))resource=await print(resource);
+ if(!fields.layout&&either(simple,array,swap(false))(resource))
+ fields.layout="network";
  if(this)
- form.call(this,{get:{...fields,...simple(resource)||array(resource)&&{source:resource}}})
+ form.call(this,{get:{...fields,...(simple(resource)||array(resource))&&{source:resource}}})
 ,fill.call(this,fields);
  let [module,feature="default"]=fields.layout?.split("/")||["./Blik_2023_fragment.js","media"];
  if(!module.includes("_"))
@@ -391,6 +399,7 @@ export async function deform(resource)
 
  export async function error()
 {let error=Array.from(arguments).at(-1);
+ console.error(error);
  let style=await stylesheet({body:{background:"black",color:color.red},center:layout.middle});
  let report=compose.call({center:{"#text":String(error)}},"Error","/svg/worm/document",[],[style],hypertext,document);
  let body=report.outerHTML;
@@ -443,8 +452,7 @@ function portfolio(source)
 
  export function hypertext(body,title,favicon,scripts,styles=[])
 {scripts=[scripts].flat().filter(actions=>!compound(actions)||!activate(body,actions));
- let action={type:"module","#text":proceduralize(expose)};
- let script=[action,scripts.map(src=>({src,type:"module"})),body.script||[]].flat();
+ let script=[scripts.map(src=>[/^\./.test(src)?{src}:{"#text":src},{type:"module",async:true}].reduce(merge)),body.script||[]].flat();
  let [link,style]=[styles].flat().reduce((nodes,style,index)=>
  nodes[index=+/{|}/.test(style)].push(index?{"#text":style}:{rel:"stylesheet",type:"text/css",href:style})&&nodes
 ,[[],[]]);
@@ -532,8 +540,18 @@ function portfolio(source)
  value.split(' ').map((value)=>selector+value))).join('');
 };
 
+ export async function charge(actions,syntax)
+{return compose
+({exports:{actions}
+ ,procedures:[proceduralize(dispose)]
+ },merge,serialize,text=>({type:"module","#text":text})
+)(syntax);
+};
+
  export function activate(fragment,actions)
 {// dispose actions on node/fragment to event listeners. 
+ if(defined(this))
+ return observe.call(this,...arguments);
  if(!actions)return fragment;
  if(string(actions))
  return import(actions).then(({default:actions})=>activate(fragment,actions));
@@ -544,7 +562,7 @@ function portfolio(source)
 :fragment;
  let nodes=Object.entries(node).flatMap(([nodename,node])=>
  [node].flat().filter(compound).map(node=>compose
-(tether(dispose)
+(tether(events)
 ,Object.keys
 ,infer("map",event=>["on"+event,"window.dispatch.call(this,event)"])
 ,Object.fromEntries
@@ -565,15 +583,16 @@ function portfolio(source)
  ,focus:['focusin','focusout'],
  };
  let propagate=register>1;
- const entries=[action].flat().flatMap((action)=>
+ const entries=[action].flat().flatMap(action=>
  // function names are removed in nextjs builds, so don't use action.name.
- typeof action==='object'?Object.entries(action):[[action?.name,action]]).flatMap(([name,action])=>
+ simple(action)?Object.entries(action):[[action?.name,action]]).flatMap(([name,action])=>
  binary[name]?.reduce((start,end)=>
 [[start,action]
 ,[end,function(event){if(!propagate)event.stopPropagation();this.dispatchEvent(new {focus:FocusEvent,hover:MouseEvent}[name](start,event));}]
 ])||[[name,action]]);
  if(defined(this))
- entries.reduce((node,[event,action])=>(node[(register?'add':'remove')+'EventListener'](event,action),node),this);
+ return entries.reduce((node,[event,action])=>(
+ node[(register?'add':'remove')+'EventListener'](event,action,true),node),this);
  return Object.fromEntries(entries);
 };
 
@@ -583,8 +602,23 @@ function portfolio(source)
  return key?{[key]:true}:{};
 };
 
- export function dispose(actions)
-{// extract actions disposed on node/fragment. 
+ export function hydrate(fragment)
+{// to be used in element's style onload event to dispatch associated script actions as event attributes. 
+ let module=Array.from(fragment.parentNode.childNodes).find(node=>
+ node.nodeName?.toLowerCase()==="script").textContent;
+ let expose="postMessage(Object.values(actions).flatMap(Object.keys));";
+ let blob=new Blob([module,expose],{type:mime("js")});
+ let {Worker,URL}=fragment.ownerDocument.defaultView;
+ let worker=new Worker(URL.createObjectURL(blob),{type:"module"});
+ compose
+(revert(function(onmessage,worker){Object.assign(worker,{onmessage,onerror:console.error})})
+,({data:namespace})=>activate(fragment.parentNode
+,{[qualify(fragment.parentNode)]:Object.fromEntries(namespace.map(name=>[name,Function]))})
+)(worker);
+};
+
+ export function events(actions)
+{// extract actions associated with node/fragment. 
  let fragment=!Boolean(this.ownerDocument);
  let [scope]=Object.entries(actions).map(([selector,scope])=>
  [qualify(selector),scope].reduce((selector,scope)=>
@@ -602,20 +636,36 @@ function portfolio(source)
 };
 
  export function expose()
-{// expose actions disposed to event listeners. 
- Object.assign(window,{dispatch(event)
-{if(!dispose)
- return event.preventDefault(),setTimeout(dispatch.bind(this,event),500);
- let scope=dispose.call(this,actions);
+{// route events to disposed actions. 
+ Object.assign(window,{dispatch,onmessage});
+ var {actions}=import("./actions").then(module=>actions=module.default);
+ var {receipt}=import("./Blik_2024_room.js").then(module=>receipt=module.receipt);
+ var {events}=import("./Blik_2023_fragment.js").then(module=>events=module.events);
+ var socket="ws"+(/s/.test(window.location.protocol)?"s":"")+"://"+window.location.host;
+ function dispatch(event)
+{if(!events||!actions)
+ return event?.preventDefault(),setTimeout(dispatch.bind(this,event),500);
+ let scope=events.call(this,actions);
  console.log({[event.type]:this});
  let action=event.type.replace(/[A-Z]+/g,match=>match.slice(-1).toLowerCase());
  scope[action]?.call(this,event);
  // asynchronous dispatch won't prevent synchronous default. 
-}});
- let modules=["./Blik_2023_fragment.js","./actions"].map(module=>import(module));
- var {dispose,actions}=Promise.all(modules).then(([fragment,module])=>
- [dispose,actions]=[fragment.dispose,module.default]);
 };
+ function onmessage(event)
+{if(event.target===this)return;
+ let {target}=event;
+ if(!receipt)return setTimeout(onmessage.bind(this,event),500);
+ if(!window.socket)
+ window.socket=Object.assign(new WebSocket(socket),{onmessage:receive.bind(target)});
+ window.socket.send(JSON.stringify(event.data));
+};
+ function receive(event)
+{let message=JSON.parse(event.data);
+ receipt[message.type||"message"]?.call(this,message);
+};
+};
+
+ export function dispose(){if(globalThis.window)Object.assign(window.actions,actions);}
 
  export async function navigate(node,sibling)
 {let path=window.location.pathname.replace(/[a-zA-Z0-9]*\/$/,match=>!node||sibling?"":match)+(node?node+"/":"");
@@ -644,12 +694,8 @@ function portfolio(source)
  ,svg:"http://www.w3.org/2000/svg"
  };
 
- export async function stylesheet(style,global=true)
-{let {default:{resolve}}=await import("path");
- let [jss,...plugins]=await Promise.all(
- ["","_nested","_extend","_global"].map(plugin=>"./Isonen_2014_jss"+plugin+".js").map(module=>
- import(module).then(module=>module.default||module)));
- return jss.use(...plugins.map(plugin=>plugin())).createStyleSheet(global?{"@global":style}:style).toString();
+ export function stylesheet(style,global=true)
+{return jss.use(...plugins.map(plugin=>plugin())).createStyleSheet(global?{"@global":style}:style).toString();
 };
 
  export var tests=

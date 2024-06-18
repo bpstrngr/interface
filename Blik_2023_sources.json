@@ -251,13 +251,15 @@
   "Bynens_2022_unicode_Arabic_number.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Arabic_Number":{"v1.3.1":["Bidi_Class/Arabic_Number/code-points.js",{"syntax":"commonjs"}]}},
   "Bynens_2013_regenerate.js":{"https://github.com/mathiasbynens/regenerate":{"v1.4.2":["regenerate.js",{"syntax":"commonjs"}]}},
   "Isonen_2014_jss.js":{"https://github.com/cssinjs/jss/packages/jss":{"v10.10.0":["packages/jss/src/index.js",{
-    "alias":{"is-in-browser":"./Anderson_2016_isinbrowser.js","tiny-warning":"./Reardon_2018_tinywarning.js"}
+    "alias":{"is-in-browser":"./Anderson_2016_isinbrowser.js"},
+    "detach":["tiny-warning"],
+    "edit":{"warning\\(":"console.warn(","process.env.VERSION":"undefined"},
+    "comment":"tiny-warning is a useless module for server-side logging."
   }]}},
-  "Isonen_2014_jss_nested.js":{"https://github.com/cssinjs/jss/packages/jss-plugin-nested":{"v10.10.0":["packages/jss-plugin-nested/src/index.js",{"alias":{"tiny-warning":"./Reardon_2018_tinywarning.js"}}]}},
-  "Isonen_2014_jss_extend.js":{"https://github.com/cssinjs/jss/packages/jss-plugin-extend":{"v10.10.0":["packages/jss-plugin-extend/src/index.js",{"alias":{"tiny-warning":"./Reardon_2018_tinywarning.js"}}]}},
+  "Isonen_2014_jss_nested.js":{"https://github.com/cssinjs/jss/packages/jss-plugin-nested":{"v10.10.0":["packages/jss-plugin-nested/src/index.js",{"detach":["tiny-warning"],"edit":{"warning\\(":"console.warn("}}]}},
+  "Isonen_2014_jss_extend.js":{"https://github.com/cssinjs/jss/packages/jss-plugin-extend":{"v10.10.0":["packages/jss-plugin-extend/src/index.js",{"detach":["tiny-warning"],"edit":{"warning\\(":"console.warn("}}]}},
   "Isonen_2014_jss_global.js":{"https://github.com/cssinjs/jss/packages/jss-plugin-global":{"v10.10.0":["packages/jss-plugin-global/src/index.js",{"alias":{"jss":"./Isonen_2014_jss.js"}}]}},
   "Anderson_2016_isinbrowser.js":{"https://github.com/tuxsudo/is-in-browser":{"v.2.0.0":["src/index.ts"]}},
-  "Reardon_2018_tinywarning.js":{"https://github.com/alexreardon/tiny-warning":{"v1.0.3":["src/index.js",{"syntax":"typescript"}]}},
   "domenic_2015_whatwg_url.js": {
     "https://github.com/jsdom/whatwg-url": {
       "v12.0.0": [
