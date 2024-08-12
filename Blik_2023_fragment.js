@@ -1,10 +1,9 @@
  import {resolve,modularise,window,fetch,mime} from "./Blik_2023_interface.js";
- import {note,provide,collect,slip,infer,either,each,tether,buffer,differ,compose,revert,refer,record,combine,wether,swap,compound,something,string,defined,simple,exit,route,drop,crop,same,binary,is,array,pdflike} from "./Blik_2023_inference.js";
+ import {note,provide,collect,slip,infer,either,each,tether,buffer,differ,compose,revert,refer,record,combine,wether,swap,compound,something,string,defined,simple,exit,route,drop,crop,same,major,binary,is,array,pdflike} from "./Blik_2023_inference.js";
  import {search,merge,prune} from "./Blik_2023_search.js";
  import {serialize,proceduralize} from "./Blik_2023_meta.js";
  import layout,{color} from "./Blik_2023_layout.js";
- var {default:svg}=await resolve("./Blik_2020_svg.json");
- var [jss,...plugins]=await resolve(["","_nested","_extend","_global"].map(plugin=>
+ var [jss,...plugins]=globalThis.window?[]:await resolve(["","_nested","_extend","_global"].map(plugin=>
  "./Isonen_2014_jss"+plugin+".js")).then(modules=>
  modules.map(module=>module.default||module));
 
@@ -143,7 +142,7 @@
  if(group)
  fields=fields[group];
  if(!labels)
- labels=this&&this.dataset.labels&&JSON.parse(this.dataset.labels);
+ labels=this&&this.dataset.labels&&JSON.parse(this.dataset.labels)||{};
  let label=Object.entries(fields).map(([id,value])=>
 {if(!defined(value))return;
  let type=wether([is(Date),is(Set),either(array,compound),either(binary,infer("match",/^(true|false)$/))]
@@ -358,6 +357,14 @@ export async function deform(resource)
  return defined[value]??defined;
 };
 
+ export function snap()
+{let {width:limitx,height:limity}=this.parentNode.getBoundingClientRect();
+ let {left,top,width,height}=this.getBoundingClientRect();
+ let overflow=[-left,-top,left+width-limitx,top+height-limity];
+ overflow.forEach(wether(major(0),(overflow,index)=>
+ this.style[index%2?"top":"left"]=Number(this.style[index%2?"top":"left"].match(/\d+/)?.[0])+overflow*(index<2||-1)+"px",infer()));
+}
+
  export function drillresize({width,height})
 {// use in svg resizeobserver until SVG resize becomes observable: 
  // https://stackoverflow.com/questions/65565149/how-to-apply-resizeobserver-to-svg-element
@@ -475,15 +482,6 @@ function portfolio(source)
  }      };
 };
 
- export var wheel={svg:
- {class:"wheel"
- ,...svg.goo
- ,...svg.circle
- ,circle:undefined
- ,g:{filter:"url(#goo)",circle:Array(2).fill(svg.circle.circle)}
- ,width:"50px",height:"50px"
- }};
-
  export function insert(fragment,place,target,style)
 {if(!fragment)return target;
  let click=target.onclick;
@@ -575,27 +573,6 @@ function portfolio(source)
  return fragment;
 };
 
- export function observe(action,register=true)
-{// construct event (pair) fragments for extensions (css pseudoclasses for js)
- // and (un)register them directly on bound Node.
- const binary=
- {hover:['mouseover','mouseout']
- ,focus:['focusin','focusout'],
- };
- let propagate=register>1;
- const entries=[action].flat().flatMap(action=>
- // function names are removed in nextjs builds, so don't use action.name.
- simple(action)?Object.entries(action):[[action?.name,action]]).flatMap(([name,action])=>
- binary[name]?.reduce((start,end)=>
-[[start,action]
-,[end,function(event){if(!propagate)event.stopPropagation();this.dispatchEvent(new {focus:FocusEvent,hover:MouseEvent}[name](start,event));}]
-])||[[name,action]]);
- if(defined(this))
- return entries.reduce((node,[event,action])=>(
- node[(register?'add':'remove')+'EventListener'](event,action,true),node),this);
- return Object.fromEntries(entries);
-};
-
  export function keyboard(code)
 {let [key]=Object.entries({enter:13,escape:27,space:32,leftright:[37,39],updown:[38,40]}).find(({1:codes})=>
  [codes].flat().includes(code))||[];
@@ -637,12 +614,8 @@ function portfolio(source)
 
  export function expose()
 {// route events to disposed actions. 
- Object.assign(window,{dispatch,onmessage});
- var {actions}=import("./actions").then(module=>actions=module.default);
- var {receipt}=import("./Blik_2024_room.js").then(module=>receipt=module.receipt);
- var {events}=import("./Blik_2023_fragment.js").then(module=>events=module.events);
- var socket="ws"+(/s/.test(window.location.protocol)?"s":"")+"://"+window.location.host;
- function dispatch(event)
+ Object.assign(globalThis
+,{dispatch(event)
 {if(!events||!actions)
  return event?.preventDefault(),setTimeout(dispatch.bind(this,event),500);
  let scope=events.call(this,actions);
@@ -650,15 +623,21 @@ function portfolio(source)
  let action=event.type.replace(/[A-Z]+/g,match=>match.slice(-1).toLowerCase());
  scope[action]?.call(this,event);
  // asynchronous dispatch won't prevent synchronous default. 
-};
- function onmessage(event)
+},onmessage(event)
 {if(event.target===this)return;
  let {target}=event;
  if(!receipt)return setTimeout(onmessage.bind(this,event),500);
- if(!window.socket)
- window.socket=Object.assign(new WebSocket(socket),{onmessage:receive.bind(target)});
- window.socket.send(JSON.stringify(event.data));
-};
+ if(!globalThis.socket)
+ globalThis.socket=Object.assign(new WebSocket(socket),{onmessage:receive.bind(target)});
+ globalThis.socket.send(JSON.stringify(event.data));
+},worker:import("./Blik_2023_interface.js").then(({delegate})=>delegate("./worker")).then(worker=>
+ Object.assign(globalThis,{worker})).catch(fail=>delete globalThis.worker&&
+ console.log("Worker not available at ./worker."))
+ });
+ var {actions}=import("./actions").then(module=>actions=module.default);
+ var {receipt}=import("./Blik_2024_room.js").then(module=>receipt=module.receipt);
+ var {events}=import("./Blik_2023_fragment.js").then(module=>events=module.events);
+ var socket="ws"+(/s/.test(globalThis.location.protocol)?"s":"")+"://"+globalThis.location.host;
  function receive(event)
 {let message=JSON.parse(event.data);
  receipt[message.type||"message"]?.call(this,message);

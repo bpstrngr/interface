@@ -42,28 +42,26 @@ export function calendar(timestamps)
 ,{});
 };
 
-export function date(time) {
-  const date = new Date(time);
-  const [year, month, day] = ['FullYear', 'Month', 'Date'].map((frame) => date['get' + frame]());
-  const [mm, dd] = [month + 1, day].map((frame) =>
-    Object.assign('00'.split(''), String(frame).split('').reverse()).reverse().join(''),
-  );
-  return [mm, dd, String(year)].join('/');
+ export function date(time)
+{const date=new Date(time);
+ const [year,month,day]=['FullYear','Month','Date'].map(frame=>date['get'+frame]());
+ const [mm,dd]=[month+1,day].map(frame=>
+ Object.assign('00'.split(''),String(frame).split('').reverse()).reverse().join(''));
+ return [mm,dd,String(year)].join('/');
 }
 
-export function time(date) {
-  const [mm, dd, year] = date.split(/[/ ]/);
-  return new Date([mm, dd, year].join('/')).getTime();
+ export function time(date)
+{const [mm,dd,year]=date.split(/[/ ]/);
+ return new Date([mm,dd,year].join('/')).getTime();
 }
 
-export function round(date, up = 0) {
-  // set date to a turn of the month.
-  if (!(date instanceof Date)) date = new Date(date);
-  return new Date(
-    ['FullYear', 'Month']
-      .map((scale, month) => date['get' + scale]() + month + (up && month))
-      .reduce((year, month) => [year + (month > 12), month % 12 || 12].join('/') + '/1 0:0'),
-  ).getTime();
+ export function round(date,up=0)
+{// set date to a turn of the month.
+ if(!(date instanceof Date))
+ date=new Date(date);
+ return new Date(['FullYear','Month'].map((scale,month)=>
+ date['get'+scale]()+month+(up&&month)).reduce((year,month)=>
+ [year+(month>12),month%12||12].join('/')+'/1 0:0')).getTime();
 };
 
 export function normalize(samples, resolution, range) {
@@ -108,48 +106,47 @@ export function kmeans(samples, bounds, size, projection) {
     .filter(({ nodes }) => nodes.length)
     .flatMap((cluster) => (cluster.nodes.length > 1 ? cluster : cluster.nodes))
     .concat(samples);
-}
-
-export function nearest(range, value) {
-  const distances = range.map((range) => Math.abs(range - value));
-  const index = distances.indexOf(Math.min(...distances));
-  return range[index];
 };
 
-export const antipode = (point, scale) => point / (scale / 360) - 180;
-
-export const bisection = (point, scale) => (point / (scale / 2) - 1) * -1;
-
-export const gudermannian = (normal) =>((2 * Math.atan(Math.exp(normal * Math.PI)) - Math.PI / 2) * 180) / Math.PI;
-
-export function quadrate(center, width, ratio) {
-  return [-1, 1].map((unit) =>
-    [0, 1].map((axis) => center[axis] + (width / (axis ? ratio : 1) / 2) * unit),
-  );
+ export function nearest(range,value)
+{const distances = range.map((range) => Math.abs(range - value));
+ const index = distances.indexOf(Math.min(...distances));
+ return range[index];
 };
 
-export function search(term,recursive=false,path=[]){
-  // traverse scope for entries satisfying a term (condition or singular path).
-  // recursive search includes ranges in recursion domain.
-  const scope = this;
-  if (typeof scope !== 'object' || scope === null) return [];
-  const condition = term instanceof Function;
-  if (!condition) return [term].flat().reduce((scope, field) => scope?.[field], scope);
-  let [domain, range] = Object.entries(this).reduce(
-    function sort(group, entry) {
-      group[term(entry,path) ? 1 : 0].push(entry);
-      return group;
-    },
-    [[], []],
-  );
-  if (recursive) domain = [domain, range].flat();
-  const subrange = domain.flatMap(([field, value]) =>
-    Object.entries(search.call(value, term, recursive, path.concat(field))).map(([path, value]) => [
-      [field, path].join('/'),
-      value,
-    ]),
-  );
-  return Object.fromEntries([range, subrange].flat());
+ export const antipode = (point, scale) => point / (scale / 360) - 180;
+
+ export const bisection = (point, scale) => (point / (scale / 2) - 1) * -1;
+
+ export const gudermannian = (normal) =>((2 * Math.atan(Math.exp(normal * Math.PI)) - Math.PI / 2) * 180) / Math.PI;
+
+ export function quadrate(center,width,ratio)
+{return [-1,1].map(unit=>[0,1].map(axis=>
+ center[axis]+(width/(axis?ratio:1)/2)*unit));
+};
+
+ export function search(term,recursive=false,path=[])
+{// traverse scope for entries satisfying a term (condition or singular path).
+ // recursive search includes ranges in recursion domain.
+ if(!defined(this))
+ return tether(search,...arguments);
+ let scope=this;
+ if(typeof scope!=='object'||scope===null)
+ return [];
+ let condition=term instanceof Function;
+ if(!condition)
+ return [term].flat().reduce((scope,field)=>scope?.[field],scope);
+ let [domain,range]=Object.entries(this).reduce(function sort(group, entry)
+{group[term(entry,path)?1:0].push(entry);
+ return group;
+},[[],[]]);
+ if(recursive)
+ domain=[domain,range].flat();
+ let subrange=domain.flatMap(([field,value])=>
+ Object.entries(search.call(value,term,recursive,path.concat(field))).map(([path,value])=>
+[[field,path].join('/'),value
+]));
+ return Object.fromEntries([range,subrange].flat());
 }
 
 export function route(scope, term, path) {
@@ -212,34 +209,34 @@ export function route(scope, term, path) {
  return iterable?Object.assign(Array(0),scope):scope;
 };
 
- export function merge(target, source, override = 1)
+ export function merge(target,source,override=1)
 {// unite scopes (assign if path specified to override).
  let path=[override].flat();
- if(!path.length)return source;
- let assign=path.some((path) => typeof path === 'string');
+ if(!path.length)
+ return source;
+ let assign=path.some(string);
  if(assign)
- return [target, ...path, source].reduce((scope, field, index, route) =>
- route.length - index - 1
-?(scope[field] = route.length - index > 2 ? scope[field] || {} : route[index + 1])
-:route[0],
- );
- let Group = [Set,Map].find((group) => target instanceof group);//[target, source].every((part) => part instanceof group));
- if (Group) return override?source:new Group([source, target].flatMap((part) => Array.from(part)));
- let extensible=Array.isArray(target)&&!override;
- if (extensible) return target.concat(source);
+ return [target,...path,source].reduce((scope,field,index,route)=>route.length-index-1
+?(scope[field]=route.length-index>2?scope[field]||{}:route[index+1])
+:route[0]);
+ let Group=[Set,Map].find(group=>target instanceof group);
+ //[target,source].every(part=>part instanceof group));
+ if(Group)return override?source:new Group([source,target].flatMap(part=>Array.from(part)));
+ let extensible=array(target)&&!override;
+ if(extensible)return target.concat(source);
  let index=Number(Boolean(override));
- let primitive=[target,source].some(term=>!compound(term));
- if (primitive) return [target, source][index];
- if (!something(source)) return [target, source][index];
- return Object.entries(source).reduce(function (target, [field, next])
-{const last = target[field];
- const value = something(last) ? merge(last, next, override) : next;
+ let opaque=[target,source].some(term=>term instanceof Promise||!compound(term)||array(term));
+ if(opaque)
+ return [target,source][index];
+ return Object.entries(source).reduce(function(target,[field,next])
+{const past=target[field];
+ const value=defined(past)?merge(past,next,override):next;
  // mutation warning - reduce on an empty target to copy.
  if(value!==undefined)
- return Object.assign(target, { [field]: value });
+ return Object.assign(target,{[field]:value});
  delete target[field];
  return target;
-}, target);
+},target);
 };
 
  function set(options,namespace)
@@ -293,7 +290,9 @@ export function trace(term, path = []) {
 };
 
  export function parse(records,separator="\",\"")
-{return records.split("\n").map(record=>
+{if(records instanceof ArrayBuffer||records.constructor?.name==="Buffer")
+ records=new TextDecoder('utf-8').decode(records);
+ return records.split("\n").map(record=>
  record.split(separator)).reduce((fields,record,index,records)=>
  records.splice(index).map(record=>
  Object.fromEntries(fields.map((field,index)=>[field,record[index]]))));

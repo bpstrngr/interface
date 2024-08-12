@@ -1,7 +1,7 @@
  export const address=new URL(import.meta.url).pathname;
  export const location = address.replace(/\/[^/]*$/,"");
- var browser=globalThis.window;
- export var colors={steady:"\x1b[0m",alarm:"\x1b[31m",ready:"\x1b[32m",busy:"\x1b[33m",bright:"\x1b[1m",dim:"\x1b[2m",underscore:"\x1b[4m", blink:"\x1b[5m", reverse:"\x1b[7m",invisible:"\x1b[8m", black:"\x1b[30m", red:"\x1b[31m", green:"\x1b[32m",yellow:"\x1b[33m",blue:"\x1b[34m", magenta:"\x1b[35m",cyan:"\x1b[36m", white:"\x1b[37m",gray:"\x1b[90m",night:"\x1b[40m",fire:"\x1b[41m",grass:"\x1b[42m",sun:"\x1b[43m",sea:"\x1b[44m",club:"\x1b[45m",sky:"\x1b[46m",milk:"\x1b[47m",fog:"\x1b[100m"};
+ var browser=globalThis.window||(globalThis.constructor.name==="DedicatedWorkerGlobalScope");
+ export var colors={steady:"\x1b[0m",alarm:"\x1b[31m",ready:"\x1b[32m",busy:"\x1b[33m",bright:"\x1b[1m",dim:"\x1b[2m",bold:"\x1b[3m",underscore:"\x1b[4m", blink:"\x1b[5m", reverse:"\x1b[7m",invisible:"\x1b[8m", black:"\x1b[30m", red:"\x1b[31m", green:"\x1b[32m",yellow:"\x1b[33m",blue:"\x1b[34m", magenta:"\x1b[35m",cyan:"\x1b[36m", white:"\x1b[37m",gray:"\x1b[90m",night:"\x1b[40m",fire:"\x1b[41m",grass:"\x1b[42m",sun:"\x1b[43m",sea:"\x1b[44m",club:"\x1b[45m",sky:"\x1b[46m",milk:"\x1b[47m",fog:"\x1b[100m"};
 
  export function ascend(term)
 {return (term??undefined)!==undefined?[...ascend(Object.getPrototypeOf(term)),term]:[];
@@ -10,7 +10,10 @@
  export function fields(term)
 {return ascend(term).flatMap(term=>
 {try{return Reflect.ownKeys(term);}catch(fail)
-{console.warn("warning: can't see all properties on",term," - ",fail.message);
+{console.warn("warning: can't see all properties on",typeof term," - ",fail.message); console. log(term)
+ if(term instanceof String)
+ if(term.length>10*1000)
+ return [];
  return Object.keys(term);
 };
 });
@@ -24,13 +27,13 @@
  let {stdin:input,stdout:output}=process;
  let socket=await new Promise((resolve,error)=>import("net").then(({connect})=>
  observe.call(connect(process.debugPort),{connect(){resolve(this)},error}))).catch(fail=>undefined);
- let interfaces=[{input,output},socket&&{input:socket,output:socket}].filter(Boolean).map(createInterface);
+ let interfaces=[{input,output}/*,socket&&{input:socket,output:socket}*/].filter(Boolean).map(createInterface);
  let abortion=new AbortController();
  let entries=context.flat().flatMap(term=>compound(term)?Object.entries(term):[[term]]);
- entries=await entries.reduce(record(([node,term])=>new Promise(resolve=>
- term?resolve(term):each("question",node+":",{signal:abortion.signal}
-,combine(compose(swap(abortion),"abort"),resolve))(...interfaces)).then(term=>
- [node,term]))
+ entries=await entries.reduce(record(([field,term])=>new Promise(resolve=>
+ term?resolve(term):each("question",field+":",{signal:abortion.signal}
+,combine(compose(note,swap(abortion),"abort"),resolve))(...interfaces)).then(term=>
+ [field,term]))
 ,[]);
  return compose(each("close"),swap(Object.fromEntries(entries)))(...interfaces);
 };
@@ -96,7 +99,7 @@
  let attach=term instanceof Function&&prefix.test(term.name)&&term;
  let attend=!prebound&&!attach&&defined(scope??undefined)&&!Array.isArray(term)
 ?[Object(scope),detach||term].reduce((domain,term)=>term instanceof Function
-?fields(domain?.constructor?.name==="Buffer"?Object.getPrototypeOf(domain):domain).find(field=>{try{return Object.is(Reflect.get(domain,field),term);}catch(fail){};})&&term
+?fields(domain?.buffer instanceof ArrayBuffer?Object.getPrototypeOf(domain):domain).find(field=>{try{return Object.is(Reflect.get(domain,field),term);}catch(fail){};})&&term
 :Reflect.get(domain,term?.toString?term:null))
 :undefined;
  let bound=attach||attend;
@@ -272,6 +275,7 @@
 ,wether(fail,last,either(compose(combine(differ(method),drop(1)),differ(term)),infer()))
 ,wether(fail,last,tether(scope[term]))
 ,wether(fail,last,tether(scope[method]))
+,crop(1)
 ),...context));
  let conclude=either(infer(method,...context),wether(fail,last,infer()));
  let composition=compose(...functors,conclude);
@@ -313,9 +317,9 @@
  export var slip=drop.bind(null,0,0);
  export var swap=drop.bind(null,Infinity,0);
 
- export function pass(term)
+ export function pass(term,...context)
 {return infer(describe(function(...terms)
-{return compose(combine(infer(),term),crop(terms.length))(...terms);
+{return compose(combine(infer(),infer(term,...context)),crop(terms.length))(...terms);
 },pass,term));
 };
 
@@ -325,32 +329,55 @@
  // let composition="compose/reduce/compose/infer\\((bound )*note\\)/infer/note".split("/");
  // let composed=composition.every((term,index,{length})=>RegExp(term+"$").test(stack.at(index-length)?.[0]));
  // stack=stack.slice(0,composed?-composition.length:-1);
- let neutral="\x1b[0m";
- let blue=neutral+"\x1b[40m\x1b[34m\x1b[1m\x1b[3m";
- let dim=neutral+"\x1b[40m\x1b[34m\x1b[2m\x1b[1m\x1b[3m";
- let source=dim+"\x1b[30m@"+stack.at(-1)?.[1]+dim+"\n "||"...intractable";
- source=!globalThis.window?blue+source+"\x1b[0m":source;
+ let {steady,dim,bright,blue,gray,bold}=colors;
+ let source=dim+gray+"@"+bright+blue+stack.at(-1)?.[1]||"...intractable";
  stack=compose.call
 (stack
-,infer("map",([term,position],index,{length})=>length-index-1?term||position?.replace("file://"+location,"."):(blue+term))
-,blue+"/"+dim,"join"
-)+"\x1b[0m";
+,infer("map",([term,position],index,{length})=>length-index-1
+?term||position?.replace("file://"+location,".")
+:(steady+bright+blue+term))
+,dim+blue+"/"+dim+gray,"join"
+)+steady;
  let stream=console[this?"info":"log"];
- stream(dim+"\x1b[3m "+clock(new Date())+source+blue+stack+neutral+":");
- let steady=colors.steady;
+ console.groupCollapsed(steady+bright+bold+blue+" "+clock(new Date())+source+steady);
+ stream(bright+blue+stack+steady+":");
+ console.groupEnd();
  let phase=colors[this]||Object.values(colors)[this]||steady;
  if(!browser)process.stdout.write(phase);
  else context.unshift(phase),context.push(steady);
- stream(...context);
+ stream(...browser&&context.every(string)?[context.join("")]:context);
  if(!browser)process.stdout.write(steady);
  else context.shift(),context.pop();
  return provide(context);
 };
 
- export function observe(actions)
-{if(!defined(this))
- return tether(observe,...arguments);
- return Object.entries(actions).reduce((scope,[event,action])=>scope.on(event,action),this);
+ export function observe(action,register)
+{// construct event (pair) fragments for extensions (css pseudoclasses for js)
+ // and (un)register them directly on bound Node.
+ let binary=
+ {touch:['mouseover','mouseout']
+ ,focus:['focusin','focusout']
+ ,hover:['mousemove','mouseout']
+ };
+ if(defined(this)&&!defined(register))
+ register=true;
+ let propagate=register>1;
+ let entries=[action].flat().flatMap(action=>
+ // function names are removed in nextjs builds, so don't use action.name.
+ simple(action)?Object.entries(action):[[action?.name,action]]).flatMap(([name,action])=>
+ binary[name]?.reduce((start,end)=>
+[[start,action]
+,[end,function(event)
+{if(!propagate)event.stopPropagation();
+ let type=["Focus","Mouse"].find(type=>RegExp(type,"i").test(start))+"Event";
+ this.dispatchEvent(new globalThis[type](start,event));
+}]
+])||[[name,action]]);
+ if(!defined(this))
+ return register?tether(observe,...arguments):Object.fromEntries(entries);
+ return entries.reduce((scope,[event,action])=>(
+ (scope["EventListener".replace(/^/,register?'add':'remove')]||scope.on).call(scope,event,action,register),scope)
+,this);
 };
 
  export function describe(term,...context)
@@ -381,7 +408,6 @@
  return context.flat().filter(something).reverse().reduce((scope,field)=>({[field]:scope}),term);
 };
 
-
  export function defined(term){return term!==undefined;};
  export function compound(term){return Boolean(typeof term==="object"&&term);};
  export function simple(term){return term?.constructor?.name==="Object";};
@@ -390,7 +416,9 @@
  export function binary(term){return typeof term==="boolean";};
  export function string(term){return typeof term==="string";};
  export function numeric(term){return typeof term==="number"};
- export function ascending(past,next){return (past<next)-1;};
+ export function ascending(past,next){return (past<=next)-1;};
+ export function minor(past,next){if(!defined(next))return compose(when(numeric),infer(minor,past));return past<next;};
+ export function major(past,next){if(!defined(next))return compose(when(numeric),infer(major,past));return next<past;};
  export function aye(term){return Object.is(term,true);};
  export function nay(term){return Object.is(term,false);};
  export var something=compose(term=>term??undefined,defined);
@@ -416,13 +444,14 @@
  return expressions.every(expression=>expression.test(this));
 }
  export function is(...terms)
-{// express context as true if defined or satisfies terms.
+{// reduce context to binary of being defined or satisfying terms. 
  if(!defined(this))
  return confer(is,...terms);
  let context=collect(this);
- let conditions=terms.map(term=>something(term)
-?compose(provide,term instanceof Function?/^[A-Z]/.test(term.name)?scope=>scope instanceof term:term:scope=>Object.is(scope,term))(context)
-:false);
+ let conditions=terms.map(term=>
+ compose(provide,term instanceof Function
+?/^[A-Z]/.test(term.name)?scope=>scope instanceof term:term
+:scope=>Object.is(scope,term))(context));
  return compose(provide,collect,infer("every",Boolean))(conditions);
 };
  export function same(...context)
@@ -466,11 +495,22 @@
  return either(condition,repeat)(provide(context));
 };
 
- export function revert(resolve,reject)
+ export function revert(term,...context)
 {// revert a Promise's inversion of control. 
  if(!defined(this))
  return confer(revert,...arguments);
- return Reflect.construct(Promise,[compose(crop(1),infer(resolve,this)),reject]);
+ return new Promise(compose(...context,this,term));
+};
+
+ export function control(controller,...context)
+{when(is(AbortController))(...arguments);
+ // observe an abort signal, optionally composing it with a context for explicit abortion. 
+ return revert((resolve,reject,controller,...context)=>
+ context.reduce((signal,term,index,context)=>
+ compose(buffer(term),slip(controller),"abort")({signal},...context.splice(1))
+,observe.call(controller.signal,{abort({target:{reason}})
+{(reason instanceof Error?reject:resolve)(reason);
+}},{once:true})))(...arguments);
 };
 
  export function exit(fail){throw fail;}
@@ -493,9 +533,9 @@
  return time;
 };
 
- var stack=
+ var stack=compose
  // parse nodejs stack trace entry. 
- compose(either
+(either
 (infer("match",compose(Object.values,infer("map",infer("source")),"","join",RegExp)(
  // at object.property/Promise.all
  {term:/at(?: async){0,1}(?: (Promise\.all|.*) | )/
@@ -503,7 +543,8 @@
  ,location:/\(*((?:index [0-9]+)|(?:.+?(?::[0-9]+){0,2}))\)*$/
  }))
 ,swap([])
-),infer("slice",1),infer("map",match=>match||"anonymous"));
+),infer("slice",1),infer("map",match=>match||"anonymous")
+);
 
  export function trace(term,path=[])
 {// trace term in scope or stack. 
@@ -564,7 +605,6 @@
  //return infer.call(this,bound,...pretext);
  return bound;
 };
-
 
  export var tests=
  {collect:{context:[1,2,3],terms:[[1,2,3]],condition:["deepEqual"]}
