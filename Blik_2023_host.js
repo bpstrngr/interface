@@ -1,5 +1,5 @@
- import {note,prompt,when,pattern,revert,clock,observe,is,has,same,slip,something,compound,infer,tether,wether,collect,provide,route,buffer,compose,combine,either,drop,crop,swap,record,wait,exit,pass,remember} from "./Blik_2023_inference.js";
- import {resolve,access,list,window,fetch,mime,persist} from "./Blik_2023_interface.js";
+ import {note,prompt,when,pattern,revert,clock,observe,is,has,same,slip,something,compound,infer,tether,wether,collect,provide,route,buffer,differ,compose,combine,either,drop,crop,swap,record,wait,exit,pass,remember,binary,simple,array} from "./Blik_2023_inference.js";
+ import {resolve,access,list,window,fetch,mime,persist,version,compress,stage} from "./Blik_2023_interface.js";
  import {search,merge,sum,module} from "./Blik_2023_search.js";
  import local from "./Blik_2023_host.js";
 
@@ -44,7 +44,7 @@
 {let {default:path}=await import("path");
  ({source,parameters,protocol}=await prompt({source,parameters,protocol}));
  let classified=
-[arguments[1],...Object.values(parameters||{}).flatMap(({certification})=>
+[source,parameters,...Object.values(parameters||{}).flatMap(({certification})=>
  Object.values(certification||{}).flat()).filter(
  Boolean).map(certification=>path.resolve(certification))
 ].map(compose(drop(0,1),RegExp));
@@ -64,9 +64,9 @@
  let report=compose(combine(swap(protocol.globalAgent.protocol,"//"),either("_connectionKey",swap(parameters.port))),"/",collect,infer("join",""),"open",note.bind(2));
  return compose
 ("createServer",parameters.port
-,revert((listen,host,port)=>host.listen(port,infer(listen))),...virtualize
+,revert((listen,cancel,host,port)=>host.listen(port,infer(listen))),...virtualize
 ,combine(infer(),report,compose(slip("./Blik_2024_room.js","open"),resolve))
-,revert((close,channel)=>observe.call(channel,{close}))
+,revert((close,cancel,channel)=>observe.call(channel,{close}))
 )(protocol,...certificates,compose(source,memory&&{},tether(receive)));
  // function listen(port)
  //{let response={end(body){return {...this.header,body};},setHeader(header){this.header={header}},writeHead(){}};
@@ -78,10 +78,35 @@
  function receive(request){observe.call(request,{data(data){this.body+=decoder.write(data);},end:respond.bind(...arguments)});}
 
  function respond(response,source,memory)
-{let retrieve=memory?remember.call(memory,compose(drop(1),tether(fetch)),compose(drop(2),distinction)):tether(fetch);
+{let route=wether(compose(drop(1),"url",/^http/,"match"),tether(fetch),compose(tether(recall),this,stage));
+ let retrieve=memory?remember.call(memory,compose(drop(1),route),distinction):route;
  return compose(combine(notify,retrieve),pass(report),drop(1,3),response||this,tether(submit))(source.default,this);
 };
- var distinction=({url,headers})=>url+(headers?.cookie||"");
+
+ async function recall(request)
+{let method=request.method.toLowerCase();
+ let format=either("Content-Type","content-type",swap(undefined))(request);
+ let cookie=Object.fromEntries(request.headers?.cookie?.split(/ *; */).map(entry=>entry.split("="))||[]);
+ let {query,pathname}=await resolve("url","parse",request.url,true);
+ let methodic=pathname==="/"+method;
+ if(methodic)
+ request.url="/";
+ let path=compose
+(infer("filter",(step,index)=>(index||step)&&step!==".")
+,{get:infer("map",step=>step||"interface")}[method]
+)(decodeURIComponent(pathname).split("/"));
+ let body=await either(compose(differ(format),resolve,request.body,either("parse",swap(request.body),swap(""))),swap(request.body))(parser);
+ return either(tether(route),"error",drop(-1))(this,path,Object.assign(request,{body,path,query,method:methodic?undefined:method,cookie}));
+};
+
+ var parser=compose.call
+({JSON,"x-www-form-urlencoded":"querystring"}
+,Object.entries
+,infer("map",compose(combine(compose(0,"toLowerCase",/^/,"application/","replace"),infer(1)),collect))
+,Object.fromEntries
+);
+
+ function distinction(routes,{url,headers}){let field=url+(headers?.cookie||"");if(this[field]?.status===500)delete this[field];return field;};
  var address=compose(drop(1),combine("url",swap(/^/),either(tether(search,["connection","remoteAddress"]),swap(""))),"replace");
  var color=compose(combine(swap({get:36,put:33,delete:33}),compose(drop(1),"method","toLowerCase")),either(tether(search),swap(35)),"m");
  var notify=compose(combine(swap("\x1b["),color,compose(drop(),clock),swap("@"),address),"...\x1b[0m",collect,infer("join",""),pass(console.log));
@@ -93,7 +118,10 @@
  export async function submit(response)
 {let {status,location,cookie}=this;
  let type=this.headers.get("Content-Type");
- let body=await buffer(type===mime("json")?"text":"arrayBuffer")(this);
+ let body=await buffer(type===mime("json")?"text":compose("arrayBuffer",buffer=>
+ new Uint8Array(buffer).reduce((buffer,bytes,index)=>
+ Object.assign(buffer,{[index]:bytes})
+,Buffer.alloc(buffer.byteLength))))(this);
  if(is(Error)(body))
  body=note.call(1,body).message,status=500,type=mime("txt");
  let header=compose.call

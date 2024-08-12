@@ -1,15 +1,22 @@
- import {note,collect,prompt,same,has,pass,slip,something,observe,describe,remember,refer,expect,trace,array,compound,simple,apply,stream,record,provide,tether,differ,wether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,binary,match,wait,string,defined,compose,combine,exit,clock,route} from "./Blik_2023_inference.js";
+ import {note,collect,prompt,same,has,pass,slip,something,observe,describe,remember,refer,expect,control,trace,array,compound,simple,apply,stream,record,revert,provide,tether,differ,wether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,binary,match,wait,string,defined,compose,combine,exit,clock,route} from "./Blik_2023_inference.js";
  import {sum,merge,stringify,search,edit,prune,parse as records} from "./Blik_2023_search.js";
  import {parse,sanitize,serialize,exports,reexport,test} from "./Blik_2023_meta.js";
 
  export const address=new URL(import.meta.url).pathname;
  export const location=address.replace(/\/[^/]*$/,"");//path.dirname(address);
  export const file=address.replace(/.*\//,"");//path.basename(address);
- var agent=globalThis.window?.navigator.userAgent.match(/[\w\.]+\/(\.{0,1}\d+){1,2}/g).map(agent=>
- agent.split("/")).map(([name,version])=>({[name]:Number(version)})).reduce(merge)||
- prune.call(process.versions,({1:value})=>string(value)?Number(value.match(/(\.{0,1}\d+){1,2}/)[0]):value);
+ var agent=globalThis.process
+?prune.call(process.versions,({1:value})=>string(value)?Number(value.match(/(\.{0,1}\d+){1,2}/)[0]):value)
+:version(globalThis.navigator);
+
+ export function version(navigator)
+{return ["user-agent","userAgent"].reduce((agent,field)=>
+ agent||navigator?.[field],undefined)?.match(/[\w\.]+\/(\.{0,1}\d+){1,2}/g).map(agent=>
+ agent.split("/")).map(([name,version])=>({[name]:Number(version)})).reduce(merge);
+};
+
  var feature=prune.call
-({attributes:{node:21,Chrome:123}
+({attributes:{"Node.js":21,Chrome:123}
  },([feature,condition])=>isNaN(condition)?condition:
  Object.entries(condition).every(([name,version])=>version<=agent[name])
 );
@@ -19,10 +26,10 @@
 
  // --import flag registers loader module on separate thread unlike 
  // --loader, where context is available directly on the primary thread. 
- let [worker,loader]=["import","loader"].map(name=>agent.node&&
+ let [thread,loader]=["import","loader"].map(name=>agent.node&&
  process.execArgv.some(flag=>new RegExp("^--"+name+"[= ][^ ]*"+file).test(flag)));
 
- if(worker&&await resolve("worker_threads","isMainThread"))
+ if(thread&&await resolve("worker_threads","isMainThread"))
  // register loader thread. 
  await compose.call
 ("worker_threads",resolve,["MessageChannel"],tether(search),[],Reflect.construct
@@ -33,10 +40,10 @@
 (({port1})=>new Promise(message=>observe.call(port1,{message}))
 ,({port2})=>resolve("module","register",address,import.meta.url,{data:{socket:port2},transferList:[port2]})
 )// promise resolves on message from registration port. 
-,crop(1),note.bind(2)
+,crop(1),"data",note.bind(2)
 ),compose(buffer(resolve),note)(...process.argv.slice(1));
 
- if(!worker&&!loader&&agent.node&&process.argv[1]?.endsWith(file))
+ if(!thread&&!loader&&agent.node&&process.argv[1]?.endsWith(file))
  // without either loader flag, context begins at second index. 
  resolve(...process.argv.slice(2));
 
@@ -86,7 +93,7 @@
  let loading=next?.name==="nextResolve";
  let command=!loading||!internal;
  let primary=loading&&!internal;
- if(primary&&worker&&!await resolve("worker_threads","isMainThread"))
+ if(primary&&thread&&!await resolve("worker_threads","isMainThread"))
  // suppress primary import on loader thread (registered with --import) in favor of explicit inference with context available only on main. 
  return next("worker_threads",context);
  let target=internal?decodeURI(new URL(internal).pathname):address;
@@ -158,7 +165,7 @@
 });
  if(entries.length)
  return compose.call
-(entries,([{remote,input},...parts])=>path.resolve(location,...remote?[target,input.filter(string).length<2&&!parts.length?"0/"+input[0]:"reexports.js"]:[])
+(entries,([{remote,input},...parts])=>path.resolve(location,...remote?[target,input.filter(string).length<2&&!parts.length||input.filter(string).length===1?"0/"+input[0]:"reexports.js"]:[])
 ,combine(infer(),wether
 (buffer(access,drop())
  // source entry indicates available re-import, or incomplete assembly to await/report. 
@@ -170,8 +177,8 @@
 ,scope=>merge(scope,{[target]:entries.reduce(record(assemble),[]).catch(fail=>purge(target).finally(done=>exit(fail)))})
 ,target
  // temporary re-export of all namespaces for multientry bundle. 
-,pass(parts=>parts.length>1&&compose.call
-(parts.reduce(record(({source:[source]})=>
+,pass(parts=>parts.flatMap(({source})=>source).length>1&&compose.call
+(parts.flatMap(({source})=>source).reduce(record(source=>
  compose.call(source,relative,load,"javascript",{source},parse,exports,target,reexport)),[])
 ,"\n","join"
 ,slip(target+"/reexports.js"),true,access
@@ -179,9 +186,9 @@
  // perform a full scope resolution before bundling to forego being outpaced by purge. 
 ,pass(parts=>parts.reduce(record(({source})=>resolve(source)),[]).catch(note))
  // not returning bundle promise after assembly to unblock immediate resolution from source. 
-,([{source,format},...parts])=>void(compose.call
-(parts.length?target+"/reexports.js":source
-,parts.length?[{format},...parts].map(({format})=>format).reduce(merge,{}):format
+,parts=>void(compose.call
+(parts.flatMap(({source})=>source).length>1?target+"/reexports.js":parts[0].source
+,parts.map(({format})=>format).reduce(merge,{})
 ,bundle,slip(absolute),true,access
 ,"bundle ready.",note.bind(2)
 ).finally(done=>purge(target)))
@@ -363,37 +370,26 @@
  return module;
 };
 
-export async function checkout(remote, target, branch, path) {
-  // git clone remote branch to target, restricted to subfolder if present. (to be replaced with js-git)
-  if (!/^http/.test(remote))
-    return fs
-      .cp(remote, target, { dereference: true, recursive: true })
-      .then((copy) => branch && spawn("git", "-C", target, "checkout", branch));
-  let commit=branch.length===40&&!/[^a-z0-9]/.test(branch);
-  let clone = await spawn(
-    "git",
-    "clone",
-    "--depth=1",
-    ...path.length?["--no-checkout","--sparse","--filter=tree:0"]:[],
-    ...commit?["--no-checkout","-c","remote.origin.fetch=+"+branch+":refs/remotes/origin/"+branch]:branch?["--single-branch","--branch",branch]:[],
-    remote,
-    target
-  );
-  if(commit)
-  clone=await spawn("git","-C",target,"checkout",branch);
-  if(!path.length)
-  return target;
-  clone=await spawn("git","-C", target, "sparse-checkout", "add", ...[path.join("/").split(" ")].flat());
-  if(!commit&&branch)
-  clone=await spawn("git","-C", target, "checkout", branch);
-  return target;
+ export async function checkout(remote,target,branch,path)
+{// git clone remote branch to target, restricted to subfolder if present. (to be replaced with js-git)
+ if(!/^http/.test(remote))
+ return fs.cp(remote,target,{dereference:true,recursive:true}).then(copy=>branch&&spawn("git","-C",target,"checkout",branch));
+ let commit=branch.length===40&&!/[^a-z0-9]/.test(branch);
+ let clone=await spawn("git","clone","--depth=1",...path.length?["--no-checkout","--sparse","--filter=tree:0"]:[]
+,...commit?["--no-checkout","-c","remote.origin.fetch=+"+branch+":refs/remotes/origin/"+branch]:branch?["--single-branch","--branch",branch]:[]
+,remote,target);
+ if(commit)
+ clone=await spawn("git","-C",target,"checkout",branch);
+ if(!path.length)
+ return target;
+ clone=await spawn("git","-C",target,"sparse-checkout","add",...[path.join("/").split(" ")].flat());
+ if(!commit&&branch)
+ clone=await spawn("git","-C",target,"checkout",branch);
+ return target;
 };
 
-export function patch(repository, patch) {
-  return [patch].flat().reduce(
-    record((patch) => spawn("git", "-C", repository, "apply", patch)),
-    []
-  );
+ export function patch(repository,patch)
+{return [patch].flat().reduce(record(patch=>spawn("git","-C",repository,"apply",patch)),[]);
 };
 
  export async function shrink(log,replace)
@@ -406,11 +402,28 @@ export function patch(repository, patch) {
  return debug(descriptor)
 };
 
- export async function decompress(file,target)
-{let [zip,tar]=[/\.(gz|zip)$/,/\.tar$/].map(pattern=>pattern.test(file));
- let buffer=file instanceof Buffer?file:await access(file,"binary");
+ export var compress=revert((revert,reject,buffer)=>import("zlib").then(({gzip})=>
+ gzip(buffer,(fail,buffer)=>fail?reject(fail):revert(buffer))));
+
+ export async function decompress(buffer,target)
+{if(globalThis.DecompressionStream)
+{let gzip=new DecompressionStream("gzip");
+ let [readable,writable]=["read","writ"].map(stream=>
+ gzip[stream+"able"]["get"+stream.replace(/^./,infer("toUpperCase"))+"er"]());
+ writable.write(buffer),writable.close();
+ let expanded=[],size=0,{done,value}=await readable.read();
+ while(!done)
+ expanded.push(value),size+=value.byteLength,{done,value}=await readable.read();
+ return expanded.reduce((buffer,array,index,arrays)=>
+ buffer.set(array,size+=arrays[index-1]?.byteLength??-size)||buffer
+,new Uint8Array(size));
+};
+ let file=string(buffer)&&buffer;
+ let [zip,tar]=file?[/\.(gz|zip)$/,/\.tar$/].map(pattern=>pattern.test(buffer)):[];
+ if(file)
+ buffer=await access(buffer,"binary");
  if(buffer instanceof Error)
- throw file;
+ throw buffer;
  if(zip)
  return new Promise((resolve,reject)=>
  import("zlib").then(({gunzip})=>gunzip(buffer,(fail,buffer)=>fail?reject(fail):resolve(buffer))));
@@ -568,87 +581,92 @@ export function patch(repository, patch) {
  return require.instance(path);
 };
 
+ export async function delegate(term,...context)
+{when(either(string,is(Function),defined(this)&&has(["exports"])))(term);
+ if(defined(this))
+ return control(new AbortController()
+,revert((control,reject,{signal},worker,...context)=>
+ // listen until worker emits request id. 
+[function message({target,data,type,message})
+{let ephemeral=target!==globalThis.worker;
+ if(ephemeral)target.terminate();
+ let [id,value]=data||[];
+ if(id===context[0])
+ return control(message?Error(message):value);
+},context.filter(context=>context instanceof ArrayBuffer)
+].reduce((message,transfer)=>
+ observe.call(worker,{message,error:message},{signal}).postMessage(context,transfer)))
+,this,crypto.randomUUID(),string(term)?term:term.name,...context);
+ let ephemeral=term instanceof Function;
+ if(ephemeral&&!term.name)
+ throw Error("Can't create ephemeral worker for anonymous function.");
+ let address=string(term)?term:compose.call
+(ephemeral?{exports:{[term.name]:term}}:term,work,0,merge,tether(prune,([field,value])=>field==="imports"
+?Object.fromEntries(Object.entries(value).map(([field,value])=>
+ [[window.location.origin,field].join("/"),value]))
+:value),serialize,collect,{type:"text/javascript"},collect,slip(Blob),Reflect.construct,URL.createObjectURL
+);
+ let worker=new Worker(address,{type:"module"});
+ await revert((message,error,worker)=>
+ observe.call(worker,{message,error},{once:true}))(worker).then(({data})=>
+ note.call(2,data));
+ URL.revokeObjectURL(address);
+ return ephemeral?delegate.bind(worker,term.name,...context):worker;
+};
+
+ export var worker=
+ {imports:{"./Blik_2023_inference.js":["","compose","combine","drop","collect","infer","buffer","note","exit","slip","differ"]}
+ ,procedures:[function()
+{var address=new URL(import.meta.url).pathname;
+ Object.assign(self
+,{onmessage({data:[id,term,...context]})
+{compose(buffer(compose(...[term].flat().map(term=>differ(term))))
+//,wether(string,infer(),JSON.stringify),wether(string,compose(TextEncoder.prototype.encode.bind(new TextEncoder()),"buffer"),infer())
+,combine(compose(slip(id),collect),compose(collect,infer("filter",term=>term instanceof ArrayBuffer)))
+,postMessage)(import(address),...context);
+},onerror:compose(drop(1),postMessage)
+ });
+ postMessage("Worker ready: "+address);
+}]
+ };
+
  export var {window,fetch}=globalThis.window?globalThis
-:{async window(location)
+:{async window(url)
 {let {JSDOM}=await resolve("./domenic_2022_jsdom_rollup.js","default");
- return {window}=Reflect.construct(JSDOM,["",{url:location}]);
+ let jsdom=Reflect.construct(JSDOM,["",{url,referrer:url,contentType:"text/html",includeNodeLocations:true,storageQuota:10000000}]);
+ return {window,fetch}={window:jsdom.window,fetch:fetch.bind(jsdom.window)};
 },async fetch(request,header)
-{if(!compound(request))request=
+{if(!defined(this))
+ exit(Error("No window scope provided for fetch. (call window as a function)"));
+ let {href:address,hostname,path,port}=await resolve("url","parse",string(request)?!/^http/.test(request)
+?this.location.origin+await resolve("path","resolve","/",request||"")
+:request:request.url);
+ if(!compound(request))request=
  {end(response){return Object.assign(this.response,response);}
  ,respond(header){Object.assign(this.response,{header});}
  ,response:{}
- ,url:/^http/.test(request)?request:await resolve("path","resolve","/",request||"")
- ,method:"get",...header||{}
+ ,url:address,port,method:"get"
+ ,...header||{}
  };
- let method=request.method.toLowerCase();
- let format=either("Content-Type","content-type",swap(undefined))(request);
- let cookie=Object.fromEntries(request.headers?.cookie?.split(/ *; */).map(entry=>entry.split("="))||[]);
- let {query,pathname}=await resolve("url","parse",request.url,true);
- let methodic=pathname==="/"+method;
- if(methodic)
- request.url="/";
- let path=compose
-(infer("filter",(step,index)=>(index||step)&&step!==".")
-,{get:infer("map",step=>step||"interface")}[method]
-)(decodeURIComponent(pathname).split("/"));
- let body=await either(compose(differ(format),resolve,request.body,either("parse",swap(request.body),swap(""))),swap(request.body))(parser);
- request=Object.assign(request,{body,path,query,method:methodic?undefined:method,cookie});
- let local=this||await import("./Blik_2023_host.js").then(({default:local})=>local);
- let response=/^http/.test(request.url)
-?await buffer(forward)(request.url,request)
-:await buffer(either(tether(route),"error",drop(-1)))(local,path,request);
- let fail=is(Error)(response);
- let type=!fail?response?.type||mime(response?.nodeName?.toLowerCase()||(either(simple,array)(response)?"json":request.url)):mime("txt");
- body=wether
-([fail,has("nodeName"),something]
-,compose(note.bind(1),"message")
-,"outerHTML"
-,either("body",crop(1))
-,swap("missing source: \""+request.path+"\"")
-)(response);
- if(response?.nodeName)response.innerHTML="";
- // let importing=request.headers?.["sec-fetch-dest"]==="script";
-//  if(importing&&type==="json")
-//  body="export default "+JSON.stringify(JSON.parse(body.constructor?.name=="Buffer"?body.toString():body))+";"
-// ,type="js";
- let status=response?fail?500:response.status||200:404;
- let success=status<400;
- let headers={"Content-Type":type,...response.headers,get(key){return this[key];}};
- return {status,body,location:request.url,cookie:response?.cookie,headers,json,text,arrayBuffer};
- function json(){return this.text(true);};
- function text(json=false)
-{if(!binary(json))json=false;
- let text=this.body.constructor?.name=="Buffer"?this.body.toString():this.body;
- if(compound(text))
- return json?text:JSON.stringify(text);
- return json?JSON.parse(text):text;
-};
- function arrayBuffer(){return Promise.resolve(this.body.constructor?.name=="Buffer"?this.body:Buffer.from(this.body,"utf-8"));};
-}};
-
- export async function forward(address,request)
-{let {hostname,path}=await resolve("url","parse",address);
  let method=request?.method?.toUpperCase()||"GET";
  let protocol=address.match(/[^:]*/)?.[0];
  let agent=await peer(protocol);
- request={method,hostname,path,agent};
- return new Promise((proceed,reject)=>compose
-(infer(resolve,"request",request,response=>
-{let {location}=response.headers;
- if(location)
- console.log(request.url,"redirected to",location,"...");
+ request={method,hostname,path,port,agent};
+ return revert((respond,reject,protocol,request)=>compose
+(infer(resolve,"request",request,function forward(response)
+{let {statusCode:status,headers:{location}}=response;
+ let type=response.headers["content-type"];
+ let redirect=status===302;
+ if(redirect)
+ console.log(address,"redirected to",location,"...");
  let body=[];
  observe.call(response
 ,{data:record(body=>body).bind(body)
- ,end:end=>location
-?compose.call(location,request,forward,proceed)
-:proceed(
- {body:Buffer.concat(body,sum(body.map(({length})=>length)))
- ,status:response.statusCode
- ,type:response.headers["content-type"]
- ,json(){return JSON.parse(this.body);}
- })
  ,error:reject
+ ,end:infer((end,body)=>redirect
+?compose.call({...request,url:location},fetch,respond).then(respond).catch(reject)
+:compose(stage,respond)({body:Buffer.concat(body,sum(body.map(({length})=>length))),status,type,headers:response.headers},request)
+,body)
  });
 })
 ,tether(observe
@@ -656,13 +674,58 @@ export function patch(repository, patch) {
  ,timeout(fail){this.destroy();reject(fail);}
  })
 ,combine(infer("write",String(request.body||"")),"end")
-)(protocol));
+)(protocol))(protocol,request);
+}};
+
+ export async function stage(response,request)
+{let fail=is(Error)(response);
+ let type=!fail?response?.type||mime(response?.nodeName?.toLowerCase()||(either(simple,array)(response)?"json":request.url)):mime("txt");
+ let body=wether
+([fail,has("nodeName"),something]
+,compose(note.bind(1),"message")
+,compose(combine(wether(compose("nodeName",is("HTML")),swap("<!DOCTYPE html>"),""),"outerHTML"),collect,"","join")
+,either("body",crop(1))
+)(response);
+ if(response?.nodeName)
+ response.innerHTML="";
+ // let importing=request.headers?.["sec-fetch-dest"]==="script";
+ // if(importing&&type==="json")
+ // body="export default "+JSON.stringify(JSON.parse(body.constructor?.name=="Buffer"?body.toString():body))+";"
+ //,type="js";
+ let status=response?fail?500:response.status||200:404;
+ let success=status<400;
+ let headers={"Content-Type":type,...response.headers,get(key){return this[key];}};
+ let browser="Mozilla/Chrome/Safari/AppleWebKit".split("/").some(has.bind(version(request.headers)||{}));
+ if(browser&&type===mime("js"))
+ body=await compress(body),headers["Content-Encoding"]="gzip";
+ return {status,body,location:request.url,cookie:response?.cookie,headers,json,text,arrayBuffer};
+ function json(){return this.text(true);};
+ async function text(json=false)
+{if(!binary(json))json=false;
+ let buffer=this.body.constructor?.name=="Buffer";
+ let gzip=Array(2).fill("Content-Encoding").find((field,index)=>this.headers?.get(index?field.toLowerCase():field)==="gzip");
+ let text=buffer?(gzip?Buffer.from(await decompress(this.body)):this.body).toString():this.body;
+ if(compound(text))
+ return json?text:JSON.stringify(text);
+ return json?JSON.parse(text):text;
+};
+ async function arrayBuffer()
+{let gzip=this.headers["Content-Encoding"]==="gzip";
+ // if(simple(this.body))
+ // return compose(JSON.stringify(this.body),"encode","buffer")(new TextEncoder());
+ if(this.body.constructor?.name=="Buffer")
+ return compose
+(infer("reduce",(array,byte,index)=>Object.assign(array,{[index]:byte})
+,new Uint8Array(new ArrayBuffer(this.body.length)))
+,"buffer"
+)(this.body);
+ return Buffer.from(this.body,"utf-8");
+};
 };
 
  export var peer=remember(function peer(protocol)
-{return resolve(protocol,"Agent",{keepAlive:true,timeout:60000});
+{return resolve(protocol,"Agent",{keepAlive:true,timeout:5*60*1000});
 },protocol=>protocol);
-
 
  export var digest=compose
 (combine(infer(),response=>response.headers.get("Content-Type")?.split("/")[1])
@@ -682,13 +745,6 @@ export function patch(repository, patch) {
  streams.forEach((stream,index,[out])=>stream.on("data", (data) => console[index?"error":"log"](data.toString("utf8"))));
  return new Promise((resolve, reject)=>process.on("exit", (exit) => (exit ? reject(Error(exit)) : resolve())));
 };
-
- var parser=compose.call
-({JSON,"x-www-form-urlencoded":"querystring"}
-,Object.entries
-,infer("map",compose(combine(compose(0,"toLowerCase",/^/,"application/","replace"),infer(1)),collect))
-,Object.fromEntries
-);
 
  export var mime=compose
 (infer("match",/[^\.]*$/),either("0",infer())

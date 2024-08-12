@@ -257,7 +257,7 @@
  ,"&:first-of-type":{float:"right","&>svg":{transform:"scale(1.5)"}}
  ,"& rect":{transform:"rotate(0deg)","transform-origin":"center",transition:"all 0.5s"}
  }      };
-},pill:{display:"inline-block","border-radius":"100vh",cursor:"pointer","background-color":"var(--isle)"}
+},pill:{display:"inline-block","border-radius":"100vh",cursor:"pointer"}
  ,codemirror:{"div.cm-gutters":{"background-color":"var(--abyss) !important"}}
  ,socialecologies:
  {".gallery-row":{"white-space":"nowrap",width:"100% !important"}

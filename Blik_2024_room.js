@@ -1,5 +1,5 @@
- import {document,observe as activate} from "./Blik_2023_fragment.js";
- import {note,infer,compose,observe,buffer,wait,either,drop,tether} from "./Blik_2023_inference.js";
+ import {document} from "./Blik_2023_fragment.js";
+ import {note,infer,compose,observe,buffer,wait,either,drop,tether,when,is} from "./Blik_2023_inference.js";
  import {fetch,resolve} from "./Blik_2023_interface.js";
  import {merge} from "./Blik_2023_search.js";
 
@@ -10,7 +10,7 @@
  let author=cookie&&cookie.match(/signature=[^;]+/);
  let url=author&&author[0].replace("=","/");
  ({author}=url?await fetch(url):{author:"anonymous"});
- activate.call(Object.assign(peer,{author}),{message:infer(transmit,host)});
+ observe.call(Object.assign(peer,{author}),{message:infer(transmit,host)});
 },note.bind(1));
  return compose([{server}],Reflect.construct,{rooms:{}},Object.assign,{connection},tether(observe))(WebSocketServer);
 };

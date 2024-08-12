@@ -1,10 +1,12 @@
- import {note,wait,drop,infer,buffer,compose,combine,collect,stream,record,provide,compound,tether,bind,string,is,not,iterable} from "./Blik_2023_inference.js";
+ import {note,wait,drop,infer,buffer,observe,compose,combine,revert,collect,stream,record,provide,compound,tether,bind,slip,string,is,not,iterable,defined,exit,expect} from "./Blik_2023_inference.js";
  import {search,merge,prune,route,random} from "./Blik_2023_search.js";
- let {__moduleExports:reify}=globalThis.window?{}:await import("./Yahoo_2014_serialize.js");
+ let {default:reify}=compose(expect(module=>import(module),100,20),module=>
+ // missing external module can't be loaded before loader registration. 
+ ({default:reify}=module))("./Yahoo_2014_serialize.js");
  let address=new URL(import.meta.url).pathname;
 
  export async function parse(source,syntax="javascript",options={})
-{// interpret language syntax.
+{// interpret language syntax. 
  if(!string(source))
  return Error("can't parse "+typeof source);
  if(is(Buffer)(source))
@@ -30,8 +32,8 @@
 :await import("url").then(({pathToFileURL:url})=>url(options.source))
  };
  return scope;
- function descendant(scope){return scope.start<this.start&&this.end<scope.end;}
- function sibling(scope,index,scopes){return (scopes[index-1]?.end??-1)<this.start&&this.end<scope.start;}
+ function descendant(scope){return scope.start<this.start&&this.end<scope.end;};
+ function sibling(scope,index,scopes){return (scopes[index-1]?.end??-1)<this.start&&this.end<scope.start;};
  function path(scope,comment)
 {Array.isArray(scope)
 ?[descendant,sibling,undefined].reduce((found,find)=>
@@ -39,7 +41,7 @@
 ,-1)
 :descendant.call(comment,scope)&&
  ["body","declaration","consequent"].find((field)=>scope[field]);
-}
+};
 };
 
  export async function sanitize(grammar,format)
@@ -341,7 +343,8 @@
  return (
  {astring:["./davidbonnet_2015_astring.js","generate"]
  ,babel:["./node_modules/@babel/generator/lib/index.js","default"]
- }[format]||[format,"default"]).reduce((module,term)=>import(module).then(module=>module[term](syntax,options)));
+ }[is(Function)(format)?"astring":format]||[format,"default"]).reduce((module,term)=>
+ import(module).then(module=>module[term](syntax,options))).then(is(Function)(format)?format:infer());
  let {exports,imports,procedures}=syntax;
  imports=Object.entries(imports||{}).map(([module,names])=>[module,[names].flat()]).flatMap(([module,names],index)=>
 [(index=names.findIndex(name=>name.startsWith("*")))>-1?[module,names.splice(index,1)]:[]
@@ -353,21 +356,25 @@
 :(" var {default:"+names[0]+"}=await resolve(\""+module+"\");")).join("\n")
 ,exports=!exports?""
 :[Object.entries(exports||{}).map(([field,term])=>
- "export "+({default:field+" "}[field]||("var "+field+"="))+reify(term)).join("\n\n").replace(/(\}\})(,\"[^\"]*\":)(\{)/g
- // apply formatting. 
-,(...match)=>match.slice(1,4).join("\n "))
+ "export "+({default:field+" "}[field]||("var "+field+"="))+reify(term)).join("\n\n")
 ,""].join("\n");
- return compose(collect,infer("filter",Boolean),"\n\n","join")(imports,exports,...[procedures].flat());
+ procedures=[procedures].flat().filter(Boolean).map(proceduralize);
+ let output=compose(collect,infer("filter",Boolean),"\n\n","join",)(imports,exports,...procedures);
+ return is(Function)(format)?format(output):output;
 };
 
  export function proceduralize(term)
 {if(term instanceof Function)
  return String(term||"").replace(/(^(async ){0,1}function *\w*\([\w,\n]*\)\n* *\{\n*)|(\}$)/g,"");
+ if(string(term))
+ return term;
  throw Error("can't proceduralize "+typeof term);
 };
 
- export function format(json)
-{return JSON.stringify(json).replace(/:{|},|}}|}]/g,match=>match[0]+"\n "+match.substring(1))
+ export function aphorize(source)
+{if(compound(source))
+ return JSON.stringify(source).replace(/:{|},|}}|}]/g,match=>match[0]+"\n "+match.substring(1));
+ return source.replace(/(\}\})(,\"[^\"]*\":)(\{)/g,(...match)=>match.slice(1,4).join("\n "));
 };
 
 //  export async function modularise(resource,identifier,context={})
@@ -450,13 +457,12 @@ export async function imports(syntax,format={}) {
  [lines.length-1,position-lines.splice(1).join("\n").length-1]);
 };
 
-export function scope(module) {
-  let entries = Object.entries(module).map(([path, term]) => [
-    path,
-    term && typeof term == "object" ? scope(term) : term?.toString() || term,
-  ]);
-  return Object.fromEntries(entries);
-}
+ export function scope(module)
+{let entries=Object.entries(module).map(([path,term])=>
+[path,term&&typeof term=="object"?scope(term):term?.toString()||term
+]);
+ return Object.fromEntries(entries);
+};
 
  export async function test(namespace,tests,path=[])
 {// compose tests defined in namespace. 
@@ -496,9 +502,9 @@ export function scope(module) {
 :"...").map(format).join("")).filter(subject=>subject.length>11).join("\n")+"\x1b[0m\n";
  if(Object.keys(fails).length)throw report;
  return report;
-}
+};
 
-export const tests=
+ export const tests=
  {parse:
  {empty:{context:[""],terms:["type","Program"],condition:"equal"}
  }
