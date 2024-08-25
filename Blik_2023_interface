@@ -114,7 +114,7 @@ Uninstall git:
  ...
 
 To use in external projects, merge Interface as a new remote: 
- echo " Merging with Interface to access functions...";
+ echo " Merging with Interface to access modules...";
  echo " Stashing local changes..."
  git stash --keep-index;
  commit=$(git rev-parse HEAD);
@@ -130,6 +130,17 @@ To use in external projects, merge Interface as a new remote:
  echo " Restoring local changes."
  git checkout stash -- .;
  node --experimental-detect-module --import=./Blik_2023_interface.js ./Blik_2023_host.js expose ./Blik_2023_form.js ./Blik_2023_parameters.json https remember;
+ exit 0;
+
+To contribute to Interface from external projects, 
+checkout.gitignore before the whole remote to stash changes to its files 
+(else they will be hard-reset): 
+ git checkout interface/stable .gitignore;
+ git add .;
+ git stash;
+ git checkout interface/stable;
+ git checkout stash .; 
+ git restore --staged .;
  exit 0;
 
 Some of the more git-aware commands to use beyond common implicit push/merge: 

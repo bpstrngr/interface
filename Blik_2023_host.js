@@ -1,5 +1,5 @@
  import {note,prompt,when,pattern,revert,clock,observe,is,has,same,slip,something,compound,infer,tether,wether,collect,provide,route,buffer,differ,compose,combine,either,drop,crop,swap,record,wait,exit,pass,remember,binary,simple,array} from "./Blik_2023_inference.js";
- import {resolve,access,list,window,fetch,mime,persist,version,compress,stage} from "./Blik_2023_interface.js";
+ import {resolve,access,list,window,jsdom,fetch,mime,persist,version,compress,stage} from "./Blik_2023_interface.js";
  import {search,merge,sum,module} from "./Blik_2023_search.js";
  import local from "./Blik_2023_host.js";
 
@@ -21,8 +21,8 @@
  if(!file.isDirectory())
  return access(address,request.query?.encoding||"binary");
  return compose.call(address,true,classified,list,module(this||{}),merge);
-},put(request)
-{let address=decodeURI(new URL(request.url).pathname);
+},async put(request)
+{let {pathname:address}=await resolve("url","parse","."+request.url,true);
  if(!permit(address,classified))
  throw Error("Classified");
  return persist(request.body,address,request.query?.force);
@@ -56,7 +56,7 @@
  // if(await resolve("cluster","isMaster"))
  // return persistence,history,fork(),"process split.";
  encrypt(parameters.hmac);
- await window([protocol,"//localhost",parameters.port].join(":"));
+ await jsdom([protocol,"//localhost",parameters.port].join(":"));
  [protocol,source]=await resolve([protocol,source]);
  let certificates=protocol.globalAgent.protocol=="https:"?[certify(Object.values(parameters.certification)[0],parameters.distinguishedname)]:[];
  let virtualize=Object.entries(parameters.certification||{}).slice(1).map(([name,certificate])=>
@@ -75,7 +75,14 @@
  //};
 };
 
- function receive(request){observe.call(request,{data(data){this.body+=decoder.write(data);},end:respond.bind(...arguments)});}
+ function receive(request)
+{let decoder=new TextDecoder("utf-8");
+ let body=[];
+ observe.call(request
+,{data:record(data=>decoder.decode(data)).bind(body)
+ ,end:combine(infer((request,body)=>request.body=body.join(""),body),respond.bind(...arguments))
+ });
+};
 
  function respond(response,source,memory)
 {let route=wether(compose(drop(1),"url",/^http/,"match"),tether(fetch),compose(tether(recall),this,stage));

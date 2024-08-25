@@ -323,7 +323,7 @@
             "iconv-lite":"./ashtuchkin_2012_iconv_lite.js"
           },
           "edit": {"scripts/update.js": {
-            "(res = await (fetch\\((.*)\\)));":"$1.catch(function retry(fail,index=1){if(index<5)return console.log(index+\"/5 attempt to fetch \"+$3+\": \"+fail.stack),$2.catch(fail=>retry(fail,index+1));throw fail;})",
+            "(res = await (fetch\\((.*)\\)));":"$1.catch(function retry(fail,index=1){if(index<50)return console.log(index+\"/50 attempt to fetch \"+$3+\": \"+fail.stack),$2.catch(fail=>retry(fail,index+1));throw fail;})",
             "(main\\(\\)\\.catch)":"module.exports=$1"
           }},
           "./Harris_2015_json.js": {}
@@ -367,7 +367,7 @@
         "scripts": ["./Sakas_2018_cssstyle/0/scripts/download_latest_properties.js","./Sakas_2018_cssstyle/0/scripts/generate_implemented_properties.js","./Sakas_2018_cssstyle/0/scripts/generate_properties.js"],
         "edit":{
           "scripts/download_latest_properties.js":{
-            "(res = await (fetch\\(url\\)));":"$1.catch(function retry(fail,index=1){if(index<5)return console.log(index+\"/5 attempt to fetch \"+url+\": \"+fail.stack),$2.catch(fail=>retry(fail,index+1));throw fail;})",
+            "(res = await (fetch\\(url\\)));":"$1.catch(function retry(fail,index=1){if(index<50)return console.log(index+\"/50 attempt to fetch \"+url+\": \"+fail.stack),$2.catch(fail=>retry(fail,index+1));throw fail;})",
             "main\\(\\)\\.catch":"module.exports=main().catch",
             "(out_file.end\\(function \\(err\\) {)":"return new Promise(resolve=>$1resolve(err);",
             "(ties.\\'\\);\n  }\\))":"$1)"
@@ -560,6 +560,7 @@
   }}]}},
   "Bostock_2011_internmap.js":{"https://github.com/mbostock/internmap":{"v2.0.3":"src/index.js"}},
   "Bostock_2015_array.js":{"https://github.com/d3/d3-array":{"v3.2.0":["src/index.js",{"alias":{"internmap":"./Bostock_2011_internmap.js"}}]}},
+  "Bostock_2011_d3_select.js":{"https://github.com/d3/d3-selection":{"v3.0.0":"src/index.js"}},
   "Bostock_2011_d3.js":{
     "https://github.com/d3/d3-time":{"v3.0.0":["src/index.js",{"alias":{"d3-array":"./Bostock_2015_array.js"}}]},
     "https://github.com/d3/d3-time-format": {"v4.1.0":["src/index.js",{"alias": {"d3-time": "./Bostock_2011_d3/0/src/index.js"}}]},
@@ -582,21 +583,20 @@
       "d3-timer":"./Bostock_2011_d3/8/src/index.js"
     }}]},
     "https://github.com/d3/d3-hierarchy":{"v3.1.2":"src/index.js"},
-    "https://github.com/d3/d3-selection":{"v3.0.0":"src/index.js"},
     "https://github.com/d3/d3-path":{"v3.0.1":"src/index.js"},
-    "https://github.com/d3/d3-drag":{"v3.0.0":["src/index.js",{"alias":{"d3-dispatch":"./Bostock_2011_d3/7/src/index.js","d3-selection":"./Bostock_2011_d3/11/src/index.js"}}]},
-    "https://github.com/d3/d3-shape":{"v3.1.0":["src/index.js",{"alias":{"d3-path":"./Bostock_2011_d3/12/src/index.js"}}]},
+    "https://github.com/d3/d3-drag":{"v3.0.0":["src/index.js",{"alias":{"d3-dispatch":"./Bostock_2011_d3/7/src/index.js","d3-selection":"./Bostock_2011_d3_select.js"}}]},
+    "https://github.com/d3/d3-shape":{"v3.1.0":["src/index.js",{"alias":{"d3-path":"./Bostock_2011_d3/11/src/index.js"}}]},
     "https://github.com/d3/d3-zoom":{"v3.0.0":["src/index.js",{"alias":{
       "d3-dispatch":"./Bostock_2011_d3/7/src/index.js",
-      "d3-drag":"./Bostock_2011_d3/13/src/index.js",
+      "d3-drag":"./Bostock_2011_d3/12/src/index.js",
       "d3-interpolate":"./Bostock_2011_d3/3/src/index.js",
-      "d3-selection":"./Bostock_2011_d3/11/src/index.js",
-      "d3-transition":"./Bostock_2011_d3/16/src/index.js"
+      "d3-selection":"./Bostock_2011_d3_select.js",
+      "d3-transition":"./Bostock_2011_d3/15/src/index.js"
     }}]},
     "https://github.com/d3/d3-transition":{"v3.0.1":["src/index.js",{"alias":{
       "d3-color":"./Bostock_2011_d3/2/src/index.js",
       "d3-dispatch":"./Bostock_2011_d3/7/src/index.js",
-      "d3-ease":"./Bostock_2011_d3/17/src/index.js",
+      "d3-ease":"./Bostock_2011_d3/16/src/index.js",
       "d3-interpolate":"./Bostock_2011_d3/3/src/index.js",
       "d3-timer":"./Bostock_2011_d3/8/src/index.js"
     }}]},
@@ -604,6 +604,25 @@
   },
   "Bostock_2016_geo.js":{"https://github.com/d3/d3-geo":{"v3.1.1":["src/index.js",{"alias":{"d3-array":"./Bostock_2015_array.js"}}]}},
   "Bostock_2016_tiles.js":{"https://github.com/d3/d3-tile":{"v1.0.0":"src/index.js"}},
+  "Bostock_2016_topojson.js":{"https://github.com/topojson/topojson-client":{"v3.1.0":"src/feature.js"}},
+  "mapbox_2014_vectortile.js":{"https://github.com/mapbox/vector-tile-js":{"v1.3.0":["index.js",{"syntax":"commonjs","alias":{"point-geometry":"./mapbox_2014_point-geometry.js"}}]}},
+  "mapbox_2014_point-geometry.js":{"https://github.com/mapbox/point-geometry":{"v0.1.0":["index.js",{"syntax":"commonjs"}]}},
+  "mapbox_2014_protocolbuffer.js":{"https://github.com/mapbox/pbf":{"v3.2.1":["index.js",{"syntax":"commonjs","alias":{"ieee754":"./Feross_2013_ieee754.js","resolve-protobuf-schema":"./Buus_2014_protocolbuffer_schema_resolve.js"}}]}},
+  "mapbox_2014_geojson_tiles.js":{"https://github.com/mapbox/geojson-vt":{"v4.0.2":["src/index.js"]}},
+  "mapbox_2014_vectortile_buffer.js":{"https://github.com/mapbox/vt-pbf":{"v3.1.3":["index.js",{
+    "syntax":"commonjs",
+    "alias":{"@mapbox/point-geometry":"./mapbox_2014_point-geometry.js","@mapbox/vector-tile":"./mapbox_2014_vectortile.js","pbf":"./mapbox_2014_protocolbuffer.js"}}]
+  }},
+  "Feross_2013_ieee754.js":{"https://github.com/feross/ieee754":{"v1.2.1":["index.js",{"syntax":"commonjs"}]}},
+  "Buus_2014_protocolbuffer_schema_resolve.js":{"https://github.com/mafintosh/resolve-protobuf-schema":{"v2.1.0":["index.js",{"syntax":"commonjs","alias":{"protocol-buffers-schema":"./Buus_2014_protocolbuffer_schema.js"}}]}},
+  "Buus_2014_protocolbuffer_schema.js":{"https://github.com/mafintosh/protocol-buffers-schema":{"v3.6.0":["index.js",{"syntax":"commonjs"}]}},
   "haverbeke_2020_codemirror.js":{"https://github.com/codemirror/codemirror5/src":{"5.48.4":["src/codemirror.js"]}},
-  "haverbeke_2020_codemirror_jsmode.js":{"https://github.com/codemirror/codemirror5/mode/javascript":{"5.48.4":["mode/javascript/javascript.js"]}}
+  "haverbeke_2020_codemirror_jsmode.js":{"https://github.com/codemirror/codemirror5/mode/javascript":{"5.48.4":["mode/javascript/javascript.js"]}},
+  "Yahoo_2014_serialize.js":{"https://github.com/yahoo/serialize-javascript":{"v6.0.2":["index.js",{"syntax":"commonjs","edit":{
+    "randomBytes = require\\('randombytes'\\)":"{randomBytes}=globalThis.crypto?{}:await import('crypto')",
+    "= generateUID":"= globalThis.crypto?.randomUUID()||generateUID"
+  }}]}},
+  "Fogel_2016_polygonclipping.js":{"https://github.com/mfogel/polygon-clipping":{"v0.15.7":["src/index.js",{"alias":{"splaytree":"./Milevski_2018_splaytree.js","robust-predicates":"./Agafonkin_2019_robustpredicates.js"}}]}},
+  "Agafonkin_2019_robustpredicates.js":{"https://github.com/mourner/robust-predicates":{"v3.0.2":["src/orient2d.js","src/orient3d.js","src/incircle.js","src/insphere.js"]}},
+  "Milevski_2018_splaytree.js":{"https://github.com/w8r/splay-tree":{"v3.1.2":["src/index.ts"]}}
 }

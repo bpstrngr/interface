@@ -48,7 +48,7 @@
  resolve(...process.argv.slice(2));
 
 
-// https://nodejs.org/api/esm.html#esm_loaders 
+ // https://nodejs.org/api/esm.html#esm_loaders 
 
  export async function initialize({socket})
 {socket?.postMessage("Module loader registered:\n"+import.meta.url);
@@ -486,7 +486,7 @@
  if(encoding==="object")
  return JSON.parse(content);
  return content;
-}
+};
 
  export async function list(file,recursive=true,exclude=[])
 {if(!/\/$/.test(file))
@@ -502,7 +502,7 @@
 :undefined)
 ,[]);
  return Object.fromEntries(entries);
-}
+};
 
  export async function persist(body,path,force)
 {if(!path)throw Error("Unspecified persistence target");
@@ -529,13 +529,10 @@
  let append={append:"a"}[force];
  descriptor=await fs.open(path,append||"r+");
  if(descriptor instanceof Error)return descriptor;
- close=descriptor.close.bind(descriptor);
+ let close=descriptor.close.bind(descriptor);
  if(!append)
- truncate=await descriptor.truncate().catch(fail=>fail).finally(close);
- if(truncate instanceof Error)throw truncate;
- let fail=transaction.call(descriptor,body,"utf-8").catch(fail=>fail).finally(close);
- if(fail instanceof Error)
- throw fail;
+ await descriptor.truncate().catch(combine(close,exit));
+ await transaction.call(fs,descriptor,body,"utf8").finally(close);
  return path;
 };
 
@@ -630,14 +627,14 @@
 }]
  };
 
- export var {window,fetch}=globalThis.window?globalThis
-:{async window(url)
+ export var {jsdom,window,fetch}=globalThis.window?globalThis
+:{async jsdom(url)
 {let {JSDOM}=await resolve("./domenic_2022_jsdom_rollup.js","default");
  let jsdom=Reflect.construct(JSDOM,["",{url,referrer:url,contentType:"text/html",includeNodeLocations:true,storageQuota:10000000}]);
  return {window,fetch}={window:jsdom.window,fetch:fetch.bind(jsdom.window)};
 },async fetch(request,header)
 {if(!defined(this))
- exit(Error("No window scope provided for fetch. (call window as a function)"));
+ exit(Error("No window scope provided for fetch. (call jsdom first)"));
  let {href:address,hostname,path,port}=await resolve("url","parse",string(request)?!/^http/.test(request)
 ?this.location.origin+await resolve("path","resolve","/",request||"")
 :request:request.url);
@@ -680,27 +677,29 @@
  export async function stage(response,request)
 {let fail=is(Error)(response);
  let type=!fail?response?.type||mime(response?.nodeName?.toLowerCase()||(either(simple,array)(response)?"json":request.url)):mime("txt");
+ let status=response?fail?500:response.status||200:404;
+ let success=status<400;
+ let headers={"Content-Type":type,...response.headers,get(key){return this[key];}};
+ let cookie=response?.cookie;
  let body=wether
 ([fail,has("nodeName"),something]
 ,compose(note.bind(1),"message")
-,compose(combine(wether(compose("nodeName",is("HTML")),swap("<!DOCTYPE html>"),""),"outerHTML"),collect,"","join")
+,compose(combine(wether(compose("nodeName",is("HTML")),swap("<!DOCTYPE html>"),drop()),"outerHTML"),collect,"","join")
 ,either("body",crop(1))
 )(response);
+ let browser="Mozilla/Chrome/Safari/AppleWebKit".split("/").some(has.bind(version(request.headers)||{}));
+ if(browser&&type===mime("js"))
+ body=await compress(body),headers["Content-Encoding"]="gzip";
  if(response?.nodeName)
- response.innerHTML="";
+ infer(function destroy(node){Array.from(node.childNodes).forEach(destroy),node.remove();})(response);
  // let importing=request.headers?.["sec-fetch-dest"]==="script";
  // if(importing&&type==="json")
  // body="export default "+JSON.stringify(JSON.parse(body.constructor?.name=="Buffer"?body.toString():body))+";"
  //,type="js";
- let status=response?fail?500:response.status||200:404;
- let success=status<400;
- let headers={"Content-Type":type,...response.headers,get(key){return this[key];}};
- let browser="Mozilla/Chrome/Safari/AppleWebKit".split("/").some(has.bind(version(request.headers)||{}));
- if(browser&&type===mime("js"))
- body=await compress(body),headers["Content-Encoding"]="gzip";
- return {status,body,location:request.url,cookie:response?.cookie,headers,json,text,arrayBuffer};
- function json(){return this.text(true);};
- async function text(json=false)
+ response=
+ {status,body,location:request.url,cookie,headers
+ ,json(){return this.text(true);}
+ ,async text(json=false)
 {if(!binary(json))json=false;
  let buffer=this.body.constructor?.name=="Buffer";
  let gzip=Array(2).fill("Content-Encoding").find((field,index)=>this.headers?.get(index?field.toLowerCase():field)==="gzip");
@@ -708,8 +707,7 @@
  if(compound(text))
  return json?text:JSON.stringify(text);
  return json?JSON.parse(text):text;
-};
- async function arrayBuffer()
+},async arrayBuffer()
 {let gzip=this.headers["Content-Encoding"]==="gzip";
  // if(simple(this.body))
  // return compose(JSON.stringify(this.body),"encode","buffer")(new TextEncoder());
@@ -720,7 +718,8 @@
 ,"buffer"
 )(this.body);
  return Buffer.from(this.body,"utf-8");
-};
+}};
+ return response;
 };
 
  export var peer=remember(function peer(protocol)

@@ -10,7 +10,7 @@
  export function fields(term)
 {return ascend(term).flatMap(term=>
 {try{return Reflect.ownKeys(term);}catch(fail)
-{console.warn("warning: can't see all properties on",typeof term," - ",fail.message); console. log(term)
+{console.warn("warning: can't see all properties on",typeof term," - ",fail.message);
  if(term instanceof String)
  if(term.length>10*1000)
  return [];
@@ -143,7 +143,7 @@
 
  export function tether(term,...context)
 {// bind term to scope by inferring with a "tether" prefix. 
- let bound=is(Function)(term)
+ let bound=term instanceof Function
 ?describe.call("tether ",function(){return term.call(this,...arguments);},term)
 :term;
  if(defined(this))
@@ -195,7 +195,7 @@
 ,infer("reduce",record(function(condition,index,{length})
 {let [track]=this;
  return track??compose
-(is(Function)(condition)?buffer(condition):swap(condition)
+(condition instanceof Function?buffer(condition):swap(condition)
 ,valid=>!numeric(valid)?valid&&!is(Error)(valid)?index:track:valid
 )(...context);
 },0),[])

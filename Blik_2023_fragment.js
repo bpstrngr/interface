@@ -1,10 +1,10 @@
- import {resolve,modularise,window,fetch,mime} from "./Blik_2023_interface.js";
- import {note,provide,collect,slip,infer,either,each,tether,buffer,differ,compose,revert,refer,record,combine,wether,swap,compound,something,string,defined,simple,exit,route,drop,crop,same,major,binary,is,array,pdflike} from "./Blik_2023_inference.js";
+ import {resolve,modularise,window,jsdom,fetch,mime,digest} from "./Blik_2023_interface.js";
+ import {note,provide,collect,slip,infer,either,each,pass,tether,buffer,differ,compose,revert,refer,record,combine,wether,swap,compound,something,string,defined,simple,exit,route,drop,crop,same,major,binary,is,array,pdflike} from "./Blik_2023_inference.js";
  import {search,merge,prune} from "./Blik_2023_search.js";
  import {serialize,proceduralize} from "./Blik_2023_meta.js";
  import layout,{color} from "./Blik_2023_layout.js";
- var [jss,...plugins]=globalThis.window?[]:await resolve(["","_nested","_extend","_global"].map(plugin=>
- "./Isonen_2014_jss"+plugin+".js")).then(modules=>
+ var [jss,...plugins]=await resolve(["","nested","extend","global"].map(plugin=>
+ ["./Isonen_2014_jss",plugin].filter(Boolean).join("_")+".js")).then(modules=>
  modules.map(module=>module.default||module));
 
  export function document(source,namespace,language)
@@ -201,16 +201,20 @@
  var modules={};
 
  export async function transform(resource,{incumbent,...fields})
-{if(pdflike(resource))resource=await print(resource);
+{if(resource instanceof ArrayBuffer)
+ resource=new Uint8Array(resource);
+ if(pdflike(resource))resource=await print(resource);
+ let {layout}=fields;
+ fields.layout={[fields.layout]:null,fragment:"media",script:null,chart:"plot",network:null};
  if(!fields.layout&&either(simple,array,swap(false))(resource))
  fields.layout="network";
  if(this)
  form.call(this,{get:{...fields,...(simple(resource)||array(resource))&&{source:resource}}})
 ,fill.call(this,fields);
- let [module,feature="default"]=fields.layout?.split("/")||["./Blik_2023_fragment.js","media"];
+ let [module,feature="default"]=layout?.split("/")||["./Blik_2023_fragment.js","media"];
  if(!module.includes("_"))
  module=await [2020,new Date().getFullYear()].reduce((min,max)=>
- Array(max-min).fill(max).map((year,index)=>year-index)).flatMap((year)=>
+ Array(max-min).fill(max).map((year,index)=>year-index)).flatMap(year=>
  ["Blik"].map(author=>"./"+[author,year,module].join("_")+".js")).reduce((file,module)=>
  file.catch(fail=>modules[module]=modules[module]||import(module).then(swap(module)))
 ,Promise.reject());
@@ -230,17 +234,21 @@
 ["./mozilla_2010_pdf_viewer_brightspace.js"
 ,"./mozilla_2010_pdf_link_service_brightspace.js"
 ,"./mozilla_2010_pdf_brightspace.js"
-]).then(async function([{PDFViewer},{PDFLinkService},pdf])
+]).then(function([{PDFViewer},{PDFLinkService},pdf])
 {pdf.default.GlobalWorkerOptions.workerSrc="mozilla_2010_pdf_worker_brightspace.js";
- let container=document({"div":{"class":"pdfjs","div":{"id":"viewer"}}});
  let viewer=new PDFViewer(
- {linkService:new PDFLinkService(),container,renderer:"svg"
+ {linkService:new PDFLinkService(),renderer:"svg"
  ,textLayerMode:0,disableRange:true,forceRendering:true
+ ,container:document({div:
+ {class:"pdfjs",style:"margin:auto;width:90vw;height:670px;overflow:scroll;"
+ ,div:{id:"viewer"}
+ }})
  });
  viewer.linkService.setViewer(viewer);
- await pdf.getDocument(file).promise.then(pdf=>
- viewer.setDocument(pdf));
- return viewer.container;
+ pdf.getDocument(file).promise.then(viewer.setDocument.bind(viewer));
+ let {container}=viewer;
+ container.append(document({style:{"#text":stylesheet(layout.pdfjs)}}));
+ return container;
 });
 };
 
@@ -259,7 +267,7 @@
 {let canvas=document({canvas:{width:image.naturalWidth,height:image.naturalHeight}});
  canvas.getContext("2d").drawImage(image,0,0);
  return canvas;
-}
+};
 
  export function vector(node)
 {if(node.nodeName.toLowerCase()=="svg")
@@ -306,38 +314,121 @@
  return value?value():"";
 }).join("");
 
-export async function deform(resource)
+ export async function denote(text)
+{let {syntax}=await Array.from(text).reduce(async function(semiotics,next)
+{semiotics=await semiotics;
+ let sense=await semiotics[next]?.call(semiotics);
+ if(sense)
+ return [semiotics,sense,{depth:semiotics.depth+1}].reduce(merge);
+ semiotics.text(next);
+ return semiotics;
+}
+,{syntax:[],depth:0
+ ,text(next)
+{let last=[this.syntax.pop()||"",next].reduce((past,next)=>
+ string(past)?[past+next]:[past,next]);
+ this.syntax.push(...last);
+ return false;
+},phrase(name)
+{let last=this.syntax.pop();
+ if(!string(last))
+ return defined(last)&&this.syntax.push(last),false;
+ let index=Math.max(..." \n".split("").map(space=>last.lastIndexOf(space)));
+ let phrase=last.slice(index+1);
+ this.syntax.push(last.slice(0,last.length-phrase.length));
+ return {[name]:phrase};
+}," ":function end()
+{if(!this.tag&&!this.link)
+ return false;
+ let {phrase}=this.phrase("phrase");
+ this.syntax.push(this.link
+?reference(this.link,phrase)
+:document({[phrase]:{["#text"]:this.tag.replace(/_/g," ")}}));
+ this.depth-=1;
+ merge(this,{tag:undefined,link:undefined});
+ return false;
+},"\n":function(){return this[" "]();}
+ ,"#":function tag(){return this.phrase("tag");}
+ ,"@":function link(){return this.phrase("link");}
+ ,"{":function style()
+{if(!this.depth||this.action)
+ return false;
+ this[" "]();
+ return {style:true};
+},"(":function action()
+{if(!this.tag)
+ return false;
+ let update=this.phrase("action");
+ this.syntax.push("");
+ this.depth-=2;
+ return {tag:undefined,...update};
+},"}":function apply()
+{if(!this.style)
+ return this.action?this.depth-=1:null,false;
+ let style=this.syntax.pop();
+ this.syntax.at(-1).style=style;
+ this.depth-=2;
+ delete this.style;
+ return {};
+},")":async function fragment()
+{if(!this.action)
+ return false;
+ console. log(this)
+ if(this.depth>1)
+ return this.depth-=1,false;
+ let phrase=this.syntax.pop();
+ // could be part of parsing. 
+ let jsons=[...phrase.matchAll(new RegExp(/[{\[]{1}(?:[,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]|".*?")+[}\]]{1}/,"mg"))].map(([json])=>json);
+ let context=jsons.reduce((context,json)=>
+[context,context.pop().split(json).map(context=>context.replace(/(^,|,$)/g,"").replace(/(^"|"$)/g,"").replace(/(^'|'$)/g,"")).reduce((before,after)=>
+ [before,JSON.parse(json),after].filter(Boolean))
+].flat(),[phrase]);
+ let [source,options]=context;
+ let fragment=await compose(string(source)?compose(fetch,digest):infer(),{layout:this.action,...options},transform)(source);
+ this.syntax.push(fragment);
+ this.depth-=2;
+ delete this.action;
+ return {};
+}});
+ return document(syntax.map(node=>
+ string(node)?document({"#text":node}):node));
+};
+
+ export async function deform(resource)
 {// text{style} text@source text#tag text/json#transform text#transform(text/json)
  let text=new RegExp(/[A-Za-zÁÉÍÓÖŐÚŰÜáéíóöőúűü\d\:\.\;\/\?\=\&\-\'_#\%\!\@]/);
  let json=new RegExp(/[{\[]{1}(?:[,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]|".*?")+[}\]]{1}/,"m");
  let call=new RegExp("\\((?:(\""+text.source+"*\"|"+json.source+")[,\)]{0,1})+");
- let tags={"@":"source","#":"document","{":"style"};
+ let tags={"@":"source","#":"fragment","{":"style"};
  let tag=new RegExp("(["+Object.keys(tags).join("")+"])("+json.source+"|"+text.source+"+("+call.source+")*)[\}]*","g");
  let form=new RegExp("(?<=^|[ \n])("+text.source+"+?[^\(\)\"\':, \n"+Object.keys(tags).join("")+"])((?:"+tag.source+")+)","gm");
- let promises=await [...resource.matchAll(form)].reduce(record(async([match,title,input])=>
-{let {source,document,style}=Object.fromEntries([...input.matchAll(tag)].map(([match,tag,value])=>[tags[tag],value]).reverse());
- [document,source,input]=!document||!document.includes("(")
-?[document,source||title,input]
-:[...document.matchAll(json.source+"|"+text.source+"+")].map(([match])=>match.replace("(",""));
+ let fragments=await [...resource.matchAll(form)].reduce(record(buffer(async(fragments,[match,title,input])=>
+{let {source,fragment,style}=Object.fromEntries([...input.matchAll(tag)].map(([match,tag,value])=>[tags[tag],value]).reverse());
+ [fragment,source,input]=!fragment||!fragment.includes("(")
+?[fragment,source||title,input]
+:[...fragment.matchAll(json.source+"|"+text.source+"+")].map(([match])=>match.replace("(",""));
  if(source)
- try{source=JSON.parse(source)}catch(fail)
-{source=source.split(",").reduce((json,piece)=>
+ source=either(JSON.parse,source=>source.split(",").reduce((json,piece)=>typeof json=="string"
  //split consecutive jsons matched by the json regexp
-{if(typeof json!="string"){input=(input?input+",":"")+piece;return json;}
- json=json+","+piece;
- try{return JSON.parse(json)}catch(fail){return json};
-})
-}try{input={source,...JSON.parse(input)}}catch(fail){input={source}};
- let node="h1/h2/h3/h4/h5/h6/h7".split("/").includes(document);
- source=document?node
-?defer({layout:document,...input}):await compose(fetch,digest,{layout:document,...input},transform)(source)
-:reference(title,source,document||(source==title&&"span"))||match;
- if(source.setAttribute)
- source.setAttribute("style",style);
- return source;
-}),[]);
- return resource.replace(form,match=>(promises.shift()||{outerHTML:""}).outerHTML);
-}
+?json=either(JSON.parse,crop(1))(json+","+piece)
+:(input=(input?input+",":"")+piece,json)))(source);
+ input=either(compose(JSON.parse,{source},false,merge),swap({source}))(input);
+ let node=/^h[0-9]$/.test(fragment);
+ source=fragment
+?node
+?document({[fragment]:{"#text":input.source.replace(/_/g," ")}})
+:await compose(fetch,digest,{layout:fragment,...input},transform)(source)
+:reference(title,source,fragment||(source==title&&"span"))||
+ match;
+ source.setAttribute?.("style",style);
+ return [match,source];
+},(fragments,[match],index,matches,fail)=>[match,fail])),[]);
+ return document(fragments.reduce(([resource,...nodes],[match,fragment])=>
+ resource.split(match).flatMap((before,index,after)=>
+ [after.splice(1).join(match),fragment,before,...nodes])
+,[resource]).reverse().map(node=>
+ string(node)?document({"#text":node}):node));
+};
 
  export function detransform(node,value)
 {if(!node)return;
@@ -363,7 +454,7 @@ export async function deform(resource)
  let overflow=[-left,-top,left+width-limitx,top+height-limity];
  overflow.forEach(wether(major(0),(overflow,index)=>
  this.style[index%2?"top":"left"]=Number(this.style[index%2?"top":"left"].match(/\d+/)?.[0])+overflow*(index<2||-1)+"px",infer()));
-}
+};
 
  export function drillresize({width,height})
 {// use in svg resizeobserver until SVG resize becomes observable: 
@@ -407,14 +498,14 @@ export async function deform(resource)
  export async function error()
 {let error=Array.from(arguments).at(-1);
  console.error(error);
- let style=await stylesheet({body:{background:"black",color:color.red},center:layout.middle});
+ let style=await stylesheet({body:{background:"black",color:color.red},"div#frame":layout.middle});
  let report=compose.call({center:{"#text":String(error)}},"Error","/svg/worm/document",[],[style],hypertext,document);
  let body=report.outerHTML;
  report.innerHTML="";
  return {body,status:500,type:mime("html")};
 };
 
-function portfolio(source)
+ function portfolio(source)
 {return document(
  {div:
  {h1:
@@ -427,8 +518,8 @@ function portfolio(source)
  ,onclick:"import('/Blik_2020_actions.js').then(({transform,insert})=>insert({fragment:transform({source:window.location.pathname+'"+key+"',layout:'feed',number:15}),target:this,place:'over'}))"
  }))
  }
- })
-}
+ });
+};
 
  export function media(resource,{incumbent,source,...fields})
 {if(source&&[incumbent?.title,incumbent?.parentNode.title].includes(source))
@@ -439,8 +530,8 @@ function portfolio(source)
 :simple(resource)?document({pre:{"#text":JSON.stringify(resource,null,2)}})
 :resource.startsWith("<")
 ?window.document.createRange().createContextualFragment(resource)
-:deform(resource).then(source=>window.document.createRange().createContextualFragment(source))
-}
+:denote(resource)
+};
 
  export var defer=form=>
  document({"img":
@@ -459,7 +550,7 @@ function portfolio(source)
 
  export function hypertext(body,title,favicon,scripts,styles=[])
 {scripts=[scripts].flat().filter(actions=>!compound(actions)||!activate(body,actions));
- let script=[scripts.map(src=>[/^\./.test(src)?{src}:{"#text":src},{type:"module",async:true}].reduce(merge)),body.script||[]].flat();
+ let script=[scripts.map(src=>[/^\./.test(src)?{src}:{"#text":src},{type:"module",defer:true}].reduce(merge)),body.script||[]].flat();
  let [link,style]=[styles].flat().reduce((nodes,style,index)=>
  nodes[index=+/{|}/.test(style)].push(index?{"#text":style}:{rel:"stylesheet",type:"text/css",href:style})&&nodes
 ,[[],[]]);
@@ -617,19 +708,19 @@ function portfolio(source)
  Object.assign(globalThis
 ,{dispatch(event)
 {if(!events||!actions)
- return event?.preventDefault(),setTimeout(dispatch.bind(this,event),500);
+ return event?.preventDefault(),setTimeout(globalThis.dispatch.bind(this,event),500);
  let scope=events.call(this,actions);
  console.log({[event.type]:this});
  let action=event.type.replace(/[A-Z]+/g,match=>match.slice(-1).toLowerCase());
  scope[action]?.call(this,event);
  // asynchronous dispatch won't prevent synchronous default. 
-},onmessage(event)
-{if(event.target===this)return;
- let {target}=event;
- if(!receipt)return setTimeout(onmessage.bind(this,event),500);
- if(!globalThis.socket)
- globalThis.socket=Object.assign(new WebSocket(socket),{onmessage:receive.bind(target)});
- globalThis.socket.send(JSON.stringify(event.data));
+},async onmessage(event)
+{//if(event.target===this)return;
+ if(!receipt||!globalThis.socket)
+ return setTimeout(globalThis.onmessage.bind(this,event),500);
+ let {data:message}=event;
+ console.log({[event.type]:message.action});
+ globalThis.socket.send(JSON.stringify(message));
 },worker:import("./Blik_2023_interface.js").then(({delegate})=>delegate("./worker")).then(worker=>
  Object.assign(globalThis,{worker})).catch(fail=>delete globalThis.worker&&
  console.log("Worker not available at ./worker."))
@@ -638,10 +729,10 @@ function portfolio(source)
  var {receipt}=import("./Blik_2024_room.js").then(module=>receipt=module.receipt);
  var {events}=import("./Blik_2023_fragment.js").then(module=>events=module.events);
  var socket="ws"+(/s/.test(globalThis.location.protocol)?"s":"")+"://"+globalThis.location.host;
- function receive(event)
+ globalThis.socket=Object.assign(new WebSocket(socket),{onmessage(event)
 {let message=JSON.parse(event.data);
  receipt[message.type||"message"]?.call(this,message);
-};
+}});
 };
 
  export function dispose(){if(globalThis.window)Object.assign(window.actions,actions);}
@@ -689,4 +780,13 @@ function portfolio(source)
  }]
 ],condition:"deepEqual"
  }
-]};
+],denote:
+ {link:{context:"Figure 1: Author_YEAR@reference.pdf ",terms:[1,"nodeName","A"],condition:"equal"}
+ ,insert:{context:"Figure 1: Author_YEAR@reference.pdf#insert ",terms:[1,"nodeName","A"],condition:"equal"}
+ ,image:{context:"Figure 1: Author_YEAR@image.png ",terms:[1,"nodeName","IMG"],condition:"equal"}
+ ,tag:{context:"Figure 1: Author_YEAR#h1 ",terms:[1,"nodeName","H1"],condition:"equal"}
+ ,style:["@reference.pdf","@image.png","#span"].map(fragment=>({context:"Figure 1: Author_YEAR"+fragment+"{width:0px;invert(1)} ",terms:[1,"style","width","0px"],condition:"equal"}))
+ ,action:{context:"Figure 1: title#chart/plot([1,2]) ",terms:[1,"nodeName","svg"],condition:"equal"}
+ }};
+ if(!window)
+ await jsdom("http://localhost/");

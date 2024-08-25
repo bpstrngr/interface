@@ -67,15 +67,10 @@
  };
 
  let pdfjs=
- {"span":
- {"& .pdfjs":{"max-height":"670px",overflow:"scroll","max-width":"90vw",margin:"auto"}
- }
- ,"div.pdfjs":
- {margin:"auto","max-height":"95vh","max-width":"50vw",overflow:"scroll"
- ,"&:hover":{transform:"scale(1.2)"}
+ {"div.pdfjs":
+ {"&:hover":{transform:"scale(1.1)"}
  ,"&>div#viewer":
- {width:"50vw",height:"95vh"
- ,"&>div.page":
+ {"&>div.page":
  {margin:"auto",width:"100% !important",height:"auto !important"
  ,"background-image":"url('icon/blackboard.png')"
  ,"&>.loadingIcon":{content:"",fill:"red","border-radius":"50%",width:"20px",height:"20px"}

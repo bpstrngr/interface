@@ -298,7 +298,7 @@ export function trace(term, path = []) {
  Object.fromEntries(fields.map((field,index)=>[field,record[index]]))));
 };
 
- export function cluster(records,{field="Year"})
+ export function cluster(records,{field="Year"}={})
 {return records.reduce((clusters,record)=>record[field]
 ?Object.assign(clusters,{[record[field]]:sum(clusters[record[field]],1)})
 :clusters
