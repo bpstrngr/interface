@@ -687,15 +687,17 @@
 ,compose(combine(wether(compose("nodeName",is("HTML")),swap("<!DOCTYPE html>"),drop()),"outerHTML"),collect,"","join")
 ,either("body",crop(1))
 )(response);
- let browser="Mozilla/Chrome/Safari/AppleWebKit".split("/").some(has.bind(version(request.headers)||{}));
- if(browser&&type===mime("js"))
- body=await compress(body),headers["Content-Encoding"]="gzip";
  if(response?.nodeName)
  infer(function destroy(node){Array.from(node.childNodes).forEach(destroy),node.remove();})(response);
- // let importing=request.headers?.["sec-fetch-dest"]==="script";
- // if(importing&&type==="json")
- // body="export default "+JSON.stringify(JSON.parse(body.constructor?.name=="Buffer"?body.toString():body))+";"
- //,type="js";
+ let browser="Mozilla/Chrome/Safari/AppleWebKit".split("/").some(has.bind(version(request.headers)||{}));
+ let [js,json]=[type===mime("js"),type===mime("json")];
+ let importing=!request.headers?.referer?.endsWith(request.url);
+ let old=version(request.headers)?.Chrome<125;
+ if(json&&importing&&old)
+ body="export default "+JSON.stringify(simple(body)?body:JSON.parse(body.constructor?.name=="Buffer"?body.toString():body))+";"
+,headers["Content-Type"]=mime("js");
+ if(browser&&js)
+ body=await compress(body),headers["Content-Encoding"]="gzip";
  response=
  {status,body,location:request.url,cookie,headers
  ,json(){return this.text(true);}
