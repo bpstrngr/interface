@@ -1,5 +1,5 @@
  import {resolve,modularise,window,jsdom,fetch,mime,digest} from "./Blik_2023_interface.js";
- import {note,provide,collect,slip,infer,either,each,pass,tether,buffer,differ,compose,revert,refer,record,combine,wether,swap,compound,something,string,defined,simple,exit,route,drop,crop,same,major,binary,is,array,pdflike} from "./Blik_2023_inference.js";
+ import {note,provide,collect,slip,infer,either,each,pass,tether,buffer,differ,compose,revert,refer,record,combine,wether,swap,compound,something,string,defined,simple,exit,route,drop,crop,same,major,binary,is,array,pdflike,when} from "./Blik_2023_inference.js";
  import {search,merge,prune} from "./Blik_2023_search.js";
  import {serialize,proceduralize} from "./Blik_2023_meta.js";
  import layout,{color} from "./Blik_2023_layout.js";
@@ -314,86 +314,6 @@
  return value?value():"";
 }).join("");
 
- export async function denote(text)
-{let {syntax}=await Array.from(text).reduce(async function(semiotics,next)
-{semiotics=await semiotics;
- let sense=await semiotics[next]?.call(semiotics);
- if(sense)
- return [semiotics,sense,{depth:semiotics.depth+1}].reduce(merge);
- semiotics.text(next);
- return semiotics;
-}
-,{syntax:[],depth:0
- ,text(next)
-{let last=[this.syntax.pop()||"",next].reduce((past,next)=>
- string(past)?[past+next]:[past,next]);
- this.syntax.push(...last);
- return false;
-},phrase(name)
-{let last=this.syntax.pop();
- if(!string(last))
- return defined(last)&&this.syntax.push(last),false;
- let index=Math.max(..." \n".split("").map(space=>last.lastIndexOf(space)));
- let phrase=last.slice(index+1);
- this.syntax.push(last.slice(0,last.length-phrase.length));
- return {[name]:phrase};
-}," ":function end()
-{if(!this.tag&&!this.link)
- return false;
- let {phrase}=this.phrase("phrase");
- this.syntax.push(this.link
-?reference(this.link,phrase)
-:document({[phrase]:{["#text"]:this.tag.replace(/_/g," ")}}));
- this.depth-=1;
- merge(this,{tag:undefined,link:undefined});
- return false;
-},"\n":function(){return this[" "]();}
- ,"#":function tag(){return this.phrase("tag");}
- ,"@":function link(){return this.phrase("link");}
- ,"{":function style()
-{if(!this.depth||this.action)
- return false;
- this[" "]();
- return {style:true};
-},"(":function action()
-{if(!this.tag)
- return false;
- let update=this.phrase("action");
- this.syntax.push("");
- this.depth-=2;
- return {tag:undefined,...update};
-},"}":function apply()
-{if(!this.style)
- return this.action?this.depth-=1:null,false;
- let style=this.syntax.pop();
- this.syntax.at(-1).style=style;
- this.depth-=2;
- delete this.style;
- return {};
-},")":async function fragment()
-{if(!this.action)
- return false;
- console. log(this)
- if(this.depth>1)
- return this.depth-=1,false;
- let phrase=this.syntax.pop();
- // could be part of parsing. 
- let jsons=[...phrase.matchAll(new RegExp(/[{\[]{1}(?:[,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]|".*?")+[}\]]{1}/,"mg"))].map(([json])=>json);
- let context=jsons.reduce((context,json)=>
-[context,context.pop().split(json).map(context=>context.replace(/(^,|,$)/g,"").replace(/(^"|"$)/g,"").replace(/(^'|'$)/g,"")).reduce((before,after)=>
- [before,JSON.parse(json),after].filter(Boolean))
-].flat(),[phrase]);
- let [source,options]=context;
- let fragment=await compose(string(source)?compose(fetch,digest):infer(),{layout:this.action,...options},transform)(source);
- this.syntax.push(fragment);
- this.depth-=2;
- delete this.action;
- return {};
-}});
- return document(syntax.map(node=>
- string(node)?document({"#text":node}):node));
-};
-
  export async function deform(resource)
 {// text{style} text@source text#tag text/json#transform text#transform(text/json)
  let text=new RegExp(/[A-Za-zÁÉÍÓÖŐÚŰÜáéíóöőúűü\d\:\.\;\/\?\=\&\-\'_#\%\!\@]/);
@@ -530,7 +450,7 @@
 :simple(resource)?document({pre:{"#text":JSON.stringify(resource,null,2)}})
 :resource.startsWith("<")
 ?window.document.createRange().createContextualFragment(resource)
-:denote(resource)
+:parse(resource,semiotics)
 };
 
  export var defer=form=>
@@ -768,6 +688,85 @@
 {return jss.use(...plugins.map(plugin=>plugin())).createStyleSheet(global?{"@global":style}:style).toString();
 };
 
+ export function parse(text,semiotics)
+{if(!semiotics)
+ exit("no semiotics provided for parsing text");
+ let postfix=compose(crop(2),infer,Function.call,collect,"flat",provide);
+ let interpret=either
+(infer.bind(semiotics)
+,wether(compose(drop(-1),is(Error)),compose(note,drop(-1),exit),semiotics.text)
+);
+ let fold=compose("flat",provide,collect);
+ let render=infer("map",node=>simple(node)
+?document(node.style?{div:{"#text":node.text,style:node.style}}:{"#text":node.text})
+:node);
+ let unfold=compose("reverse",render,document);
+ return compose(Array.from,infer("reduce",compose(postfix,interpret,fold),[]),note,unfold)(text);
+};
+
+ export var semiotics=
+ // pririty determines field to populate. 
+ {text(text,last={},...syntax)
+{let field=Object.values(semiotics).map(({name})=>name).find(field=>defined(last[field]))||semiotics.text.name;
+ let start=!simple(last);
+ return [start?{text}:merge(last,{[field]:[last[field]||"",text].join("")}),start?last:[],...syntax];
+},phrase(last)
+{if(!last?.text)
+ return last;
+ let {text}=last;
+ let index=Math.max(..." \n".split("").map(space=>text.lastIndexOf(space)));
+ let phrase=text.slice(index+1);
+ return [phrase,text.slice(0,text.length-phrase.length)];
+}," ":function terminate(last,past,...syntax)
+{let parenthesized=last?.action||string(last?.style);
+ if(last?.text||parenthesized)
+ return false;
+ let [tag,link]="#@".split("").map(field=>last?.[semiotics[field].name]);
+ if(!tag&&!link)
+ return defined(tag??link)?[merge([past,{}].find(simple),{text:[past.text||"",last.title,defined(tag)?"#":"@"," "].join("")}),syntax]:false;
+ let next=last.link
+?reference(last.title,last.tag||last.link)
+:document({[last.tag]:{["#text"]:last.title.replace(/_/g," ")}});
+ return [{text:" "},next,past,syntax];
+},"\n":function terminate(last,...syntax)
+{let past=this[" "](...arguments).slice?.(1);
+ if(!past&&string(last?.text))
+ return false;
+ let next={text:[last?.text||"","\n"].join("")};
+ return [next,past||[last?.text?[]:last,...syntax]].flat();
+},"@":function link(last,...syntax){return this.phrase(last).reduce((title,text)=>[{title,link:""},text?merge(last,{text}):[],syntax]);}
+ ,"#":function tag(last,...syntax){return this.phrase(last).reduce?.((title,text)=>title&&[{title,tag:""},text?merge(last,{text}):[],syntax])||[...arguments];}
+ ,"(":function action(last,...syntax)
+{if(!last.tag)
+ return false;
+ return [{action:"",layout:last.tag,title:last.title},syntax];
+},")":async function action(last,...syntax)
+{if(!last.layout)
+ return false;
+ let jsons=[...last.action.matchAll(new RegExp(/[{\[]{1}(?:[,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]|".*?")+[}\]]{1}/,"mg"))].map(([json])=>json);
+ let context=jsons.reduce((context,json)=>
+[context,context.pop().split(json).map(context=>context.replace(/(^,|,$)/g,"").replace(/(^"|"$)/g,"").replace(/(^'|'$)/g,"")).reduce((before,after)=>
+ [before,JSON.parse(json),after].filter(Boolean))
+].flat(),[last.action]);
+ let [source,options]=context;
+ let fragment=await compose(string(source)?compose(fetch,digest):infer(),{layout:last.layout,...options},transform)(source);
+ return [fragment,syntax];
+},"{":function style(last,...syntax)
+{if(last.text)
+ return last.text.at(-1)==="\n"?[{style:""},...arguments]:false;
+ let next=this[" "](...arguments);
+ if(next)
+ return [{style:""},next.slice(1)].flat();
+},"}":function style(last,node,...syntax)
+{//when({style:either(none,string)})(...arguments);
+ if(!last.style||last.text)
+ return false;
+ if(!node.nodeName)
+ return [merge(last,{text:""}),node,syntax];
+ node.style=last.style;
+ return [node,syntax];
+}};
+
  export var tests=
  {list:
 [{context:[{a:{b:"c",d:["e","f"]}}]
@@ -777,16 +776,23 @@
 [{"#text":"b",ul:{li:[{"#text":"c"}]}}
 ,{"#text":"d",ul:{li:[{"#text":"e"},{"#text":"f"}]}}
 ]}
- }]
-],condition:"deepEqual"
  }
-],denote:
- {link:{context:"Figure 1: Author_YEAR@reference.pdf ",terms:[1,"nodeName","A"],condition:"equal"}
- ,insert:{context:"Figure 1: Author_YEAR@reference.pdf#insert ",terms:[1,"nodeName","A"],condition:"equal"}
- ,image:{context:"Figure 1: Author_YEAR@image.png ",terms:[1,"nodeName","IMG"],condition:"equal"}
- ,tag:{context:"Figure 1: Author_YEAR#h1 ",terms:[1,"nodeName","H1"],condition:"equal"}
- ,style:["@reference.pdf","@image.png","#span"].map(fragment=>({context:"Figure 1: Author_YEAR"+fragment+"{width:0px;invert(1)} ",terms:[1,"style","width","0px"],condition:"equal"}))
- ,action:{context:"Figure 1: title#chart/plot([1,2]) ",terms:[1,"nodeName","svg"],condition:"equal"}
- }};
+]]
+ ,condition:"deepEqual"
+ }
+],parse:
+ {tag:{context:["Figure 1: Author_YEAR#h1 ",semiotics],terms:["childNodes",1,"nodeName","H1"],condition:"equal"}
+ ,link:{context:["Figure 1: Author_YEAR@reference.pdf ",semiotics],terms:["childNodes",1,"nodeName","A"],condition:"equal"}
+ ,insert:{context:["Figure 1: Author_YEAR@reference.pdf#insert ",semiotics],terms:["childNodes",1,"nodeName","A"],condition:"equal"}
+ ,image:{context:["Figure 1: Author_YEAR@image.png ",semiotics],terms:["childNodes",1,"nodeName","IMG"],condition:"equal"}
+ ,action:{context:["Figure 1: title#chart/plot([1,2]) ",semiotics],terms:["childNodes",1,"nodeName","svg"],condition:"equal"}
+ ,reflow:{context:["abc\n{text-align:left}\ndef",semiotics],terms:["childNodes",1,"nodeName","DIV"],condition:"equal"}
+ ,style:["@reference.pdf","@image.png","#span"].map(fragment=>({context:["Figure 1: Author_YEAR"+fragment+"{width:0px;filter:invert(1)} ",semiotics],terms:["childNodes",1,"style","width","0px"],condition:"equal"}))
+ ,immediate:{context:["Author_YEAR@image.png{width:100%} ",semiotics],terms:["childNodes",0],condition:when(is(compose("style","width",is("100%")),compose(note,"nodeName",is("IMG"))))}
+ ,mixed:{context:["abc\nAuthor_YEAR@reference.pdf\ndef\n{text-align:left}\nghi",semiotics],terms:["childNodes",3,"nodeName","DIV"],condition:"equal"}
+ ,noise:{context:["abc\n{text-align:left}\ndef\ng={h:1};",semiotics],terms:["childNodes",1,"nodeName","DIV"],condition:"equal"}
+ }
+ };
  if(!window)
+ // tests need a document environment ready. 
  await jsdom("http://localhost/");

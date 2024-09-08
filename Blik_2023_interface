@@ -1,9 +1,29 @@
-Interface@Blik_2023_interface.svg
+Interface@Blik_2024_jsinterface_3-2.png{position:relative;vertical-align:top;z-index:-1;width:100%;transform:translateY(150%);margin-top:-100%;} 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Interface#h1
 
 Ecmascript module interface for clients/imports/functions. 
 
 2024
 
+{text-align:left;}
 The semantically flexible javascript platform has been commonly constrained by several 
 syntactic/semantic variations in its ecosystem (commonjs, typescript, flow, jsx, purescript etc.) 
 that have required growing amounts of configuration and compilation to manage. 
