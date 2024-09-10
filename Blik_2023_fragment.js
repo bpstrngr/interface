@@ -245,10 +245,32 @@
  }})
  });
  viewer.linkService.setViewer(viewer);
- pdf.getDocument(file).promise.then(viewer.setDocument.bind(viewer));
- let {container}=viewer;
- container.append(document({style:{"#text":stylesheet(layout.pdfjs)}}));
- return container;
+ pdf.getDocument(file).promise.then(combine
+(viewer.setDocument.bind(viewer)
+,compose(1,"getPage",1,"getViewport",combine("width","height"),note
+,(width,height)=>viewer.container.append(document({style:{"#text":stylesheet(
+ {"div.pdfjs":
+ {"&:hover":{transform:"scale(1.1)"}
+ ,"&>div#viewer":
+ {width:"100%",height:"100%"
+ ,"&>div.page":
+ {margin:"auto",width:"100% !important",height:"unset !important","aspect-ratio":width/height
+ ,"background-image":"url('icon/blackboard.png')"
+ ,"&>.loadingIcon":{content:"",fill:"red","border-radius":"50%",width:"20px",height:"20px"}
+ ,"&~div.page>div.canvasWrapper>svg image":{opacity:0.3}
+ ,"&>div.canvasWrapper":
+ {width:"unset !important",height:"unset !important"
+ ,"&>svg":{width:"100% !important",height:"auto !important"}
+ ,"&>svg tspan":{fill:"var(--text,#dbd1b4)"}
+ ,"&>svg image":{opacity:0.3}
+ ,"&>svg path":{fill:"rgba(33,33,33,0.533)"}
+ }
+ }
+ }
+ }
+ })}})))
+));
+ return viewer.container;
 });
 };
 
@@ -694,12 +716,21 @@
  let postfix=compose(crop(2),infer,Function.call,collect,"flat",provide);
  let interpret=either
 (infer.bind(semiotics)
-,wether(compose(drop(-1),is(Error)),compose(note,drop(-1),exit),semiotics.text)
+,wether(compose(drop(-1),last=>last instanceof Error),compose(note,drop(-1),exit),semiotics.text)
 );
  let fold=compose("flat",provide,collect);
- let render=infer("map",node=>simple(node)
-?document(node.style?{div:{"#text":node.text,style:node.style}}:{"#text":node.text})
-:node);
+ let render=infer("reduce",function(syntax,node)
+{let reflow=simple(node)&&string(node.style);
+ let contingent=syntax.at(-1)?.className==="inline";
+ let redundant=contingent&&string(node.style)&&[syntax.at(-1).style.cssText,node.style].map(style=>
+ style?.replace(/ |;/g,"")).reduce((last,next)=>last===next);
+ let next=reflow&&!redundant
+ // global style rules can't be applied to inline elements, only in a div. 
+?document({div:{"#text":node.text,class:"inline",style:node.style}})
+:[contingent,simple(node)?document({"#text":node.text}):node].reduce((contingent,node)=>
+ contingent?syntax.at(-1).append(node)||[]:node);
+ return syntax.concat(next);
+},[]);
  let unfold=compose("reverse",render,document);
  return compose(Array.from,infer("reduce",compose(postfix,interpret,fold),[]),note,unfold)(text);
 };
@@ -709,33 +740,40 @@
  {text(text,last={},...syntax)
 {let field=Object.values(semiotics).map(({name})=>name).find(field=>defined(last[field]))||semiotics.text.name;
  let start=!simple(last);
- return [start?{text}:merge(last,{[field]:[last[field]||"",text].join("")}),start?last:[],...syntax];
+ let style=[last,...syntax].find(fragment=>simple(fragment)&&fragment.style)?.style;
+ return [start?{text,style}:merge(last,{[field]:[last[field]||"",text].join("")}),start?last:[],...syntax];
 },phrase(last)
 {if(!last?.text)
  return last;
  let {text}=last;
- let index=Math.max(..." \n".split("").map(space=>text.lastIndexOf(space)));
- let phrase=text.slice(index+1);
- return [phrase,text.slice(0,text.length-phrase.length)];
+ let parenthesized=text.endsWith(")");
+ let index=Math.max(...(parenthesized?"(":" \n").split("").map(space=>text.lastIndexOf(space)));
+ let phrase=text.slice(index+1,parenthesized?-1:undefined);
+ return [phrase,text.slice(0,text.length-phrase.length-parenthesized*2)];
 }," ":function terminate(last,past,...syntax)
 {let parenthesized=last?.action||string(last?.style);
  if(last?.text||parenthesized)
  return false;
  let [tag,link]="#@".split("").map(field=>last?.[semiotics[field].name]);
- if(!tag&&!link)
- return defined(tag??link)?[merge([past,{}].find(simple),{text:[past.text||"",last.title,defined(tag)?"#":"@"," "].join("")}),syntax]:false;
+ let noise=!/[a-zA-Z]/.test([tag,link].find(Boolean));
+ if(noise||!tag&&!link)
+ return defined(tag??link)
+?[merge([past,{}].find(simple),{text:[past.text||"",last.title,defined(tag)?"#":"@"," "].join(""),style:past.style}),syntax]
+:false;
  let next=last.link
-?reference(last.title,last.tag||last.link)
+?reference(last.title,last.link)
 :document({[last.tag]:{["#text"]:last.title.replace(/_/g," ")}});
- return [{text:" "},next,past,syntax];
+ let style=[past,...syntax].find(fragment=>simple(fragment)&&fragment.style)?.style;
+ return [{text:" ",style},next,past,syntax];
 },"\n":function terminate(last,...syntax)
 {let past=this[" "](...arguments).slice?.(1);
  if(!past&&string(last?.text))
  return false;
- let next={text:[last?.text||"","\n"].join("")};
+ let style=[last,...syntax].find(fragment=>simple(fragment)&&fragment.style)?.style;
+ let next={text:[last?.text||"","\n"].join(""),style};
  return [next,past||[last?.text?[]:last,...syntax]].flat();
-},"@":function link(last,...syntax){return this.phrase(last).reduce((title,text)=>[{title,link:""},text?merge(last,{text}):[],syntax]);}
- ,"#":function tag(last,...syntax){return this.phrase(last).reduce?.((title,text)=>title&&[{title,tag:""},text?merge(last,{text}):[],syntax])||[...arguments];}
+},"#":function tag(last,...syntax){return this.phrase(last).reduce?.((title,text)=>title&&[{title,tag:""},text?merge(last,{text}):[],syntax])||[merge(last,{tag:""}),...syntax];}
+ ,"@":function link(last,...syntax){return this.phrase(last).reduce((title,text)=>[{title,link:""},text?merge(last,{text}):[],syntax]);}
  ,"(":function action(last,...syntax)
 {if(!last.tag)
  return false;
@@ -752,8 +790,8 @@
  let fragment=await compose(string(source)?compose(fetch,digest):infer(),{layout:last.layout,...options},transform)(source);
  return [fragment,syntax];
 },"{":function style(last,...syntax)
-{if(last.text)
- return last.text.at(-1)==="\n"?[{style:""},...arguments]:false;
+{if(!last||last?.text)
+ return !last||last.text.at(-1)==="\n"?[{style:""},...arguments]:false;
  let next=this[" "](...arguments);
  if(next)
  return [{style:""},next.slice(1)].flat();
@@ -761,8 +799,8 @@
 {//when({style:either(none,string)})(...arguments);
  if(!last.style||last.text)
  return false;
- if(!node.nodeName)
- return [merge(last,{text:""}),node,syntax];
+ if(!node?.nodeName)
+ return [merge(last,{text:""}),node||[],syntax];
  node.style=last.style;
  return [node,syntax];
 }};

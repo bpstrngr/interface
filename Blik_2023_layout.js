@@ -66,27 +66,6 @@
  }
  };
 
- let pdfjs=
- {"div.pdfjs":
- {"&:hover":{transform:"scale(1.1)"}
- ,"&>div#viewer":
- {"&>div.page":
- {margin:"auto",width:"100% !important",height:"auto !important"
- ,"background-image":"url('icon/blackboard.png')"
- ,"&>.loadingIcon":{content:"",fill:"red","border-radius":"50%",width:"20px",height:"20px"}
- ,"&~div.page>div.canvasWrapper>svg image":{opacity:0.3}
- ,"&>div.canvasWrapper":
- {width:"100% !important",height:"auto !important"
- ,"&>svg":{width:"100% !important",height:"auto !important"}
- ,"&>svg tspan":{fill:"var(--text,#dbd1b4)"}
- ,"&>svg image":{opacity:0.3}
- ,"&>svg path":{fill:"rgba(33,33,33,0.533)"}
- }
- }
- }
- }
- };
-
  var vignette=
  {position:"relative",width:"fit-content",margin:"auto"
  ,"&>img":{width:"100%"}
@@ -143,10 +122,10 @@
  ,"& h2[onclick],.entry":{cursor:"pointer","&:hover":{transform:"scale(1.2)"}}
  ,"& .entry+span[id]":{position:"relative",overflow:"hidden",display:"none"}
  ,"& span[name]+span":{"white-space":"pre-wrap"}
- ,"&>span":
- {"vertical-align":"middle","font-size":"30px","line-height":"30px"
- ,"&:not([id]).entry":{position:"relative",display:"block",margin:"auto auto 30px",height:"auto",cursor:"pointer"}
- }
+ // ,"&>span":
+ // {"vertical-align":"middle","font-size":"30px","line-height":"30px"
+ // ,"&:not([id]).entry":{position:"relative",display:"block",margin:"auto auto 30px",height:"auto",cursor:"pointer"}
+ // }
  }
  ,media:
  {overflow:"visible",position:"relative","max-width":"100vw","max-height":"100vh"
@@ -259,6 +238,5 @@
  ,".gallery-group":{display:"inline-block"}
  }
  ,assistant:{"& input":{"font-size":"20px","font-family":"inherit",color:"rgb(144,164,174)","text-align":"center",border:"none",outline:"none","background-color":"transparent"},"& *":{display:"block",margin:"auto"}}
- ,pdfjs
  ,cloudflare:{"#cf_alert_div>div":{background:"black !important"}}
  };

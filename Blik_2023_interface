@@ -192,3 +192,5 @@ Issues:
  Swap Acorn's plugin-system for a composable parser to release acorn-typescript plugin dependency (compilers written in the language it compiles constitute a new platform. No native compiler exists for typescript). 
  Define typescript semantics for that new parser so it can be merged in its composition as needed (as well as for jsx, flow, etc.). 
  Establish functional type check convention to lint them without introduction of heterogenous (non-lexical) syntax (typescript, jsdocs etc.). 
+
+
