@@ -81,6 +81,17 @@
 ,{shortCircuit:true},merge,"resolution",refer
 );
 
+ export var locate=async function locate(action)
+{let [module,feature="default"]=action?.split("/")||["./Blik_2023_fragment.js","media"];
+ if(!module.includes("_"))
+ module=await [2020,new Date().getFullYear()].reduce((min,max)=>
+ Array(max-min).fill(max).map((year,index)=>year-index)).flatMap(year=>
+ ["Blik"].map(author=>"./"+[author,year,module].join("_")+".js")).reduce((file,module)=>
+ file.catch(fail=>this[module]=this[module]||import(module).then(swap(module)))
+,Promise.reject());
+ return [module,feature];
+}.bind({});
+
  export async function resolve(source,context,next)
 {// import module from source, infer context if provided. 
  // use as --loader/import module to do for each import. 
@@ -188,7 +199,7 @@
  // not returning bundle promise after assembly to unblock immediate resolution from source. 
 ,parts=>void(compose.call
 (parts.flatMap(({source})=>source).length>1?target+"/reexports.js":parts[0].source
-,parts.map(({format})=>format).reduce(merge,{})
+,parts
 ,bundle,slip(absolute),true,access
 ,"bundle ready.",note.bind(2)
 ).finally(done=>purge(target)))
@@ -259,31 +270,35 @@
  return {source,format};
 };
 
- export async function bundle(source,format={})
+ export async function bundle(source,parts)
 {if(!source)return;
  let [input,...multientry]=[source].flat();
  if(multientry.length)
  throw Error("Bundling requires singular entry point. Multiple sources must be exposed through reexports.");
  let path=await import("path");
  let relation=path.dirname(input);
- let alias=prune.call(format.alias||{},({1:alias})=>string(alias)&&/^\./.test(alias)&&
+ let formats=parts.map(({format})=>prune.call(format,([field,alias],trace)=>
+ trace.slice(-2).includes("alias")&&string(alias)&&/^\./.test(alias)&&
  // aliases are relative to "location", so offset external ones (not sharing bundle route) 
  // to "relation" in transform to match by reference for exclusion in resolution below. 
  [path.resolve(location,alias),relation].map(address=>
  path.relative(location,address).split("/")).reduce(([route],[bundle])=>
  route!==bundle)
 ?"./"+path.relative(location,path.resolve(relation,alias))
-:alias);
- let relativeformat=[format].reduce(merge,{alias});
- let plugins=await Object.entries(format).filter(([field])=>
- /^\./.test(field)).reduce(record(([plugin,settings])=>resolve(plugin,"default",settings)),[
- {name:"interface"
+:alias));
+ let format=address=>formats.find((format,index)=>path.relative(location,address).split("/")[1]==index)||formats.reduce(merge,{});
+ let plugins=await compose.call
+ // rollup plugins shall be deprecated in favor of Interface source formats. 
+(formats,tether(prune,([field,value])=>/^\./.test(field)?value:undefined,true,1)
+,Object.entries,infer("reduce",record(([plugin,settings])=>resolve(plugin,"default",settings)),
+[{name:"interface"
  ,transform:(source,address)=>compose.call
 ("url","pathToFileURL",address,resolve,"href"
-,{format:relativeformat},load,code=>({code,map:{mappings:''}})
+,{format:format(address)}
+,load,code=>({code,map:{mappings:''}})
 ),resolveId:(source,client)=>client
 ?/^\./.test(source)
-?Object.values(format.alias||{}).includes("./"+path.relative(relation,path.resolve(path.dirname(client),source)))
+?Object.values(format(client).alias||{}).includes("./"+path.relative(location,path.resolve(path.dirname(client),source)))
 ?false
 :["","/index.js","/index.ts",".js",".ts"].map(extension=>
  path.resolve(path.dirname(client),source.replace(/\/$/,"")+extension)).reduce((source,alias)=>
@@ -291,7 +306,9 @@
 ,Promise.resolve(null))
 :null
 :null
- }]);
+ }
+])
+);
  note.call(3,"bundling "+source+"...");
  let {rollup}=await import("./Harris_2015_rollup.js");
  let bundle=await rollup({input,plugins,...format.input});
@@ -326,7 +343,7 @@
  Object.assign(context,{format:format="typescript"});
  if(format==="commonjs")
  // don't trust default assumption from nearest package.json as it often refers to inaccessible build outputs. 
- await require(target).catch(fail=>
+ await require(note(target)).catch(fail=>note(fail)&&
  Object.assign(context,{format:format="module"}));
  let native=["json","module","wasm","builtin","commonjs",undefined].includes(format);
  if(native&&next)
@@ -341,10 +358,12 @@
  console.log(scope[target].tests="\x1b[4m"+source+"\x1b[0m:\n"+result))))&&module
 :module
 );
+ let relative=await resolve("path","relative",location, target);
+ let {1:index}=relative.split("/");
  let {comment,...definition}=
 [{syntax}
 ,typeof format==="object"?format||{}:await import(sources).then(sources=>
- [sources.default[format]||{}].reduce(function flat(entries,source)
+ [Object.values(sources.default[format]||{})[index]||sources.default[format]||{}].reduce(function flat(entries,source)
 {return [entries,!compound(source)||array(source)?source:Object.values(source).reduce(flat,[])].flat();
 },[]).filter(compound).map(entry=>
  // replacement definitions only apply to bundled output. use "edit" to modify loading sources. 
@@ -560,7 +579,8 @@
  await module.link((identifier,{context})=>
  /^[a-z]/.test(identifier)
 ?import(identifier).then(module=>new SyntheticModule(Object.keys(module),function()
-{Object.entries(module).reduce((module,entry)=>module.setExport(...entry)||module,this);
+{Object.entries(module).reduce((module,entry)=>
+ module.setExport(...entry)||module,this);
 },{identifier,context}))
 :access(identifier,true).then(source=>
  modularise(source,identifier,context)));

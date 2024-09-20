@@ -1,6 +1,7 @@
  import {note,prompt,when,pattern,revert,clock,observe,is,has,same,slip,something,compound,infer,tether,wether,collect,provide,route,buffer,differ,compose,combine,either,drop,crop,swap,record,wait,exit,pass,remember,binary,simple,array} from "./Blik_2023_inference.js";
  import {resolve,access,list,window,jsdom,fetch,mime,persist,version,compress,stage} from "./Blik_2023_interface.js";
- import {search,merge,sum,module} from "./Blik_2023_search.js";
+ import {search,merge,sum,prune} from "./Blik_2023_search.js";
+ import {scope} from "./Blik_2023_meta.js";
  import local from "./Blik_2023_host.js";
 
  export var classified=["*.git*"].map(term=>RegExp("^"+term.replace(/\./g,"\\.").replace(/\*/g,".*")+"$"));
@@ -14,13 +15,20 @@
 {if(typeof request!="object")
  request={url:request};
  let {pathname}=await resolve("url","parse",request.url,true);
- let address=await resolve("path","resolve","./"+decodeURI(pathname));
+ let [path]=decodeURI(pathname).split("/");
+ let address=await resolve("path","resolve","./"+path);
  if(!permit(address,classified))
  throw Error("Classified");
  let file=await access(address);
  if(!file.isDirectory())
  return access(address,request.query?.encoding||"binary");
- return compose.call(address,true,classified,list,module(this||{}),merge);
+ return compose.call
+(address,true,classified,list
+,tether(prune,([field,value],path)=>value===null?function()
+{return access([path,field].flat().join("/"),request.query?.encoding||"binary");
+}:value)
+,scope(this||{}),merge
+);
 },async put(request)
 {let {pathname:address}=await resolve("url","parse","."+request.url,true);
  if(!permit(address,classified))
@@ -57,17 +65,17 @@
  // return persistence,history,fork(),"process split.";
  encrypt(parameters.hmac);
  await jsdom([protocol,"//localhost",parameters.port].join(":"));
- [protocol,source]=await resolve([protocol,source]);
- let certificates=protocol.globalAgent.protocol=="https:"?[certify(Object.values(parameters.certification)[0],parameters.distinguishedname)]:[];
+ let [agent,{default:routes,broadcast}]=await resolve([protocol,source]);
+ let certificates=agent.globalAgent.protocol=="https:"?[certify(Object.values(parameters.certification)[0],parameters.distinguishedname)]:[];
  let virtualize=Object.entries(parameters.certification||{}).slice(1).map(([name,certificate])=>
  compose(name,certify(certificate,parameters.distinguishedname),combine("addContext",crop(1)),drop(1)));
- let report=compose(combine(swap(protocol.globalAgent.protocol,"//"),either("_connectionKey",swap(parameters.port))),"/",collect,infer("join",""),"open",note.bind(2));
+ let report=compose(combine(swap(agent.globalAgent.protocol,"//"),either("_connectionKey",swap(parameters.port))),"/",collect,infer("join",""),"open",note.bind(2));
  return compose
 ("createServer",parameters.port
 ,revert((listen,cancel,host,port)=>host.listen(port,infer(listen))),...virtualize
-,combine(infer(),report,compose(slip("./Blik_2024_room.js","open"),resolve))
+,combine(infer(),report,compose(broadcast,slip("./Blik_2024_room.js","open"),resolve))
 ,revert((close,cancel,channel)=>observe.call(channel,{close}))
-)(protocol,...certificates,compose(source,memory&&{},tether(receive)));
+)(agent,...certificates,compose(routes,memory&&{},tether(receive)));
  // function listen(port)
  //{let response={end(body){return {...this.header,body};},setHeader(header){this.header={header}},writeHead(){}};
  // compose(prompt,agent,"url",describe,{headers:{},method:"get"},merge
@@ -87,7 +95,7 @@
  function respond(response,source,memory)
 {let route=wether(compose(drop(1),"url",/^http/,"match"),tether(fetch),compose(tether(recall),this,stage));
  let retrieve=memory?remember.call(memory,compose(drop(1),route),distinction):route;
- return compose(combine(notify,retrieve),pass(report),drop(1,3),response||this,tether(submit))(source.default,this);
+ return compose(combine(notify,retrieve),pass(report),drop(1,3),response||this,tether(submit))(source,this);
 };
 
  async function recall(request)

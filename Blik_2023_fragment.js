@@ -1,4 +1,4 @@
- import {resolve,modularise,window,jsdom,fetch,mime,digest} from "./Blik_2023_interface.js";
+ import {locate,resolve,modularise,window,jsdom,fetch,mime,digest} from "./Blik_2023_interface.js";
  import {note,provide,collect,slip,infer,either,each,pass,tether,buffer,differ,compose,revert,refer,record,combine,wether,swap,compound,something,string,defined,simple,exit,route,drop,crop,same,major,binary,is,array,pdflike,when} from "./Blik_2023_inference.js";
  import {search,merge,prune} from "./Blik_2023_search.js";
  import {serialize,proceduralize} from "./Blik_2023_meta.js";
@@ -8,7 +8,7 @@
  modules.map(module=>module.default||module));
 
  export function document(source,namespace,language)
-{if(this)
+{if(this?.nodeName)
  return (source.nodeName?[source]:(Symbol.iterator in source)?Array.from(source):Object.entries(source)).reduce((node,entry)=>(entry.nodeName
 ?!node.nodeName
 ?node[entry.nodeName]=entry.nodeValue
@@ -198,27 +198,19 @@
  return Object.fromEntries([...new this.ownerDocument.defaultView.FormData(this)]);
 };
 
- var modules={};
-
  export async function transform(resource,{incumbent,...fields})
 {if(resource instanceof ArrayBuffer)
  resource=new Uint8Array(resource);
  if(pdflike(resource))resource=await print(resource);
  let {layout}=fields;
- fields.layout={[fields.layout]:null,fragment:"media",script:null,chart:"plot",network:null};
+ fields.layout={fragment:"media",script:null,chart:"plot",network:null};
  if(!fields.layout&&either(simple,array,swap(false))(resource))
  fields.layout="network";
- if(this)
+ if(this?.nodeName?.toLowerCase()==="form")
  form.call(this,{get:{...fields,...(simple(resource)||array(resource))&&{source:resource}}})
 ,fill.call(this,fields);
- let [module,feature="default"]=layout?.split("/")||["./Blik_2023_fragment.js","media"];
- if(!module.includes("_"))
- module=await [2020,new Date().getFullYear()].reduce((min,max)=>
- Array(max-min).fill(max).map((year,index)=>year-index)).flatMap(year=>
- ["Blik"].map(author=>"./"+[author,year,module].join("_")+".js")).reduce((file,module)=>
- file.catch(fail=>modules[module]=modules[module]||import(module).then(swap(module)))
-,Promise.reject());
- let product=await compose(resolve,either(infer(feature,resource,fields,incumbent||window),drop(-1)))(module);
+ let [module,feature]=await locate(layout);
+ let product=await buffer(infer(resolve))(module,feature,resource,fields,incumbent||window);
  return product;
  let values=this?.elements?.source?.parentNode?.querySelector("ul");
  if(values)
@@ -647,6 +639,9 @@
 
  export function expose()
 {// route events to disposed actions. 
+ var {actions}=import("./actions").then(module=>actions=module.default);
+ var {events}=import("./Blik_2023_fragment.js").then(module=>events=module.events);
+ var {peer}=import("./peer").then(module=>peer=module);
  Object.assign(globalThis
 ,{dispatch(event)
 {if(!events||!actions)
@@ -658,7 +653,7 @@
  // asynchronous dispatch won't prevent synchronous default. 
 },async onmessage(event)
 {//if(event.target===this)return;
- if(!receipt||!globalThis.socket)
+ if(!peer||!globalThis.socket)
  return setTimeout(globalThis.onmessage.bind(this,event),500);
  let {data:message}=event;
  console.log({[event.type]:message.action});
@@ -666,15 +661,12 @@
 },worker:import("./Blik_2023_interface.js").then(({delegate})=>delegate("./worker")).then(worker=>
  Object.assign(globalThis,{worker})).catch(fail=>delete globalThis.worker&&
  console.log("Worker not available at ./worker."))
- });
- var {actions}=import("./actions").then(module=>actions=module.default);
- var {receipt}=import("./Blik_2024_room.js").then(module=>receipt=module.receipt);
- var {events}=import("./Blik_2023_fragment.js").then(module=>events=module.events);
- var socket="ws"+(/s/.test(globalThis.location.protocol)?"s":"")+"://"+globalThis.location.host;
- globalThis.socket=Object.assign(new WebSocket(socket),{onmessage(event)
+ ,socket:Object.assign(new WebSocket("ws"+(/s/.test(globalThis.location.protocol)?"s":"")+"://"+globalThis.location.host)
+,{onmessage(event)
 {let message=JSON.parse(event.data);
- receipt[message.type||"message"]?.call(this,message);
-}});
+ peer[message.type||"message"]?.call(this,message);
+}})
+ });
 };
 
  export function dispose(){if(globalThis.window)Object.assign(window.actions,actions);}
@@ -713,12 +705,18 @@
  export function parse(text,semiotics)
 {if(!semiotics)
  exit("no semiotics provided for parsing text");
- let postfix=compose(crop(2),infer,Function.call,collect,"flat",provide);
- let interpret=either
-(infer.bind(semiotics)
-,wether(compose(drop(-1),last=>last instanceof Error),compose(note,drop(-1),exit),semiotics.text)
-);
- let fold=compose("flat",provide,collect);
+ let interpret=infer("reduce"
+// ,compose(crop(2),collect,"reverse","flat",provide
+// ,either(infer.bind(semiotics)
+// ,wether(compose(drop(-1),last=>last instanceof Error),compose(note,drop(-1),exit),semiotics.text)),"flat")
+// ,[]);
+,compose
+(async function(syntax,text)
+{let next=await semiotics[text]?.(...syntax.flat());
+ if(!next)
+ return semiotics.text(text,...syntax.flat());
+ return next;
+}),[]);
  let render=infer("reduce",function(syntax,node)
 {let reflow=simple(node)&&string(node.style);
  let contingent=syntax.at(-1)?.className==="inline";
@@ -731,8 +729,7 @@
  contingent?syntax.at(-1).append(node)||[]:node);
  return syntax.concat(next);
 },[]);
- let unfold=compose("reverse",render,document);
- return compose(Array.from,infer("reduce",compose(postfix,interpret,fold),[]),note,unfold)(text);
+ return compose(Array.from,interpret,note,"reverse",render,document)(text);
 };
 
  export var semiotics=
@@ -741,7 +738,10 @@
 {let field=Object.values(semiotics).map(({name})=>name).find(field=>defined(last[field]))||semiotics.text.name;
  let start=!simple(last);
  let style=[last,...syntax].find(fragment=>simple(fragment)&&fragment.style)?.style;
- return [start?{text,style}:merge(last,{[field]:[last[field]||"",text].join("")}),start?last:[],...syntax];
+ if(start)
+ return [{text,style},last,...syntax];
+ last[field]=[last[field]||"",text].join("");
+ return [last,...syntax];
 },phrase(last)
 {if(!last?.text)
  return last;
@@ -767,34 +767,34 @@
  return [{text:" ",style},next,past,syntax];
 },"\n":function terminate(last,...syntax)
 {let past=this[" "](...arguments).slice?.(1);
- if(!past&&string(last?.text))
+ if(!past&&string(last?.text)||string(last?.action))
  return false;
  let style=[last,...syntax].find(fragment=>simple(fragment)&&fragment.style)?.style;
  let next={text:[last?.text||"","\n"].join(""),style};
  return [next,past||[last?.text?[]:last,...syntax]].flat();
-},"#":function tag(last,...syntax){return this.phrase(last).reduce?.((title,text)=>title&&[{title,tag:""},text?merge(last,{text}):[],syntax])||[merge(last,{tag:""}),...syntax];}
+},"#":function tag(last,...syntax){if(last?.action||last?.text?.endsWith(" "))return false;return this.phrase(last).reduce?.((title,text)=>title&&[{title,tag:""},text?merge(last,{text}):[],syntax])||[merge(last,{tag:""}),...syntax];}
  ,"@":function link(last,...syntax){return this.phrase(last).reduce((title,text)=>[{title,link:""},text?merge(last,{text}):[],syntax]);}
  ,"(":function action(last,...syntax)
 {if(!last.tag)
  return false;
  return [{action:"",layout:last.tag,title:last.title},syntax];
 },")":async function action(last,...syntax)
-{if(!last.layout)
+{if(!last.layout||[/[{\[]/g,/[}\]]/g].map(parentheses=>Array.from(last.action?.matchAll(parentheses)||[]).length).reduce((open,close)=>open!==close))
  return false;
+ let [module,feature]=await locate(last.layout);
  let jsons=[...last.action.matchAll(new RegExp(/[{\[]{1}(?:[,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]|".*?")+[}\]]{1}/,"mg"))].map(([json])=>json);
  let context=jsons.reduce((context,json)=>
 [context,context.pop().split(json).map(context=>context.replace(/(^,|,$)/g,"").replace(/(^"|"$)/g,"").replace(/(^'|'$)/g,"")).reduce((before,after)=>
  [before,JSON.parse(json),after].filter(Boolean))
-].flat(),[last.action]);
- let [source,options]=context;
- let fragment=await compose(string(source)?compose(fetch,digest):infer(),{layout:last.layout,...options},transform)(source);
+].flat(),[last.action]).flatMap(term=>string(term)?term.replace(/^["']|['"]$/g,"").split(/["'] *, *["']/g):[term]);
+ let fragment=await buffer(infer(resolve))(module,feature,...context);
  return [fragment,syntax];
 },"{":function style(last,...syntax)
 {if(!last||last?.text)
  return !last||last.text.at(-1)==="\n"?[{style:""},...arguments]:false;
  let next=this[" "](...arguments);
- if(next)
- return [{style:""},next.slice(1)].flat();
+ if(next||last.nodeName)
+ return [{style:""},next?next.slice(1):[last,...syntax]].flat();
 },"}":function style(last,node,...syntax)
 {//when({style:either(none,string)})(...arguments);
  if(!last.style||last.text)

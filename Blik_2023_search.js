@@ -16,9 +16,9 @@
 ,source);
 };
 
-export function sum(...context)
-{// cumulate context values.
- return context.flat().map((term)=>Number(term)||0).reduce((sum,value)=>sum+value,0);
+ export function sum(...context)
+{// cumulate context values. 
+ return context.flat().map(term=>Number(term)||0).reduce((sum,value)=>sum+value,0);
 };
 
  export function extreme(series)
@@ -149,25 +149,17 @@ export function kmeans(samples, bounds, size, projection) {
  return Object.fromEntries([range,subrange].flat());
 }
 
-export function route(scope, term, path) {
-  // insert/invoke term in scope on given path.
-  if (!scope) return;
-  let paths = [path(scope, term)].flat().filter((path) => (path ?? false) !== false);
-  if (!paths.length) return;
-  let descended = paths.find((field) => route(scope[field], term, path));
-  if (descended) return descended;
-  let entries = paths.map((path) => [
-    path,
-    term instanceof Function ? term([path, scope[path]]) : term,
-  ]);
-  return entries.reduce(
-    record(([path, term]) =>
-      infer(term, (term) =>
-        Array.isArray(scope) ? scope.splice(path, 0, term) : Object.assign(scope, { [path]: term })
-      )
-    ),
-    []
-  );
+ export function route(scope,term,path)
+{// insert/invoke term in scope on given path.
+ if(!scope)return;
+ let paths=[path(scope,term)].flat().filter(path=>(path??false)!==false);
+ if(!paths.length)return;
+ let descended=paths.find(field=>route(scope[field],term,path));
+ if(descended)return descended;
+ let entries=paths.map(path=>[path,term instanceof Function?term([path,scope[path]]):term]);
+ return entries.reduce(record(([path,term])=>infer(term,term=>
+ Array.isArray(scope)?scope.splice(path,0,term):Object.assign(scope,{[path]:term})))
+,[]);
 }
 
  export function prune(term,collapse,limit=[],path=[])
@@ -178,17 +170,18 @@ export function route(scope, term, path) {
  if(!entries.length)
  for(let field in scope)entries.push([field,scope[field]]);
  entries=entries.flatMap(function([field,source],index,entries)
-{if(numeric(limit)?path.length===limit:[limit].flat().some(limit=>
+{let terminal=numeric(limit)?path.length===limit:[limit].flat().some(limit=>
 [[limit],[array(limit)?path:[],field]
-].map(compose("flat","/","join")).reduce(Object.is)))
- return [arguments[0]];
+].map(compose("flat","/","join")).reduce(Object.is))
  let value=term.call(scope,[field,source],path);
  let pluck=!defined(value);
- if(pluck&&!collapse)
+ if(pluck&&(!collapse||terminal))
  return [];
+ if(terminal)
+ return [[field,value]];
  let graft=pluck&&collapse;
  let range=[...plural(graft?source:value)].map(scope=>
- prune.call(scope,term,collapse,limit,graft?path:path.concat(field)));
+ prune.call(scope,term,collapse,limit,path.concat(field)));
  return range.flatMap(scope=>graft
 ?Object.entries(compound(scope)?scope:{})
 :[[field,scope]]);
@@ -325,11 +318,6 @@ export function isolate(path)
  export function extract(fields)
 {if(!this)return tether(extract,fields);
  return [fields].flat().reduce((term,field)=>merge(term,{[field]:this[field]}),{});
-};
-
- export function module(source)
-{return Object.fromEntries(Object.entries(source).map(([field,term])=>
- [field,compound(term)?module(term):term?String(term):term]))
 };
 
  export const tests=
