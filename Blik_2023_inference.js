@@ -99,7 +99,9 @@
  let attach=term instanceof Function&&prefix.test(term.name)&&term;
  let attend=!prebound&&!attach&&defined(scope??undefined)&&!Array.isArray(term)
 ?[Object(scope),detach||term].reduce((domain,term)=>term instanceof Function
-?fields(domain?.buffer instanceof ArrayBuffer?Object.getPrototypeOf(domain):domain).find(field=>{try{return Object.is(Reflect.get(domain,field),term);}catch(fail){};})&&term
+?fields(domain?.buffer instanceof ArrayBuffer?Object.getPrototypeOf(domain):domain).find(field=>
+{try{return Object.is(Reflect.get(domain,field),term);}catch(fail){};
+})&&term
 :Reflect.get(domain,term?.toString?term:null))
 :undefined;
  let bound=attach||attend;
@@ -351,6 +353,47 @@
  return provide(context);
 };
 
+ var stack=compose
+ // parse nodejs stack trace entry. 
+(either
+(infer("match",compose(Object.values,infer("map",infer("source")),"","join",RegExp)(
+ // at object.property/Promise.all
+ {term:/at(?: async){0,1}(?: (Promise\.all|.*) | )/
+ // (protocol:path/file:line:index)/(index 0)/(<anonymous>)
+ ,location:/\(*((?:index [0-9]+)|(?:.+?(?::[0-9]+){0,2}))\)*$/
+ }))
+,swap([])
+),infer("slice",1),infer("map",match=>match||"anonymous")
+);
+
+ export function trace(term,path=[])
+{// trace term in scope or stack. 
+ if(!something(term))
+ return compose.call
+(Error,combine
+ // collect stack trace. 
+(infer()
+,compose(...combine(2)("stackTraceLimit"),refer)
+,compose
+({stackTraceLimit:Infinity},Object.assign
+,Function.call,"stack",/\n */,"split",infer("slice",1)
+,infer("map",stack)
+,"reverse"
+)
+)
+,combine(drop(2),compose(crop(2),Object.assign))
+,crop(1)
+,combine(infer(),swap(0),infer("findIndex",([term])=>term===trace.name)),infer("slice")
+);
+ let scope=this;
+ if(scope===term||!scope)
+ return path;
+ return Object.entries(scope).reduce((hit,[track,scope])=>hit||
+ [term===scope,path.concat(track)].reduce((hit,path)=>
+ hit?path:(typeof scope=="object")?trace.call(term,scope,path):undefined)
+,undefined);
+};
+
  export function observe(action,register)
 {// construct event (pair) fragments for extensions (css pseudoclasses for js)
  // and (un)register them directly on bound Node.
@@ -531,47 +574,6 @@
  return time+zeros+value+separator;
 });
  return time;
-};
-
- var stack=compose
- // parse nodejs stack trace entry. 
-(either
-(infer("match",compose(Object.values,infer("map",infer("source")),"","join",RegExp)(
- // at object.property/Promise.all
- {term:/at(?: async){0,1}(?: (Promise\.all|.*) | )/
- // (protocol:path/file:line:index)/(index 0)/(<anonymous>)
- ,location:/\(*((?:index [0-9]+)|(?:.+?(?::[0-9]+){0,2}))\)*$/
- }))
-,swap([])
-),infer("slice",1),infer("map",match=>match||"anonymous")
-);
-
- export function trace(term,path=[])
-{// trace term in scope or stack. 
- if(!something(term))
- return compose.call
-(Error,combine
- // collect stack trace. 
-(infer()
-,compose(...combine(2)("stackTraceLimit"),refer)
-,compose
-({stackTraceLimit:Infinity},Object.assign
-,Function.call,"stack",/\n */,"split",infer("slice",1)
-,infer("map",stack)
-,"reverse"
-)
-)
-,combine(drop(2),compose(crop(2),Object.assign))
-,crop(1)
-,combine(infer(),swap(0),infer("findIndex",([term])=>term===trace.name)),infer("slice")
-);
- let scope=this;
- if(scope===term||!scope)
- return path;
- return Object.entries(scope).reduce((hit,[track,scope])=>hit||
- [term===scope,path.concat(track)].reduce((hit,path)=>
- hit?path:(typeof scope=="object")?trace.call(term,scope,path):undefined)
-,undefined);
 };
 
  // OBSOLETE (weak variations of provide, infer, compose, tether) 

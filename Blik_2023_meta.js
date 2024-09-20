@@ -56,8 +56,8 @@
  let disjunction=estree[syntax];
  if(disjunction)
  grammar=prune.call(grammar,function([field,value],path)
-{let term=Object.values(disjunction).find(({condition})=>condition.call(this,value,field,path));
- return term?term.ecma.call(this,value,field,path):value;
+{return Object.entries(disjunction).reduce((value,{1:{condition,ecma}})=>
+ value&&condition.call(this,value,field,path)?ecma.call(this,value,field,path):value,value);
 });
  let imports=grammar.body.filter(value=>value?.type==="ImportDeclaration");
  let namespaces=imports.flatMap(value=>value.specifiers.map(({local})=>[local.name,value.source.name]));
@@ -270,11 +270,10 @@
  {method:{condition(value){return value?.type==="MethodDefinition"&&value?.value?.type==="TSDeclareMethod";},ecma(){return undefined;}}
  ,expression:
  {condition(value){return ["TSAsExpression","TSNonNullExpression"].includes(value?.type);}
- ,ecma(value)
+ ,ecma(value,field)
 {// embedded expressions need more robust drilling than this disjunction. 
- let expression=value.expression?.expression||value.expression;
- delete value.expression;
- return expression?{...value,...expression}:value;
+ let expression=[value.expression?.expression,value.expression].find(compound);
+ return expression?[value,{expression:undefined,...expression}].reduce(merge,{}):value;
 }}
  ,interface:
  {condition(value){return ["TSInterfaceDeclaration","TSTypeAliasDeclaration","TSEnumDeclaration"].includes(value?.type);}
@@ -307,8 +306,42 @@
 ]};
 }}
  ,genericinstance:{condition(value){return value?.type==="TSInstantiationExpression";},ecma(value){return value.expression;}}
- ,declaredproperty:{condition(value){return value?.type==="PropertyDefinition"&&value.declare;},ecma(){return undefined;}}
- ,implicitproperty:{condition(value,field)
+ ,declaredproperty:{condition(value){return value?.type==="PropertyDefinition"&&(value.declare||!value.value);},ecma(){return undefined;}}
+ ,assignedproperty:{condition(value)
+{return value?.type==="ClassDeclaration"&&
+ value.body.body.some(value=>value.type==="PropertyDefinition"&&!value.static&&value.value);
+},ecma(value)
+{let structure=Array.from(value.body.body);
+ let properties=structure.filter((value,index,structure)=>
+ value.type==="PropertyDefinition"&&!value.static&&value.value&&delete structure[index]);
+ let assignments=properties.map(({key,value},index)=>({type:"ExpressionStatement",expression:
+ {type:"AssignmentExpression",operator:"="
+ ,left:{type:"MemberExpression",object:{type:"ThisExpression"},property:key}
+ ,right:value
+ }}));
+ let method=structure.findIndex(value=>value?.kind==="constructor");
+ if(!structure[method])
+ method=structure.unshift(
+ {type:"MethodDefinition",kind:"constructor"
+ ,key:{type:"Identifier",name:"constructor"}
+ ,value:{type:"FunctionExpression",params:[],body:{type:"BlockStatement"}}
+ })%structure.length;
+ let body=Array.from(structure[method].value.body.body||
+[value.superClass
+?{type:"ExpressionStatement",expression:
+ {type:"CallExpression",callee:{type:"Super"}
+ ,arguments:[{type:"SpreadElement",argument:{type:"Identifier",name:"arguments"}}]
+ ,optional:false
+ }
+ }
+:[]
+].flat());
+ let index=body.findIndex(statement=>statement.expression?.callee?.type==="Super")+1;
+ body.splice(index,0,...assignments);
+ structure[method]=[structure[method],{value:{body:{body}}}].reduce(merge,{});
+ return [value,{body:{body:structure.flat()}}].reduce(merge,{});
+}}
+ ,implicitproperty:{condition(value)
 {return value?.type==="ClassDeclaration"&&
  value.body.body.find(({kind})=>kind==="constructor")?.value.params.some(({type})=>type==="TSParameterProperty");
 },ecma(value)
@@ -316,17 +349,19 @@
  let index=structure.findIndex(({kind})=>kind==="constructor");
  let method=structure[index];
  let {value:{params,body:{body}}}=method;
- let properties=params.filter(({type})=>type==="TSParameterProperty").map(({parameter})=>({type:"PropertyDefinition",key:parameter,value:null}));
- let assignments=properties.map(({key})=>({type:"ExpressionStatement",expression:
- {type:"AssignmentExpression", operator:"="
- ,left:{type:"MemberExpression",object:{type:"ThisExpression"},property:key.left||key}
- ,right:key.left||key
+ let implicit=params.filter(({type})=>type==="TSParameterProperty");
+ let assignments=implicit.map(({parameter},index)=>({type:"ExpressionStatement",expression:
+ {type:"AssignmentExpression",operator:"="
+ ,left:{type:"MemberExpression",object:{type:"ThisExpression"},property:parameter.left||parameter}
+ ,right:!parameter.right
+ ?parameter.left||parameter
+ :["LogicalExpression",parameter].reduce((type,{left,right})=>({type,operator:"||",left,right}))
  }}));
  let inheritence=body.findIndex(statement=>statement.expression?.callee?.type==="Super")+1;
  params=[Array(params.length).fill(undefined),params.map(param=>param.type==="TSParameterProperty"?param.parameter:param)].flat();
  body=[Array(body.length).fill(undefined),body.slice(0,inheritence),assignments,body.slice(inheritence)].flat();
  method=[method,{value:{params,body:{body}}}].reduce(merge,{});
- structure={...[Array(structure.length).fill(undefined),properties,structure].flat(),[index+structure.length+properties.length]:method};
+ structure={...[Array(structure.length).fill(undefined),structure].flat(),[index+structure.length]:method};
  return [value,{body:{body:structure}}].reduce(merge,{});
 }}
  ,annotation:{condition(value){return value?.type?.startsWith("TS");},ecma(){return undefined;}}
@@ -356,7 +391,13 @@
 :(" var {default:"+names[0]+"}=await resolve(\""+module+"\");")).join("\n")
 ,exports=!exports?""
 :[Object.entries(exports||{}).map(([field,term])=>
- "export "+({default:field+" "}[field]||("var "+field+"="))+reify(term)).join("\n\n")
+ "export "+({default:field+" "}[field]||!is(Function)(term)&&"var "+field+"="||"")+
+ reify(term).replace(/^([a-zA-Z]+)( *)([a-zA-Z]*)/,(match,declaration,space,name)=>term instanceof Function
+ // functions may be serialized as "name(){}", "function(){}", or with a name different from the object field. 
+?![name,declaration].includes(field)
+?"var "+field+"="+"function"+[declaration,name].find(name=>name!=="function").replace(/^(.)/," $1")
+:["function",space||" ",field].join("")
+:name)).join("\n\n")
 ,""].join("\n");
  procedures=[procedures].flat().filter(Boolean).map(proceduralize);
  let output=compose(collect,infer("filter",Boolean),"\n\n","join",)(imports,exports,...procedures);
@@ -404,18 +445,16 @@
 //  return module;
 // };
 
-export async function imports(syntax,format={}) {
-  if(typeof syntax==="string")
-  syntax=await stream(syntax,true,access,format.syntax,{...format,source:await import("url").then(({pathToFileURL:url})=>url(syntax))},parse);
-  let path=await import("path");
-  let terms = search.call(syntax,([field,scope])=>["Declaration", "Expression"].map((type) => "Import" + type).includes(scope?.type));
-  let sources = Object.values(terms)
-    .map(({ source }) => source.value)
-    .filter((source) => source?.startsWith("."))
-    .map((peer) => path.resolve(path.dirname(syntax.meta.url.pathname), peer));
-  sources = await sources.reduce(record(async source=>
-  stream(source,format,imports)), []);
-  return { [syntax.meta.url.pathname]: sources.reduce(merge, {}) };
+ export async function imports(syntax,format={})
+{if(typeof syntax==="string")
+ syntax=await stream(syntax,true,access,format.syntax,{...format,source:await import("url").then(({pathToFileURL:url})=>url(syntax))},parse);
+ let path=await import("path");
+ let terms=search.call(syntax,([field,scope])=>["Declaration","Expression"].map(type=>"Import"+type).includes(scope?.type));
+ let sources=Object.values(terms).map(({source})=>source.value).filter(source=>source?.startsWith(".")).map(peer=>
+ path.resolve(path.dirname(syntax.meta.url.pathname),peer));
+ sources=await sources.reduce(record(async source=>
+ stream(source,format,imports)),[]);
+ return {[syntax.meta.url.pathname]:sources.reduce(merge,{})};
 }
 
  export async function exports(source)
@@ -428,18 +467,17 @@ export async function imports(syntax,format={}) {
  [declaration.declarations||declaration].flat().map(({id})=>id.name)]]
 :[[source.meta.url.pathname.replace(/\/.*?$/,"/")+reexport.value,"*"]])
 ,infer("map",Object.fromEntries)
-,infer("reduce",(exports,entry)=>merge(exports,entry,0))
+,infer("reduce",(exports,entry)=>merge(exports,entry,0),{})
 ,Object.entries
 ,infer("map",([source,names])=>[source,["",names].flat()])
 ,Object.fromEntries
 );
- let module = await import(source);
- let sources = await stream(imports(source), source, Reflect.get);
- await prune.call(sources, ([path, term]) =>
- exports(path).then((exports) => [term, exports].reduce(merge))
- );
- let scopes = scope(module);
- return [sources, scopes].reduce(merge);
+ let module=await import(source);
+ let sources=await stream(imports(source),source,Reflect.get);
+ await prune.call(sources,([path,term])=>
+ exports(path).then(exports=>[term,exports].reduce(merge)));
+ let scopes=scope(module);
+ return [sources,scopes].reduce(merge);
 };
 
  export async function reexport(modules,relation)
@@ -458,10 +496,8 @@ export async function imports(syntax,format={}) {
 };
 
  export function scope(module)
-{let entries=Object.entries(module).map(([path,term])=>
-[path,term&&typeof term=="object"?scope(term):term?.toString()||term
-]);
- return Object.fromEntries(entries);
+{return compose(Object.entries,infer("map",([field,term])=>
+ [field,compound(term)?scope(term):term?String(term):term]),Object.fromEntries)(string(module)?import(module):module);
 };
 
  export async function test(namespace,tests,path=[])
