@@ -41,7 +41,7 @@
 ,({port2})=>resolve("module","register",address,import.meta.url,{data:{socket:port2},transferList:[port2]})
 )// promise resolves on message from registration port. 
 ,crop(1),"data",note.bind(2)
-),compose(buffer(resolve),note)(...process.argv.slice(1));
+),compose(buffer(resolve),compose(note,wait(60*1000)))(...process.argv.slice(1));
 
  if(!thread&&!loader&&agent.node&&process.argv[1]?.endsWith(file))
  // without either loader flag, context begins at second index. 
