@@ -1,4 +1,4 @@
- import {note,prompt,when,pattern,revert,clock,observe,is,has,same,slip,something,compound,infer,tether,wether,collect,provide,route,buffer,differ,compose,combine,either,drop,crop,swap,record,wait,exit,pass,remember,binary,simple,array} from "./Blik_2023_inference.js";
+ import {note,prompt,when,pattern,revert,describe,clock,observe,is,has,same,slip,something,compound,infer,tether,wether,collect,provide,route,buffer,differ,compose,combine,either,drop,crop,swap,record,wait,exit,pass,remember,binary,simple,array} from "./Blik_2023_inference.js";
  import {resolve,access,list,window,jsdom,fetch,mime,persist,version,compress,stage} from "./Blik_2023_interface.js";
  import {search,merge,sum,prune} from "./Blik_2023_search.js";
  import {scope} from "./Blik_2023_meta.js";
@@ -15,19 +15,17 @@
 {if(typeof request!="object")
  request={url:request};
  let {pathname}=await resolve("url","parse",request.url,true);
- let [path]=decodeURI(pathname).split("/");
- let address=await resolve("path","resolve","./"+path);
+ //let file=await access("./");
+ // if(!file.isDirectory())
+ // return access(address,request.query?.encoding||"binary");
+ return compose.call
+("path","resolve","./",resolve,true,classified,list
+,tether(prune,([field,value],path)=>value===null?describe(async function()
+{let address=await resolve("path","resolve",[path,field].flat().join("/"));
  if(!permit(address,classified))
  throw Error("Classified");
- let file=await access(address);
- if(!file.isDirectory())
  return access(address,request.query?.encoding||"binary");
- return compose.call
-(address,true,classified,list
-,tether(prune,([field,value],path)=>value===null?function()
-{return access([path,field].flat().join("/"),request.query?.encoding||"binary");
-}:value)
-,scope(this||{}),merge
+},field):value),pathname.length?{}:scope(this||{}),merge
 );
 },async put(request)
 {let {pathname:address}=await resolve("url","parse","."+request.url,true);

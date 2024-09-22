@@ -283,7 +283,7 @@
 ?{type:"ObjectExpression"
  ,properties:value.members.map(member=>(
  {type:"Property",kind:"init",key:member.id
- ,value:member.initializer||{type:"Literal",value:member.id.name,raw:"'"+member.id.name+"'"}
+ ,value:member.initializer?.type!=="BinaryExpression"&&member.initializer||{type:"Literal",value:member.id.name,raw:"'"+member.id.name+"'"}
  }))
  }
 :{type:"Literal",kind:"undefined"};
@@ -308,7 +308,7 @@
  ,genericinstance:{condition(value){return value?.type==="TSInstantiationExpression";},ecma(value){return value.expression;}}
  ,declaredproperty:{condition(value){return value?.type==="PropertyDefinition"&&(value.declare||!value.value);},ecma(){return undefined;}}
  ,assignedproperty:{condition(value)
-{return value?.type==="ClassDeclaration"&&
+{return ["ClassDeclaration","ClassExpression"].includes(value?.type)&&
  value.body.body.some(value=>value.type==="PropertyDefinition"&&!value.static&&value.value);
 },ecma(value)
 {let structure=Array.from(value.body.body);
@@ -342,7 +342,7 @@
  return [value,{body:{body:structure.flat()}}].reduce(merge,{});
 }}
  ,implicitproperty:{condition(value)
-{return value?.type==="ClassDeclaration"&&
+{return ["ClassDeclaration","ClassExpression"].includes(value?.type)&&
  value.body.body.find(({kind})=>kind==="constructor")?.value.params.some(({type})=>type==="TSParameterProperty");
 },ecma(value)
 {let {body:structure}=value.body;

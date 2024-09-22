@@ -210,7 +210,7 @@
  form.call(this,{get:{...fields,...(simple(resource)||array(resource))&&{source:resource}}})
 ,fill.call(this,fields);
  let [module,feature]=await locate(layout);
- let product=await buffer(infer(resolve))(module,feature,resource,fields,incumbent||window);
+ let product=await buffer(infer(resolve),compose("message",document))(module,feature,resource,fields,incumbent||window);
  return product;
  let values=this?.elements?.source?.parentNode?.querySelector("ul");
  if(values)
@@ -464,7 +464,7 @@
 :simple(resource)?document({pre:{"#text":JSON.stringify(resource,null,2)}})
 :resource.startsWith("<")
 ?window.document.createRange().createContextualFragment(resource)
-:parse(resource,semiotics)
+:parse(resource,semiotics).catch(compose(note, exit))
 };
 
  export var defer=form=>
@@ -787,7 +787,7 @@
 [context,context.pop().split(json).map(context=>context.replace(/(^,|,$)/g,"").replace(/(^"|"$)/g,"").replace(/(^'|'$)/g,"")).reduce((before,after)=>
  [before,JSON.parse(json),after].filter(Boolean))
 ].flat(),[last.action]).flatMap(term=>string(term)?term.replace(/^["']|['"]$/g,"").split(/["'] *, *["']/g):[term]);
- let fragment=await buffer(infer(resolve))(module,feature,...context);
+ let fragment=await buffer(infer(resolve),note.bind(1))(module,feature,...context);
  return [fragment,syntax];
 },"{":function style(last,...syntax)
 {if(!last||last?.text)

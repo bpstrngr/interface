@@ -653,7 +653,7 @@
     "@lezer/highlight": "./haverbeke_2022_lezer_highlight.js",
     "@lezer/lr": "./haverbeke_2022_lezer_lr.js",
     "style-mod":"./haverbeke_2022_stylemod.js"
-  },"edit":{"highlight.ts":{"StyleSpec, ":"",": {scope.*?\n":"\n"}}}]}},
+  },"edit":{"highlight.ts":{"StyleSpec, ":"",": {scope.*?\n":"\n"},"fold.ts":{"d(ocument.createElement)":"view.dom.ownerD$1"}}}]}},
   "haverbeke_2022_codemirror_autocomplete.js":{"https://github.com/codemirror/autocomplete/src":{"6.18.1":["src/index.ts",{"alias":{
     "@codemirror/language":"./haverbeke_2022_codemirror_language.js",
     "@codemirror/state":"./haverbeke_2022_codemirror_state.js",
@@ -663,7 +663,7 @@
   "haverbeke_2022_codemirror_lint.js":{"https://github.com/codemirror/lint/src":{"6.8.1":["src/lint.ts",{"alias":{
     "@codemirror/state":"./haverbeke_2022_codemirror_state.js",
     "@codemirror/view":"./haverbeke_2022_codemirror_view.js",
-    "crelt": "haverbeke_2020_crelt.js"
+    "crelt": "./haverbeke_2020_crelt.js"
   }}]}},
   "haverbeke_2022_codemirror_js.js":{"https://github.com/codemirror/lang-javascript/src":{"6.2.2":["src/index.ts",{"alias":{
     "@codemirror/state":"./haverbeke_2022_codemirror_state.js",
@@ -678,17 +678,34 @@
     "alias":{
       "@codemirror/state":"./haverbeke_2022_codemirror_state.js",
       "style-mod":"./haverbeke_2022_stylemod.js",
-      "w3c-keyname":"./haverbeke_2022_w3ckeyname.js"
+      "w3c-keyname":"./haverbeke_2022_w3ckeyname.js",
+      "interface":"./Blik_2023_interface.js"
     },
     "edit":{
-      "editorview.ts":{"(config: EditorViewConfig = {})":"$1, document",", StyleSpec":""},
+      "editorview.ts":{
+        "(import {EditorState)":"import {window} from \"interface\";\n$1",
+        "(new ViewState\\(config.state \\|\\| EditorState.create\\(config\\))\\)":"$1,window)",
+        "(config: EditorViewConfig = {})":"$1,window",
+        "(= |\\| |\\(|\\) )document":"$1 window.document",
+        "(new DOMObserver\\(this)\\)":"$1,window)",
+        "(requestAnimationFrame)":"$1?.",
+        ", StyleSpec":""
+      },
+      "blockview.ts":{"(DOM\\(|hack = )document":"$1view.dom.ownerDocument"},
+      "inlineview.ts":{"d(ocument.createTextNode)":"this.parent.dom.ownerD$1"},
+      "layer.ts":{"\\(d(ocument.createElement)":"(view.dom.ownerD$1"},
+      "extension.ts":{
+        "(import {EditorState)":"import {window} from \"interface\";\n$1",
+        "(new cls\\(view)\\)":"$1,window)"
+      },
       "theme.ts":{", StyleSpec":""},
+      "gutter.ts":{"this.dom = document":"this.dom=view.dom.ownerDocument","(toDOM\\()\\) {":"$1view){let document=view.dom.ownerDocument;"},
       "draw-selection.ts":{"import {StyleSpec} from \"style-mod\"\n":""},
       "bidi.ts":{"T.L | T.R | T.AL":"1","T.EN | T.AN":"8"},
-      "viewstate.ts":{"VP.Margin / 4":"1000 / 4"},
-      "domobserver.ts":{"= Margin \\* 3":"= 10000 * 3"}
+      "viewstate.ts":{"(constructor\\(public state: EditorState)\\)":"$1,window)","VP.Margin / 4":"1000 / 4"},
+      "domobserver.ts":{"(private view: EditorView)":"$1,window","new (MutationObserver)":"new window.$1","= Margin \\* 3":"= 10000 * 3"}
     },
-    "comment":"edited ambiguous type/namespace import"
+    "comment":"edited ambiguous type/namespace imports, browser context assumptions. latter might be inferrable from this.dom.ownerDocument more often."
   }]}},
   "haverbeke_2022_codemirror_state.js":{"https://github.com/codemirror/state/src":{"6.4.1":["src/index.ts",{"edit":{
     "rangeset.ts":{"static of<T extends RangeValue>":"static of"},
