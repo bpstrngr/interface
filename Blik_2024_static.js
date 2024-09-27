@@ -1,8 +1,8 @@
- import {note,compose,buffer,refer,drop,crop,compound,exit,tether} from "./Blik_2023_inference.js";
+ import {note,compose,buffer,infer,refer,drop,crop,compound,exit,tether} from "./Blik_2023_inference.js";
  import {access,persist,resolve,list,mime,modularise} from "./Blik_2023_interface.js";
  import {document,hypertext,stylesheet,expose,throttle,activate,error} from "./Blik_2023_fragment.js";
  import {serialize,scope} from "./Blik_2023_meta.js";
- import {merge} from "./Blik_2023_search.js";
+ import {merge,prune} from "./Blik_2023_search.js";
  import local from "./Blik_2023_host.js";
 
  var actions=
@@ -24,5 +24,9 @@
 ,serialize,"body",refer,{type:mime("js")},merge
 ),icon:compose
 (drop(),{svg:{viewBox:"0 0 1 1",width:"10px",height:"10px",circle:{cx:"0.5",cy:"0.5",r:"0.3"}}},document
-),scope(request){return compose("toString",[".",request.path].flat().slice(0,-1).join("/"),modularise,"namespace",scope)(this);}
+),scope(request)
+{return compose.call
+(this,"toString",[".",request.path].flat().slice(0,-1).join("/"),modularise,"namespace",serialize
+);
+}
  };

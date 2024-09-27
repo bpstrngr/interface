@@ -1,5 +1,5 @@
- import {note,prompt,when,pattern,revert,describe,clock,observe,is,has,same,slip,something,compound,infer,tether,wether,collect,provide,route,buffer,differ,compose,combine,either,drop,crop,swap,record,wait,exit,pass,remember,binary,simple,array} from "./Blik_2023_inference.js";
- import {resolve,access,list,window,jsdom,fetch,mime,persist,version,compress,stage} from "./Blik_2023_interface.js";
+ import {note,prompt,when,pattern,revert,describe,clock,observe,is,has,same,slip,something,compound,refer,infer,tether,wether,collect,provide,route,buffer,differ,compose,combine,either,drop,crop,swap,record,wait,exit,pass,remember,binary,simple,array} from "./Blik_2023_inference.js";
+ import {thread,resolve,access,list,window,jsdom,fetch,mime,persist,version,compress,stage} from "./Blik_2023_interface.js";
  import {search,merge,sum,prune} from "./Blik_2023_search.js";
  import {scope} from "./Blik_2023_meta.js";
  import local from "./Blik_2023_host.js";
@@ -62,7 +62,10 @@
  // if(await resolve("cluster","isMaster"))
  // return persistence,history,fork(),"process split.";
  encrypt(parameters.hmac);
- await jsdom([protocol,"//localhost",parameters.port].join(":"));
+ let address=[protocol,"//localhost",parameters.port].join(":");
+ // let loader thread also import from this interface. 
+ thread.postMessage([[address],"interface/jsdom"]);
+ await jsdom(address);
  let [agent,{default:routes,broadcast}]=await resolve([protocol,source]);
  let certificates=agent.globalAgent.protocol=="https:"?[certify(Object.values(parameters.certification)[0],parameters.distinguishedname)]:[];
  let virtualize=Object.entries(parameters.certification||{}).slice(1).map(([name,certificate])=>
@@ -91,7 +94,7 @@
 };
 
  function respond(response,source,memory)
-{let route=wether(compose(drop(1),"url",/^http/,"match"),tether(fetch),compose(tether(recall),this,stage));
+{let route=wether(compose(drop(1),"url",/^http/,"match"),tether(fetch),compose(buffer(tether(recall)),this,stage));
  let retrieve=memory?remember.call(memory,compose(drop(1),route),distinction):route;
  return compose(combine(notify,retrieve),pass(report),drop(1,3),response||this,tether(submit))(source,this);
 };

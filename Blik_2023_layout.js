@@ -100,7 +100,7 @@
  ,"font-size":"var(--size)",color:"var(--text)","background-color":"var(--abyss)"
  ,transition:"all var(--transition)"
  }
- ,a:{"text-decoration":"none",position:"relative",color:"rgb(66,133,244)"}
+ ,a:{"text-decoration":"none",position:"relative",color:"#0097a7"}
  ,blockquote:
  {"&>p:last-child":{"text-transform":"italic","padding-left":"20%","&:before":{content:'"- "',"white-space":"pre"},"&:after":{content:'""'}}
  ,...Object.fromEntries(["before","after"].map(side=>["&>p:"+side,{content:'"\\""'}]))
@@ -117,7 +117,7 @@
  }
  }
  ,frame:
- {"white-space":"pre-line","overflow-wrap":"break-word",overflow:"scroll"
+ {"white-space":"pre-wrap","overflow-wrap":"break-word",overflow:"scroll"
  ,width:"100vw",height:"100vh","text-align":"var(--align)"
  ,"& h2[onclick],.entry":{cursor:"pointer","&:hover":{transform:"scale(1.2)"}}
  ,"& .entry+span[id]":{position:"relative",overflow:"hidden",display:"none"}
