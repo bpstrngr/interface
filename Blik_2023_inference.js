@@ -12,7 +12,7 @@
 {try{return Reflect.ownKeys(term);}catch(fail)
 {console.warn("warning: can't see all properties on",typeof term," - ",fail.message);
  if(term instanceof String)
- if(term.length>10*1000)
+ if(term.length>1000)
  return [];
  return Object.keys(term);
 };
@@ -38,29 +38,28 @@
  return compose(each("close"),swap(Object.fromEntries(entries)))(...interfaces);
 };
 
- export var collect=
- // cumulate context (wether singular, plural and/or asynchronous) in an array. 
-[factor=>factor instanceof Promise
-,context=>Promise.all(context)
-,factor=>factor?.constructor?.constructor?.name==="GeneratorFunction"
-,context=>context.map(factor=>[factor,factor?.constructor?.constructor?.name]).flatMap(([factor,name])=>
- name==="GeneratorFunction"?[...factor]:[factor])
-,factor=>factor?.constructor?.constructor?.name==="AsyncGeneratorFunction"
-,context=>context.reduce(record(function resolve(factor)
-{return Promise.resolve(factor?.constructor?.constructor?.name==="AsyncGeneratorFunction"
-?factor.next().then(({value,done})=>!done?resolve(factor).then(next=>[value,...next]):[])
-:[factor])
-}),[]).then(context=>Object.values(context).flat())
-,factor=>factor instanceof Promise
-,context=>Promise.all(context)
+ var expand=
+[term=>term instanceof Promise,context=>Promise.all(context)
+,generator,context=>context.flatMap(term=>generator(term)?[...term]:[term])
+,asyncgenerator,context=>context.reduce(function resolve(context,term)
+{return context instanceof Promise
+?context.then(context=>resolve(context,term))
+:asyncgenerator(term)
+?term.next().then(({value,done})=>!done?resolve(context,term).then(next=>
+ next.splice(context.length,0,value)&&next):[...context])
+:[...context,term]
+},[])
+,term=>term instanceof Promise,context=>Promise.all(context)
 ].map((condition,index,actions)=>
  actions.splice(index,2,actions.slice(index,index+2))).map(([condition,expand])=>
- context=>context.some(condition)?expand(context):context).reduce((record,expand)=>
- function collect(...context)
-{context=record.call(this,...context);
- if(context instanceof Function)return context;
- return context instanceof Promise?context.then(expand):expand(context);
-},(...context)=>context);
+ context=>context.some(condition)?expand(context):context);
+ 
+ export function collect(...context)
+{// cumulate context (whether singular, plural and/or asynchronous) in an array. 
+ return expand.reduce((context,expand)=>
+ context instanceof Promise?context.then(expand):expand(context)
+,context);
+};
 
  export function provide(context,agnostic)
 {// express plurality with Generator (singularity ignored if agnostic). 
@@ -277,7 +276,7 @@
 ,wether(fail,last,either(compose(combine(differ(method),drop(1)),differ(term)),infer()))
 ,wether(fail,last,tether(scope[term]))
 ,wether(fail,last,tether(scope[method]))
-,crop(1)
+,wether(fail,last,crop(1))
 ),...context));
  let conclude=either(infer(method,...context),wether(fail,last,infer()));
  let composition=compose(...functors,conclude);
@@ -287,12 +286,23 @@
  export function each(term,...context)
 {if(!defined(this))
  return confer(each,...arguments);
- return compose(collect,infer("map",(value,index,record)=>
- infer(array(term)?term[index]:term,...context,index,record)(value)),provide)(this);
+ if(this instanceof Promise)
+ return this.then(scope=>each.call(scope,...arguments));
+ let scope=generator(this)||asyncgenerator(this)?this:provide([this],true);
+ let past=[];
+ return async function* each(term,...context)
+{while(defined(past[past.length]=this.next()))
+ if(past[past.length-1].done)return;
+ else yield past[past.length-1]=
+ await infer(array(term)?term[past.length-1]:term)(past.pop().value,...context);
+ return;
+}.call(scope,...arguments);
+ // return compose(collect,infer("map",(value,index,record)=>
+ // infer(array(term)?term[index]:term,...context,index,record)(value)),provide)(this);
 };
 
  export function drop(stop=Infinity,start=0,...inject)
-{// filter context between indexes (trim if stop<start), 
+{// filter context between indexes (or outside if stop<start), 
  // eg. combine(drop(1,-1),drop(-1,1))(1,2,3,4)=((2,3),(1,4)). 
  let determine=(offset,index,{length})=>
  offset<length?(length+offset)%length:length;
@@ -344,7 +354,8 @@
  console.groupCollapsed(steady+bright+bold+blue+" "+clock(new Date())+source+steady);
  stream(bright+blue+stack+steady+":");
  console.groupEnd();
- let phase=colors[this]||Object.values(colors)[this]||steady;
+ let color=!compound(this)&&this;
+ let phase=colors[color]||Object.values(colors)[color]||steady;
  if(!browser)process.stdout.write(phase);
  else context.unshift(phase),context.push(steady);
  stream(...browser&&context.every(string)?[context.join("")]:context);
@@ -454,7 +465,9 @@
  export function defined(term){return term!==undefined;};
  export function compound(term){return Boolean(typeof term==="object"&&term);};
  export function simple(term){return term?.constructor?.name==="Object";};
- export function iterable(term){try{return Symbol.iterator in term;}catch(fail){return false}};
+ export function iterable(term){try{return Symbol.iterator in term;}catch(fail){return false;};};
+ export function generator(term){return term?.constructor?.constructor?.name==="GeneratorFunction";};
+ export function asyncgenerator(term){return term?.constructor?.constructor?.name==="AsyncGeneratorFunction";};
  export function array(term){return Array.isArray(term);};
  export function binary(term){return typeof term==="boolean";};
  export function string(term){return typeof term==="string";};
@@ -609,8 +622,13 @@
 };
 
  export var tests=
- {collect:{context:[1,2,3],terms:[[1,2,3]],condition:["deepEqual"]}
- ,drop:
+ {collect:
+[{context:[1,2,3,4],terms:[[1,2,3,4]],condition:["deepEqual"]}
+,{context:[1,Promise.resolve(2),3,4],terms:[[1,2,3,4]],condition:["deepEqual"]}
+,{context:[1,provide([2,3]),4],terms:[[1,2,3,4]],condition:["deepEqual"]}
+,{context:[1,provide([2,Promise.resolve(3),4])],terms:[[1,2,3,4]],condition:["deepEqual"]}
+,{context:[1,2,async function*(){yield* [3,4]}()],terms:[[1,2,3,4]],condition:["deepEqual"]}
+],drop:
  {full:{context:[],terms:[1,2,3,Function.call,4,4],condition:"equal"}
  ,left:
 [{context:[1],terms:[1,2,3,Function.call,collect,[2,3]],condition:"deepEqual"}
@@ -679,6 +697,6 @@
  ,multiple:{context:[provide([iterable,a=>a.some(Boolean)])],terms:[[0,1,2],Function.call,true],condition:["equal"]}
  }
  ,revert:
-[{context:[provide([(resolve,context)=>resolve(context)])],terms:[2,Function.call,2],condition:["equal"]}
-,{context:[provide([(resolve,context)=>Promise.resolve(context).then(resolve)])],terms:[3,Function.call,3],condition:["equal"]}
+[{context:[provide([(resolve,reject,context)=>resolve(context)])],terms:[2,Function.call,2],condition:["equal"]}
+,{context:[provide([(resolve,reject,context)=>Promise.resolve(context).then(resolve)])],terms:[3,Function.call,3],condition:["equal"]}
 ]};

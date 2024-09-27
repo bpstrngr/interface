@@ -371,16 +371,26 @@
 
  export function serialize(syntax,format="astring",options)
 {// convert abstract syntax tree or runtime namespace to javascript;
+ if(typeof syntax==="function")
+ // functions may be serialized as "name(){}", "function(){}", or with a name different from the object field. 
+ return String(syntax).replace(/^([a-zA-Z]+)( *)([a-zA-Z]*)|^\(/,(match,declaration,space,name)=>![name,declaration].includes(format)
+?["var ",format,"=",declaration?"function":match,[declaration,name].find(name=>name!=="function")?.replace(/^(.)/," $1")].join("")
+:["function",space||" ",format].join(""));
+ if(syntax[Symbol.toStringTag]==="Module")
+ return prune.call(syntax,([field,term],path)=>
+ typeof term==="function"?!path.length?" export "+serialize(term,field):String(term):term);
  if(string(syntax))
  syntax=JSON.parse(syntax);
  let {type,body,sourceType}=syntax;
- if(type==="Program")
+ if(type==="Program"&&format!=="json")
  return (
  {astring:["./davidbonnet_2015_astring.js","generate"]
  ,babel:["./node_modules/@babel/generator/lib/index.js","default"]
  }[is(Function)(format)?"astring":format]||[format,"default"]).reduce((module,term)=>
  import(module).then(module=>module[term](syntax,options))).then(is(Function)(format)?format:infer());
  let {exports,imports,procedures}=syntax;
+ if(![exports,imports,procedures].some(Boolean)||format==="json")
+ return JSON.stringify(scope(syntax));
  imports=Object.entries(imports||{}).map(([module,names])=>[module,[names].flat()]).flatMap(([module,names],index)=>
 [(index=names.findIndex(name=>name.startsWith("*")))>-1?[module,names.splice(index,1)]:[]
 ,[module,names]
@@ -388,16 +398,11 @@
 ?names.reduce((imports,name,index,names)=>imports+(index&&names[index-1]?",":"")+(index===1?"{":"")+name
 ," import ")+(names.length>1?"}":"")
 +" from \""+module+"\""+(/\.json$/.test(module)?" with {type:\"json\"}":"")+";"
-:(" var {default:"+names[0]+"}=await resolve(\""+module+"\");")).join("\n")
-,exports=!exports?""
+:(" var {default:"+names[0]+"}=await resolve(\""+module+"\");")).join("\n");
+ exports=!exports?""
 :[Object.entries(exports||{}).map(([field,term])=>
  "export "+({default:field+" "}[field]||!is(Function)(term)&&"var "+field+"="||"")+
- reify(term).replace(/^([a-zA-Z]+)( *)([a-zA-Z]*)/,(match,declaration,space,name)=>term instanceof Function
- // functions may be serialized as "name(){}", "function(){}", or with a name different from the object field. 
-?![name,declaration].includes(field)
-?"var "+field+"="+"function"+[declaration,name].find(name=>name!=="function").replace(/^(.)/," $1")
-:["function",space||" ",field].join("")
-:name)).join("\n\n")
+ (typeof term==="function"?serialize(term,field):reify(term))).join("\n\n")
 ,""].join("\n");
  procedures=[procedures].flat().filter(Boolean).map(proceduralize);
  let output=compose(collect,infer("filter",Boolean),"\n\n","join",)(imports,exports,...procedures);
@@ -495,9 +500,12 @@
  [lines.length-1,position-lines.splice(1).join("\n").length-1]);
 };
 
- export function scope(module)
-{return compose(Object.entries,infer("map",([field,term])=>
- [field,compound(term)?scope(term):term?String(term):term]),Object.fromEntries)(string(module)?import(module):module);
+ export function scope(module,functions=null)
+{return compose
+(Object.entries,infer("map",([field,term])=>
+ [field,compound(term)?scope(term,functions):(term instanceof Function)?functions?.call?.(null,[field,term])||functions:term])
+,Object.fromEntries
+)(string(module)?import(module):module);
 };
 
  export async function test(namespace,tests,path=[])

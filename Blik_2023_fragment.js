@@ -146,7 +146,7 @@
  let label=Object.entries(fields).map(([id,value])=>
 {if(!defined(value))return;
  let type=wether([is(Date),is(Set),either(array,compound),either(binary,infer("match",/^(true|false)$/))]
-,...each(type=>swap(type))("date","radio","select","checkbox","text"))(value);
+,...["date","radio","select","checkbox","text"].map(type=>swap(type)))(value);
  let field=
  {for:id,title:id
  ,class:[group,type,{checkbox:value?"checked":""}[type]].filter(Boolean).join(" ")||undefined
@@ -210,7 +210,7 @@
  form.call(this,{get:{...fields,...(simple(resource)||array(resource))&&{source:resource}}})
 ,fill.call(this,fields);
  let [module,feature]=await locate(layout);
- let product=await buffer(infer(resolve),compose("message",document))(module,feature,resource,fields,incumbent||window);
+ let product=await buffer(resolve,compose("message",document))(module,feature,resource,fields,incumbent||window);
  return product;
  let values=this?.elements?.source?.parentNode?.querySelector("ul");
  if(values)
@@ -328,42 +328,6 @@
  return value?value():"";
 }).join("");
 
- export async function deform(resource)
-{// text{style} text@source text#tag text/json#transform text#transform(text/json)
- let text=new RegExp(/[A-Za-zÁÉÍÓÖŐÚŰÜáéíóöőúűü\d\:\.\;\/\?\=\&\-\'_#\%\!\@]/);
- let json=new RegExp(/[{\[]{1}(?:[,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]|".*?")+[}\]]{1}/,"m");
- let call=new RegExp("\\((?:(\""+text.source+"*\"|"+json.source+")[,\)]{0,1})+");
- let tags={"@":"source","#":"fragment","{":"style"};
- let tag=new RegExp("(["+Object.keys(tags).join("")+"])("+json.source+"|"+text.source+"+("+call.source+")*)[\}]*","g");
- let form=new RegExp("(?<=^|[ \n])("+text.source+"+?[^\(\)\"\':, \n"+Object.keys(tags).join("")+"])((?:"+tag.source+")+)","gm");
- let fragments=await [...resource.matchAll(form)].reduce(record(buffer(async(fragments,[match,title,input])=>
-{let {source,fragment,style}=Object.fromEntries([...input.matchAll(tag)].map(([match,tag,value])=>[tags[tag],value]).reverse());
- [fragment,source,input]=!fragment||!fragment.includes("(")
-?[fragment,source||title,input]
-:[...fragment.matchAll(json.source+"|"+text.source+"+")].map(([match])=>match.replace("(",""));
- if(source)
- source=either(JSON.parse,source=>source.split(",").reduce((json,piece)=>typeof json=="string"
- //split consecutive jsons matched by the json regexp
-?json=either(JSON.parse,crop(1))(json+","+piece)
-:(input=(input?input+",":"")+piece,json)))(source);
- input=either(compose(JSON.parse,{source},false,merge),swap({source}))(input);
- let node=/^h[0-9]$/.test(fragment);
- source=fragment
-?node
-?document({[fragment]:{"#text":input.source.replace(/_/g," ")}})
-:await compose(fetch,digest,{layout:fragment,...input},transform)(source)
-:reference(title,source,fragment||(source==title&&"span"))||
- match;
- source.setAttribute?.("style",style);
- return [match,source];
-},(fragments,[match],index,matches,fail)=>[match,fail])),[]);
- return document(fragments.reduce(([resource,...nodes],[match,fragment])=>
- resource.split(match).flatMap((before,index,after)=>
- [after.splice(1).join(match),fragment,before,...nodes])
-,[resource]).reverse().map(node=>
- string(node)?document({"#text":node}):node));
-};
-
  export function detransform(node,value)
 {if(!node)return;
  let computed=
@@ -464,7 +428,7 @@
 :simple(resource)?document({pre:{"#text":JSON.stringify(resource,null,2)}})
 :resource.startsWith("<")
 ?window.document.createRange().createContextualFragment(resource)
-:parse(resource,semiotics).catch(compose(note, exit))
+:parse(resource,semiotics).catch(compose(note, exit));
 };
 
  export var defer=form=>
@@ -475,12 +439,12 @@
  ,class:"defer"
  }        });
 
- var reference=(title,source,layout,elements={"audio":["mp3"],"img":["png","jpg","svg","gif"]})=>document(
+ var reference=(title,source,layout,elements={"audio":["mp3"],"img":["png","jpg","svg","gif"]})=>activate(document(
  {[layout||Object.keys(elements).find(key=>elements[key].includes(source&&source.slice&&source.slice(-3)))||"a"]:
  {id:title,class:"reference",title,alt:title||source,href:source,src:source,controls:"on"
  ,"#text":(title||source).replace(/_/g," ")
  }
- });
+ }),"./actions");
 
  export function hypertext(body,title,favicon,scripts,styles=[])
 {scripts=[scripts].flat().filter(actions=>!compound(actions)||!activate(body,actions));
@@ -514,8 +478,13 @@
  let {over,before,after,under}={[place]:true};
  if(fragment instanceof Promise)
  return infer(insert)(...arguments);//:compose(document,infer(insert,place,target),drop(0,0,fragment,"over"),insert)(wheel);
- note(globalThis.window?{fragment,[place]:target}:{fragment:fragment.nodeName,[place]:target.nodeName});
- if(under)
+ //note(globalThis.window?{fragment,[place]:target}:{fragment:fragment.nodeName,[place]:target.nodeName});
+ if(fragment.constructor?.constructor?.name==="GeneratorFunction")
+{let past,next;
+ while(next=fragment.next().value)
+ insert(past=fragment,...Array.from(arguments).slice(1));
+ return past;
+}if(under)
  return Array.from(target.childNodes).map(child=>style
 ?transition(child,style,3).then(child=>child.remove())
 :child.remove())&&
@@ -550,7 +519,7 @@
 };
 
  export function qualify(node)
-{// extract css selectors from node/fragment, or vice versa.
+{// extract css selectors from node/fragment, or vice versa. 
  if(typeof node==="string")
  return refer(node.match(/[#\.][^#\.]+/g)?.reduce((node,selector)=>
  merge(node,{[["id","class"]["#.".indexOf(selector[0])]]:[selector.slice(1)]})
@@ -571,14 +540,13 @@
 )(syntax);
 };
 
- export function activate(fragment,actions)
+ export function activate(fragment,actions,path=[])
 {// dispose actions on node/fragment to event listeners. 
- if(defined(this))
- return observe.call(this,...arguments);
- if(!actions)return fragment;
+ if(!actions)
+ return fragment;
  if(string(actions))
  return import(actions).then(({default:actions})=>activate(fragment,actions));
- let node=(fragment instanceof window.DocumentFragment)
+ let node=fragment instanceof window.DocumentFragment
 ?Array.from(fragment.childNodes)
 :fragment.nodeName
 ?[fragment]
@@ -594,7 +562,7 @@
 ,node=>node.childNodes?Array.from(node.childNodes):node
 )(node,actions)
 ));
- nodes.forEach(infer(activate,actions));
+ nodes.forEach(infer(activate,actions,path.concat(node?.nodeName)));
  return fragment;
 };
 
@@ -631,9 +599,11 @@
  (!name||name===(this.nodeName?.toLowerCase()||"body"))&&
  Object.entries(selector).flatMap(([attribute,value])=>
  [value].flat().map(value=>[attribute,value])).every(([attribute,value])=>
- attribute==="class"?fragment
+ attribute==="class"
+?fragment
 ?[this[attribute]].flat().flatMap(list=>list.split(" ")).includes(value)
-:this.classList?.contains(value):this[attribute]===value))||[];
+:this.classList?.contains(value)
+:this[attribute]===value))||[];
  return scope||{};
 };
 
@@ -705,31 +675,51 @@
  export function parse(text,semiotics)
 {if(!semiotics)
  exit("no semiotics provided for parsing text");
- let interpret=infer("reduce"
+// return each.call(provide(Array.from(text)),async function render(text,fragments=[])
+// {let [last,past]=await semiotics[text]?.(...fragments)||
+//  semiotics.text(text,...fragments);
+//  =next.slice(-2);
+//  let reflow=simple(last)&&string(last.style);
+//  let contingent=past?.className==="inline";
+//  let redundant=contingent&&string(last.style)&&[past.style.cssText,last.style].map(style=>
+//  style?.replace(/ |;/g,"")).reduce((last,next)=>last===next);
+//  let next=reflow&&!redundant
+//  // global style rules can't be applied to inline elements, only in a div. 
+// ?document({div:{"#text":last.text,class:"inline",style:node.style}})
+// :[contingent,simple(last)?document({"#text":last.text}):last].reduce((contingent,last)=>
+//  contingent?past.append(last)||undefined:last);
+//  fragments.push(next)
+//  //console.log({past,last})
+//  return next;
+// }),[]);
+ let interpret=//infer("reduce"
 // ,compose(crop(2),collect,"reverse","flat",provide
 // ,either(infer.bind(semiotics)
 // ,wether(compose(drop(-1),last=>last instanceof Error),compose(note,drop(-1),exit),semiotics.text)),"flat")
 // ,[]);
-,compose
-(async function(syntax,text)
-{let next=await semiotics[text]?.(...syntax.flat());
- if(!next)
- return semiotics.text(text,...syntax.flat());
- return next;
-}),[]);
- let render=infer("reduce",function(syntax,node)
+ async function(text,syntax)
+{let next=await semiotics[text]?.(...syntax)||
+ semiotics.text(text,...syntax);
+ //let [past,last]=next.slice(-2);
+ //console.log({past,last})
+ return Object.assign(syntax,next.flat());
+ //return next.flat();
+}//),[]);
+ function render(node,fragments)
 {let reflow=simple(node)&&string(node.style);
- let contingent=syntax.at(-1)?.className==="inline";
- let redundant=contingent&&string(node.style)&&[syntax.at(-1).style.cssText,node.style].map(style=>
+ let contingent=fragments.at(-1)?.className==="inline";
+ let redundant=contingent&&string(node.style)&&[fragments.at(-1).style.cssText,"position:relative;"+node.style].map(style=>
  style?.replace(/ |;/g,"")).reduce((last,next)=>last===next);
  let next=reflow&&!redundant
  // global style rules can't be applied to inline elements, only in a div. 
-?document({div:{"#text":node.text,class:"inline",style:node.style}})
-:[contingent,simple(node)?document({"#text":node.text}):node].reduce((contingent,node)=>
- contingent?syntax.at(-1).append(node)||[]:node);
- return syntax.concat(next);
-},[]);
- return compose(Array.from,interpret,note,"reverse",render,document)(text);
+?document({div:{"#text":node.text,class:"inline",style:"position:relative;"+node.style}})
+:[contingent,simple(node)?document({span:{"#text":node.text}}):node].reduce((contingent,node)=>
+ contingent?fragments.at(-1).append(node):node);
+ if(next)
+ fragments.push(next);
+ return next;
+};
+ return compose(Array.from,provide,each(interpret,[]),collect,"pop","reverse",provide,each(render,[]))(text);
 };
 
  export var semiotics=
@@ -747,9 +737,16 @@
  return last;
  let {text}=last;
  let parenthesized=text.endsWith(")");
- let index=Math.max(...(parenthesized?"(":" \n").split("").map(space=>text.lastIndexOf(space)));
+ let index=parenthesized
+?Array.from(text).reduce((open,symbol,index,{length})=>
+ index+1<length?(open[{"(":"push",")":"pop"}[symbol]]?.(index),open):open.pop(),[])
+:Math.max(..." \n".split("").map(space=>text.lastIndexOf(space)));
  let phrase=text.slice(index+1,parenthesized?-1:undefined);
  return [phrase,text.slice(0,text.length-phrase.length-parenthesized*2)];
+},annotate(fragment,label)
+{return label?.split(".").reduce((fragment,id,index)=>
+ index?(fragment.classList.add(id),fragment):document.call(fragment,{id})
+,fragment);
 }," ":function terminate(last,past,...syntax)
 {let parenthesized=last?.action||string(last?.style);
  if(last?.text||parenthesized)
@@ -767,31 +764,53 @@
  return [{text:" ",style},next,past,syntax];
 },"\n":function terminate(last,...syntax)
 {let past=this[" "](...arguments).slice?.(1);
- if(!past&&string(last?.text)||string(last?.action))
+ if(!past&&string(last?.text)||string(last?.action)||last?.compound||string(last?.style))
  return false;
  let style=[last,...syntax].find(fragment=>simple(fragment)&&fragment.style)?.style;
  let next={text:[last?.text||"","\n"].join(""),style};
  return [next,past||[last?.text?[]:last,...syntax]].flat();
-},"#":function tag(last,...syntax){if(last?.action||last?.text?.endsWith(" "))return false;return this.phrase(last).reduce?.((title,text)=>title&&[{title,tag:""},text?merge(last,{text}):[],syntax])||[merge(last,{tag:""}),...syntax];}
- ,"@":function link(last,...syntax){return this.phrase(last).reduce((title,text)=>[{title,link:""},text?merge(last,{text}):[],syntax]);}
- ,"(":function action(last,...syntax)
-{if(!last.tag)
+},"#":function tag(last,...syntax)
+{if(last?.action||last?.compound||/^{|:$/.test(last?.style)||last?.text?.endsWith(" "))
+ return false;
+ return this.phrase(last).reduce?.((title,text)=>
+ title&&[{title,tag:""},text?merge(last,{text}):[],syntax])||
+ [merge(last,{tag:""}),...syntax];
+},"@":function link(last,...syntax)
+{return this.phrase(last).reduce((title,text)=>
+ [{title,link:""},text?merge(last,{text}):[],syntax]);
+},"(":function action(last,...syntax)
+{if(!last?.tag||last?.compound||last?.style)
  return false;
  return [{action:"",layout:last.tag,title:last.title},syntax];
 },")":async function action(last,...syntax)
-{if(!last.layout||[/[{\[]/g,/[}\]]/g].map(parentheses=>Array.from(last.action?.matchAll(parentheses)||[]).length).reduce((open,close)=>open!==close))
+{if(!last.layout||last?.compound||last.style)
+ return false;
+ let open="()".split("").map(parenthesis=>
+ Array.from(last.action?.matchAll("\\"+parenthesis)||[]).length).reduce((open,close)=>
+ close<open);
+ if(open)
  return false;
  let [module,feature]=await locate(last.layout);
  let jsons=[...last.action.matchAll(new RegExp(/[{\[]{1}(?:[,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]|".*?")+[}\]]{1}/,"mg"))].map(([json])=>json);
  let context=jsons.reduce((context,json)=>
-[context,context.pop().split(json).map(context=>context.replace(/(^,|,$)/g,"").replace(/(^"|"$)/g,"").replace(/(^'|'$)/g,"")).reduce((before,after)=>
- [before,JSON.parse(json),after].filter(Boolean))
-].flat(),[last.action]).flatMap(term=>string(term)?term.replace(/^["']|['"]$/g,"").split(/["'] *, *["']/g):[term]);
- let fragment=await buffer(infer(resolve),note.bind(1))(module,feature,...context);
+[context,context.pop().split(json).reduce((before,after)=>
+ "\"'`".split("").some(quote=>Array.from(before.matchAll(quote)).length%2)
+?[before,json,after].join("")
+:[before,JSON.parse(json),after].filter(Boolean))
+].flat(),[last.action]).flatMap(term=>string(term)
+?Array.from(term.replace(/(^(\n|,| +)|( +|,|\n)$)/g,"")).reduce(([last,...context],symbol,index,{length})=>
+[!last.length&&/ |,/.test(symbol)?last:last[0]===symbol
+?[...index+1<length?[""]:[],last.substring(1)]
+:[last+symbol]
+,context
+].flat()
+,[""]).reverse():[term]);
+ let fragment=await buffer(infer(resolve),pass(console.log))(module,feature,...context);
+ this.annotate(fragment,last.title);
  return [fragment,syntax];
 },"{":function style(last,...syntax)
-{if(!last||last?.text)
- return !last||last.text.at(-1)==="\n"?[{style:""},...arguments]:false;
+{if(!last||last?.text||last?.compound||string(last?.style))
+ return !last||last.text?.at(-1)==="\n"?[{style:""},...arguments]:false;
  let next=this[" "](...arguments);
  if(next||last.nodeName)
  return [{style:""},next?next.slice(1):[last,...syntax]].flat();
@@ -799,10 +818,34 @@
 {//when({style:either(none,string)})(...arguments);
  if(!last.style||last.text)
  return false;
+ let open="{}".split("").map(parenthesis=>
+ Array.from(last.style?.matchAll("\\"+parenthesis)||[]).length).reduce((open,close)=>
+ close<open);
+ if(open)
+ return false;
  if(!node?.nodeName)
  return [merge(last,{text:""}),node||[],syntax];
- node.style=last.style;
- return [node,syntax];
+ let style=either(JSON.parse,crop(1))(last.style);
+ let jss=simple(style);
+ if(!jss)
+ node.style=style;
+ return [node,jss?document({style:{"#text":stylesheet(style)}}):[],syntax];
+},"[":function compound(last,...syntax)
+{if(!string(last.tag)||last.compound)
+ return false;
+ return [{compound:"[",title:last.title},syntax];
+},"]":async function compound(last,...syntax)
+{if(!last?.compound)
+ return false;
+ let compound=[last.compound,"]"].join("");
+ let open="[]".split("").map(parenthesis=>
+ Array.from(compound.matchAll("\\"+parenthesis)||[]).length).reduce((open,close)=>
+ close<open);
+ if(open)
+ return false;
+ let fragment=await buffer(infer(resolve),pass(console.log))(JSON.parse(compound));
+ this.annotate(fragment,last.title);
+ return [fragment,syntax];
 }};
 
  export var tests=
@@ -819,16 +862,17 @@
  ,condition:"deepEqual"
  }
 ],parse:
- {tag:{context:["Figure 1: Author_YEAR#h1 ",semiotics],terms:["childNodes",1,"nodeName","H1"],condition:"equal"}
- ,link:{context:["Figure 1: Author_YEAR@reference.pdf ",semiotics],terms:["childNodes",1,"nodeName","A"],condition:"equal"}
- ,insert:{context:["Figure 1: Author_YEAR@reference.pdf#insert ",semiotics],terms:["childNodes",1,"nodeName","A"],condition:"equal"}
- ,image:{context:["Figure 1: Author_YEAR@image.png ",semiotics],terms:["childNodes",1,"nodeName","IMG"],condition:"equal"}
- ,action:{context:["Figure 1: title#chart/plot([1,2]) ",semiotics],terms:["childNodes",1,"nodeName","svg"],condition:"equal"}
- ,reflow:{context:["abc\n{text-align:left}\ndef",semiotics],terms:["childNodes",1,"nodeName","DIV"],condition:"equal"}
- ,style:["@reference.pdf","@image.png","#span"].map(fragment=>({context:["Figure 1: Author_YEAR"+fragment+"{width:0px;filter:invert(1)} ",semiotics],terms:["childNodes",1,"style","width","0px"],condition:"equal"}))
- ,immediate:{context:["Author_YEAR@image.png{width:100%} ",semiotics],terms:["childNodes",0],condition:when(is(compose("style","width",is("100%")),compose(note,"nodeName",is("IMG"))))}
- ,mixed:{context:["abc\nAuthor_YEAR@reference.pdf\ndef\n{text-align:left}\nghi",semiotics],terms:["childNodes",3,"nodeName","DIV"],condition:"equal"}
- ,noise:{context:["abc\n{text-align:left}\ndef\ng={h:1};",semiotics],terms:["childNodes",1,"nodeName","DIV"],condition:"equal"}
+ {tag:{context:["Figure 1: Author_YEAR#h1 ",semiotics],terms:[collect,2,"nodeName","H1"],condition:"equal"}
+ // ,link:{context:["Figure 1: Author_YEAR@reference.pdf ",semiotics],terms:["childNodes",1,"nodeName","A"],condition:"equal"}
+ // ,insert:{context:["Figure 1: Author_YEAR@reference.pdf#insert ",semiotics],terms:["childNodes",1,"nodeName","A"],condition:"equal"}
+ // ,image:{context:["Figure 1: Author_YEAR@image.png ",semiotics],terms:["childNodes",1,"nodeName","IMG"],condition:"equal"}
+ // ,action:{context:["Figure 1: title#chart/plot([1,2]) ",semiotics],terms:["childNodes",1,"nodeName","svg"],condition:"equal"}
+ // ,compound:{context:['Figure 1: title#[["chart/plot",[1,2]]] ',semiotics],terms:["childNodes",1,"nodeName","svg"],condition:"equal"}
+ // ,reflow:{context:["abc\n{text-align:left}\ndef",semiotics],terms:["childNodes",1,"nodeName","DIV"],condition:"equal"}
+ // ,style:["@reference.pdf","@image.png","#span"].map(fragment=>({context:["Figure 1: Author_YEAR"+fragment+"{width:0px;filter:invert(1)} ",semiotics],terms:["childNodes",1,"style","width","0px"],condition:"equal"}))
+ // ,immediate:{context:["Author_YEAR@image.png{width:100%} ",semiotics],terms:["childNodes",0],condition:when(is(compose("style","width",is("100%")),compose(note,"nodeName",is("IMG"))))}
+ // ,mixed:{context:["abc\nAuthor_YEAR@reference.pdf\ndef\n{text-align:left}\nghi",semiotics],terms:["childNodes",3,"nodeName","DIV"],condition:"equal"}
+ // ,noise:{context:["abc\n{text-align:left}\ndef\ng={h:1};",semiotics],terms:["childNodes",1,"nodeName","DIV"],condition:"equal"}
  }
  };
  if(!window)

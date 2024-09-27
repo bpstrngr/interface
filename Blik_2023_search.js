@@ -64,20 +64,14 @@ export function calendar(timestamps)
  [year+(month>12),month%12||12].join('/')+'/1 0:0')).getTime();
 };
 
-export function normalize(samples, resolution, range) {
-  const grid = range.reduce((min, max) => max - min) / resolution;
-  return samples
-    .map((sample) => [
-      [sample.lon, sample.lat]
-        .map((axis) => Math[axis < 0 ? 'ceil' : 'floor'](axis / grid) * grid)
-        .join(':'),
-      sample,
-    ])
-    .reduce(
-      (clusters, [field, sample]) =>
-        Object.assign(clusters, { [field]: [clusters[field] || [], sample].flat() }),
-      {},
-    );
+ export function normalize(samples, resolution, range)
+{const grid = range.reduce((min, max) => max - min) / resolution;
+ return samples.map(sample=>
+[[sample.lon,sample.lat].map(axis=>Math[axis<0?'ceil':'floor'](axis/grid)*grid).join(':')
+,sample
+]).reduce((clusters,[field,sample])=>
+ Object.assign(clusters,{[field]:[clusters[field]||[],sample].flat()})
+,{});
 }
 
 export function kmeans(samples, bounds, size, projection) {

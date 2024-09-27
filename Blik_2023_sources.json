@@ -692,7 +692,7 @@
         ", StyleSpec":""
       },
       "blockview.ts":{"(DOM\\(|hack = )document":"$1view.dom.ownerDocument"},
-      "inlineview.ts":{"d(ocument.createTextNode)":"this.parent.dom.ownerD$1"},
+      "inlineview.ts":{"d(ocument.create(TextNode|Element))":"this.parent.dom.ownerD$1"},
       "layer.ts":{"\\(d(ocument.createElement)":"(view.dom.ownerD$1"},
       "extension.ts":{
         "(import {EditorState)":"import {window} from \"interface\";\n$1",
