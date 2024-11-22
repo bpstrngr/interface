@@ -33,14 +33,18 @@
 };
 
  export var fontface=
- {averia:{"font-family":"averia",src:"url(Sayers_2011_averia.ttf)"}
- ,oswald:{"font-family":"oswald",src:"url(Vernon_2011_Oswald-Regular.ttf)"}
- ,ranger:{"font-family":"ranger",src:"url(Blik_2018_calligraphy.ttf)"}
+ {averia:{"font-family":"averia",src:"url(/Sayers_2011_averia.ttf)"}
+ ,oswald:{"font-family":"oswald",src:"url(/Vernon_2011_Oswald-Regular.ttf)"}
+ ,ranger:{"font-family":"ranger",src:"url(/Blik_2018_calligraphy.ttf)"}
  };
 
  let material={"box-shadow":"black 0px 0px 10px","&:hover":{"box-shadow":"black 0px 0px 50px"},margin:"1em"};
  let glow={filter:"url(#shadow_white)"};
- 
+
+ var text=
+ {glow:{"text-shadow":"white 0px 0px 2px,white 0px 0px 2px",transition:"all 0.3s"}
+ };
+
  let table=
  {"font-size":"inherit",transition:"all 1s"
  ,"&#dashboard tr":{"vertical-align":"top"}
@@ -86,8 +90,90 @@
  ,margin:"auto","box-sizing":"border-box"
  };
 
+ export var overflow=
+ {overflow:"scroll",background:`
+ linear-gradient(90deg,var(--abyss) 20%,#ffffff00) center left
+,linear-gradient(90deg,#ffffff00,var(--abyss) 80%) center right
+,radial-gradient(farthest-side at 100% 50%,var(--text),#00000000 80%) center right
+,radial-gradient(farthest-side at 0% 50%,var(--text),#00000000 80%) center left`
+ ,"background-size":"40px 100%,40px 100%,10px 120%,10px 120%"
+ ,"background-repeat":"no-repeat"
+ ,"background-attachment":"local,local,scroll,scroll"
+ };
+
+ export var link=
+ {"a,span[role='link']":{"text-decoration":"none",position:"relative",color:"#0097a7"}
+ };
+
+ var input=
+ {transition:"all var(--transition)","text-shadow":"inherit"
+ ,"&:focus+ul":{display:"block"}
+ ,"&[type=text]":
+ {display:"inline-block",outline:"none","background-color":"transparent",border:"none","min-width":"20px","box-sizing":"border-box"
+ ,color:"inherit","text-align":"center","font-family":"inherit","font-size":"inherit"
+ ,"margin-top":"1.5em"
+ ,"&#code":{"-webkit-text-security":"disc"}
+ }
+ ,"&[type=radio]":{display:"none"}
+ ,"&[type=checkbox]":
+ {appearance:"none","font-family":"inherit",cursor:"pointer",width:"auto"
+ ,"&:hover":{"text-shadow":"rgb(255,255,255) 0px 0px 10px,rgb(255,255,255) 0px 0px 10px,rgb(255,255,255) 0px 0px 10px"}
+ ,"&:after":{content:"' ?'","margin-left":"3px","margin-right":"3px"}
+ ,"&:focus:after":{"text-shadow":"rgb(255,255,255) 0px 0px 10px, rgb(255,255,255) 0px 0px 10px, rgb(255,255,255) 0px 0px 10px"}
+ ,"&:checked:after":{content:"'✓'",color:"var(--highlight)"}
+ }
+ ,"&~svg":{"margin-right":"0.5em"}
+ };
+
+ var label=
+ {position:"relative",display:"inline-block","white-space":"nowrap","vertical-align":"middle",cursor:"pointer"
+ ,"&:hover":{"&>svg":glow,"&>input,&>span[role=input]":text.glow}
+ ,"&>svg":{float:"left",height:"1em","vertical-align":"middle",cursor:"pointer",overflow:"visible"}
+ ,"&>span:not([role=input])":
+ {float:"left",height:"3em","margin-top":"1.5em","white-space":"pre"
+ ,"&:not(:empty)":{"&:before":{content:"' '"},"&:after":{content:"' '"}}
+ }
+ ,"& ul":
+ {display:"none","z-index":"2",padding:"0px","margin-bottom":"0px","text-align":"left","pointer-events":"none","list-style-type":"none"
+ ,"& ul":{position:"relative",bottom:"initial","max-height":"initial","vertical-align":"top","text-align":"left"}
+ ,"& li":
+ {position:"relative",display:"inline-block","pointer-events":"all","padding-right":"1em",color:"var(--text)","vertical-align":"top",margin:"auto",left:"0px",right:"0px","white-space":"pre","padding-left":"1em"
+ ,"&:hover,&.hover":
+ {color:"var(--highlight)"
+ ,"& ul":
+ {display:"inline-block","white-space":"pre"
+ ,"&:hover>li":{display:"block"}
+ }
+ }
+ ,"&>svg":{position:"absolute",height:"1em",left:"0px","margin-left":"0px","margin-right":"0px",transform:"scale(0.9)",fill:"var(--text)"}
+ }
+ }
+ ,"&>ul":
+ {position:"fixed","margin-left":"0.6em","max-height":"100%","max-width":"100%","padding-top":"6em",bottom:"6em","box-sizing":"border-box",width:"inherit","overflow":"scroll"//"background-image":"radial-gradient(at center bottom, rgb(17, 17, 17) 0%, rgba(33, 33, 33, 0) 100%)"
+ ,"&>li":{display:"block"}
+ ,"&:hover":{display:"block"}
+ }
+ ,"&[focused=true]>ul":{display:"block"}
+ ,"&[for=message],&[for=source]":{"&>ul":
+ {"text-align":"left",width:"auto","&>li":{"text-shadow":"black 0px 0px 10px","white-space":"nowrap","&>span":{"white-space":"normal"}}
+ ,"background-image":"linear-gradient(to right, rgb(17, 17, 17) 0%, rgba(33, 33, 33, 0) 100%)"
+ }}
+ ,"&[for=message]>ul":
+ {display:"block","margin-left":"-5em","max-height":"50vh","min-width":"150px"
+ ,"&>li":
+ {opacity:0,animation:"fadeout 6s","padding-left":0,"min-height":"4em","white-space":"normal"
+ ,"&>img":{...material,margin:"1em",height:"2em",float:"left","border-radius":"50%","background-color":"var(--isle)",padding:".5em",margin:".5em .5em 0 .5em"}
+ ,"&>div":{color:"var(--isle)"}
+ }
+ ,"&>li:not(:last-of-type)":{animation:"fadeout 2s"}
+ ,"&>span":{position:"fixed",bottom:"1.5em",left:"5.5em",color:"black"}
+ ,"&:hover>li":{opacity:1,animation:"fadein 1s"}
+ }
+ ,"&[for=message]>span.status":{position:"absolute",left:"-0.5em",top:"-1.5em",color:"black"}
+ };
+
  export default
- {middle,material,glow,table,vignette
+ {middle,material,glow,input,label,link,table,vignette,text
  ,theme:
  {":root":Object.fromEntries(Object.entries(
  {abyss:"#111111",isle:"#303030",text:"#dbd1b4",note:"#7a7564",highlight:"rgb(230,238,156)"
@@ -120,7 +206,7 @@
  {"white-space":"pre-wrap","overflow-wrap":"break-word",overflow:"scroll"
  ,width:"100vw",height:"100vh","text-align":"var(--align)"
  ,"& h2[onclick],.entry":{cursor:"pointer","&:hover":{transform:"scale(1.2)"}}
- ,"& .entry+span[id]":{position:"relative",overflow:"hidden",display:"none"}
+ //,"& .entry+span[id]":{position:"relative",overflow:"hidden",display:"none"}
  ,"& span[name]+span":{"white-space":"pre-wrap"}
  // ,"&>span":
  // {"vertical-align":"middle","font-size":"30px","line-height":"30px"
@@ -206,7 +292,7 @@
  }
  }
  ,audio:
- {display:"inline",margin: "auto",height:"0.6em",outline:"none",background:"none"
+ {display:"inline",margin:"auto",height:"0.6em",outline:"none",background:"none"
  ,"&::-webkit-media-controls-panel":{"background-color":"rgb(35, 35, 35)"}
  ,"&::-webkit-media-controls-time-remaining-display":{"text-shadow":"none"}
  ,"&::-webkit-media-controls-current-time-display":{"text-shadow":"none"}

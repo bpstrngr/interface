@@ -1,12 +1,22 @@
- import {something,record,compose,stream,plural,defined,string,refer,compound,tether,is,numeric,array} from "./Blik_2023_inference.js";
+ import {note,something,record,provide,compose,buffer,slip,drop,stream,infer,either,swap,not,wether,pass,collect,simple,defined,string,compound,tether,is,numeric,array,basic,iterable} from "./Blik_2023_inference.js";
+ import {resolve} from "./Blik_2023_interface.js";
 
- export function random(length,domain="abcdefghijklmnopqrstuvwxyz_")
+ export var stringify=scope=>
+ scope&&iterable(Object(scope))?String(scope):JSON.stringify(scope);
+
+ export function random(length,domain="abcdefghijklmnopqrstuvwxyz123456789_")
 {return Array(length).fill(domain).map(domain=>
  domain.charAt(Math.floor(Math.random()*domain.length))).join("");
 };
 
- export var stringify=scope=>
- scope&&Symbol.iterator in Object(scope)?String(scope):JSON.stringify(scope);
+ export function encrypt(hash,algorithm="sha256",value)
+{if(!this)
+ return value=import("crypto").then(crypto=>value=crypto),function()
+{return encrypt.call(value,hash,algorithm,...arguments);
+};
+ return compose.call(this,hash,algorithm?infer("createHmac",algorithm):"createHash"
+,value,"utf-8","update","hex","digest");
+};
 
  export function edit(source,edits)
 {return Object.entries(edits||{}).reduce((source, [field,value]) =>
@@ -141,7 +151,7 @@ export function kmeans(samples, bounds, size, projection) {
 [[field,path].join('/'),value
 ]));
  return Object.fromEntries([range,subrange].flat());
-}
+};
 
  export function route(scope,term,path)
 {// insert/invoke term in scope on given path.
@@ -154,7 +164,7 @@ export function kmeans(samples, bounds, size, projection) {
  return entries.reduce(record(([path,term])=>infer(term,term=>
  Array.isArray(scope)?scope.splice(path,0,term):Object.assign(scope,{[path]:term})))
 ,[]);
-}
+};
 
  export function prune(term,collapse,limit=[],path=[])
 {// map entries recursively.
@@ -162,7 +172,8 @@ export function kmeans(samples, bounds, size, projection) {
  if(!compound(scope))return scope;
  let entries=Object.entries(scope);
  if(!entries.length)
- for(let field in scope)entries.push([field,scope[field]]);
+ for(let field in scope)
+ entries.push([field,scope[field]]);
  entries=entries.flatMap(function([field,source],index,entries)
 {let terminal=numeric(limit)?path.length===limit:[limit].flat().some(limit=>
 [[limit],[array(limit)?path:[],field]
@@ -174,7 +185,7 @@ export function kmeans(samples, bounds, size, projection) {
  if(terminal)
  return [[field,value]];
  let graft=pluck&&collapse;
- let range=[...plural(graft?source:value)].map(scope=>
+ let range=[...collect(graft?source:value)].map(scope=>
  prune.call(scope,term,collapse,limit,path.concat(field)));
  return range.flatMap(scope=>graft
 ?Object.entries(compound(scope)?scope:{})
@@ -194,7 +205,38 @@ export function kmeans(samples, bounds, size, projection) {
 });
  scope=Object.fromEntries(entries);
  return iterable?Object.assign(Array(0),scope):scope;
+ // composition for async terms, makes some optimization overdue. 
+//  return compose.call(entries,infer("reduce",record(function([field,source],index,entries)
+// {let terminal=numeric(limit)?path.length===limit:[limit].flat().some(limit=>
+// [[limit],[array(limit)?path:[],field]
+// ].map(compose("flat","/","join")).reduce(Object.is));
+//  let dispensible=!collapse||terminal;
+//  return compose(tether(term),either
+// (wether(dispensible&&not(defined),swap([]))
+// ,wether(terminal,value=>[[field,value]])
+// ,either(wether(collapse&&not(defined),swap(true,source)),slip(false))
+// ),collect,([graft,...scope])=>[graft,scope.map(scope=>
+//  prune.call(scope,term,collapse,limit,path.concat(field)))]
+// ,"flat",provide,collect,([graft,...range])=>range.flatMap(scope=>graft
+// ?Object.entries(compound(scope)?scope:{})
+// :[[field,scope]]))(scope,[field,source],path);
+// }),[]),"flat",index);
 };
+
+ var index=wether
+(entries=>!entries.length||!entries.some(([field],index,entries)=>
+ isNaN(field)||[entries[index-1]?.[0],field].map(Number).reduce((past,next)=>next<past))
+,compose(pass(infer("forEach",function([field],index,entries)
+{if(!index)
+ // snap first index. 
+ return field!=0&&entries.forEach(entry=>entry[0]=Number(entry[0])-entries[0][0]);
+ let leap=1-field+Number(entries[index-1]?.[0]);
+ if(leap)
+ // spread plural indexes. 
+ entries.slice(index).forEach((entry)=>entry[0]=Number(entry[0])+leap);
+})),Object.fromEntries,slip(Array(0)),Object.assign)
+,Object.fromEntries
+);
 
  export function merge(target,source,override=1)
 {// unite scopes (assign if path specified to override).
@@ -212,15 +254,16 @@ export function kmeans(samples, bounds, size, projection) {
  let extensible=array(target)&&!override;
  if(extensible)return target.concat(source);
  let index=Number(Boolean(override));
- let opaque=[target,source].some(term=>term instanceof Promise||!compound(term)||array(term));
- if(opaque)
+ let opaque=[target,source].some(term=>!compound(term))||(!basic(source)&&!array(source));
+ let reindex=basic(target)&&array(source)||array(target)&&!Object.keys(source).some(isNaN);
+ if(opaque||reindex)
  return [target,source][index];
  return Object.entries(source).reduce(function(target,[field,next])
 {const past=target[field];
  const value=defined(past)?merge(past,next,override):next;
  // mutation warning - reduce on an empty target to copy.
- if(value!==undefined)
- return Object.assign(target,{[field]:value});
+ if(defined(value))
+ return buffer(Object.assign,drop(1,2))(target,{[field]:value});
  delete target[field];
  return target;
 },target);
@@ -305,13 +348,19 @@ export function clone(scope)
 };
 
 export function isolate(path)
-{// reduce scope to specified path.
- return refer(search.call(this,path),path);
+{// prune scope to specified path.
+ return record(search.call(this,path),path);
 };
 
  export function extract(fields)
 {if(!this)return tether(extract,fields);
  return [fields].flat().reduce((term,field)=>merge(term,{[field]:this[field]}),{});
+};
+
+ export function relevant(scope,term)
+{return Object.fromEntries(Object.entries(scope).flatMap(([field,value])=>!string(value)
+?["ends","starts"].some(side=>term[side+"With"](field))?Object.entries(value):[]
+:[[field,value]]));
 };
 
  export const tests=
@@ -327,7 +376,8 @@ export function isolate(path)
 ,{scope:{a:{b:1}},context:[entry=>entry,true],terms:[{a:{b:1},"a/b":1}],condition:["deepEqual"]}
 ,{scope:{a:{b:1}},context:[([field,value])=>!isNaN(value)],terms:[{"a/b":1}],condition:["deepEqual"]}
 ],prune:
-[{scope:{a:{b:{c:3}}},context:[([field,value])=>field!=='b'?value:undefined],terms:[{a:[]}],condition:"deepEqual"}
-,{scope:{a:{b:{b:2,c:3}}},context:[([field,value])=>field!=='b'?value:undefined,true],terms:[{a:{c:3}}],condition:"deepEqual"}
-,{scope:{a:{b:{c:{d:1},f:2}},e:3},context:[([field,value],path)=>path.length<2?value:undefined],terms:[{a:{b:[]},e:3}],condition:"deepEqual"}
-]};
+ {trim:{scope:{a:{b:{c:3}}},context:[([field,value])=>field!=='b'?value:undefined],terms:[{a:[]}],condition:"deepEqual"}
+ ,collapse:{scope:{a:{b:{b:2,c:3}}},context:[([field,value])=>field!=='b'?value:undefined,true],terms:[{a:{c:3}}],condition:"deepEqual"}
+ ,shave:{scope:{a:{b:{c:{d:1},f:2}},e:3},context:[([field,value],path)=>path.length<2?value:undefined],terms:[{a:{b:[]},e:3}],condition:"deepEqual"}
+ ,agnostic:{scope:{a:{b:[]},e:3},context:[([field,value])=>Promise.resolve(value)],terms:[{a:{b:[]},e:3}],condition:"deepEqual"}
+}};

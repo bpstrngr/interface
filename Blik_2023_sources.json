@@ -302,12 +302,73 @@
       ]
     }
   },
-  "facebook_2014_flow_parser.js":{"https://registry.npmjs.org/flow-parser/-/flow-parser-0.216.1.tgz":["flow_parser.js"]},
-  "facebook_2013_react.js":{"https://github.com/facebook/react/packages/react":{"v18.2.0":["packages/react/src/React.js",{"syntax":"typescript"}]}},
-  "facebook_2013_react_dom_client.js":{"https://github.com/facebook/react/packages/react-dom":{"v18.2.0":["packages/react-dom/src/client/ReactDOM.js",{"syntax":"typescript"}]}},
-  "facebook_2013_react_dom_server.js":{"https://github.com/facebook/react/packages/react-dom":{"v18.2.0":["packages/react-dom/src/server/ReactDOMFizzServerNode.js",{"syntax":"typescript"}]}},
-  "remix_2014_react_router_dom.js":{"https://github.com/remix-run/react-router/packages/react-router-dom":{"v6.3.0":["packages/react-router-dom/index.tsx",{"syntax":"typescript"}]}},
-  "remix_2014_react_router_dom_server.js":{"https://github.com/remix-run/react-router/packages/react-router-dom":{"v6.3.0":["packages/react-router-dom/server.tsx",{"syntax":"typescript"}]}},
+  "facebook_2014_flow_parser.js":{"https://registry.npmjs.org/flow-parser/-/flow-parser-0.216.1.tgz":["flow_parser.js",{
+    "syntax":"commonjs",
+    "edit":{"require\\(z_\\)":"require('fs')"}
+  }]},
+  "facebook_2013_react.js":{"https://github.com/facebook/react/packages/react packages/shared":{"v18.3.1":["packages/react/src/React.js",{
+    "syntax":"flow",
+    "edit":{
+      "__DEV__":"false",
+      "packages/react/src/ReactServerContext.js":{"shared/ReactSharedInternals":"./ReactSharedInternals.js"},
+      "packages/react":{"from 'shared/":"from '../../shared/"},
+      "packages/shared":{"shared/ReactSharedInternals":"../react/src/ReactSharedInternals.js","from 'shared/":"from './","__EXPERIMENTAL__":"false","__PROFILE__":"false"}
+    },
+    "alias":{"shared/ReactSharedInternals.js":{"react":"./facebook_2013_react/0/packages/react/src/React.js"}},
+    "comment":"shared/ReactSharedInternals circularly imports React, which imports it back indirectly. redirected those imports to the original react/src/ReactSharedInternals..."
+  }]}},
+  "facebook_2013_react_dom_client.js":{"https://github.com/facebook/react/packages/react-dom packages/shared packages/react-reconciler packages/scheduler react-dom-bindings/src react-client/src/ReactClientConsoleConfigBrowser.js":
+    {"v18.3.1":["packages/react-dom/src/client/ReactDOM.js",{
+      "syntax":"flow",
+      "edit":{
+        "packages/react-dom/src/events/plugins":{"from '(shared|react-reconciler)":"from '../../../../$1"},
+        "packages/react-dom":{"from '(shared|react-reconciler|scheduler)":"from '../../../$1"},
+        "packages/react-reconciler":{
+          "from '(react-dom-bindings|react-client|react-dom)":"from '../../../$1",
+          "from '(shared|scheduler)":"from '../../$1",
+          "from 'react-reconciler":"from '.."
+        },
+        "packages/react-dom-bindings":{
+          "from '(react-reconciler|react-dom-bindings|react-dom|shared)":"from '../../../$1"
+        },
+        "packages/shared":{"from 'shared/":"from './","__EXPERIMENTAL__":"false","__PROFILE__":"false"},
+        "__DEV__":"false"
+      },
+      "alias":{
+        "react":"./facebook_2013_react.js",
+        "./ReactFiberHostConfig":"./facebook_2013_react_dom_client/0/packages/react-reconciler/src/forks/ReactFiberHostConfig.dom.js"
+      }
+    }]
+  }},
+  "facebook_2013_react_dom_server.js":{"https://github.com/facebook/react/packages/react-dom packages/react-server packages/shared":{"v18.3.1":["packages/react-dom/src/server/ReactDOMFizzServerNode.js","packages/react-dom/src/server/ReactDOMLegacyServerNode.js",{
+    "syntax":"flow",
+    "edit":{
+      "__DEV__":"false",
+      "packages/react-server/src":{"from '(shared)":"from '../../$1"},
+      "packages/shared":{"from '(shared)":"from './","__EXPERIMENTAL__":"false","__PROFILE__":"false"},
+      "from '(react-server|shared)":"from '../../../$1",
+      "ReactDOMFizzServerNode.js":{", ReactVersion as version":""}
+    },
+    "alias":{
+      "react":"./facebook_2013_react.js",
+      "./ReactServerFormatConfig":"./facebook_2013_react_dom_server/0/packages/react-dom/src/server/ReactDOMServerFormatConfig.js",
+      "./ReactServerStreamConfig":"./facebook_2013_react_dom_server/0/packages/react-server/src/ReactServerStreamConfigNode.js",
+      "../../../react-server/src/ReactServerStreamConfig":"./facebook_2013_react_dom_server/0/packages/react-server/src/ReactServerStreamConfigNode.js"
+    }
+  }]}},
+  "remix_2015_history.js":{"https://github.com/remix-run/history/packages/history":{"v5.3.0":["packages/history/index.ts",{"edit":{"__DEV__":"false"}}]}},
+  "remix_2014_react_router_dom.js":{"https://github.com/remix-run/react-router/packages/react-router-dom packages/react-router":{"v6.3.0":["packages/react-router-dom/index.tsx",{
+    "syntax":"typescript","edit":{"__DEV__":"false","lib/components.tsx":{", Navigator":""}},
+    "alias":{
+      "react":"./facebook_2013_react.js","react-dom":"./facebook_2013_react_dom_client.js","history":"./remix_2015_history.js",
+      "react-router":"./remix_2014_react_router_dom/0/packages/react-router/index.ts"
+    }
+  }]}},
+  "remix_2014_react_router_dom_server.js":{"https://github.com/remix-run/react-router/packages/react-router-dom":{"v6.3.0":["packages/react-router-dom/server.tsx",{
+    "syntax":"typescript",
+    "edit":{"server.tsx":{", Location, To":""}},
+    "alias":{"react":"./facebook_2013_react.js","history":"./remix_2015_history.js","react-router-dom":"./remix_2014_react_router_dom.js"}
+  }]}},
   "mui_2014_material.js":{"https://github.com/mui/material-ui/packages/mui-material":{"v5.14.10":[
     "src/index.ts",
     {"comment":"dependencies go to deep, let's just not use this okay? do really you need babel as runtime dependency for a layout library?"}
@@ -467,12 +528,12 @@
   }]}},
   "Mayr_2018_w3c_xmlserializer.js":{"https://github.com/jsdom/w3c-xmlserializer":{"v4.0.0":["lib/serialize.js",{"syntax":"commonjs","alias":{"xml-name-validator":"./domenic_2014_xml_name_validator.js"}}]}},
   "domenic_2014_xml_name_validator.js":{"https://github.com/jsdom/xml-name-validator":{"v4.0.0":["lib/xml-name-validator.js",{"syntax":"commonjs"}]}},
-  "domenic_2022_jsdom_rollup.js": {
+  "Domenic_2010_jsdom.js": {
     "https://github.com/jsdom/jsdom": {"22.1.0": [
       "lib/api.js",
       {
         "syntax": "commonjs",
-        "scripts": ["./domenic_2022_jsdom_rollup/0/scripts/webidl/convert.js", "./domenic_2022_jsdom_rollup/0/scripts/generate-js-globals.js"],
+        "scripts": ["./Domenic_2010_jsdom/0/scripts/webidl/convert.js", "./Domenic_2010_jsdom/0/scripts/generate-js-globals.js"],
         "alias": {
           "tough-cookie": "./salesforce_2011_toughcookie.js",
           "webidl-conversions": "./domenic_2014_webidl.js",
@@ -510,27 +571,27 @@
             "transformer\\.generate": "module.exports=transformer.generate"
           },
           "living/nodes/Document-impl.js":{
-            "const (documents) = (require\\(\"..\\/documents.js\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);",
-            "const (DOMImplementation) = (require\\(\"..\\/generated\\/DOMImplementation\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"
+            "const (documents) = (require\\(\"..\\/documents.js\"\\))":"var $1;(async function expect_hoisted_$1(){try{$1=$2}catch(fail){setTimeout(expect_hoisted_$1,100);}})();",
+            "const (DOMImplementation) = (require\\(\"..\\/generated\\/DOMImplementation\"\\))":"var $1;(async function expect_hoisted_$1(){try{$1=$2}catch(fail){setTimeout(expect_hoisted_$1,100);}})();"
           },
-          "living/nodes/HTMLFrameElement-impl.js":{"const (window) = (require\\(\"..\\/..\\/browser\\/Window\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"},
+          "living/nodes/HTMLFrameElement-impl.js":{"const (window) = (require\\(\"..\\/..\\/browser\\/Window\"\\))":"var $1;(async function expect_hoisted_$1(){try{$1=$2}catch(fail){setTimeout(expect_hoisted_$1,100);}})();"},
           "living/generated/AbortSignal.js":{
-            "const (Impl) = (require\\(\"..\\/aborting\\/AbortSignal-impl.js\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);",
-            "const (EventTarget) = (require\\(\".\\/EventTarget.js\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"
+            "const (Impl) = (require\\(\"..\\/aborting\\/AbortSignal-impl.js\"\\))":"var $1;(async function expect_hoisted_$1(){try{$1=$2}catch(fail){setTimeout(expect_hoisted_$1,100);}})();",
+            "const (EventTarget) = (require\\(\".\\/EventTarget.js\"\\))":"var $1;(async function expect_hoisted_$1(){try{$1=$2}catch(fail){setTimeout(expect_hoisted_$1,100);}})();"
           },
-          "living/generated/MouseEventInit.js":{"const (EventTarget) = (require\\(\".\\/EventTarget.js\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"},
-          "living/generated/MouseEvent.js":{"const (EventTarget) = (require\\(\".\\/EventTarget.js\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"},
-          "helpers/create-element.js":{"const (interfaces) = (require\\(\"..\\/interfaces\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"},
-          "living/range/Range-impl.js":{"const (Range) = (require\\(\"..\\/generated\\/Range\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"},
-          "living/webstorage/Storage-impl.js":{"const (StorageEvent) = (require\\(\"..\\/generated\\/StorageEvent\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"},
-          "living/file-api/Blob-impl.js":{"const (Blob) = (require\\(\"..\\/generated\\/Blob\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"},
-          "living/geometry/DOMRectReadOnly-impl.js":{"const (DOMRectReadOnly) = (require\\(\"..\\/generated\\/DOMRectReadOnly\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"},
-          "living/geometry/DOMRect-impl.js":{"const (DOMRect) = (require\\(\"..\\/generated\\/DOMRect\"\\))":"var $1;setTimeout(async function expect_hoisted_$1(){$1=$2},3000);"},
-          "XMLHttpRequest-impl.js":{"(const syncWorkerFile =) .*\n":"$1 null;"},
-          "lib/api.js":{"^((?:.*[\n$])*)":"$1\nexport default new Promise(resolve=>setTimeout(time=>resolve(module.exports),import.meta.url.endsWith(\"api.js\")?10000:3000));"}
+          "living/generated/MouseEventInit.js":{"const (EventTarget) = (require\\(\".\\/EventTarget.js\"\\))":"var $1;(async function expect_hoisted_$1(){try{$1=$2}catch(fail){setTimeout(expect_hoisted_$1,100);}})();"},
+          "living/generated/MouseEvent.js":{"const (EventTarget) = (require\\(\".\\/EventTarget.js\"\\))":"var $1;(async function expect_hoisted_$1(){try{$1=$2}catch(fail){setTimeout(expect_hoisted_$1,100);}})();"},
+          "helpers/create-element.js":{"const (interfaces) = (require\\(\"..\\/interfaces\"\\))":"var $1;(async function expect_hoisted_$1(){try{$1=$2}catch(fail){setTimeout(expect_hoisted_$1,100);}})();"},
+          "living/range/Range-impl.js":{"const (Range) = (require\\(\"..\\/generated\\/Range\"\\))":"var $1;(async function expect_hoisted_$1(){try{$1=$2}catch(fail){setTimeout(expect_hoisted_$1,100);}})();"},
+          "living/webstorage/Storage-impl.js":{"const (StorageEvent) = (require\\(\"..\\/generated\\/StorageEvent\"\\))":"var $1;(async function expect_hoisted_$1(){try{$1=$2}catch(fail){setTimeout(expect_hoisted_$1,100);}})();"},
+          "living/file-api/Blob-impl.js":{"const (Blob) = (require\\(\"..\\/generated\\/Blob\"\\))":"var $1;(async function expect_hoisted_$1(){try{$1=$2}catch(fail){setTimeout(expect_hoisted_$1,100);}})();"},
+          "living/geometry/DOMRectReadOnly-impl.js":{"const (DOMRectReadOnly) = (require\\(\"..\\/generated\\/DOMRectReadOnly\"\\))":"var $1;(async function expect_hoisted_$1(){try{$1=$2}catch(fail){setTimeout(expect_hoisted_$1,100);}})();"},
+          "living/geometry/DOMRect-impl.js":{"const (DOMRect) = (require\\(\"..\\/generated\\/DOMRect\"\\))":"var $1;(async function expect_hoisted_$1(){try{$1=$2}catch(fail){setTimeout(expect_hoisted_$1,100);}})();"},
+          "XMLHttpRequest-impl.js":{"(const syncWorkerFile =) .*?\n":"$1 null;"},
+          "lib/api.js":{"^((?:.*[\n$])*)":"$1\nexport default new Promise(function expect(resolve){setTimeout(...module.exports.JSDOM&&idlUtils?[time=>resolve(module.exports),3000]:[time=>expect(resolve),1000]);});"}
         },
         "./Harris_2015_json.js": {},
-        "comment":"circular static requires need to be edited dynamic for module. AbortSignal seems to be the last file in the bundle."
+        "comment":"circular static requires need to be edited to await hoisted assignment in bundle. AbortSignal seems to be the last file in the bundle. should be genneralized from the list of circular require specifiers."
       }
     ]}
   },
