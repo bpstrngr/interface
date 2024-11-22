@@ -14,26 +14,30 @@ Interface#[{"svg":
 ],"feMerge":{"feMergeNode":[{"id":"glow1","in":"glow"},{"id":"glow2","in":"SourceGraphic"}]}
  }
  }
- ,"circle":{"cx":"500","cy":"500","r":"86","fill":"#DBD1B4","style":"transition:1.5s ease-out;transform-origin:center;transform:scale(1);opacity:1;"}
+ ,"circle":{"cx":"499","cy":"499","r":"90","fill":"#DBD1B4","style":"cursor:pointer;transform-origin:center;opacity:1;"}
  ,"g":
  {"fill":"url(#fade)","filter":"url(#glow)"
  ,"path":
 [{"d":" M 469.431 426.984 L 305.805 0 L 214 0 L 459.91 432.592 L 469.431 426.984 L 469.431 426.984 Z "}
 ,{"d":" M 414.28 514.148 L 0 591.062 L 0 541.823 L 414.28 503.921 L 414.28 514.148 L 414.28 514.148 Z "}
-,{"d":" M 570.671 450.552 L 999.932 167.569 L 999.932 0 L 559.799 436.355 L 570.671 450.552 Z "}
+,{"d":" M 999.932 167.569 L 999.932 0 L 561.799 434.355 L 572.671 448.552 Z "}
 ,{"d":" M 546.426 552.596 L 1002 1066 L 1007 1425 L 533.722 563.242 L 546.426 552.596 L 546.426 552.596 Z "}
 ,{"d":" M 464.508 570.895 L -15 1608 L -3 1229 L 454.442 563.019 L 464.508 570.895 L 464.508 570.895 Z "}
-,{"style":"cursor:pointer;transform-origin:center;transition:0.1s;","d":" M 406.575 498.806 C 406.575 447.886 447.916 406.55 498.831 406.55 C 549.75 406.55 591.086 447.886 591.086 498.806 C 591.086 549.725 549.75 591.062 498.831 591.062 C 447.916 591.062 406.575 549.725 406.575 498.806 Z  M 549.924 438.853 Q 562.52 446.935 570.988 465.264 Q 579.457 483.598 577.826 493.727 C 576.91 499.41 572.881 502.943 568.828 501.61 L 568.828 501.61 C 564.779 500.277 564.894 493.576 563.631 487.962 Q 561.676 478.869 559.799 474.204 C 556.13 465.081 551.999 458.479 544.14 451.274 C 539.898 447.384 534.528 441.266 536.882 438.407 L 536.882 438.407 C 539.235 435.543 545.077 435.746 549.924 438.853 Z  M 504.152 421.356 C 505.753 417.516 511.471 416.242 516.917 418.512 C 522.363 420.786 525.485 425.746 523.884 429.587 C 522.284 433.427 516.56 434.7 511.115 432.431 C 505.669 430.156 502.552 425.196 504.152 421.356 Z  M 481.307 554.536 C 482.289 554.043 483.699 553.07 484.44 552.372 C 485.181 551.675 486.131 550.437 486.552 549.621 C 486.972 548.805 487.705 546.722 488.179 544.992 C 488.969 542.113 489.024 541.162 488.829 533.765 C 488.681 528.129 488.361 524.278 487.773 521.042 C 487.309 518.49 486.018 512.588 484.904 507.928 C 483.79 503.267 482.236 496.548 481.452 492.997 C 480.667 489.447 479.763 484.816 479.443 482.708 C 479.123 480.599 478.862 477.149 478.863 475.041 C 478.865 472.742 479.113 470.4 479.485 469.19 C 479.826 468.08 480.118 466.523 480.133 465.729 C 480.148 464.935 479.875 463.734 479.526 463.06 C 479.177 462.385 478.223 461.516 477.406 461.128 C 476.452 460.675 475.382 460.495 474.417 460.624 C 473.591 460.735 472.465 461.121 471.915 461.482 C 471.361 461.844 469.956 463.986 468.774 466.269 C 467.597 468.541 464.64 474.032 462.204 478.471 C 459.767 482.909 456.603 488.667 455.173 491.265 C 453.195 494.858 452.52 496.505 452.35 498.147 C 452.174 499.854 452.306 500.654 452.979 501.975 C 453.447 502.893 454.476 504.136 455.264 504.737 C 456.23 505.474 457.358 505.894 458.729 506.025 C 459.875 506.136 461.459 505.99 462.364 505.691 C 463.246 505.4 464.482 504.576 465.111 503.86 C 465.74 503.144 466.32 502.375 466.402 502.15 C 466.499 501.881 468.271 501.949 471.593 502.348 C 474.367 502.682 476.798 503.108 476.995 503.297 C 477.191 503.485 478.147 506.692 479.119 510.424 C 480.09 514.156 481.251 519.388 481.698 522.051 C 482.145 524.714 482.623 529.262 482.76 532.156 C 482.976 536.742 482.914 537.626 482.272 539.016 C 481.866 539.894 480.986 541.339 480.315 542.227 C 479.645 543.115 478.197 544.896 477.099 546.186 C 475.136 548.491 475.073 548.527 473.448 548.269 C 472.539 548.125 470.47 547.361 468.85 546.573 C 467.23 545.784 464.688 544.239 463.201 543.139 C 461.713 542.04 459.196 539.863 457.608 538.301 C 455.952 536.673 454.427 534.752 454.036 533.8 C 453.66 532.886 453.217 531.867 453.051 531.534 C 452.885 531.201 452.301 530.673 451.753 530.362 C 451.157 530.023 450.332 529.902 449.702 530.06 C 449.123 530.205 448.364 530.609 448.016 530.957 C 447.668 531.305 447.267 532.054 447.124 532.62 C 446.958 533.284 447.155 534.244 447.679 535.316 C 448.126 536.232 449.363 538.138 450.428 539.551 C 451.493 540.965 453.74 543.297 455.422 544.734 C 457.103 546.171 459.931 548.312 461.707 549.492 C 463.482 550.671 466.206 552.289 467.76 553.085 C 469.313 553.882 471.583 554.805 472.804 555.137 C 474.034 555.471 476.025 555.671 477.272 555.585 C 478.508 555.5 480.324 555.028 481.307 554.536 L 481.307 554.536 Z  M 478.086 546.022 C 479.313 544.601 480.91 542.62 481.635 541.622 L 482.952 539.806 L 482.661 541.823 C 482.5 542.933 482.058 544.57 481.677 545.461 C 481.296 546.352 480.687 547.327 480.324 547.629 C 479.96 547.93 478.806 548.274 477.758 548.392 L 475.854 548.607 L 478.086 546.022 Z  M 471.795 501.612 C 469.575 501.173 467.619 500.676 467.448 500.508 C 467.276 500.339 467.414 499.536 467.754 498.723 L 468.372 497.244 L 470.89 498.196 C 472.276 498.72 474.09 499.435 474.922 499.785 C 475.754 500.135 476.435 500.597 476.435 500.813 C 476.435 501.028 476.546 501.491 476.68 501.842 C 476.832 502.237 476.716 502.467 476.378 502.446 C 476.076 502.427 474.014 502.052 471.795 501.612 L 471.795 501.612 Z  M 472.09 497.564 C 469.038 495.972 468.878 495.822 469.279 494.941 C 469.513 494.427 469.828 494.006 469.979 494.006 C 470.13 494.006 471.341 494.55 472.671 495.214 C 474.664 496.21 475.164 496.67 475.522 497.837 C 475.761 498.615 475.814 499.252 475.641 499.252 C 475.468 499.252 473.87 498.492 472.09 497.564 L 472.09 497.564 Z  M 472.804 494.143 C 472.027 493.599 471.153 493.014 470.862 492.844 C 470.433 492.593 470.464 492.194 471.023 490.748 C 471.403 489.766 471.843 488.815 472.001 488.635 C 472.158 488.456 472.758 489.811 473.332 491.648 C 473.907 493.485 474.341 495.021 474.297 495.06 C 474.252 495.1 473.58 494.687 472.804 494.143 L 472.804 494.143 Z  M 528.288 552.029 C 529.397 551.79 531.223 551.192 532.344 550.701 C 533.466 550.209 535.043 549.228 535.848 548.521 C 536.653 547.814 537.687 546.46 538.146 545.512 C 538.663 544.444 538.981 542.986 538.981 541.683 C 538.981 540.525 538.7 538.903 538.357 538.078 C 538.013 537.253 536.969 535.784 536.036 534.815 C 535.104 533.845 532.615 531.683 530.507 530.01 C 528.399 528.337 526.519 526.833 526.33 526.668 C 526.14 526.502 526.46 525.669 527.04 524.815 C 527.62 523.962 527.911 523.203 527.688 523.129 C 527.465 523.055 526.811 523.553 526.236 524.237 C 525.66 524.921 525.069 525.475 524.923 525.468 C 524.776 525.461 524.318 525.199 523.905 524.887 C 523.177 524.335 523.18 524.282 524.006 523.122 C 524.475 522.464 524.858 521.818 524.858 521.686 C 524.858 521.554 524.667 521.446 524.435 521.446 C 524.202 521.446 523.578 521.945 523.048 522.555 C 522.128 523.614 522.051 523.632 521.366 522.959 C 520.689 522.292 520.687 522.187 521.33 521.098 C 521.705 520.464 521.893 519.826 521.748 519.681 C 521.603 519.536 521.01 519.871 520.431 520.425 L 519.379 521.433 L 515.158 517.918 C 512.836 515.985 508.838 512.311 506.274 509.753 C 503.709 507.196 500.512 503.741 499.168 502.077 C 497.824 500.412 495.723 497.507 494.499 495.62 C 493.275 493.734 491.862 491.375 491.359 490.379 C 490.49 488.66 490.457 488.266 490.699 482.712 C 490.84 479.492 491.21 475.471 491.522 473.778 C 491.833 472.085 492.38 470.085 492.737 469.333 C 493.093 468.582 494.38 467.19 495.596 466.241 C 496.811 465.291 499.024 463.944 500.514 463.247 C 502.035 462.535 504.135 461.904 505.306 461.807 C 506.507 461.708 507.778 461.842 508.305 462.124 C 509.112 462.556 509.19 462.823 508.972 464.413 C 508.837 465.403 508.017 468.017 507.152 470.222 C 506.286 472.426 503.674 477.817 501.345 482.201 C 499.017 486.586 496.888 491.137 496.614 492.315 C 496.222 494.001 496.22 494.829 496.606 496.207 C 496.899 497.254 497.697 498.544 498.592 499.417 C 499.414 500.221 500.711 501.057 501.474 501.275 C 502.237 501.494 503.459 501.673 504.191 501.673 C 504.922 501.673 506.195 501.328 507.018 500.905 C 507.842 500.483 508.934 499.689 509.446 499.14 C 509.958 498.591 510.814 496.85 511.348 495.271 C 511.883 493.692 512.765 491.264 513.309 489.874 C 513.852 488.485 515.049 485.28 515.968 482.751 C 516.886 480.223 518.186 476.047 518.857 473.47 C 519.757 470.011 520.081 467.837 520.097 465.155 C 520.115 462.331 519.919 461 519.219 459.17 C 518.724 457.875 517.755 456.174 517.066 455.389 C 516.377 454.604 515.169 453.557 514.383 453.062 C 513.597 452.568 511.994 451.917 510.821 451.618 C 509.096 451.177 508.059 451.165 505.403 451.552 C 503.438 451.838 501.057 452.527 499.475 453.268 C 498.02 453.948 495.828 455.166 494.603 455.974 C 493.377 456.782 491.306 458.543 490.001 459.887 C 488.695 461.231 486.94 463.38 486.099 464.662 C 485.259 465.945 483.97 468.396 483.236 470.11 C 481.994 473.008 481.901 473.534 481.903 477.664 C 481.905 481.053 482.122 482.865 482.821 485.331 C 483.324 487.106 484.528 490.193 485.497 492.19 C 486.465 494.188 488.261 497.326 489.486 499.163 C 490.711 501.001 492.494 503.452 493.447 504.611 C 494.4 505.769 496.274 507.971 497.611 509.503 C 498.948 511.034 502.526 514.593 505.562 517.41 C 508.599 520.227 514.954 525.51 519.685 529.15 C 524.417 532.79 529.241 536.694 530.406 537.826 C 531.666 539.051 532.525 540.236 532.525 540.752 C 532.525 541.229 531.888 542.324 531.109 543.186 C 530.33 544.048 528.754 545.157 527.606 545.651 C 526.032 546.328 524.71 546.553 522.235 546.565 C 520.43 546.573 517.966 546.348 516.76 546.064 C 515.555 545.781 513.4 545.025 511.973 544.385 C 510.546 543.744 508.803 542.781 508.1 542.245 C 507.086 541.472 506.725 540.791 506.357 538.957 C 506.101 537.685 505.892 536.034 505.892 535.287 C 505.892 534.54 506.265 532.824 506.72 531.474 C 507.174 530.123 507.439 528.91 507.306 528.778 C 507.174 528.646 506.727 528.75 506.312 529.009 C 505.723 529.377 505.459 529.361 505.106 528.936 C 504.858 528.637 504.149 528.183 503.53 527.927 C 502.586 527.535 502.434 527.27 502.581 526.268 C 502.682 525.579 502.483 524.659 502.108 524.087 C 501.715 523.486 500.903 522.993 500.043 522.832 C 499.06 522.647 498.328 522.761 497.654 523.202 C 497.12 523.552 496.502 524.435 496.28 525.164 C 496.058 525.893 495.767 527.541 495.633 528.825 C 495.5 530.11 495.579 532.379 495.809 533.869 C 496.04 535.359 496.758 537.667 497.405 538.999 C 498.051 540.33 499.252 542.204 500.073 543.163 C 500.894 544.122 502.525 545.616 503.699 546.483 C 504.872 547.35 507.072 548.662 508.587 549.4 C 510.101 550.137 512.521 551.076 513.963 551.487 C 515.405 551.898 517.675 552.359 519.007 552.513 C 520.338 552.667 522.517 552.718 523.849 552.628 C 525.181 552.537 527.178 552.267 528.288 552.029 L 528.288 552.029 Z  M 505.32 540.062 C 505.147 539.78 505.113 539.441 505.247 539.308 C 505.38 539.175 505.598 539.176 505.733 539.31 C 505.867 539.444 505.9 539.783 505.806 540.063 C 505.67 540.473 505.575 540.473 505.32 540.062 Z  M 503.129 536.955 C 502.672 535.951 502.696 535.924 503.972 536.047 C 504.981 536.145 505.317 536.386 505.416 537.082 C 505.519 537.808 505.35 537.99 504.573 537.99 C 503.921 537.99 503.445 537.649 503.129 536.955 Z  M 503.471 534.562 C 502.552 534.232 502.014 533.756 501.93 533.198 C 501.859 532.726 501.968 532.341 502.172 532.341 C 502.377 532.341 503.116 532.54 503.814 532.784 C 504.764 533.115 505.085 533.472 505.085 534.196 C 505.085 534.729 505.04 535.144 504.984 535.117 C 504.929 535.091 504.248 534.841 503.471 534.562 L 503.471 534.562 Z  M 503.37 531.247 C 502.215 530.784 501.857 530.413 501.857 529.68 L 501.857 528.719 L 503.673 529.602 C 504.672 530.087 505.489 530.709 505.489 530.985 C 505.489 531.261 505.353 531.569 505.186 531.67 C 505.02 531.771 504.203 531.58 503.37 531.247 Z  M 488.776 483.579 C 488.27 481.564 488.098 479.808 488.236 478.081 C 488.382 476.267 488.816 474.839 489.761 473.066 C 490.488 471.703 491.143 470.648 491.217 470.722 C 491.291 470.796 491.164 471.935 490.935 473.252 C 490.706 474.569 490.294 478.098 490.019 481.094 L 489.519 486.541 L 488.776 483.579 Z ","fill-rule":"evenodd"}
+,{"style":"pointer-events:none;transform-origin:center;","d":" M 406.575 498.806 C 406.575 447.886 447.916 406.55 498.831 406.55 C 549.75 406.55 591.086 447.886 591.086 498.806 C 591.086 549.725 549.75 591.062 498.831 591.062 C 447.916 591.062 406.575 549.725 406.575 498.806 Z  M 549.924 438.853 Q 562.52 446.935 570.988 465.264 Q 579.457 483.598 577.826 493.727 C 576.91 499.41 572.881 502.943 568.828 501.61 L 568.828 501.61 C 564.779 500.277 564.894 493.576 563.631 487.962 Q 561.676 478.869 559.799 474.204 C 556.13 465.081 551.999 458.479 544.14 451.274 C 539.898 447.384 534.528 441.266 536.882 438.407 L 536.882 438.407 C 539.235 435.543 545.077 435.746 549.924 438.853 Z  M 504.152 421.356 C 505.753 417.516 511.471 416.242 516.917 418.512 C 522.363 420.786 525.485 425.746 523.884 429.587 C 522.284 433.427 516.56 434.7 511.115 432.431 C 505.669 430.156 502.552 425.196 504.152 421.356 Z  M 481.307 554.536 C 482.289 554.043 483.699 553.07 484.44 552.372 C 485.181 551.675 486.131 550.437 486.552 549.621 C 486.972 548.805 487.705 546.722 488.179 544.992 C 488.969 542.113 489.024 541.162 488.829 533.765 C 488.681 528.129 488.361 524.278 487.773 521.042 C 487.309 518.49 486.018 512.588 484.904 507.928 C 483.79 503.267 482.236 496.548 481.452 492.997 C 480.667 489.447 479.763 484.816 479.443 482.708 C 479.123 480.599 478.862 477.149 478.863 475.041 C 478.865 472.742 479.113 470.4 479.485 469.19 C 479.826 468.08 480.118 466.523 480.133 465.729 C 480.148 464.935 479.875 463.734 479.526 463.06 C 479.177 462.385 478.223 461.516 477.406 461.128 C 476.452 460.675 475.382 460.495 474.417 460.624 C 473.591 460.735 472.465 461.121 471.915 461.482 C 471.361 461.844 469.956 463.986 468.774 466.269 C 467.597 468.541 464.64 474.032 462.204 478.471 C 459.767 482.909 456.603 488.667 455.173 491.265 C 453.195 494.858 452.52 496.505 452.35 498.147 C 452.174 499.854 452.306 500.654 452.979 501.975 C 453.447 502.893 454.476 504.136 455.264 504.737 C 456.23 505.474 457.358 505.894 458.729 506.025 C 459.875 506.136 461.459 505.99 462.364 505.691 C 463.246 505.4 464.482 504.576 465.111 503.86 C 465.74 503.144 466.32 502.375 466.402 502.15 C 466.499 501.881 468.271 501.949 471.593 502.348 C 474.367 502.682 476.798 503.108 476.995 503.297 C 477.191 503.485 478.147 506.692 479.119 510.424 C 480.09 514.156 481.251 519.388 481.698 522.051 C 482.145 524.714 482.623 529.262 482.76 532.156 C 482.976 536.742 482.914 537.626 482.272 539.016 C 481.866 539.894 480.986 541.339 480.315 542.227 C 479.645 543.115 478.197 544.896 477.099 546.186 C 475.136 548.491 475.073 548.527 473.448 548.269 C 472.539 548.125 470.47 547.361 468.85 546.573 C 467.23 545.784 464.688 544.239 463.201 543.139 C 461.713 542.04 459.196 539.863 457.608 538.301 C 455.952 536.673 454.427 534.752 454.036 533.8 C 453.66 532.886 453.217 531.867 453.051 531.534 C 452.885 531.201 452.301 530.673 451.753 530.362 C 451.157 530.023 450.332 529.902 449.702 530.06 C 449.123 530.205 448.364 530.609 448.016 530.957 C 447.668 531.305 447.267 532.054 447.124 532.62 C 446.958 533.284 447.155 534.244 447.679 535.316 C 448.126 536.232 449.363 538.138 450.428 539.551 C 451.493 540.965 453.74 543.297 455.422 544.734 C 457.103 546.171 459.931 548.312 461.707 549.492 C 463.482 550.671 466.206 552.289 467.76 553.085 C 469.313 553.882 471.583 554.805 472.804 555.137 C 474.034 555.471 476.025 555.671 477.272 555.585 C 478.508 555.5 480.324 555.028 481.307 554.536 L 481.307 554.536 Z  M 478.086 546.022 C 479.313 544.601 480.91 542.62 481.635 541.622 L 482.952 539.806 L 482.661 541.823 C 482.5 542.933 482.058 544.57 481.677 545.461 C 481.296 546.352 480.687 547.327 480.324 547.629 C 479.96 547.93 478.806 548.274 477.758 548.392 L 475.854 548.607 L 478.086 546.022 Z  M 471.795 501.612 C 469.575 501.173 467.619 500.676 467.448 500.508 C 467.276 500.339 467.414 499.536 467.754 498.723 L 468.372 497.244 L 470.89 498.196 C 472.276 498.72 474.09 499.435 474.922 499.785 C 475.754 500.135 476.435 500.597 476.435 500.813 C 476.435 501.028 476.546 501.491 476.68 501.842 C 476.832 502.237 476.716 502.467 476.378 502.446 C 476.076 502.427 474.014 502.052 471.795 501.612 L 471.795 501.612 Z  M 472.09 497.564 C 469.038 495.972 468.878 495.822 469.279 494.941 C 469.513 494.427 469.828 494.006 469.979 494.006 C 470.13 494.006 471.341 494.55 472.671 495.214 C 474.664 496.21 475.164 496.67 475.522 497.837 C 475.761 498.615 475.814 499.252 475.641 499.252 C 475.468 499.252 473.87 498.492 472.09 497.564 L 472.09 497.564 Z  M 472.804 494.143 C 472.027 493.599 471.153 493.014 470.862 492.844 C 470.433 492.593 470.464 492.194 471.023 490.748 C 471.403 489.766 471.843 488.815 472.001 488.635 C 472.158 488.456 472.758 489.811 473.332 491.648 C 473.907 493.485 474.341 495.021 474.297 495.06 C 474.252 495.1 473.58 494.687 472.804 494.143 L 472.804 494.143 Z  M 528.288 552.029 C 529.397 551.79 531.223 551.192 532.344 550.701 C 533.466 550.209 535.043 549.228 535.848 548.521 C 536.653 547.814 537.687 546.46 538.146 545.512 C 538.663 544.444 538.981 542.986 538.981 541.683 C 538.981 540.525 538.7 538.903 538.357 538.078 C 538.013 537.253 536.969 535.784 536.036 534.815 C 535.104 533.845 532.615 531.683 530.507 530.01 C 528.399 528.337 526.519 526.833 526.33 526.668 C 526.14 526.502 526.46 525.669 527.04 524.815 C 527.62 523.962 527.911 523.203 527.688 523.129 C 527.465 523.055 526.811 523.553 526.236 524.237 C 525.66 524.921 525.069 525.475 524.923 525.468 C 524.776 525.461 524.318 525.199 523.905 524.887 C 523.177 524.335 523.18 524.282 524.006 523.122 C 524.475 522.464 524.858 521.818 524.858 521.686 C 524.858 521.554 524.667 521.446 524.435 521.446 C 524.202 521.446 523.578 521.945 523.048 522.555 C 522.128 523.614 522.051 523.632 521.366 522.959 C 520.689 522.292 520.687 522.187 521.33 521.098 C 521.705 520.464 521.893 519.826 521.748 519.681 C 521.603 519.536 521.01 519.871 520.431 520.425 L 519.379 521.433 L 515.158 517.918 C 512.836 515.985 508.838 512.311 506.274 509.753 C 503.709 507.196 500.512 503.741 499.168 502.077 C 497.824 500.412 495.723 497.507 494.499 495.62 C 493.275 493.734 491.862 491.375 491.359 490.379 C 490.49 488.66 490.457 488.266 490.699 482.712 C 490.84 479.492 491.21 475.471 491.522 473.778 C 491.833 472.085 492.38 470.085 492.737 469.333 C 493.093 468.582 494.38 467.19 495.596 466.241 C 496.811 465.291 499.024 463.944 500.514 463.247 C 502.035 462.535 504.135 461.904 505.306 461.807 C 506.507 461.708 507.778 461.842 508.305 462.124 C 509.112 462.556 509.19 462.823 508.972 464.413 C 508.837 465.403 508.017 468.017 507.152 470.222 C 506.286 472.426 503.674 477.817 501.345 482.201 C 499.017 486.586 496.888 491.137 496.614 492.315 C 496.222 494.001 496.22 494.829 496.606 496.207 C 496.899 497.254 497.697 498.544 498.592 499.417 C 499.414 500.221 500.711 501.057 501.474 501.275 C 502.237 501.494 503.459 501.673 504.191 501.673 C 504.922 501.673 506.195 501.328 507.018 500.905 C 507.842 500.483 508.934 499.689 509.446 499.14 C 509.958 498.591 510.814 496.85 511.348 495.271 C 511.883 493.692 512.765 491.264 513.309 489.874 C 513.852 488.485 515.049 485.28 515.968 482.751 C 516.886 480.223 518.186 476.047 518.857 473.47 C 519.757 470.011 520.081 467.837 520.097 465.155 C 520.115 462.331 519.919 461 519.219 459.17 C 518.724 457.875 517.755 456.174 517.066 455.389 C 516.377 454.604 515.169 453.557 514.383 453.062 C 513.597 452.568 511.994 451.917 510.821 451.618 C 509.096 451.177 508.059 451.165 505.403 451.552 C 503.438 451.838 501.057 452.527 499.475 453.268 C 498.02 453.948 495.828 455.166 494.603 455.974 C 493.377 456.782 491.306 458.543 490.001 459.887 C 488.695 461.231 486.94 463.38 486.099 464.662 C 485.259 465.945 483.97 468.396 483.236 470.11 C 481.994 473.008 481.901 473.534 481.903 477.664 C 481.905 481.053 482.122 482.865 482.821 485.331 C 483.324 487.106 484.528 490.193 485.497 492.19 C 486.465 494.188 488.261 497.326 489.486 499.163 C 490.711 501.001 492.494 503.452 493.447 504.611 C 494.4 505.769 496.274 507.971 497.611 509.503 C 498.948 511.034 502.526 514.593 505.562 517.41 C 508.599 520.227 514.954 525.51 519.685 529.15 C 524.417 532.79 529.241 536.694 530.406 537.826 C 531.666 539.051 532.525 540.236 532.525 540.752 C 532.525 541.229 531.888 542.324 531.109 543.186 C 530.33 544.048 528.754 545.157 527.606 545.651 C 526.032 546.328 524.71 546.553 522.235 546.565 C 520.43 546.573 517.966 546.348 516.76 546.064 C 515.555 545.781 513.4 545.025 511.973 544.385 C 510.546 543.744 508.803 542.781 508.1 542.245 C 507.086 541.472 506.725 540.791 506.357 538.957 C 506.101 537.685 505.892 536.034 505.892 535.287 C 505.892 534.54 506.265 532.824 506.72 531.474 C 507.174 530.123 507.439 528.91 507.306 528.778 C 507.174 528.646 506.727 528.75 506.312 529.009 C 505.723 529.377 505.459 529.361 505.106 528.936 C 504.858 528.637 504.149 528.183 503.53 527.927 C 502.586 527.535 502.434 527.27 502.581 526.268 C 502.682 525.579 502.483 524.659 502.108 524.087 C 501.715 523.486 500.903 522.993 500.043 522.832 C 499.06 522.647 498.328 522.761 497.654 523.202 C 497.12 523.552 496.502 524.435 496.28 525.164 C 496.058 525.893 495.767 527.541 495.633 528.825 C 495.5 530.11 495.579 532.379 495.809 533.869 C 496.04 535.359 496.758 537.667 497.405 538.999 C 498.051 540.33 499.252 542.204 500.073 543.163 C 500.894 544.122 502.525 545.616 503.699 546.483 C 504.872 547.35 507.072 548.662 508.587 549.4 C 510.101 550.137 512.521 551.076 513.963 551.487 C 515.405 551.898 517.675 552.359 519.007 552.513 C 520.338 552.667 522.517 552.718 523.849 552.628 C 525.181 552.537 527.178 552.267 528.288 552.029 L 528.288 552.029 Z  M 505.32 540.062 C 505.147 539.78 505.113 539.441 505.247 539.308 C 505.38 539.175 505.598 539.176 505.733 539.31 C 505.867 539.444 505.9 539.783 505.806 540.063 C 505.67 540.473 505.575 540.473 505.32 540.062 Z  M 503.129 536.955 C 502.672 535.951 502.696 535.924 503.972 536.047 C 504.981 536.145 505.317 536.386 505.416 537.082 C 505.519 537.808 505.35 537.99 504.573 537.99 C 503.921 537.99 503.445 537.649 503.129 536.955 Z  M 503.471 534.562 C 502.552 534.232 502.014 533.756 501.93 533.198 C 501.859 532.726 501.968 532.341 502.172 532.341 C 502.377 532.341 503.116 532.54 503.814 532.784 C 504.764 533.115 505.085 533.472 505.085 534.196 C 505.085 534.729 505.04 535.144 504.984 535.117 C 504.929 535.091 504.248 534.841 503.471 534.562 L 503.471 534.562 Z  M 503.37 531.247 C 502.215 530.784 501.857 530.413 501.857 529.68 L 501.857 528.719 L 503.673 529.602 C 504.672 530.087 505.489 530.709 505.489 530.985 C 505.489 531.261 505.353 531.569 505.186 531.67 C 505.02 531.771 504.203 531.58 503.37 531.247 Z  M 488.776 483.579 C 488.27 481.564 488.098 479.808 488.236 478.081 C 488.382 476.267 488.816 474.839 489.761 473.066 C 490.488 471.703 491.143 470.648 491.217 470.722 C 491.291 470.796 491.164 471.935 490.935 473.252 C 490.706 474.569 490.294 478.098 490.019 481.094 L 489.519 486.541 L 488.776 483.579 Z ","fill-rule":"evenodd"}
 ]}
  }
- },"fragment/document",["./actions"],"fragment/activate"]{{"#Interface":
+ },"fragment/document",["./actions"],"fragment/activate"]{"id":"Interface","style":
  {"position":"relative","vertical-align":"top","width":"100%","height":"auto"
  ,"transform":"translateY(40%)","margin-top":"-60%","overflow":"visible"
- ,"& path:last-of-type:hover":{"transform":"scale(1.1)"}
- }}} 
+ ,"transition":"all 0.1s"
+ ,"& g>path:last-of-type":{}
+ ,"& circle":{"transition":"all 0.1s","&:hover":
+ {"transform":"scale(1.1)"
+ ,"&+g>path:last-of-type":{"transform":"scale(1.1)"}
+ }}
+ }} 
 {text-align:center;}
-
-
+style#["layout/overflow",[[".snippet"]],"inference/record","fragment/stylesheet",[["style","#text"]],"inference/record","fragment/document"]
 
 
 
@@ -46,54 +50,78 @@ Ecmascript module loader for clients/imports/functions.
 2024
 
 {text-align:left;margin-left:10%;}
+  The web has become professionally unmaintainable. 
+
+  This module paves a way out, the case is made in my notes on Form@#Blik_2024_form. 
+
+{text-align:left;margin-left:10%;}
   The javascript platform has been increasingly convoluted 
-by syntactic variations in its ecosystem (commonjs, typescript, flow, jsx etc.), 
-requiring growing amounts of configuration and conversion to maintain. 
+by non-standard syntactic variations in its ecosystem (commonjs, typescript, flow, jsx &c.), 
+requiring growing amounts of configuration to maintain (manifest, tsconfig, webpack/babel, eslint &c.). 
 
   Even when they have merit (static analysis of type integrity, templating), 
-it is at the expense of javascript's flexibility, which can offer 
+it is at the expense of javascript's flexibility, which can indeed offer 
 native alternatives to these features. 
 
-  As insult to injury, package managers (npm, pnpm, yarn etc.) have long obscured 
-the dependency graphs and build processes of external libraries, 
-contributing to the overengineering and marginal complexity 
-on the web by concealing implementation details. 
+  As insult to injury, package managers (npm, yarn, jsr &c.) 
+have long obscured dependencies and build processes of external libraries, 
+contributing to the overengineering and growing complexity 
+on the web by concealing implementation details in a language 
+that is ultimately still distributed in source format (so to browsers as to servers). 
 
 {text-align:center;}
-(The Web Not This Complicated.)#span{font-weight:bold} 
+(Programmming should make us creative, not complacent.)#b 
 {text-align:left;}
 
-With the advent of a loader interface in the (Ecmascript specification)@https://whatwg.github.io/loader/ and its (Node.js implementation)@https://nodejs.org/api/module.html#customization-hooks , 
+With the arrival of a loader interface in the (Ecmascript specification)@https://whatwg.github.io/loader/{"class":"invert reference","style":{"& *":{"filter":"invert(0.8)"}}} and its (Node.js implementation)@https://nodejs.org/api/module.html#customization-hooks, 
 variations can finally be standardized dynamically, without a need for external configurations 
-or a new platform trying to contain this heterogeneity (deno, bun). 
+or a new platform trying to contain this heterogeneity (UMD ✞@https://jameshfisher.com/2020/10/04/what-are-umd-modules/, Deno@https://www.youtube.com/embed/M3BM9TB-8yA, Bun@https://bun.sh/docs). 
 
-(Loading modules)#span{font-weight:bold} requires 3 steps: 
+(Loading modules)#b requires 3 steps: 
 
- (1. locate)#span{font-weight:bold} (download, bundle and delete source if not found despite source definition specified, or just redirect to the source entry if available (eg. pending or interrupted bundling). exposed by nodejs as "resolve".), 
- (2. access)#span{font-weight:bold} (parse and re-serialize if foreign dialect specified or detected. exposed by nodejs as "load".), 
- (3. modularise)#span{font-weight:bold} (not exposed by nodejs; splitting "load" into access + modularise with an implementation using the "vm" module is a pending feature). 
- (+. test)#span{font-weight:bold}, if the namespace exposes cases for itself. 
+ (1. locate)#b (download, bundle and delete source if not found despite source definition specified, or just redirect to the source entry if available (eg. pending or interrupted bundling). exposed by nodejs as "resolve".), 
+ (2. access)#b (parse and re-serialize if foreign dialect specified or detected. exposed by nodejs as "load".), 
+ (3. modularise)#b (not exposed by nodejs; splitting "load" into access + modularise with an implementation using the "vm" module is a pending feature). 
+ (+. test)#b, if the namespace exposes cases for itself. 
 
-Although the standard allows polluting modules with procedures, it is advised to keep them modular and generic. 
+Although the language allows polluting modules with procedures, it is advised to keep them modular and generic. 
 To invoke their functions with specific arguments, this module 
 extends the 3 steps with an inference of arguments provided by a client (shell/function): 
 
- (5. infer arguments)#span{font-weight:bold} if provided. 
+ (5. infer arguments)#b if provided. 
 
 Take a simple module with a function to cumulate numbers: 
- sum#script("./Blik_2023_search.js/scope/sum",{"layout":"script"}){background:transparent;max-width:90%;margin:auto}
+ sum#script("/Blik_2023_search.js/scope/sum"){background:transparent;max-width:90%;margin:auto}
 
-To invoke it, you shouldn't need to write a static script for every specific case, or module. 
+To invoke it, you shouldn't need to write a static script for each specific case of any module. 
 Interface will dynamically infer the function name and arguments provided from a command line: (
+ git clone https://github.com/bpstrngr/interface .; 
  node ./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3;)#span{font-family:monospace;color:#43a047} 
 or peer module: inference#script/highlight(
-' resolve("./Blik_2023_search.js","sum",1,2,3);'){font-family:monospace;}
+' import("./Blik_2023_interface.js").then(({resolve})=>
+ resolve("./Blik_2023_search.js","sum",1,2,3));'
+){font-family:monospace;}
+When no inference is provided, the functions will be exposed in a REPL: (
+ node ./Blik_2023_interface.js;
+)#span{font-family:monospace;color:#43a047} inference#script/highlight(
+' resolve("./Blik_2023_search.js","sum",1,2,3);'
+){font-family:monospace;}
+
+To use Interface internally for all module imports, specify it as node.js's loader module (available from version 16): (
+ node --import=./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3; # node.js 22.7.0 deprecated commonjs syntax detection by default. 
+ node --import=./Blik_2023_interface.js --experimental-detect-module ./Blik_2023_search.js sum 1 2 3; # node.js 21.1.0
+ node --import=./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3; # node.js 20.7.0, with a package.json determining module defaults (echo '{"type":"module"}'>package.json)
+ node --import 'data:text/javascript;import("module").then(({register})=>register("./Blik_2023_interface.js",{parentURL:pathToFileURL("./")}));' ./Blik_2023_search.js sum 1 2 3; # node.js 20.7.0
+ # node.js 20.2 may have broken access to command line arguments from a worker thread used by both --loader and its new --import flag. 
+ node --loader=./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3; # node.js 16
+ node -e 'let{interface,inference}=Promise.all(["interface","inference"].map(m=>import("../Blik_2023_"+m+".js"))).then(m=>{[interface,inference]=m;[{resolve},{infer,compose,combine}]=m;resolve(...process.argv.slice(1))})';)#div{width:100%;overflow:scroll;white-space:pre;font-family:monospace;color:#43a047;} 
 
 By default, node.js rejects module (and npm package) specifiers that aren't available, requiring pre-installation of dependencies (and dealing with npm version conflicts). 
 Interface recovers from failed imports if a respective entry is declared in source definitions (sources.json), 
-loading and accessing them accordingly, while also bundling them 
+loading and accessing them as specified there, while also bundling them as standard ecmascript modules 
 to dispose of arbitrary architectures for future access: 
-definition#script/highlight(` // sources.json
+definition#script/highlight(
+` // sources.json
  {"Blik_2023_search.js":
  {"https://github.com/bpstrngr/interface":
  {"2024.02":["Blik_2023_search.js"]
@@ -103,39 +131,67 @@ definition#script/highlight(` // sources.json
 `)
 
 Source definitions map relative file specifiers to local/remote entry points (address and branch, supporting multi-entry and sparse-checkout of monorepos), 
-patches and parsing/bundling specifications (syntax, alias, parse, bundle - rollup plugin:{option:"setting"} specifiers are obsolete along with rollup): 
+patches and parsing/bundling specifications (syntax, alias, edit (source), replace (bundle)): 
+(rollup options and plugin specifiers (output:{paths:{specifier:"path"}}, plugin:{option:"settings"}) are now obsolete, along with rollup itself once syntax merging is implemented): 
 definitions#script/highlight(
 ` {"module.js":"path/index.js"};
- {"module.js":["path/index.js",{syntax:"commonjs",output:{paths:{specifier:"path"}}}]};
+ {"module.js":["path/index.js",{syntax:"commonjs",edit:{regexp:"string"},alias:{trail:{specifier:"specifier"}},replace:{syntax:{value:"value"}}}]};
  {"module.js":{"protocol://domain/author/module":["index.js","index2.js"]}};
  {"module.js":{"protocol://domain/author/module/tarball/branch":["path/index.js"]}};
  {"module.js":{"protocol://domain/author/module":{"branch or tag":["path/index.js","../../module.patch"]}}};
- {"module.js":{"protocol://domain/author/module/sparse/checkout/path":{"branch or tag":["path/index.js"]}}};
+ {"module.js":{"protocol://domain/author/module/sparse/checkout/path sparse/checkout/path":{"branch or tag":["path/index.js"]}}};
 `)
 
-To use Interface internally for all module imports, specify it as node.js's loader module (available from version 16): (
- node --import=./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3; # once node.js deprecates commonjs syntax detection by default. 
- node --import=./Blik_2023_interface.js --experimental-detect-module ./Blik_2023_search.js sum 1 2 3; # node.js 21.1.0
- node --import=./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3; # node.js 20.7.0
- node --import 'data:text/javascript;import("module").then(({register})=>register("./Blik_2023_interface.js",{parentURL:pathToFileURL("./")}));' ./Blik_2023_search.js sum 1 2 3; # node.js 20.7.0
- # node.js 20.2 broke access to command line arguments from a worker thread used by both --loader and its new --import flag. 
- node --loader=./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3; # node.js 16
- node -e 'let{interface,inference}=Promise.all(["interface","inference"].map(m=>import("../Blik_2023_"+m+".js"))).then(m=>{[interface,inference]=m;[{resolve},{infer,compose,combine}]=m;resolve(...process.argv.slice(1))})';)#div{width:100%;overflow:scroll;white-space:pre;font-family:monospace;color:#43a047;} resolve#script/highlight(`
- import("./Blik_2023_interface.js").then(({resolve})=>resolve("./Blik_2023_search.js","sum",1,2,3));
- http.on("request",({path,query},response)=>resolve(path,...query).then(body=>response.send({body})));`
-)
+Let's see a source definitions for the syntactic parser, formatter and bundler Interface uses to achieve standardization: 
+ sum#script("/Blik_2023_sources.json/scope/default/haverbeke_2012_acorn.js"){background:transparent;max-width:90%;margin:auto}
+ sum#script("/Blik_2023_sources.json/scope/default/davidbonnet_2015_astring.js"){background:transparent;max-width:90%;margin:auto}
+ sum#script("/Blik_2023_sources.json/scope/default/Harris_2015_rollup.js"){background:transparent;max-width:90%;margin:auto;opacity:0.8}
 
-Note that before nodejs 21.1, you need a package.json file to determine module type ((echo '{"type":"module"}'>package.json;)#span{font-family:monospace;color:#43a047}), or the (--experimental-default-type=module)#span{font-family:monospace;color:#43a047} flag if available. 
+When importing these the first time, they will perform parsing and bundling 
+of their own source by being loaded from right there, before replacing 
+their arbitrarily structured sources with an idempotent bundle. 
 
-Due to lack of loader, git or vm modules, browser clients can only perform location, access and testing, not modularization: 
-clientside#script/highlight(`either(resolve,compose(fetch,"text",definition,interpret,definition,standardize,serialize,"body",specify,{method:"post"},merge,infer.bind(module),fetch,import))(module);`)
+They will be imported no matter what missing source with a definition you may load first: (
+ node --import=./Blik_2023_interface.js ./haverbeke_2012_acorn.js;)#span{font-family:monospace;color:#43a047} 
 
-To perform a full resolution of external modules, iterate through the source entries: (
- for file in $(cat sources.json | jq keys[] --raw-output);do node ./Blik_2023_interface.js --import=./Blik_2023_interface.js $file;done;
+To perform a full resolution of external modules, iterate through the source definition entries: (
+ for file in $(cat sources.json | jq keys[] --raw-output);do node ./Blik_2023_interface.js --import=./Blik_2023_interface.js $file;done;)#div{width:100%;overflow:scroll;white-space:pre;font-family:monospace;color:#43a047;}
+or resolve only static imports by loading source modules to avoid dynamic ones: (
  for file in $(git ls-tree --full-tree --name-only -r HEAD);do node ./Blik_2023_interface.js --import=./Blik_2023_interface.js $file;done;)#div{width:100%;overflow:scroll;white-space:pre;font-family:monospace;color:#43a047;}
 
+Due to lack of loader, git or vm modules, browser clients can only perform location, access and testing, not modularization: clientside#script/highlight(
+` either(resolve,compose(fetch,"text",definition,interpret,definition,standardize,serialize,"body",specify,{method:"put"},merge,infer.bind(module),fetch,resolve))(module);`)
+
+But that's also all you'd need to do on a server to trigger it by responding with the accessed source file. 
+
 {text-align:center;}
-(Integration)#span{font-weight:bold} 
+(Be the host of your property.)#h2 
+{text-align:left;}
+
+
+Now we can consider something potentially more demanding than cumulating numbers, 
+like opening a port to exchange http messages: 
+ host#script("/Blik_2023_host.js/scope/expose"){background:transparent;max-width:90%;height:12em;overflow:scroll;margin:auto}
+
+As visible, this implementation takes a protocol configuration file, 
+which is recorded in a list of classified files, 
+along with the addresses of SSL certificates it may contain. 
+If the certification is not found to host over https, the distinguishedname is used to generate a self-signed one: definitions#script/highlight(
+` {"http":{"port":80}
+ ,"https":{"port":443,"hmac":"encryption seed"
+ ,"certification":{"domain name":
+["./certificate_key.pem","./certificate.pem"
+]}
+ ,"distinguishedname":{"commonName":"example.org","countryName":"US","ST":"California","localityName":"Mountain View","organizationName":"example","OU":"admin"}
+ }
+ }
+`)
+
+ host#script("/Blik_2024_static.js/scope/default"){background:transparent;max-width:90%;height:12em;overflow:scroll;margin:auto}
+
+
+{text-align:center;}
+("Composition over convention")#b 
 {text-align:left;}
 
 Modules get tested (inferred on a scope/context, and composed with further terms and a condition) after modularisation if they expose a "tests" object: 
@@ -145,8 +201,8 @@ tests#script/highlight(`
  };`
 )
 
-To test manually: 
-( node ./Blik_2023_interface.js ./Blik_2023_meta.js test "module.ts";
+To test manually: (
+ node ./Blik_2023_interface.js ./Blik_2023_meta.js test "module.ts";
 )#span{font-family:monospace;color:#43a047}
 
 To format/compile between different dialects, substitute modularisation with persistence: compile#script/highlight(`
@@ -157,8 +213,8 @@ To format/compile between different dialects, substitute modularisation with per
  node ./Blik_2023_interface.js ./Blik_2023_interface.js access "module.ts";
 )#div{width:100%;overflow:scroll;white-space:pre;font-family:monospace;color:#43a047}
 
-Copy pre-commit hook to format and test staged modules before each commit: 
-( cp git_hook_pre-commit .git/hooks/pre-commit;
+Copy pre-commit hook to format and test staged modules before each commit: (
+ cp git_hook_pre-commit .git/hooks/pre-commit;
 )#div{width:100%;overflow:scroll;white-space:pre;font-family:monospace;color:#43a047}
 
 Copy post-commit hook to restage your local formatting stashed by pre-commit: 
@@ -208,8 +264,7 @@ To use in external projects, merge Interface as a new remote:
  git fetch interface;
  git switch -c interface interface/stable;
  git checkout $commit;
- git checkout interface/stable .;
- echo " Unstaging union..."
+ git checkout interface/stable union..."
  git restore --staged .;
  echo " Discarding potential conflicts..."
  git restore $(git ls-files);
@@ -251,16 +306,9 @@ Some of the more git-aware commands to use beyond common implicit push/merge:
  to support backward compatibility of client command inference before loader modules, 
  but it remains idle without arguments from the client.) 
 
-Issues: 
- Handle potential resolution failure in dependencies being loaded from source during bundling, in case it concludes with a purge sooner. 
- It may produce inconsistencies in other dependencies being interrupted in download/bundle, which makes full cleanup (check-ignore, rm ls -d */, see above) recommended until a solution. 
- Haverbeke_2012_acorn loaded from bundle after successful load from source produces anomalous syntaxerrors. 
- Re-running with the bundle thereby present doesn't reproduce the problem. could be an issue with acorn-typescript's reliance on stale states... 
- Fix modularisation of sources to support module loading without nodejs's native loader module. update references to it in this readme after. 
- Make decompress function more declarative (concise). 
- Swap Acorn's plugin-system for a composable parser to release acorn-typescript plugin dependency (compilers written in the language it compiles constitute a new platform. No native compiler exists for typescript). 
- Define typescript semantics for that new parser so it can be merged in its composition as needed (as well as for jsx, flow, etc.). 
- Establish functional type check convention to lint them without introduction of heterogenous (non-lexical) syntax (typescript, jsdocs etc.). 
+
+
+
 
 
 
