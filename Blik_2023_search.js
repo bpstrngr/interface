@@ -254,10 +254,12 @@ export function kmeans(samples, bounds, size, projection) {
  let extensible=array(target)&&!override;
  if(extensible)return target.concat(source);
  let index=Number(Boolean(override));
- let opaque=[target,source].some(term=>!compound(term))||(!basic(source)&&!array(source));
- let reindex=basic(target)&&array(source)||array(target)&&!Object.keys(source).some(isNaN);
- if(opaque||reindex)
+ let opaque=[target,source].some(term=>!compound(term)||array(term)&&override);//||([source,target].every(array)&&override);
+ if(opaque)
  return [target,source][index];
+ let reindex=array(target)&&!Object.keys(source).some(isNaN);
+ if(reindex)
+ return Object.assign(target,source);
  return Object.entries(source).reduce(function(target,[field,next])
 {const past=target[field];
  const value=defined(past)?merge(past,next,override):next;
