@@ -170,7 +170,7 @@
     "https://github.com/w3c/webidl2.js": {
       "v24.4.0": [
         "index.js", {
-          "edit":{"w3c_2016_webidl2/0/index.js":{"export":"import","^((?:.*[\n$])*)": "$1\nexport default {parse,write,validate,WebIDLParseError};"}},
+          "edit":{"index.js":{"export":"import","^((?:.*[\n$])*)": "$1\nexport default {parse,write,validate,WebIDLParseError};"}},
           "comment":"webidl2js requires (aka default-imports) this module, despite it only re-exports namespaces. re-exported namespaces can't be default exported, hence the conversion to imports before the new default export."
         }
       ]
@@ -397,7 +397,7 @@
   "ashtuchkin_2012_iconv_lite.js":{"https://github.com/ashtuchkin/iconv-lite":{"v0.6.3":["lib/index.js",{
     "syntax":"commonjs",
     "alias":{"safer-buffer":"./Skovoroda_2018_saferbuffer.js"},
-    "edit":{"ashtuchkin_2012_iconv_lite/0/encodings/index.js":{"var module = modules":"let module=modules"}},
+    "edit":{"encodings/index.js":{"var module = modules":"let module=modules"}},
     "./Harris_2015_json.js": {},
     "comment":"hoisted commonjs variable named 'module' edited to local scope to not conflict with inserted module variable in module scope after standardization."
   }]}},
@@ -655,6 +655,7 @@
       "d3-transition":"./Bostock_2011_d3/15/src/index.js"
     }}]},
     "https://github.com/d3/d3-transition":{"v3.0.1":["src/index.js",{"alias":{
+      "d3-selection":"./Bostock_2011_d3_select.js",
       "d3-color":"./Bostock_2011_d3/2/src/index.js",
       "d3-dispatch":"./Bostock_2011_d3/7/src/index.js",
       "d3-ease":"./Bostock_2011_d3/16/src/index.js",

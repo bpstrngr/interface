@@ -108,6 +108,7 @@ When no inference is provided, the functions will be exposed in a REPL: (
 ){font-family:monospace;}
 
 To use Interface internally for all module imports, specify it as node.js's loader module (available from version 16): (
+ # module detection fails to detect eg. modules with export statements far in the file, so package.json is recommended after version 20.7 too. 
  node --import=./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3; # node.js 22.7.0 deprecated commonjs syntax detection by default. 
  node --import=./Blik_2023_interface.js --experimental-detect-module ./Blik_2023_search.js sum 1 2 3; # node.js 21.1.0
  node --import=./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3; # node.js 20.7.0, with a package.json determining module defaults (echo '{"type":"module"}'>package.json)
