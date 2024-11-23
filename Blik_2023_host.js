@@ -156,11 +156,11 @@
 ,{name: 'subjectKeyIdentifier'}
 ]);
  certificate.sign(rsa.privateKey);
- key=await local.put({url:url.pathToFileURL(path.resolve(location,certification[0])),body:forge.privateKeyToPem(rsa.privateKey)});
- cert=await local.put({url:url.pathToFileURL(path.resolve(location,certification[1])),body:forge.certificateToPem(certificate)});
- [key,cert]=await Promise.all([key,cert].map(certification=>access(certification,true)));
- if([key,cert].some(pair=>pair instanceof Error))
- note("invalid certification:",key,cert)&&process.exit(0);
+ [key,cert]=await certification.reduce(record((certification,index)=>compose.call
+(path.resolve(location,certification)
+,forge[["privateKey","certificate"][index]+"ToPem"]([rsa.privateKey,certificate][index])
+,true,access,true,access
+)),[]);
  return {key,cert};
 };
 
