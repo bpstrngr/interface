@@ -1,6 +1,6 @@
- import {note,collect,prompt,same,has,pass,slip,something,observe,describe,remember,expect,control,trace,array,compound,simple,apply,stream,record,revert,provide,tether,differ,wether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,binary,match,wait,string,defined,compose,combine,exit,clock,route,major} from "./Blik_2023_inference.js";
+ import {note,collect,prompt,same,has,pass,slip,something,observe,describe,remember,expect,control,trace,array,compound,simple,apply,stream,record,revert,provide,tether,differ,wether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,numeric,binary,match,wait,string,defined,compose,combine,exit,clock,route,major} from "./Blik_2023_inference.js";
  import {sum,merge,stringify,search,edit,prune,parse as records,relevant} from "./Blik_2023_search.js";
- import {parse,sanitize,serialize,exports,reexport,test,mime} from "./Blik_2023_meta.js";
+ import {parse,sanitize,serialize,exports,reexport,test,mime,coordinates} from "./Blik_2023_meta.js";
 
  export const address=new URL(import.meta.url).pathname;
  export const location=address.replace(/\/[^/]*$/,"");//path.dirname(address);
@@ -18,12 +18,15 @@
  agent.split("/")).map(([name,version])=>({[name]:Number(version)})).reduce(merge);
 };
 
- var feature=prune.call
-({attributes:{"Node.js":21,Chrome:123}
- ,assertions:{"Node.js":16.14,Chrome:91,Firefox:Infinity}
- },([feature,condition])=>isNaN(condition)?condition:
- Object.entries(condition).every(([name,version])=>version<=agent[name])
+ var feature=agent=>agent&&prune.call
+({attributes:{node:21,Chrome:123}
+ ,assertions:{node:16.14,Chrome:91,Firefox:Infinity}
+ ,json:{Chrome:125,Firefox:Infinity}
+ },([feature,condition])=>
+ [true,Object.keys(condition).find(name=>agent[name])].filter(Boolean).reduce((value,name)=>
+ condition[name]<=agent[name])
 );
+
  var sources="./Blik_2023_sources.json";
  export var scope={};
 
@@ -107,7 +110,9 @@
  let absolute=await wether
 ([url,path]
 ,source=>resolve("url","fileURLToPath",source)
-,source=>!agent.node?relation+"/"+source:resolve("path","resolve",relation,source)
+,source=>!agent.node
+?relation+"/"+source.replace(/^[\/\.]+/,"")
+:resolve("path","resolve",relation,source)
 ,infer()
 )(source);
  if(internal)
@@ -117,8 +122,8 @@
  let discard=wether(same(absolute),compose(context,next),compose(drop(-1),exit));
  let fail=compose("stack","The above errors occured while trying to locate "+source+".",collect,"\n","join",Error,exit);
  let json=source.endsWith(".json")||undefined;
- let local=wether(fetch,compose(crop(1),slip("path","relative",location),resolve,address=>({url:window.location.origin+"/"+address})));
- let module=command?import(source,json&&{[feature.attributes?"with":"assert"]:{type:"json"}}):either(precedent,compose
+ let local=compose(swap(source),fetch,when(({status})=>status===200),"headers","location",address=>({url:window.location.origin+address}));
+ let module=command?import(source,json&&{[feature(agent).attributes?"with":"assert"]:{type:"json"}}):either(precedent,compose
 (either(buffer(next,buffer(compose(recovery,invoke,proceed))),buffer(local),buffer(compose(backtrack,discard),fail))
 ,shortcircuit,{imports:new Set()},merge,[absolute],record,slip(scope),merge
 ,[absolute,"resolution"],tether(search)
@@ -633,6 +638,61 @@
  return require.instance(path);
 };
 
+ export async function sourcemap(request,address)
+{let {query:{module}={}}=await resolve("url","parse",request.url,true);
+ let {default:actions,...exports}=await resolve(module);
+ let namespace=
+ {["./"+await resolve("path","relative",".",address)]:
+ [exports,...Object.values(actions)].flatMap(names=>
+ Object.entries(names).map(([field,value])=>
+ is(Function)(value)&&value.name||field))
+ };
+ let names=Object.values(namespace).flat();
+ let sources=await Object.keys(namespace).reduce
+(record(source=>infer(access,true)(source))
+,[await compose(fetch,"text")(module)]
+);
+ let grammars=await Object.entries({...namespace,[module]:names}).reduce(record(function([module,[...names]],index,namespaces)
+{// find node with same source text as first name match in source files (names are more likely shadowed in output, but source may still be mistaken).
+ let reference=this.slice(0,namespaces[index+1]?0:index).flatMap(Object.values);
+ return compose(buffer(parse,swap(null)),tether(search,({1:value})=>names.includes(value?.id?.name)&&
+ [value,reference?.find(node=>node.id.name===value.id.name)].filter(Boolean).map(node=>
+ (sources[node===value?index:this.findIndex(grammar=>Object.values(grammar).includes(node))]).slice(node.start,node.end)).reduce((text,reference)=>text===reference)&&
+ names.splice(names.indexOf(value.id.name),1),true))(sources[index]);
+}),[]);
+ let [source,grammar]=[sources,grammars].map(list=>list.pop());
+ let locations=grammars.map((nodes,index)=>Object.values(nodes).map(node=>
+[coordinates(sources[index],node.id.start)
+,coordinates(source,Object.values(grammar).find(({id})=>id.name===node.id.name)?.id.start)
+,node.id.name
+]).filter(({0:source,1:target})=>
+ // filter locations not matched due to transformation.
+ [source,target].flat().every(numeric)));
+ let entries=locations.flatMap((locations,source)=>
+ locations.map(([[sourceline,sourcecharacter],[line,character],name],index,locations)=>[line,[
+ // zero-based character, file, sourceline, sourcecharacter and name index relative to previous value.
+[character-(locations[index-1]?.[1][0]===line?locations[index-1][1][1]:0)
+,index?0:source?1:0
+,sourceline-(locations[index-1]?.[0][0]??0)
+,sourcecharacter-(locations[index-1]?.[0][1]??0)
+,[locations[index-1]?.[2],name].filter(Boolean).map(name=>names.indexOf(name)).reduce((past,next)=>next-past)
+]]]));
+ let vlq='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+ let quantifiers=entries.map(entry=>Object.fromEntries([entry])).reduce((quantifiers,quantifier)=>merge(quantifiers,quantifier,0));
+ let mappings=Object.assign(Array(),quantifiers).map(entries=>
+ entries.map(entry=>entry.map(quantifier=>
+ // https://github.com/Rich-Harris/vlq/blob/master/src/index.js
+ [quantifier<0?(-quantifier<<1)|1:quantifier<<1].reduce(function clamp(stack,shifted)
+{return (!stack.length||shifted>0)&&(shifted>>>5>0)?clamp([...stack,(shifted&31)|32],shifted>>>5):[...stack,shifted&31];
+},[]).map(quantifier=>vlq[quantifier]).join("")).join("")).join(",")).join(";");
+ let {origin}=new URL("http"+(request.client.encrypted?"s":"")+"://"+request.headers.host);
+ let report=locations.flatMap((locations,index)=>locations.map(([source,target,name])=>name+": "+
+[[Object.keys(namespace)[index],source.map(index=>index+1)].flat().join(":")
+,[module,target.map(index=>index+1)].flat().join(":")
+].map(path=>path.replace(/^\.{0,1}/,origin)).join(" -> "))).join("; \n");
+ return {version:3,file:module,sources:Object.keys(namespace),names,mappings,report};
+};
+
  export async function delegate(term,...context)
 {when(either(string,functor,defined(this)&&has(["exports"])))(term);
  if(defined(this))
@@ -685,7 +745,7 @@
  async function freefetch(request,header)
 {let remote=/^http/.test(request);
  let url=string(request)?!remote
-?[this.location.origin,request?.replace(/^\/+/,"")||""].join("/")
+?[this.location.origin,request?.replace(/^[\.\/]+/,"")||""].join("/")
 :request:request.url;
  let {href:address,hostname,path,port}=await resolve("url","parse",url);
  if(!compound(request))request=
@@ -738,9 +798,10 @@
 }
 
  export async function stage(response,request)
-{let browser="Mozilla/Chrome/Safari/AppleWebKit".split("/").some(has.bind(version(request.headers)||{}));
- let old=version(request.headers)?.Chrome<125;
- let importing=!request.headers?.referer?.endsWith(request.url)&&request?.headers?.["sec-fetch-dest"]==="script";
+{let agent=version(request.headers);
+ let browser="Mozilla/Chrome/Safari/AppleWebKit".split("/").some(has.bind(agent||{}));
+ let features=feature(agent);
+ let importing=request.headers?.referer&&!request.headers.referer.endsWith(request.url);//&&request?.headers?.["sec-fetch-dest"]==="script";
  let fail=is(Error)(response);
  let type=!fail?response?.type||mime(response?.nodeName?.toLowerCase()||(either(simple,array)(response)?"json":request.url)):mime("txt");
  let [js,json]=[type===mime("js"),type===mime("json")];
@@ -759,7 +820,9 @@
 )(response);
  if(json&&!simple(body))
  body=JSON.parse(serialize(body.constructor?.name=="Buffer"?body.toString():body));
- if(json&&importing&&old)
+ if(js&&importing&&!features.assertions)
+ body=(string(body)?body:body.toString()).replace(/(import\([^,\)]+),(.*?\(.*?\))*[^\)]*/,"$1");
+ if(json&&importing&&!features.json)
  body=Buffer.from("export default "+(simple(body)?JSON.stringify(body):body)+";"),headers["Content-Type"]=mime("js"),js=true;
  if(browser&&js)
  body=await compress(body),headers["Content-Encoding"]="gzip";

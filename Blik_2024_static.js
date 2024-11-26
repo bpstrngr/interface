@@ -84,7 +84,7 @@
 ?signature!==record.signature||expired
 :Object.entries(credentials).find(([field,value])=>value!==record[field])?.[0];
  if(mismatch)
- exit(Error(mismatch));
+ exit(Error(mismatch+" not authorized."));
  signature=signature&&expired?signature:random(20);
  record=[record,body,{signature,put}].reduce(merge);
  merge(records,record,name);
@@ -94,7 +94,7 @@
 ,{cookie:{signature,path:"/",expires:new Date(record.put+expiry).toUTCString(),httponly:true,samesite:true}
  ,body:record
  },name);
-},resource
+},resource // exposed for host to classify it publicly, for when it's hard-coded in a route declaration otherwise. 
  });
 };
 

@@ -419,7 +419,7 @@
  return prune.call(syntax,([field,term],path)=>
  functor(term)?!path.length?" export "+serialize(term,field):String(term):term);
  if(string(syntax))
- return JSON.stringify(syntax);
+ return syntax.startsWith("data:text/javascript;")?syntax.replace(/^data:text\/javascript;/,""):JSON.stringify(syntax);
  let parser=
  {astring:["./davidbonnet_2015_astring.js","generate"]
  ,babel:["./node_modules/@babel/generator/lib/index.js","default"]
@@ -430,9 +430,9 @@
  let {exports,imports,procedures}=syntax;
  if(![exports,imports,procedures].some(Boolean)||format==="json")
  return Object.entries(prune.call(syntax,([field,value])=>
- functor(value)?serialize(value,null):value)).reduce((literal,[field,value],index,{length})=>[literal,
+ functor(value)?"data:text/javascript;"+serialize(value,null):value)).reduce((literal,[field,value],index,{length})=>[literal,
 [/[^\w]/.test(field)?JSON.stringify(field):field
-,compound(value)?serialize(value,null):value
+,serialize(value,null)
 ].join(":")].join(index?",":"")
 ,"{")+"}";
  imports=Object.entries(imports||{}).map(([module,names])=>[module,[names].flat()]).flatMap(([module,names],index)=>
@@ -454,11 +454,13 @@
  return functor(format)?format(output):output;
 };
 
- export function proceduralize(term)
-{if(term instanceof Function)
- return String(term||"").replace(/(^(async ){0,1}function *\w*\([\w,\n]*\)\n* *\{\n*)|(\}$)/g,"");
+ export function proceduralize(term,...terms)
+{if(terms.length)
+ return Array.from(arguments).map(term=>proceduralize(term)).join("\n");
  if(string(term))
  return term;
+ if(term instanceof Function)
+ return String(term||"").replace(/(^(async ){0,1}function *\w*\([\w,\n]*\)\n* *\{\n*)|(\}$)/g,"");
  throw Error("can't proceduralize "+typeof term);
 };
 
@@ -525,60 +527,6 @@
  export function coordinates(source,position)
 {return source.slice(0,position).split("\n").reverse().flatMap((line,index,lines)=>
  [lines.length-1,position-lines.splice(1).join("\n").length-1]);
-};
-
- export async function sourcemap(request,address)
-{let {query:{module}={}}=await resolve("url","parse",request.url,true);
- let namespace=
- {["./"+await resolve("path","relative",".",address)]:
- [exports,...Object.values(actions)].flatMap(names=>
- Object.entries(names).map(([field,value])=>
- is(Function)(value)&&value.name||field))
- };
- let names=Object.values(namespace).flat();
- let sources=await Object.keys(namespace).reduce
-(record(source=>infer(access,true)(source))
-,[await compose(fetch,"text")(module)]
-);
- let grammars=await Object.entries({...namespace,[module]:names}).reduce(record(function([module,[...names]],index,namespaces)
-{// find node with same source text as first name match in source files (names are more likely shadowed in output, but source may still be mistaken).
- let reference=this.slice(0,namespaces[index+1]?0:index).flatMap(Object.values);
- return compose(buffer(parse,swap(null)),tether(search,({1:value})=>names.includes(value?.id?.name)&&
- [value,reference?.find(node=>node.id.name===value.id.name)].filter(Boolean).map(node=>
- (sources[node===value?index:this.findIndex(grammar=>Object.values(grammar).includes(node))]).slice(node.start,node.end)).reduce((text,reference)=>text===reference)&&
- names.splice(names.indexOf(value.id.name),1),true))(sources[index]);
-}),[]);
- let [source,grammar]=[sources,grammars].map(list=>list.pop());
- let locations=grammars.map((nodes,index)=>Object.values(nodes).map(node=>
-[coordinates(sources[index],node.id.start)
-,coordinates(source,Object.values(grammar).find(({id})=>id.name===node.id.name)?.id.start)
-,node.id.name
-]).filter(({0:source,1:target})=>
- // filter locations not matched due to transformation.
- [source,target].flat().every(numeric)));
- let entries=locations.flatMap((locations,source)=>
- locations.map(([[sourceline,sourcecharacter],[line,character],name],index,locations)=>[line,[
- // zero-based character, file, sourceline, sourcecharacter and name index relative to previous value.
-[character-(locations[index-1]?.[1][0]===line?locations[index-1][1][1]:0)
-,index?0:source?1:0
-,sourceline-(locations[index-1]?.[0][0]??0)
-,sourcecharacter-(locations[index-1]?.[0][1]??0)
-,[locations[index-1]?.[2],name].filter(Boolean).map(name=>names.indexOf(name)).reduce((past,next)=>next-past)
-]]]));
- let vlq='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
- let quantifiers=entries.map(entry=>Object.fromEntries([entry])).reduce((quantifiers,quantifier)=>merge(quantifiers,quantifier,0));
- let mappings=Object.assign(Array(),quantifiers).map(entries=>
- entries.map(entry=>entry.map(quantifier=>
- // https://github.com/Rich-Harris/vlq/blob/master/src/index.js
- [quantifier<0?(-quantifier<<1)|1:quantifier<<1].reduce(function clamp(stack,shifted)
-{return (!stack.length||shifted>0)&&(shifted>>>5>0)?clamp([...stack,(shifted&31)|32],shifted>>>5):[...stack,shifted&31];
-},[]).map(quantifier=>vlq[quantifier]).join("")).join("")).join(",")).join(";");
- let {origin}=new URL("http"+(request.client.encrypted?"s":"")+"://"+request.headers.host);
- let report=locations.flatMap((locations,index)=>locations.map(([source,target,name])=>name+": "+
-[[Object.keys(namespace)[index],source.map(index=>index+1)].flat().join(":")
-,[module,target.map(index=>index+1)].flat().join(":")
-].map(path=>path.replace(/^\.{0,1}/,origin)).join(" -> "))).join("; \n");
- return {version:3,file:module,sources:Object.keys(namespace),names,mappings,report};
 };
 
  export function scope(module,functions=null)

@@ -60,6 +60,8 @@
  export function has(fields)
 {if(!defined(this))
  return tether(has,fields);
+ if(!compound(this)&&!functor(this))
+ return false;
  return [fields].flat().every(field=>field in this);
 };
  export function match(next,past)
@@ -136,12 +138,14 @@
 },pass,term));
 };
 
- export function ascend(term)
-{return (term??undefined)!==undefined?[...ascend(Object.getPrototypeOf(term)),term]:[];
+ export function ascend(term,limit,path=[])
+{if(path.length>limit)
+ return [];
+ return (term??undefined)!==undefined?[...ascend(Object.getPrototypeOf(term),limit,[path,term].flat()),term]:[];
 };
 
  export function fields(term)
-{return ascend(term).flatMap(term=>
+{return ascend(...arguments).flatMap(term=>
 {try{return Reflect.ownKeys(term);}catch(fail)
 {console.warn("warning: can't see all properties on",typeof term," - ",fail.message);
  if(term instanceof String)

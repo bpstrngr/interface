@@ -1,5 +1,5 @@
  import {locate,resolve,modularise,agent,virtual,window,jsdom,fetch,digest} from "./Blik_2023_interface.js";
- import {note,wait,observe,provide,collect,slip,infer,either,each,pass,tether,buffer,differ,compose,revert,record,combine,wether,swap,compound,something,string,basic,functor,defined,simple,exit,route,drop,crop,same,major,binary,is,not,array,pdflike,when,expect,generator,clock} from "./Blik_2023_inference.js";
+ import {note,wait,observe,provide,collect,slip,infer,either,each,pass,tether,buffer,differ,compose,revert,record,combine,wether,swap,compound,something,string,basic,functor,defined,simple,exit,route,drop,crop,same,major,binary,is,has,not,array,pdflike,when,expect,generator,clock,fields} from "./Blik_2023_inference.js";
  import {search,merge,prune,extract} from "./Blik_2023_search.js";
  import {serialize,proceduralize,mime,data} from "./Blik_2023_meta.js";
  import layout,{color} from "./Blik_2023_layout.js";
@@ -147,20 +147,21 @@
 :value);
 };
 
- function tag(labels,id)
-{return !string(id)?id:compound(labels[id])?labels[id]:(labels[id]&&labels[id][0]==="<")
-?{"#text":labels[id]}:{"#text":string(labels[id])?labels[id]:id};
-};
+ export var annotate=(fields,labels)=>labels
+?prune.call(fields,([field,value])=>defined(labels[field])?{label:labels[field],value}:value,0,0)
+:exit("no labels provided to"+annotate.name+" fields.");
 
- export function form(fields={},labels)
+ export function form(fields={},override)
 {let group=Object.entries(fields).reduce((group,[key,value],index)=>
  typeof value=="object"&&!Array.isArray(value)&&!index&&key,false);
  if(group)
  fields=fields[group];
- if(!labels)
- labels=this?.dataset?.labels&&JSON.parse(this.dataset.labels)||{};
- let label=Object.entries(fields).map(([id,value])=>
-{if(!defined(value))return;
+ let label=Object.entries(fields).map(([id,entry])=>
+{let [value,label]=has.call(entry,"label")
+?["value","label"].map(field=>entry[field])
+:[entry,id];
+ if(!defined(value))
+ return;
  let type=wether([is(Date),is(Set),either(array,compound),either(binary,infer("match",/^(true|false)$/))]
 ,...["date","radio","select","checkbox","text"].map(type=>swap(type)))(value);
  return JSON.parse(JSON.stringify(
@@ -170,12 +171,12 @@
 [defined(value)
 ?{role:"input",contenteditable:true,id,name:id
  ,type:["select","date"].includes(type)?"text":type
- ,"#text":type==="checkbox"?String(value)==="true":(type==="date")?clock(value,"datetime"):(type==="text"&&value&&String(value))||
- (array(value)?value[0]:compound(value)?Object.keys(value)[0]:value)
+ ,"#text":String(type==="checkbox"?String(value)==="true":(type==="date")?clock(value,"datetime"):(type==="text"&&value&&String(value))||
+ (array(value)?value[0]:compound(value)?Object.keys(value)[0]:value))
  ,checked:{checkbox:value?value.toString():undefined}[type]
  ,autocomplete:"off"
  }:undefined
-,tag(labels,functor(labels?.[id])?labels[id](value):id)
+,{"#text":label}
 ],ul:type!=="text"?type==="date"?clockwork(value):{li:list(value)}:undefined
  }));
 });
@@ -193,6 +194,9 @@
  Array.from(elements).reverse().find(input=>input.closest("label"))?.closest("label")||
  this.lastChild;
  let entry=document({label});
+ if(input?.id==="message")
+ // more preservation logic needed. 
+ (entry.querySelector("ul")||entry.appendChild(entry.ownerDocument.createElement("ul")))?.append(...input.closest("label").querySelector("ul")?.childNodes||[]);
  insert(entry,input?"over":"after",reference);
  if(label.span.type=="text")
  this.querySelector("[name="+label.for+"]")?.dispatchEvent(new window.Event("input",{bubbles:true}));
@@ -213,18 +217,6 @@
  !compound(value)&&this.querySelector("[name="+field+"]")).forEach(([field,value])=>
  this.querySelector("span[name="+field+"]").textContent=value);
  return fill.call(this,this.getAttribute("method"));
-};
-
- export function profile(resource)
-{let source=basic(resource)&&{source:resource};
- let fragment={fragment:"media",script:null,chart:"plot",network:null};
- return {...source,fragment};
-};
-
- export async function transform(resource,{fragment,incumbent,...fields})
-{let [module,feature]=await locate(fragment);
- let fail=compose(crop(1),note.bind(1),"message",document);
- return buffer(resolve,fail)(module,feature,resource,fields,incumbent||window);
 };
 
  export function media(resource,{incumbent,source,...fields}={})
@@ -350,9 +342,8 @@
  !["id","class","style"].includes(name.toLowerCase())&&!name.startsWith("on")).map(({name,value})=>
  "["+[name,value].join("=")+"]").join("");
  return name+Object.entries(selectors).flatMap(([attribute,selector])=>
- [attribute==="classList"?Array.from(node[attribute]):node[attribute]].flat().filter(value=>
- value?.length).flatMap(value=>
- value.split(' ').map(value=>selector+value))).join('')+attributes;
+ [attribute==="classList"?Array.from(node[attribute]):["class","className"].includes(attribute)?node[attribute]?.split(' '):node[attribute]].flat().filter(value=>
+ string(value)&&value?.length).map(value=>selector+value)).join('')+attributes;
 };
 
  export function print(file)
@@ -403,7 +394,7 @@
  export function image(src,alt)
 {if(/image/i.test(src.nodeName))return src;
  return new Promise((resolve,reject)=>
- compose.call(document({img:{crossOrigin:"anonymous"}})
+ compose.call(document({img:{}})//crossOrigin:"anonymous"}})
 ,{onload(){resolve(this);}
  ,onerror:reject
  ,src,alt
@@ -416,8 +407,13 @@
  {role:"img","aria-label":image.getAttribute("alt")
  ,width:image.naturalWidth,height:image.naturalHeight
  }});
- canvas.getContext("2d")?.drawImage(image,0,0)||
- compose(tether(document),{canvas:{load:null}},activate)(canvas,{"data-source":image.getAttribute("src")});
+ let frame=canvas.getContext("2d");
+ if(!frame)
+ compose(tether(document),{canvas:{load:null}},activate)(canvas
+,{"data-source":image.getAttribute("src")
+ ,style:"background:repeating-linear-gradient(135deg,black,black 2px,transparent 2px,transparent 4px"
+ });
+ else frame.drawImage(image,0,0);
  return canvas;
 };
 
@@ -533,6 +529,8 @@
 
  export async function error(request)
 {when(is(Error))(this);
+ if(!request.headers?.referer?.endsWith(request.url))
+ return this;
  let style=await css({body:{background:"black",color:color.red},"div#frame":layout.middle});
  let report=compose.call({center:{"#text":this.stack}},"Error","/svg/worm/document",[],[style],hypertext,document);
  let body=report.outerHTML;
@@ -580,14 +578,14 @@
  async function author({source,common,...feed},index)
 {let src=common?.icon||feed?.feed?.image;
  let material=prune.call(layout.material,([field,value],{length})=>
- field==="&:hover"?{...value,animation:"blink .5s ease-out"}:value);
+ field==="&:hover"?{...value,animation:"blink .5s ease-in"}:value);
  return document(
  {span:
  {class:"feed",source:common?.source||source
  ,style:index?undefined:{"#text":css(
- {"@keyframes blink":{"0%":{"box-shadow":"black 0 0 10px"},"33%":{"box-shadow":"var(--text) 0 0 10px"},"66%":{"box-shadow":"black 0 0 10px"},"100%":{"box-shadow":"revert-layer"}}
+ {"@keyframes blink":{"0%":{"box-shadow":"black 0 0 10px"},"33%":{"box-shadow":"var(--text) 0 0 10px"},"66%":{"box-shadow":"black 0 0 20px"},"100%":{"box-shadow":"revert-layer"}}
  ,".feed":
- {...material,display:"inline-block","vertical-align":"middle"
+ {...material,display:"inline-block",overflow:"hidden","vertical-align":"middle"
  ,"max-width":"20em",transition:".3s",background:"#202020","border-radius":"1.5em"
  ,position:"relative"
  }
@@ -636,7 +634,7 @@
  }
  ,span:
  {span:
- {class:"article",source:item.source,platform:item.platform,index:String(index)
+ {class:"article",id:item.source,source:item.source,platform:item.platform,index:String(index)
  ,img:{title:item.author,src:item.avatar}
  ,"#text":" "+(item.post?clock(new Date(item.post),"date"):item.name.substring(5,13))
  ,span:{"#text":item.title+"\n"}
@@ -768,23 +766,42 @@
 )(node.ownerDocument.defaultView.getSelection(),node.ownerDocument.createRange());
 };
 
- export function expose()
-{// route events to disposed actions. 
- let window=globalThis;
+ export function expose(window)
+{// assign critical globals to be loaded synchronously before document (socket, worker, modules). 
+ // common procedure in deferred scripts, so no return statement. 
+ Promise.all(["/Blik_2023_interface.js","/Blik_2023_inference.js","/Blik_2023_search.js","/Blik_2023_fragment.js"].map(module=>
+ import(module))).then((
+[{resolve}
+,{provide,collect,infer,compose,match,is,not,has,simple}
+,{merge,prune,search}
+,{css}
+])=>Object.assign(window
+,{resolve
+ ,provide,collect,infer,compose,match,is,not,has,simple
+ ,merge,prune,search
+ ,css
+ }));
+ var {peer}=import("/peer").then(module=>peer=module);
  var {protocol,host}=window.location;
  let socket=["ws",/s/.test(protocol)?"s":"","://",host].join("");
  Object.assign(window
-,{worker:import("/Blik_2023_interface.js").then(({delegate})=>delegate("/worker")).then(worker=>
- Object.assign(window,{worker})).catch(fail=>
- Object.assign(window,{worker:console.warn("Worker not available at /worker.")}))
- ,socket:Object.assign(new WebSocket(socket),{onmessage(event)
+,{socket:Object.assign(new WebSocket(socket)
+,{onmessage(event)
 {let message=JSON.parse(event.data);
  console.log("receive",message);
  peer[message.action]?.call(this,message,window);
-}})
- ,dispatch(){/*deprecated*/}
-//  ,dispatch(event,buffering)
-// {if(!select||!actions)
+},onopen(){console.warn("Websocket open: ",window.socket)}
+ ,onerror(){console.warn("Websocket not available at "+socket)}
+ ,onclose(){console.warn("Websocket closed: ",window.socket)}
+ })
+ ,worker:import("/Blik_2023_interface.js").then(({delegate})=>delegate("/worker")).then(worker=>
+ Object.assign(window,{worker})).catch(fail=>
+ Object.assign(window,{worker:console.warn("Worker not available at /worker.")}))
+ ,dispatch(event,buffering)
+{// deprecated in favor of capture(fragment,actions). rarely needed for unpropagated server-rendered events like svg.onend. 
+ // explicit stopPropagation should be reproduced with event target conditions on scopes 
+ // (eg. {form:{input({target}){if(target)return;}}}). 
+//  if(!select||!actions)
 //  // asynchronizing event dispatch unblocks its synchronous default. 
 //  return buffering||event.defaultPrevented||event.preventDefault()||
 //  console.warn("buffering "+event.type+" event on",this)
@@ -793,23 +810,30 @@
 //  let scope=select.call(this,actions);
 //  let action=event.type.replace(/[A-Z]+/g,match=>match.slice(-1).toLowerCase());
 //  scope[action]?.call(this,event);
- });
- var {actions}=import("/actions").then(module=>report(actions=module.default));
- //var {select}=import("/Blik_2023_fragment.js").then(module=>select=module.select);
- var {peer}=import("/peer").then(module=>peer=module);
- Promise.all(["/Blik_2023_interface.js","/Blik_2023_inference.js","/Blik_2023_search.js","/Blik_2023_fragment.js"].map(module=>
- import(module))).then(([{resolve},{provide,collect,infer,compose,match,is},{merge},{css}])=>
- Object.assign(window,{resolve,provide,collect,infer,compose,match,is,merge,css}));
+}});
+};
+
+ export function capture(fragment,actions)
+{// synchronously register events to be routed to actions scoped by selector (eg. {#form:{change(){}}}). 
+ // common procedure in deferred scripts, so no return statement (needs {ascend,fields} inference composed). 
+ if(!globalThis.window)
+ fragment.setAttribute("actions",actions);
+ let lead=["/","./"].find(lead=>actions.startsWith(lead));
+ let [module,...route]=actions.replace(lead,"").split("/").filter(Boolean);
+ ({actions}=import(lead+module).then(module=>report(actions=
+ Object.assign(["default"],route).reduce((module,field)=>module[field],module))));
  let exclusion=
+ // inclusive list could be extracted from actions once loaded, and these be removed. 
 [["motion","orientation"].map(sensor=>"device"+sensor)
 ,["start","run","end","cancel"].map(state=>"transition"+state)
 ].flat().map(event=>"on"+event);
- let events=Object.keys(window).filter(event=>
- event.startsWith("on")&&!exclusion.includes(event)).map(event=>
+ let events=fields(fragment).filter(event=>
+ event.startsWith?.("on")&&!exclusion.includes(event)).map(event=>
  event.replace(/^on/,""));
- events.forEach(event=>window.addEventListener(event,dispatch));
+ events.forEach(event=>fragment.addEventListener(event,dispatch));
  function dispatch(event,buffering)
-{if(!actions)
+{event.stopPropagation();
+ if(!actions)
  // asynchronizing event dispatch unblocks its synchronous default unless prevented. 
  return setTimeout(dispatch.bind(this,event,true),500)&&
  buffering||event.defaultPrevented||event.preventDefault()||console.warn(
@@ -821,9 +845,11 @@
  [target.closest(selector),actions[event.type]]).forEach(([scope,action])=>
  console.log({[event.type]:target,scope})||
  action.call(scope,event));
+ if(!scopes.length)
+ console.info("comsumed:",{[event.type]:event});
 };
- function report(actions)
-{console.groupCollapsed("routing all propagated events to actions by scoped selector");
+  function report(actions)
+{console.groupCollapsed("routing all propagated events to actions by scoped selector in scope: ",fragment);
  console.log(Object.fromEntries(Object.entries(actions).map(([selector,actions])=>[selector,Object.keys(actions)])));
  console.log(events.sort().join(" "));
  console.groupEnd();
@@ -1115,7 +1141,7 @@
  close<open);
  if(open)
  return false;
- let fragment=await buffer(infer(resolve),compose(note,crop(1)))(JSON.parse(compound));
+ let fragment=await buffer(infer(resolve),crop(1))(JSON.parse(compound));
  this.annotate(fragment,last.title);
  return [fragment,syntax];
 },"<":function(last,...syntax){if(last.style||last.action)return;return this.text("&lt;",...arguments);}
