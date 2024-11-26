@@ -37,7 +37,7 @@ Interface#[{"svg":
  }}
  }} 
 {text-align:center;}
-style#["layout/overflow",[[".snippet"]],"inference/record","fragment/stylesheet",[["style","#text"]],"inference/record","fragment/document"]
+style#["layout/overflow",[[".snippet"]],"inference/record","fragment/css",[["style","#text"]],"inference/record","fragment/document"]
 
 
 

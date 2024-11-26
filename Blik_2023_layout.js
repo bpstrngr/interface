@@ -108,7 +108,7 @@
  var input=
  {transition:"all var(--transition)","text-shadow":"inherit"
  ,"&:focus+ul":{display:"block"}
- ,"&[type=text]":
+ ,"&[type=text],&[type=checkbox]":
  {display:"inline-block",outline:"none","background-color":"transparent",border:"none","min-width":"20px","box-sizing":"border-box"
  ,color:"inherit","text-align":"center","font-family":"inherit","font-size":"inherit"
  ,"margin-top":"1.5em"
@@ -116,8 +116,8 @@
  }
  ,"&[type=radio]":{display:"none"}
  ,"&[type=checkbox]":
- {appearance:"none","font-family":"inherit",cursor:"pointer",width:"auto"
- ,"&:hover":{"text-shadow":"rgb(255,255,255) 0px 0px 10px,rgb(255,255,255) 0px 0px 10px,rgb(255,255,255) 0px 0px 10px"}
+ {//appearance:"none","font-family":"inherit",cursor:"pointer",width:"auto"
+  "&:hover":{"text-shadow":"rgb(255,255,255) 0px 0px 10px,rgb(255,255,255) 0px 0px 10px,rgb(255,255,255) 0px 0px 10px"}
  ,"&:after":{content:"' ?'","margin-left":"3px","margin-right":"3px"}
  ,"&:focus:after":{"text-shadow":"rgb(255,255,255) 0px 0px 10px, rgb(255,255,255) 0px 0px 10px, rgb(255,255,255) 0px 0px 10px"}
  ,"&:checked:after":{content:"'✓'",color:"var(--highlight)"}
@@ -162,7 +162,7 @@
  {display:"block","margin-left":"-5em","max-height":"50vh","min-width":"150px"
  ,"&>li":
  {opacity:0,animation:"fadeout 6s","padding-left":0,"min-height":"4em","white-space":"normal"
- ,"&>img":{...material,margin:"1em",height:"2em",float:"left","border-radius":"50%","background-color":"var(--isle)",padding:".5em",margin:".5em .5em 0 .5em"}
+ ,"&>img,&>canvas[role=img]":{...material,margin:"1em",height:"2em",float:"left","border-radius":"50%","background-color":"var(--isle)",padding:".5em",margin:".5em .5em 0 .5em"}
  ,"&>div":{color:"var(--isle)"}
  }
  ,"&>li:not(:last-of-type)":{animation:"fadeout 2s"}

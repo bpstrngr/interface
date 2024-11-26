@@ -57,7 +57,7 @@
 ),note)});
 };
 
- function distinction(routes,{url,headers}){let field=url+(headers?.cookie||"");if(this[field]?.status===500)delete this[field];return field;};
+ function distinction(routes,{url,headers}){let field=url+JSON.stringify(version(request.headers));if(this[field]?.status===500)delete this[field];return field;};
  var address=compose(drop(1),combine("url",swap(/^/),either(tether(search,["connection","remoteAddress"]),swap(""))),"replace");
  var color=compose(combine(swap({get:36,put:33,delete:33}),compose(drop(1),"method","toLowerCase")),either(tether(search),swap(35)),"m");
  var notify=compose(combine(swap("\x1b["),color,compose(drop(),clock),swap("@"),address),"...\x1b[0m",collect,infer("join",""),pass(console.log));
