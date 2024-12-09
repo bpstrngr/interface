@@ -1,6 +1,6 @@
- import {merge} from "./Blik_2023_search.js";
- import {aphorize} from "./Blik_2023_meta.js";
- import {infer,compose,buffer,record,wait,string,note} from "./Blik_2023_inference.js";
+ import {merge,prune} from "./Blik_2023_search.js";
+ import {aphorize,serialize} from "./Blik_2023_meta.js";
+ import {infer,compose,buffer,record,wait,string,note,basic} from "./Blik_2023_inference.js";
  import {window,fetch,digest} from "./Blik_2023_interface.js";
  import {document,css} from "./Blik_2023_fragment.js";
  import {EditorState,Compartment} from './haverbeke_2022_codemirror_state.js';
@@ -32,13 +32,19 @@
 {let parent=document({div:{}});
  //let language=(new Compartment).of(js());
  let indentation=(new Compartment).of(EditorState.tabSize.of(1));
- let doc=string(source)?settings.source?source:await compose(fetch,digest)(source):JSON.stringify(source);
+ let doc=string(source)?settings.source?source:await compose(fetch,digest,infer(serialize,"json"))(source):JSON.stringify(source);
  if(!string(doc))doc=aphorize(doc);
- let theme=EditorView.theme({".cm-gutters":{background:"transparent"}},{dark:true});
- let state=EditorState.create({doc,extensions:[theme,extensions].flat()});
+ let theme=EditorView.theme(
+ {".cm-gutters":{background:"transparent"}
+ // gutter heights are calculated dynamically on client-side.  
+ ,".cm-gutterElement":{height:"4px !important"}
+ ,".cm-gutterElement:not(:first-of-type)":{height:"1.4em !important"}
+ },{dark:true});
+ let state=EditorState.create({doc,extensions:[basetheme,foldtheme,theme,extensions].flat()});
  let view=new EditorView({parent,state},window);
- //note(view)
- //parent.append(document({style:{"#text":view.styleModules.flatMap(({rules})=>rules).join("\n")}}));
+ let style=parent.ownerDocument.querySelector("head").querySelector("style").textContent;
+ //let style=view.styleModules.flatMap(({rules})=>rules).reverse().join("\n");
+ parent.append(document({style:{"#text":style}}));
  return parent;
 };
 
@@ -143,3 +149,99 @@
 {case 83:case 87:e.preventDefault();e.stopPropagation();break;
 }
 };
+
+ var basetheme=EditorView.baseTheme(compose.call
+ // internal basetheme from codemirror, not exposed otherwise to persist stylemodules on server-side. could be exposed in source definition.  
+({wrap:{
+        position: "relative !important",
+        boxSizing: "border-box",
+        "&.cm-focused": {outline_fallback: "1px dotted #212121",outline: "5px auto -webkit-focus-ring-color"},
+        display: "flex !important",
+        flexDirection: "column"
+    },
+    scroller:{display: "flex !important",alignItems: "flex-start !important",fontFamily: "monospace",
+        lineHeight: 1.4,
+        height: "100%",
+        overflowX: "auto"
+    },
+    content: {
+        margin: 0,
+        flexGrow: 2,
+        minHeight: "100%",
+        display: "block",
+        whiteSpace: "pre",
+        boxSizing: "border-box",
+        padding: "4px 0",
+        outline: "none"
+    },
+    "content@light": { caretColor: "black" },
+    "content@dark": { caretColor: "white" },
+    line: {display: "block",padding: "0 2px 0 4px"},
+    button: {
+        verticalAlign: "middle",
+        color: "inherit",
+        fontSize: "70%",
+        padding: ".2em 1em",
+        borderRadius: "3px"
+    },
+    "button@light": {
+        backgroundImage: "linear-gradient(#eff1f5, #d9d9df)",
+        border: "1px solid #888",
+        "&:active": {
+            backgroundImage: "linear-gradient(#b4b4b4, #d0d3d6)"
+        }
+    },
+    "button@dark": {
+        backgroundImage: "linear-gradient(#555, #111)",
+        border: "1px solid #888",
+        "&:active": {
+            backgroundImage: "linear-gradient(#111, #333)"
+        }
+    },
+    textfield: {
+        verticalAlign: "middle",
+        color: "inherit",
+        fontSize: "70%",
+        border: "1px solid silver",
+        padding: ".2em .5em"
+    },
+    "textfield@light": {
+        backgroundColor: "white"
+    },
+    "textfield@dark": {
+        border: "1px solid #555",
+        backgroundColor: "inherit"
+    },
+    secondarySelection: {
+        backgroundColor_fallback: "#3297FD",
+        color_fallback: "white !important",
+        backgroundColor: "Highlight",
+        color: "HighlightText !important"
+    },
+    secondaryCursor: {
+        display: "inline-block",
+        verticalAlign: "text-top",
+        width: 0,
+        height: "1.15em",
+        margin: "0 -0.7px -.7em"
+    },
+    "secondaryCursor@light": { borderLeft: "1.4px solid #555" },
+    "secondaryCursor@dark": { borderLeft: "1.4px solid #ddd" }
+ },Object.entries,infer("map",([field,value])=>[".cm-"+field,value]),Object.fromEntries
+));
+
+const foldtheme = EditorView.baseTheme({
+  ".cm-foldPlaceholder": {
+    backgroundColor: "#eee",
+    border: "1px solid #ddd",
+    color: "#888",
+    borderRadius: ".2em",
+    margin: "0 1px",
+    padding: "0 1px",
+    cursor: "pointer"
+  },
+  ".cm-foldGutter span": {
+    padding: "0 1px",
+    cursor: "pointer"
+  }
+});

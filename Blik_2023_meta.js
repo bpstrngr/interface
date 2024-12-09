@@ -411,13 +411,13 @@
  return [String(syntax),/^async /].reduce((source,prefix)=>
  source.replace(prefix,"").replace(/^([a-zA-Z\*]+)( *)([a-zA-Z]*)|^\(/
 ,(match,declaration,space,name)=>format&&![name,declaration].includes(format)?
-["var "+format+"=",declaration?"function":match
+[declaration?"function":match
 ,[declaration,name].find(name=>!/function\**/.test(name))?.replace(/^(.)/," $1")
 ].join(""):
 [prefix.test(source)?"async ":"","function",space||format&&" ",format].join("")));
- if(syntax[Symbol.toStringTag]==="Module")
+ if(syntax[Symbol.toStringTag]==="Module"&&format!=="json")
  return prune.call(syntax,([field,term],path)=>
- functor(term)?!path.length?" export "+serialize(term,field):String(term):term);
+ functor(term)?!path.length?" export var "+field+"="+serialize(term,field):String(term):term);
  if(string(syntax))
  return syntax.startsWith("data:text/javascript;")?syntax.replace(/^data:text\/javascript;/,""):JSON.stringify(syntax);
  let parser=
@@ -545,13 +545,10 @@
  }
 ,(extension,mime)=>
  Object.entries(mime).reduce((mime,[type,subtypes])=>mime||
- Object.entries(subtypes).reduce((mime,[subtype,extensions])=>mime||
- [extensions].flat().includes(extension)&&
- [type,subtype||extension]
+ Object.entries(subtypes).reduce((mime,[subtype,extensions])=>mime||(
+ [extensions].flat().includes(extension)?[type,subtype||extension]:mime)
 ,mime)
-,undefined)||
- Object.entries(mime)[0].reduce((type,subtype)=>[type,Object.keys(subtype)[0]])
-,infer("join","/")
+,undefined)?.join("/")
 );
 
  export var data=(mime,base64)=>"data:image/"+mime+";base64,"+base64;

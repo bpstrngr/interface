@@ -1,4 +1,4 @@
- import {note,collect,prompt,same,has,pass,slip,something,observe,describe,remember,expect,control,trace,array,compound,simple,apply,stream,record,revert,provide,tether,differ,wether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,numeric,binary,match,wait,string,defined,compose,combine,exit,clock,route,major} from "./Blik_2023_inference.js";
+ import {note,collect,prompt,same,has,pass,slip,something,observe,describe,remember,expect,control,trace,array,compound,simple,apply,stream,record,revert,provide,tether,differ,wether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,numeric,binary,basic,match,wait,string,defined,compose,combine,exit,clock,route,major} from "./Blik_2023_inference.js";
  import {sum,merge,stringify,search,edit,prune,parse as records,relevant} from "./Blik_2023_search.js";
  import {parse,sanitize,serialize,exports,reexport,test,mime,coordinates} from "./Blik_2023_meta.js";
 
@@ -539,7 +539,8 @@
 {if(!/\/$/.test(file))
  file=file.replace(/$/,"/");
  let {promises:fs}=await import("fs");
- let files=await fs.readdir(file,{withFileTypes:true});
+ let files=await fs.readdir(file)//,{withFileTypes:true});
+ files=await files.reduce(record(file=>buffer(compose(fs.stat,{name:file},merge),swap(undefined))(file)),[])
  let entries=await files.reduce(record(entry=>
  !exclude.some(exclusion=>RegExp(exclusion).test(file+entry.name))
 ?entry.isDirectory()?recursive
@@ -753,7 +754,7 @@
  ,respond(header){Object.assign(this.response,{header});}
  ,response:{}
  ,url:address,port,method:"get"
- ,...header||{}
+ ,...merge(header,{origin:window.location.origin},0)
  };
  let method=request?.method?.toUpperCase()||"GET";
  let protocol=address.match(/[^:]*/)?.[0];
@@ -785,10 +786,12 @@
 };
 
  export async function jsdom(url)
-{return window=revert(async function(expose,reject,url)
+{if(this)this.reconfigure({url,referrer:url})
+ return window=revert(async function(expose,reject,url)
 {infer("close")(window);
  let {JSDOM}=await resolve("./Domenic_2010_jsdom.js","default");
  let browser=Reflect.construct(JSDOM,["",{url,referrer:url,contentType:"text/html",includeNodeLocations:true,storageQuota:10000000}]);
+ jsdom=jsdom.bind(browser);
  let {protocol,hostname,port}=await resolve("url","parse",url);
  let name=["fetch",protocol.replace(":",""),hostname,port].join("_");
  fetch=describe(freefetch.bind(browser.window),name);
@@ -801,9 +804,9 @@
 {let agent=version(request.headers);
  let browser="Mozilla/Chrome/Safari/AppleWebKit".split("/").some(has.bind(agent||{}));
  let features=feature(agent);
- let importing=request.headers?.referer&&!request.headers.referer.endsWith(request.url);//&&request?.headers?.["sec-fetch-dest"]==="script";
+ let importing=request.headers?.referer&&!request.headers.referer.endsWith(request.url)&&request?.headers?.["sec-fetch-dest"]==="script";
  let fail=is(Error)(response);
- let type=!fail?response?.type||mime(response?.nodeName?.toLowerCase()||(either(simple,array)(response)?"json":request.url)):mime("txt");
+ let type=!fail&&response?.type||mime(response?.nodeName?.toLowerCase()||(either(simple,array)(response)?"json":request.url))||mime(response.nodeName?"html":"txt");
  let [js,json]=[type===mime("js"),type===mime("json")];
  let status=response?fail?500:response.status||200:404;
  let success=status<400;
@@ -811,14 +814,14 @@
  let headers={"Content-Type":type,...response.headers,get(key){return this[key];}};
  let body=wether
 ([fail,has("nodeName"),something]
-,compose(note.bind(1),"message")
+,"message"
 ,compose(combine
 (wether(is(window.HTMLHtmlElement),swap("<!DOCTYPE html>"),drop())
 ,wether(is(window.DocumentFragment),compose("children",Array.from,infer("map",infer("outerHTML")),"","join"),"outerHTML")
 ),collect,"","join")
 ,wether(has("body"),infer(Reflect.get,"body"),infer())
 )(response);
- if(json&&!simple(body))
+ if(json&&!basic(body))
  body=JSON.parse(serialize(body.constructor?.name=="Buffer"?body.toString():body));
  if(js&&importing&&!features.assertions)
  body=(string(body)?body:body.toString()).replace(/(import\([^,\)]+),(.*?\(.*?\))*[^\)]*/,"$1");
@@ -861,18 +864,36 @@
 )
 );
 
+ export function module(module,address)
+{let sourcemap="/sourcemap?module="+address;
+ let headers=Object.fromEntries(["X-",""].map(field=>[field+"SourceMap",sourcemap]));
+ return compose.call
+(module,serialize,"\n//# sourceMappingURL="+sourcemap,"concat",["body"],record
+,{type:mime("js"),headers},Object.assign
+);
+};
+
  export var peer=remember(function peer(protocol)
 {return resolve(protocol,"Agent",{timeout:5*60*1000});
 },protocol=>protocol);
 
  export var digest=compose
  // read response in its specified format. 
-(combine(infer(),response=>response.headers.get("Content-Type")?.split("/")[1])
-,{json:"json",csv:compose("text",records),pdf:"arrayBuffer"}
-,(response,mime,parse)=>infer.call(response,parse[mime]||
- compose("text",text=>mime==="xml"||text.startsWith?.("<?xml ")
-?new window.DOMParser().parseFromString(text,"application/xml")
-:text))
+ // Response objects may be imitated, hence not when(is(Response)). 
+(when(has(["status","text","json","headers"]))
+,wether(compose("status",not(is(200))),compose("text",Error,exit),infer())
+,combine(infer(),compose("headers","Content-Type","get",infer
+((type,xml)=>compose.call(
+ {json:"json",pdf:"arrayBuffer",csv:compose("text",records)
+ ,svg:compose("text",type,xml),xml:compose("text",type,xml)
+ ,png:"blob",jpg:"blob",png:"blob"
+ },Object.entries,infer("map",([field,value])=>
+ [mime(field),value]),Object.fromEntries)[type]
+,(text,mime)=>mime==="text/html"
+?window.document.createRange().createContextualFragment(text)
+:new window.DOMParser().parseFromString(text,mime).documentElement
+)))
+,(response,parser)=>infer.call(response,parser||"text")
 );
 
  export var ingest=compose
@@ -885,10 +906,13 @@
 ,either("parse",drop(1),swap(""))
 );
 
- export var cookie=cookie=>Object.entries(cookie||{}).map(([field,value])=>field+"="+value).join(";");
+ export var cookie=cookie=>string(cookie)?cookies(window.document.cookie)[cookie]:Object.entries(cookie||{}).map(([field,value])=>field+"="+value).join(";");
  export var cookies=buffer(compose(when(string),/ *; */,"split",provide,each(entry=>entry.split("=")),collect,Object.fromEntries),swap({}));
  export var query=compose(when(string),wether(compose("/","startsWith"),path=>window.location.origin+path,infer()),collect,slip(URL),Reflect.construct,"searchParams","entries",Array.from,Object.fromEntries);
- export function path(url){return new URL(url).pathname.replace(/^\/*|\/*$/g,"");}// regexp bracket matching: */
+ export function path(request)
+{let address=!string(request)?request.headers.origin+request.url:request;
+ return new URL(address).pathname.replace(/^\/*|\/*$/g,"");
+};
 
  export async function spawn(command, ...context)
 {// bound scope defines output color: undefined=quiet, other=default

@@ -20,10 +20,10 @@
  let certificates=Object.values(search.call(parameters,([field])=>field==="certification")).flatMap(Object.values).flat();
  // if(await resolve("cluster","isMaster"))
  // return persistence,history,fork();
- each(classify)(source,storage,...certificates.map(compose(crop(1),path.resolve)));
+ await classify(source,storage,...certificates.map(compose(crop(1),path.resolve)));
  let address=[protocol,"//localhost",port].join(":");
  // send jsdom composition declaration to the loader thread so it can fetch modules from this interface too, during eg. server-side rendering. 
- await jsdom(address),thread.postMessage([[address],"interface/jsdom"]);
+ await jsdom(address),thread&&thread.postMessage([[address],"interface/jsdom"]);
  let certification=[await certify(Object.values(parameters.certification||[])[0],parameters.distinguishedname)].flat();
  let virtualize=Object.entries(parameters.certification||{}).slice(1).map(([name,certificate])=>
  compose(name,certify(certificate,parameters.distinguishedname),combine("addContext",crop(1)),drop(1)));
@@ -54,10 +54,15 @@
 ,combine(notify,memory&&!secret?remember.call(memory,compose(drop(1),resolve),distinction):resolve)
 ,pass(report),drop(1,3),response||request,tether(submit)
 )
-),note)});
+))});
 };
 
- function distinction(routes,{url,headers}){let field=url+JSON.stringify(version(request.headers));if(this[field]?.status===500)delete this[field];return field;};
+ function distinction(routes,{url,headers})
+{// useragent needed in index for eg. dynamic import attributes syntax support. 
+ let field=url+JSON.stringify(version(headers));
+ if(this[field]?.status===500)delete this[field];
+ return field;
+};
  var address=compose(drop(1),combine("url",swap(/^/),either(tether(search,["connection","remoteAddress"]),swap(""))),"replace");
  var color=compose(combine(swap({get:36,put:33,delete:33}),compose(drop(1),"method","toLowerCase")),either(tether(search),swap(35)),"m");
  var notify=compose(combine(swap("\x1b["),color,compose(drop(),clock),swap("@"),address),"...\x1b[0m",collect,infer("join",""),pass(console.log));
@@ -72,9 +77,9 @@
  let methodic=pathname==="/"+method;
  if(methodic)
  // root path can't be routed methodically due to necessary leading slash. 
- request.url="/";
+ pathname="";
  let filter=infer("filter",(step,index)=>(index||step)&&step!==".");
- let map={get:infer("map",step=>step||"interface")}[method];
+ let map={get:infer("map",step=>step||"interface")}[!methodic&&method];
  return compose(filter,map)(decodeURIComponent(pathname).split("/"));
 };
 
@@ -108,7 +113,7 @@
  //if(!process.argv[1])process.argv[1]=import.meta.url;
  await resolve("cluster","on","exit",(worker,code,signal)=>note.call(code,worker.process.id+" exited with status "+code));
  let os=await import("os");
- let cpus=os.cpus();
+ let cpus=note(os.cpus());
  if(!cpus.length)
  cpus=[{model:os.platform()}];
  return cpus.reduce(record((cpu,index,cpus)=>
@@ -167,19 +172,29 @@
  export async function open(server,actions)
 {let {default:{WebSocketServer}}=await import("./einaros_2011_ws.js");
  let connection=buffer(function connection(host,peer,request)
-{Object.assign(peer,{author:anonymous[Math.floor(Math.random()*anonymous.length)]})
+{Object.assign(peer
+,{author:anonymous[Math.floor(Math.random()*anonymous.length)]
+ ,connected:true
+ ,interval:setInterval(time=>peer.connected
+?merge(peer,{connected:false}).send(JSON.stringify({action:"check"}))
+:peer.terminate(),30000)
+ });
  observe.call(peer
-,{message:infer(buffer
+,{close(){clearInterval(this.interval);note.call(3,this.author.name+" left.");}
+ ,error:note.bind(1)
+ ,message:infer(buffer
 (function(peer,host,event)
 {let message=JSON.parse(event.data);
- console.log("receive",message);
+ if(message.action!=="check")
+ console.log({from:peer.author.name+"@"+peer._socket.remoteAddress,message});
  return buffer(tether(actions[message.action||"message"]),note.bind(2))(host,message,peer);
 },message=>peer.send(JSON.stringify(is(Error)(message)?{error:note.call(1,message).message}:message))
 ),host)
  });
 },note.bind(1));
- return compose([{server}],Reflect.construct,{rooms:{}},Object.assign,{connection},tether(observe))(WebSocketServer);
+ return compose([{server}],Reflect.construct,{rooms:{}},Object.assign
+,{connection},tether(observe))(WebSocketServer);
 };
 
  var anonymous=Object.entries(animal).map(([name,svg])=>
- ({name,icon:"/svg/"+name+"/document"}));
+ ({name,icon:"/svg/animal/"+name+"/document"}));

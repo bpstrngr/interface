@@ -251,7 +251,7 @@ export function kmeans(samples, bounds, size, projection) {
  let Group=[Set,Map].find(group=>target instanceof group);
  //[target,source].every(part=>part instanceof group));
  if(Group)return override?source:new Group([source,target].flatMap(part=>Array.from(part)));
- let extensible=array(target)&&!override;
+ let extensible=[target,source].every(array)&&!override;
  if(extensible)return target.concat(source);
  let index=Number(Boolean(override));
  let opaque=[target,source].some(term=>!compound(term)||array(term)&&override);//||([source,target].every(array)&&override);
@@ -259,7 +259,10 @@ export function kmeans(samples, bounds, size, projection) {
  return [target,source][index];
  let reindex=array(target)&&!Object.keys(source).some(isNaN);
  if(reindex)
- return Object.assign(target,source);
+ return Object.entries(source).reduce((target,[field,value])=>something(value)
+?Object.assign(target,{[field]:value})
+:target.splice(field,1)&&target
+,target);
  return Object.entries(source).reduce(function(target,[field,next])
 {const past=target[field];
  const value=defined(past)?merge(past,next,override):next;

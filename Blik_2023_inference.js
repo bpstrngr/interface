@@ -18,7 +18,7 @@
  export function numeric(term){return typeof term==="number"};
  export function simple(term){return term?.constructor?.name==="Object";};
  export function compound(term){return Boolean(typeof term==="object"&&term);};
- export function basic(term){return compound(term)&&(simple(term)||!term.constructor);};
+ export function basic(term){return compound(term)&&(simple(term)||array(term));};
  export function generator(term){return term?.constructor?.constructor?.name==="GeneratorFunction";};
  export function asyncgenerator(term){return term?.constructor?.constructor?.name==="AsyncGeneratorFunction";};
  export function ascending(past,next){return (past<=next)-1;};
@@ -121,7 +121,7 @@
 ,combine
 (infer("reduce",(start,stop)=>Number(stop<start))
 ,compose
-(combine(1),0,infer("sort",(stop,start)=>(start<stop)-1)
+(combine(1),0,infer("sort",(stop,start)=>(start<stop)?1:-1)
 ,combine(infer(0),infer("reduce",(past,next)=>next-past))
 ,collect
 )
@@ -356,20 +356,20 @@
  if(this instanceof Promise)
  return this.then(scope=>each.call(scope,...arguments));
  let scope=plural(this)?this:provide([this].flat(),true);
- let next=compose(record(scope.next.bind(scope)),infer("at",-1),"done");
+ let next=(scope,past)=>past.push(scope.next())&&infer.call(past.at(-1),"done");
  let unfold=describe(generator(scope)&&!asynchronous(term)
-?function*({past,resolve})
-{while(!next(past))
+?function*({past,scope,resolve})
+{while(!next(scope,past))
  yield resolve(...arguments);
 }
-:async function*({past,resolve})
-{while(!await next(past))
+:async function*({past,scope,resolve})
+{while(!await next(scope,past))
  yield* await collect(resolve(...arguments));
 },"unfold");
  return unfold(
  {past:[],scope,term,context,resolve({past,term,context})
-{let next=infer(array(term)?term[past.length-1]:term);
- return next(past.at(-1).value,past.length-1,...context);
+{let next=infer(array(term)?term[past.length-1]:term,past.length-1,...context);
+ return compose("value",next)(past.at(-1));
 }});
  // return compose(collect,infer("map",(value,index,record)=>
  // infer(array(term)?term[index]:term,...context,index,record)(value)),provide)(this);
@@ -391,9 +391,9 @@
 );
 };
 
- export function remember(term,distinction="length")
+ export function remember(term,distinction=0)
 {// record on an implicit scope. 
- let scope=this||{};
+ let scope=this||[];
  return either
 (compose(slip(scope),tether(distinction),slip(scope),Reflect.get)
 ,compose(slip(scope),combine(record(term,distinction),tether(distinction)),Reflect.get)
@@ -407,16 +407,20 @@
  let path=[term].flat();
  let method=context[0]?.method?.toLowerCase();
  let methodic=combine(method,drop(1));
- let fail=compose(swap("not found"),Error,exit);
- let conclude=[either(infer(method,...context),crop(1))];
+ // record for methodic route taken. 
+ let branch=[];
+ let branched=compose(swap(branch),"length",major(0));
+ let fail=compose(swap(branch),Error("not found"),"concat",infer("find",is(Error)),exit);
  let terms=path.map(term=>infer(either
 (term
-,wether(has(method),compose(methodic,buffer(differ(term)),pass(record(drop(1,2)).bind(conclude))),infer())
+,wether(has(method),buffer(compose(methodic,differ(term),pass(record(drop(1,2)).bind(branch))),swap(undefined)),infer())
 ,tether(scope[term])
 ,fail
 ),...context));
- conclude=conclude.length>1?conclude[0]:infer();
- let composition=compose(...terms,conclude);
+ let composition=compose(...terms,wether
+ // invoke method if not done already. 
+(branched,infer(),either(infer(method,...context),crop(1))
+));
  return scope?composition(scope):composition;
 };
 
@@ -497,11 +501,12 @@
  return tether(observe,...arguments);
  if(defined(this)&&!defined(register))
  register=true;
- let propagate=register>1;
+ //let propagate=register>1;
  let binary=
- {touch:['mouseover','mouseout']
+ {hover:['mouseover','mouseout']
+ ,mouse:['mouseover','mouseout']
  ,focus:['focusin','focusout']
- ,hover:['mousemove','mouseout']
+ ,touch:['pointerover','pointerout']
  };
  let entries=[action].flat().flatMap(action=>
  simple(action)?Object.entries(action):[[action?.name,action]]).flatMap(([name,action])=>
@@ -522,10 +527,11 @@
 :scope[method](event,action,register)||scope
 ,this);
  function rebind(event)
-{if(!propagate)event.stopPropagation();
- let [start]=Object.values(binary).find(({1:end})=>end===event.type);
- let type=["Focus","Mouse"].find(type=>RegExp("^"+type,"i").test(start));
- this.dispatchEvent(new globalThis[type+"Event"](start,event));
+{//if(!propagate)event.stopPropagation();
+ let type=event.type.replace(/out$/,"");
+ let start={focus:"in"}[type]||"over";
+ let constructor=type.replace(/^./,infer("toUpperCase"))+"Event";
+ this.dispatchEvent(new globalThis[constructor](type+start,event));
 };
 };
 
@@ -591,19 +597,20 @@
  export function clock(mark,precision="time")
 {if(!isNaN(Number(mark)))
  mark=new Date(mark);
- if(!mark||!mark.getFullYear)
+ //[new Date(mark),new Date(new Date(mark).getTime()+new Date(mark).getTimezoneOffset()*60*1000)].reduce((utc,date)=>
+ //date.setHours(utc.getHours()-utc.getTimezoneOffset()/60)&&date);
+ if(!is(Date)(mark))
  mark=new Date();
- let [date,time]=["date","time"].map(range=>precision.includes(range));
+ let [date,time,minute]="date/time/minute".split("/").map(range=>precision.includes(range));
  return (
-[""
-,...date?[mark.getFullYear(),mark.getMonth()+1,mark.getDate()]:Array(3)
-,...time?[mark.getHours()+1,mark.getMinutes(),mark.getSeconds()]:Array(3)
-].map(value=>defined(value)?String(value):"").reduce((time,value,index)=>
+[...Object.assign(Array(3),date&&[mark.getFullYear(),mark.getMonth()+1,mark.getDate()])
+,...Object.assign(Array(3),(time||minute)&&[mark.getHours(),mark.getMinutes(),!minute&&mark.getSeconds()])
+]).map(value=>numeric(value)?String(value):"").reduce((time,value,index,times)=>
 {if(!value)return time;
  let zeros="0".repeat(Math.max(2,value.length)-value.length);
- let separator=index<6?index<4?index==3?". ":".":":":"";
- return time+zeros+value+separator;
-}));
+ let separator=times[index-1]&&index?index<4?index==3?". ":".":":":"";
+ return time+separator+zeros+value;
+},"");
 };
 
  // OBSOLETE (weak variations of infer, compose, tether) 
