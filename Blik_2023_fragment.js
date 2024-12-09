@@ -29,18 +29,17 @@
  [namespaces[namespace],qualifier])
 ].flat(),value)),node)
 ,this);
- if(source.nodeName||["NodeList"].includes(source.constructor?.name)||string(source))
- return source.nodeName?source:string(source)?window.document.createTextNode(source)
-:window.document.createRange().createContextualFragment(language
-?[source.match(new RegExp("#"+language+"(.*)#"+language))||[],source].reduce((match,source)=>match[1]||source)
-:source);
+ if(source.nodeName||["NodeList","XMLDocument"].includes(source.constructor?.name))
+ return source;
+ if(string(source))
+ return window.document.createTextNode(source);
  let [fragment,...nodes]=Object.entries(source||{}).reduce(function([fragment,...nodes],[name,value])
 {if(!value)return [fragment,...nodes];
  if(functor(value))
  value=value.call(source);
  let {textnode,dataset}={textnode:name=="#text",dataset:name=="dataset"};
  if(textnode)
- value=!string(value)?value[language]||Object.values(value)[0]:value;
+ value=simple(value)?value[language]||Object.values(value)[0]:value;
  if(dataset)
  return [fragment,...nodes,...Object.entries(metamarkup(value))];
  let child=textnode||value.nodeName;
@@ -133,8 +132,8 @@
  export function metamarkup(object)
 {return object&&Object.fromEntries
 (object.nodeName
-?Object.entries(object.dataset).map(([key,value])=>[key,isNaN(value)?JSON.parse(value):Number(value)])
-:Object.entries(object).map(([key,value])=>["data-"+key,isNaN(value)?JSON.stringify(value):String(value)])
+?Object.entries(object.dataset).map(([key,value])=>[key,isNaN(value)?string(value)?value:JSON.parse(value):Number(value)])
+:Object.entries(object).map(([key,value])=>["data-"+key,isNaN(value)?string(value)?value:JSON.stringify(value):String(value)])
 );
 };
 
@@ -168,15 +167,14 @@
  {for:id,title:id
  ,class:[group,type,{checkbox:value?"checked":""}[type]].filter(Boolean).join(" ")||undefined
  ,span:
-[defined(value)
+[{"#text":label}
+,defined(value)
 ?{role:"input",contenteditable:true,id,name:id
  ,type:["select","date"].includes(type)?"text":type
- ,"#text":String(type==="checkbox"?String(value)==="true":(type==="date")?clock(value,"datetime"):(type==="text"&&value&&String(value))||
- (array(value)?value[0]:compound(value)?Object.keys(value)[0]:value))
  ,checked:{checkbox:value?value.toString():undefined}[type]
- ,autocomplete:"off"
+ ,"#text":String(type==="checkbox"?String(value)==="true":(type==="date")?clock(value,"datetime"):(type==="text"&&value&&String(value))||
+ (array(value)?value[0]:compound(value)?Object.keys(value)[0]:value)||"")
  }:undefined
-,{"#text":label}
 ],ul:type!=="text"?type==="date"?clockwork(value):{li:list(value)}:undefined
  }));
 });
@@ -188,7 +186,7 @@
  label[node.nodeName.toLowerCase()]=node);
  let past=input?.textContent;
  if(something(past))
- label.span[0]["#text"]=past;
+ label.span[1]["#text"]=past;
  let elements=this.querySelectorAll("span[role=input]");
  let reference=input?.closest("label")||
  Array.from(elements).reverse().find(input=>input.closest("label"))?.closest("label")||
@@ -250,7 +248,8 @@
  let target=/^#/.test(source)?"":undefined;
  return document(
  {[tag]:
- {id:title,class:"reference",title,alt:title||source,href:source,src:source,controls:"on",target
+ {id:title
+ ,class:"reference",title,alt:title||source,href:source,src:source,controls:"on",target
  ,"#text":(title||source).replace(/_/g," ")
  }
  });
@@ -391,27 +390,31 @@
 });
 };
 
- export function image(src,alt)
-{if(/image/i.test(src.nodeName))return src;
- return new Promise((resolve,reject)=>
- compose.call(document({img:{}})//crossOrigin:"anonymous"}})
-,{onload(){resolve(this);}
- ,onerror:reject
+ export function image(source,alt)
+{if(/image/i.test(source?.nodeName))return source;
+ let src=is(Blob)(source)?URL.createObjectURL(source):source
+ return revert((resolve,reject,src,alt)=>compose.call
+(document({img:{}})//crossOrigin:"anonymous"}})
+,{onload(){if(/^blob:/.test(this.src))URL.revokeObjectURL(this.src);resolve(this,...arguments);}
+ ,onerror(){if(/^blob:/.test(this.src))URL.revokeObjectURL(this.src);reject(this,...arguments);}
  ,src,alt
- },Object.assign,globalThis.window?undefined:infer("dispatchEvent",new window.Event("load"))));
+ },Object.assign
+,globalThis.window?undefined:infer("dispatchEvent",new window.Event("load"))
+))(src,alt);
  //if(!colors[color])svg.select("circle#"+id).attr("fill",["rgb(",...new Vibrant(this).swatches()["Vibrant"].rgb].reduce((hex,hue,index)=>hex+hue+(index<2?",":")")));
 };
 
  export function canvas(image)
-{let canvas=document({canvas:
+{let {naturalWidth:width,naturalHeight:height}=image;
+ let canvas=document({canvas:
  {role:"img","aria-label":image.getAttribute("alt")
- ,width:image.naturalWidth,height:image.naturalHeight
+ ,"data-source":image.getAttribute("src")
+ ,width,height
  }});
  let frame=canvas.getContext("2d");
  if(!frame)
- compose(tether(document),{canvas:{load:null}},activate)(canvas
-,{"data-source":image.getAttribute("src")
- ,style:"background:repeating-linear-gradient(135deg,black,black 2px,transparent 2px,transparent 4px"
+ document.call(canvas
+,{style:"background:repeating-linear-gradient(135deg,black,black 2px,transparent 2px,transparent 4px"
  });
  else frame.drawImage(image,0,0);
  return canvas;
@@ -541,7 +544,9 @@
  export async function consume([source,common],index)
 {return compose
 (buffer(compose(fetch,"json"),fail=>({fail}))
-,feed=>({common,source,...feed})
+,feed=>({common,source,...["items","posts","data"].some(field=>field in feed)?feed:
+ {items:Object.entries(feed).map(([source,common])=>({source,common}))
+ }})
 )(source);
 };
 
@@ -551,22 +556,21 @@
 ,{author:next.author?.name||common?.author?.name||source.substring(0,source.search(/_\d\d/)).replace("_"," & ")
  ,avatar:common?.icon||next.avatar||next.author?.avatar_URL||feed.feed?.image
  ,post:either("createdTime","pubDate","created_time","date",swap(0))(next)||
- next.source?.substring(next.source.search(/_\d\d/)+1,next.source?.search(/\d\d_/)+2).split("").map((digit,index,date)=>{if([3,6].includes(index))date.splice(index+1,0,"-");return digit}).join("")
+ next.source?.substring(next.source.search(/_\d\d/)+1,next.source?.search(/\d\d_/)+2).split("").map((digit,index,date)=>
+{if([3,6].includes(index))date.splice(index+1,0,"-");return digit;
+}).join("")
  ,source:next.id||next.site_ID||next.source
  ,title:next.title||next.message||next.source?.substring(next.source?.search(/\d\d_/)+3).replace(/\.txt/g,"").replace(/_/g," ")
  ,content:next.content
  ,media:next.enclosure&&next.enclosure.link
- }));
+ })).sort(({post:past},{post:next})=>new Date(next)-new Date(past)).reverse();
 };
 
  export async function feed({name,icon,pub,sub},{source})
-{let items=Object.entries(pub).map(([source,common])=>({source,common}))
+{let items=Object.entries(pub).map(([source,common])=>({source,common}));
  let feed=await compose.call
-({source:source+"/pub",feed:{image:icon},items,common:{icon,author:{name}}}
-,combine(author,compose(each(syndicate)
-,collect,"flat"
-,infer("sort",({post:past},{post:next})=>new Date(next)-new Date(past)),"reverse"
-,provide,each(article)))
+({source:"pub",feed:{image:icon},items,common:{icon,author:{name}}}
+,combine(author,compose(each(syndicate),provide,each(article)))
 ,collect,"flat",infer("reduce",compose(pass("appendChild"),crop(1)))
 );
  let peer=document({div:
@@ -579,7 +583,7 @@
 {let src=common?.icon||feed?.feed?.image;
  let material=prune.call(layout.material,([field,value],{length})=>
  field==="&:hover"?{...value,animation:"blink .5s ease-in"}:value);
- return document(
+ let author=document(
  {span:
  {class:"feed",source:common?.source||source
  ,style:index?undefined:{"#text":css(
@@ -591,7 +595,7 @@
  }
  })}
  ,span:
- {class:"title",style:index?undefined:{"#text":css({".feed .title":
+ {class:"title",style:index?undefined:{"#text":css({".feed>.title":
  {display:"block",cursor:"pointer",padding:"0.5em","text-align":"center"
  ,"&>span":
  {"white-space":"pre-wrap",color:"var(--note)"
@@ -609,12 +613,14 @@
 ,author!==description&&description&&
  {class:"spell"
  ,"#text":description,style:"display:none"
- ,link:await compose(address=>link&&link(address),pass(activate,"./actions"))(feed?.feed?.link)
+ ,link:await compose(address=>link&&link(address))(feed?.feed?.link)
  }
 ].flat())
  }
  }
  });
+ buffer(capture)(author,"/feed");
+ return author;
 };
 
  export function link(source,title)
@@ -625,8 +631,8 @@
 {return document(
  {style:index?undefined:
  {"#text":await css({".article":
- {color:"#b71c1c",display:"block","white-space":"pre-wrap",cursor:"pointer",padding:"0.5em"
- ,"&>img":{"border-radius":"50%",height:"1em","vertical-align":"bottom"}
+ {color:"#b71c1c",display:"block","white-space":"pre-wrap",cursor:"pointer",padding:"0.5em",position:"relative","z-index":2
+ ,"&>canvas":{"border-radius":"50%",height:"1em",width:"1em","vertical-align":"bottom"}
  ,"&>span":{color:"var(--text)",display:"block"}
  ,"&:hover>span":layout.text.glow
  ,"&+span":{"text-align":"left","& img":{"max-width":"100%",height:"auto"},"& audio":layout.audio}
@@ -635,12 +641,37 @@
  ,span:
  {span:
  {class:"article",id:item.source,source:item.source,platform:item.platform,index:String(index)
- ,img:{title:item.author,src:item.avatar}
+ ,...metamarkup(item.common)
+ ,canvas:await compose(image,canvas)(item.avatar,item.author)
  ,"#text":" "+(item.post?clock(new Date(item.post),"date"):item.name.substring(5,13))
  ,span:{"#text":item.title+"\n"}
  }
  }
  });
+};
+
+ export function stylerules(selector)
+{return Array.from(window.document.styleSheets).flatMap(({rules})=>
+ Array.from(rules)).filter(({selectorText})=>selectorText?.includes(selector));
+};
+
+ export async function message({icon,name,put,message},index)
+{let {length:styles}=stylerules(".message");
+ let style=styles?undefined:{"#text":css({".message":layout.message})};
+ return (
+ {class:"message","data-index":String(index)
+ ,style
+ ,span:
+[{canvas:await buffer
+(compose(icon&&fetch,digest,wether(is(Blob),compose(image,canvas),infer()))
+,swap({role:"img"})
+)(icon)
+ }
+,{span:
+[{class:"title",span:[{class:"name","#text":name},{class:"time","#text":clock(put,"dateminute")}]}
+,{"#text":message}
+]}
+]});
 };
 
  export async function featurefacebook()
@@ -771,34 +802,41 @@
  // common procedure in deferred scripts, so no return statement. 
  Promise.all(["/Blik_2023_interface.js","/Blik_2023_inference.js","/Blik_2023_search.js","/Blik_2023_fragment.js"].map(module=>
  import(module))).then((
-[{resolve}
-,{provide,collect,infer,compose,match,is,not,has,simple}
+[{resolve,cookies}
+,{note,provide,collect,record,infer,tether,compose,combine,either,wether,drop,crop,swap,slip,match,is,not,has,simple}
 ,{merge,prune,search}
 ,{css}
 ])=>Object.assign(window
-,{resolve
- ,provide,collect,infer,compose,match,is,not,has,simple
+,{resolve,cookies
+ ,note,provide,collect,record,infer,tether,compose,combine,either,wether,drop,crop,swap,slip,match,is,not,has,simple
  ,merge,prune,search
  ,css
  }));
- var {peer}=import("/peer").then(module=>peer=module);
+ var {peer}=import("/peer").then(({default:module})=>peer=module);
  var {protocol,host}=window.location;
  let socket=["ws",/s/.test(protocol)?"s":"","://",host].join("");
  Object.assign(window
 ,{socket:Object.assign(new WebSocket(socket)
-,{onmessage(event)
+,{async onopen({target})
+{console.warn("Websocket open: ",target);
+ await new Promise(function defer(resolve){window.cookies?resolve():setTimeout(time=>defer(resolve),500);});
+ let {author:name}=cookies(window.document.cookie);
+ if(name)
+ this.send(JSON.stringify({action:"sign",name}));
+},onmessage(event)
 {let message=JSON.parse(event.data);
+ if(message.action!=="check")
  console.log("receive",message);
  peer[message.action]?.call(this,message,window);
-},onopen(){console.warn("Websocket open: ",window.socket)}
- ,onerror(){console.warn("Websocket not available at "+socket)}
- ,onclose(){console.warn("Websocket closed: ",window.socket)}
+},onerror({target}){console.warn("Websocket not available at "+target.url);}
+ ,onclose({target}){console.warn("Websocket closed: ",target);}
  })
  ,worker:import("/Blik_2023_interface.js").then(({delegate})=>delegate("/worker")).then(worker=>
  Object.assign(window,{worker})).catch(fail=>
  Object.assign(window,{worker:console.warn("Worker not available at /worker.")}))
  ,dispatch(event,buffering)
-{// deprecated in favor of capture(fragment,actions). rarely needed for unpropagated server-rendered events like svg.onend. 
+{// deprecated in favor of capture(fragment,actions).
+ // rarely needed for unpropagated server-rendered events like focus/blur. 
  // explicit stopPropagation should be reproduced with event target conditions on scopes 
  // (eg. {form:{input({target}){if(target)return;}}}). 
 //  if(!select||!actions)
@@ -817,42 +855,48 @@
 {// synchronously register events to be routed to actions scoped by selector (eg. {#form:{change(){}}}). 
  // common procedure in deferred scripts, so no return statement (needs {ascend,fields} inference composed). 
  if(!globalThis.window)
- fragment.setAttribute("actions",actions);
- let lead=["/","./"].find(lead=>actions.startsWith(lead));
- let [module,...route]=actions.replace(lead,"").split("/").filter(Boolean);
- ({actions}=import(lead+module).then(module=>report(actions=
- Object.assign(["default"],route).reduce((module,field)=>module[field],module))));
+ fragment.setAttribute("actions",actions),exit("no browser environment to capture.");
  let exclusion=
- // inclusive list could be extracted from actions once loaded, and these be removed. 
-[["motion","orientation"].map(sensor=>"device"+sensor)
+[["motion","orientation","orientationabsolute"].map(sensor=>"device"+sensor)
 ,["start","run","end","cancel"].map(state=>"transition"+state)
 ].flat().map(event=>"on"+event);
- let events=fields(fragment).filter(event=>
- event.startsWith?.("on")&&!exclusion.includes(event)).map(event=>
- event.replace(/^on/,""));
- events.forEach(event=>fragment.addEventListener(event,dispatch));
- function dispatch(event,buffering)
-{event.stopPropagation();
- if(!actions)
- // asynchronizing event dispatch unblocks its synchronous default unless prevented. 
- return setTimeout(dispatch.bind(this,event,true),500)&&
- buffering||event.defaultPrevented||event.preventDefault()||console.warn(
- {["waiting for actions to dispatch "+event.type+" event from"]:event.target});
- let target=event.target.document?.body||event.target.body||event.target;
+ let inclusion=["focusout","focusin","message"].map(event=>"on"+event);
+ let buffered=new Set([fields(fragment).filter(event=>
+ event.startsWith?.("on")&&!exclusion.includes(event)),inclusion].flat().map(event=>
+ event.replace(/^on/,"")));
+ buffered.forEach(event=>fragment.addEventListener(event,buffer,{passive:false}));
+ let lead=["/","./"].find(lead=>actions.startsWith(lead));
+ let [module,...route]=actions.replace(lead,"").split("/").filter(Boolean);
+ import(lead+module).then(module=>
+ actions=Object.assign(["default"],route).reduce((module,field)=>
+ module[field],module)).then(function(actions)
+{let events=Object.values(actions).flatMap(Object.keys);
+ new Set(events).forEach(event=>fragment.addEventListener(event,dispatch,{passive:false}));
+ buffered.forEach(event=>fragment.removeEventListener(event,buffer));
+ console.groupCollapsed("routing all propagated events to actions by scoped selector in "+(lead+module)+": ",fragment);
+ console.log(Object.fromEntries(Object.entries(actions).map(([selector,actions])=>[selector,Object.keys(actions)])));
+ console.log(events.sort().join(" "));
+ console.groupEnd();
+});
+ function dispatch(event)
+{let target=event.target.document?.body||event.target.body||event.target;
+ if(target.nodeName==="#text")target=target.parentNode;
  let scopes=Object.entries(actions).filter(([selector,actions])=>
  actions[event.type]&&target.closest(selector));
  scopes.map(([selector,actions])=>
  [target.closest(selector),actions[event.type]]).forEach(([scope,action])=>
  console.log({[event.type]:target,scope})||
  action.call(scope,event));
- if(!scopes.length)
- console.info("comsumed:",{[event.type]:event});
+ //if(!scopes.length)
+ //console.info("consumed:",{[event.type]:event});
 };
-  function report(actions)
-{console.groupCollapsed("routing all propagated events to actions by scoped selector in scope: ",fragment);
- console.log(Object.fromEntries(Object.entries(actions).map(([selector,actions])=>[selector,Object.keys(actions)])));
- console.log(events.sort().join(" "));
- console.groupEnd();
+ function buffer(event,buffering=0)
+{// asynchronizing event dispatch unblocks its synchronous default unless prevented. 
+ if(typeof actions==="string")
+ return setTimeout(buffer.bind(this,event,buffering+1),500)&&
+ buffering||event.defaultPrevented||event.preventDefault()||console.warn(
+ {["waiting for actions to dispatch "+event.type+" event from"]:event.target});
+ dispatch(event);
 };
 };
 
@@ -963,16 +1007,19 @@
 
  export function css(style,prefix="")
 {let rule=prefix&&Object.entries(style).filter(([field])=>
- !field.startsWith("&")).reduce((rule,entry,index)=>
+ !"&@".includes(field[0])).reduce((rule,entry,index)=>
  [rule,something(entry[1])?simple(entry[1])
 ?[""," "][Number(Boolean(index))]+css(...entry.reverse())
 :["",";"][Number(Boolean(index))]+entry.join(":"):""].join("")
 ,prefix+"{")+"}";
  let rules=Object.entries(style).filter(([field])=>
- !prefix||field.startsWith("&")).flatMap(([field,value])=>
- field.split(",").flatMap(field=>[value].flat().map(value=>[field,value]))).filter(({1:value})=>
+ !prefix||"&@".includes(field[0])).flatMap(([field,value])=>
+ field.split(",").flatMap(field=>[value].flat().map(value=>
+ [field,value]))).filter(({1:value})=>
  simple(value)).map(([field,value])=>
- css(value,prefix+field.replace(/^&/,"")));
+ field.startsWith("@")
+?css(value,field)
+:css(value,prefix+field.replace(/^&/,"")));
  return [rule,rules].filter(Boolean).flat().join("\n");
 };
 
@@ -1144,8 +1191,8 @@
  let fragment=await buffer(infer(resolve),crop(1))(JSON.parse(compound));
  this.annotate(fragment,last.title);
  return [fragment,syntax];
-},"<":function(last,...syntax){if(last.style||last.action)return;return this.text("&lt;",...arguments);}
- ,">":function(last,...syntax){if(last.style||last.action)return;return this.text("&gt;",...arguments);}
+}//,"<":function(last,...syntax){if(last.style||last.action)return;return this.text("&lt;",...arguments);}
+ //,">":function(last,...syntax){if(last.style||last.action)return;return this.text("&gt;",...arguments);}
  };
 
  export var tests=
