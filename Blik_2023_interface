@@ -278,7 +278,8 @@ To use in external projects, merge Interface as a new remote:
 To contribute to Interface from external projects, 
 checkout.gitignore before the whole remote to stash changes to its files 
 (else they will be hard-reset): 
-( git checkout interface/stable .gitignore;
+( git fetch --all;
+ git checkout interface/stable .gitignore;
  git add .;
  git stash;
  git checkout interface/stable;
