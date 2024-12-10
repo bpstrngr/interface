@@ -293,7 +293,9 @@
 ?{type:"ObjectExpression"
  ,properties:value.members.map(member=>(
  {type:"Property",kind:"init",key:member.id
- ,value:member.initializer?.type!=="BinaryExpression"&&member.initializer||{type:"Literal",value:member.id.name,raw:"'"+member.id.name+"'"}
+ ,value:(member.initializer?.type!=="BinaryExpression"||
+  !["left","right"].some(side=>member.initializer[side]?.type==="Identifier"))&&
+  member.initializer||{type:"Literal",value:member.id.name,raw:"'"+member.id.name+"'"}
  }))
  }
 :{type:"Literal",kind:"undefined"};
