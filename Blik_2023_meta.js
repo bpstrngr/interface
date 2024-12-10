@@ -273,8 +273,9 @@
  }
  ,typescript:
  {method:
- {condition(value){return ["DeclareVariable","DeclareFunction","DeclareClass"].includes(value.type)||value?.type==="MethodDefinition"&&value?.value?.type==="TSDeclareMethod";}
- ,ecma(){return undefined;}
+ {condition(value)
+{return ["DeclareVariable","DeclareFunction","DeclareClass"].includes(value.type)||value?.type==="MethodDefinition"&&value?.value?.type==="TSDeclareMethod";
+},ecma(){return undefined;}
  }
  ,expression:
  {condition(value){return [["TSAsExpression","TSNonNullExpression"],["TypeCastExpression"]].flat().includes(value?.type);}
@@ -299,9 +300,16 @@
  return {type:"VariableDeclaration",kind:"const",declarations:[{id:value.id,init}]};
 }}
  ,typeexport:
- {condition(value){return value.type==="ExportNamedDeclaration"&&["OpaqueType","TypeAlias"].includes(value.declaration?.type)||value.exportKind==="type";}
- ,ecma(){return undefined;}
- }
+ {condition(value)
+{return value.type==="ExportNamedDeclaration"&&
+ ["OpaqueType","TypeAlias"].includes(value.declaration?.type)||
+ value.exportKind==="type";
+},ecma(value)
+{return merge(value,{declaration:
+ {type:"VariableDeclaration",kind:"const"
+ ,declarations:[{id:value.declaration.id,init:{type:"Literal",kind:"undefined"}}]
+ }},1);
+}}
  ,typeimport:
  {condition(value)
 {return value?.type==="ImportDeclaration"&&(value.importKind==="type"||value.specifiers?.every(({importKind})=>importKind==="type"));
