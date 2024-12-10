@@ -300,6 +300,7 @@ Some of the more git-aware commands to use beyond common implicit push/merge:
  git push -d remote branch; # delete remote branch after pull request. 
  git remote -v; # list remotes. 
  git branch -avv; # list branches with tracking information. 
+ tag=2024.12; git tag -d $tag; git tag $tag; git push $(target remote) :$tag; git push $(target remote) tag $tag;
 )#div{width:100%;overflow:scroll;white-space:pre;font-family:monospace;color:#43a047}
 
 
