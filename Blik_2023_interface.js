@@ -397,8 +397,8 @@
 {if(scope.format!=="module"||scope.tests||!scope.responseURL)
  return scope;
  let target=new URL(scope.responseURL).pathname;
- return compose(buffer(compose(wether
-(compose.call(resolve("vm"),has("Module"))
+ compose(buffer(compose(wether
+(false//compose.call(resolve("vm"),has("Module"))
  // dispatch new import thread for tests until modularization halts on self-referential imports. 
 ,compose(true,access,target,modularise)
 ,resolve
@@ -410,6 +410,7 @@
 )
 ,note.bind(1,"Test failed for "+target+":\n")
 ),swap(scope))(target);
+ return scope;
 };
 
  export async function checkout(remote,target,branch,path)
