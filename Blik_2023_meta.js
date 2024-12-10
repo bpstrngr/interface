@@ -307,10 +307,10 @@
  ["OpaqueType","TypeAlias"].includes(value.declaration?.type)||
  value.exportKind==="type";
 },ecma(value)
-{return merge(value,{declaration:
+{return value.declaration?merge(value,{declaration:
  {type:"VariableDeclaration",kind:"const"
  ,declarations:[{id:value.declaration.id,init:{type:"Literal",kind:"undefined"}}]
- }},1);
+ }},1):undefined;
 }}
  ,typeimport:
  {condition(value)
