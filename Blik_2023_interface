@@ -256,37 +256,33 @@ Uninstall git:
 ( ...
 )#div{width:100%;overflow:scroll;white-space:pre;font-family:monospace;color:#43a047}
 
-To use in external projects, merge Interface as a new remote: 
+To use in external projects, merge Interface from a new remote: 
 ( echo " Merging with Interface to access modules...";
- echo " Stashing local changes..."
- git stash --keep-index;
- commit=$(git rev-parse HEAD);
  git remote add interface https://github.com/bpstrngr/interface;
  git fetch interface;
- git switch -c interface interface/stable;
- git checkout $commit;
- git checkout interface/stable union..."
+ echo " Stashing local changes..."
+ stash=$(git status --porcelain|wc -l);
+ [ $stash -gt 0 ] && git stash;
+ git checkout interface/stable .;
+ echo Restoring potential conflicts...;
  git restore --staged .;
- echo " Discarding potential conflicts..."
  git restore $(git ls-files);
  echo " Restoring local changes."
- git checkout stash -- .;
- node --experimental-detect-module --import=./Blik_2023_interface.js ./Blik_2023_host.js expose ./Blik_2023_form.js ./Blik_2023_parameters.json https remember;
- exit 0;
+ [ $stash -gt 0 ] && git checkout stash -- .;
 )#div{width:100%;overflow:scroll;white-space:pre;font-family:monospace;color:#43a047}
 
 To contribute to Interface from external projects, 
-checkout.gitignore before the whole remote to stash changes to its files 
-(else they will be hard-reset): 
-( git fetch --all;
+checkout .gitignore before the whole remote to stash the difference: 
+(check(){
+ git fetch interface;
  git checkout interface/stable .gitignore;
  git add .;
- git stash;
+ stash=$(git status --porcelain|wc -l);
+ [ $stash -gt 0 ] && git stash;
  git checkout interface/stable;
- git checkout stash .; 
+ [ $stash -gt 0 ] && git checkout stash .; 
  git restore --staged .;
- exit 0;
-)#div{width:100%;overflow:scroll;white-space:pre;font-family:monospace;color:#43a047}
+})#div{width:100%;overflow:scroll;white-space:pre;font-family:monospace;color:#43a047}
 
 Some of the more git-aware commands to use beyond common implicit push/merge: 
 ( git remote add name url; # naming remotes more accurately than "origin". 
@@ -300,7 +296,10 @@ Some of the more git-aware commands to use beyond common implicit push/merge:
  git push -d remote branch; # delete remote branch after pull request. 
  git remote -v; # list remotes. 
  git branch -avv; # list branches with tracking information. 
+ git ls-remote --tags interface
  tag=2024.12; git tag -d $tag; git tag $tag; git push $(target remote) :$tag; git push $(target remote) tag $tag;
+ commit=$(git rev-parse HEAD);
+ remote=$(git branch -r --contains HEAD)
 )#div{width:100%;overflow:scroll;white-space:pre;font-family:monospace;color:#43a047}
 
 
