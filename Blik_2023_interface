@@ -64,7 +64,7 @@ it is at the expense of javascript's flexibility, which can indeed offer
 native alternatives to these features. 
 
   As insult to injury, package managers (npm, yarn, jsr &c.) 
-have long obscured dependencies and build processes of external libraries, 
+have long obscured these configurations of external libraries, 
 contributing to the overengineering and growing complexity 
 on the web by concealing implementation details in a language 
 that is ultimately still distributed in source format (so to browsers as to servers). 
@@ -74,10 +74,10 @@ that is ultimately still distributed in source format (so to browsers as to serv
 {text-align:left;}
 
 With the arrival of a loader interface in the (Ecmascript specification)@https://whatwg.github.io/loader/{"class":"invert reference","style":{"& *":{"filter":"invert(0.8)"}}} and its (Node.js implementation)@https://nodejs.org/api/module.html#customization-hooks, 
-variations can finally be standardized dynamically, without a need for external configurations 
+spurious variations can finally be standardized dynamically, without a need for external configurations 
 or a new platform trying to contain this heterogeneity (UMD ✞@https://jameshfisher.com/2020/10/04/what-are-umd-modules/, Deno@https://www.youtube.com/embed/M3BM9TB-8yA, Bun@https://bun.sh/docs). 
 
-(Loading modules)#b requires 3 steps: 
+(Loading modules)#b takes 3 steps: 
 
  (1. locate)#b (download, bundle and delete source if not found despite source definition specified, or just redirect to the source entry if available (eg. pending or interrupted bundling). exposed by nodejs as "resolve".), 
  (2. access)#b (parse and re-serialize if foreign dialect specified or detected. exposed by nodejs as "load".), 
@@ -86,7 +86,7 @@ or a new platform trying to contain this heterogeneity (UMD ✞@https://jameshfi
 
 Although the language allows polluting modules with procedures, it is advised to keep them modular and generic. 
 To invoke their functions with specific arguments, this module 
-extends the 3 steps with an inference of arguments provided by a client (shell/function): 
+extends the 3 steps with an inference of arguments if provided by a client (shell/function): 
 
  (5. infer arguments)#b if provided. 
 

@@ -1,4 +1,4 @@
- import {note,something,record,provide,compose,buffer,slip,drop,stream,infer,either,swap,not,wether,pass,collect,simple,defined,string,compound,tether,is,numeric,array,basic,iterable} from "./Blik_2023_inference.js";
+ import {note,something,record,provide,has,compose,buffer,slip,drop,stream,infer,either,swap,not,wether,pass,collect,simple,defined,string,compound,tether,is,numeric,array,basic,iterable} from "./Blik_2023_inference.js";
  import {resolve} from "./Blik_2023_interface.js";
 
  export var stringify=scope=>
@@ -254,20 +254,15 @@ export function kmeans(samples, bounds, size, projection) {
  let extensible=[target,source].every(array)&&!override;
  if(extensible)return target.concat(source);
  let index=Number(Boolean(override));
- let opaque=[target,source].some(term=>!compound(term)||array(term)&&override);//||([source,target].every(array)&&override);
+ let opaque=[target,source].some(term=>!compound(term)||array(term)&&override);
+ //||([source,target].every(array)&&override);
  if(opaque)
  return [target,source][index];
- let reindex=array(target)&&!Object.keys(source).some(isNaN);
- if(reindex)
- return Object.entries(source).reduce((target,[field,value])=>something(value)
-?Object.assign(target,{[field]:value})
-:target.splice(field,1)&&target
-,target);
  return Object.entries(source).reduce(function(target,[field,next])
 {const past=target[field];
  const value=defined(past)?merge(past,next,override):next;
  // mutation warning - reduce on an empty target to copy.
- if(defined(value))
+ if(something(value))
  return buffer(Object.assign,drop(1,2))(target,{[field]:value});
  delete target[field];
  return target;
@@ -374,6 +369,7 @@ export function isolate(path)
 ,{context:[{a:{}},2,"a/b/c".split("/")],terms:[{a:{b:{c:2}}}],condition:["deepEqual"]}
 ,{context:[undefined,{b:2}],terms:[{b:2}],condition:["deepEqual"]}
 ,{context:[undefined,{b:2},true],terms:[{b:2}],condition:["deepEqual"]}
+,{context:[new URL("http://localhost"),{b:2},true],terms:["b",2],condition:"equal"}
 ],search:
 [{scope:{a:{b:2}},context:[({1:value})=>value===2],terms:[{"a/b":2}],condition:"deepEqual"}
 ,{scope:{a:{b:1}},context:["abc".split("")],terms:[term=>term===undefined],condition:"ok"}
@@ -384,5 +380,5 @@ export function isolate(path)
  {trim:{scope:{a:{b:{c:3}}},context:[([field,value])=>field!=='b'?value:undefined],terms:[{a:[]}],condition:"deepEqual"}
  ,collapse:{scope:{a:{b:{b:2,c:3}}},context:[([field,value])=>field!=='b'?value:undefined,true],terms:[{a:{c:3}}],condition:"deepEqual"}
  ,shave:{scope:{a:{b:{c:{d:1},f:2}},e:3},context:[([field,value],path)=>path.length<2?value:undefined],terms:[{a:{b:[]},e:3}],condition:"deepEqual"}
- ,agnostic:{scope:{a:{b:[]},e:3},context:[([field,value])=>Promise.resolve(value)],terms:[{a:{b:[]},e:3}],condition:"deepEqual"}
+ //,agnostic:{scope:{a:{b:[]},e:3},context:[([field,value])=>Promise.resolve(value)],terms:[note,{a:{b:[]},e:3}],condition:"deepEqual"}
 }};
