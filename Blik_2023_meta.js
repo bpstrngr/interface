@@ -13,7 +13,8 @@
 ?new URL(options.source)
 :await import("url").then(({pathToFileURL:url})=>url(options.source))
 :null;
- if(syntax==="flow")return import("./facebook_2014_flow_parser.js").then(({default:{parse}})=>parse(source
+ if(syntax==="flow")
+ return import("./facebook_2014_flow_parser.js").then(({default:{parse}})=>parse(source
 ,{all_comments:false,comments:false,enums:false,tokens:false,types:true
  ,use_strict:false,esproposal_decorators:false,esproposal_export_star_as:false
  })).then(grammar=>merge(grammar,{meta:{url}}));
@@ -537,7 +538,7 @@
 
  export var mime=compose
 (infer("match",/[^\.]*$/),either("0",infer())
-,{text:{plain:["txt"],javascript:["js","cjs"],typescript:["ts"],"":["html","css","csv"]}
+,{text:{plain:["txt"],javascript:["js","cjs","mjs"],typescript:["ts"],"":["html","css","csv"]}
  ,image:{jpeg:["jpg","jpeg"],"x-icon":"ico","svg+xml":"svg","":["gif","png"]}
  ,audio:{mpeg:"mp3"}
  ,font:{ttf:"ttf"}
