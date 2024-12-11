@@ -34,7 +34,7 @@
 
  export default
  {get:compose(combine(compose
-(swap("path","resolve","./"),resolve,true,classified,remember(compose(drop(1),list))
+(swap("path","resolve","./"),resolve,true,classified,list
 ,tether(prune,([field,value],path)=>value===null
 ?describe(compose(drop(1),combine
 (compose(swap([path,field].flat().join("/")),pass(permit,classified)),format

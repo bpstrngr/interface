@@ -93,7 +93,7 @@
 );
 
  var remote=compose
-(fetch,when("status",is(200)),"headers","location"
+(address=>fetch(address),when(compose("status",is(200))),"headers","location"
 ,address=>({url:window.location.origin+address})
 );
 
@@ -787,7 +787,10 @@
 };
 
  export async function jsdom(url)
-{if(this)this.reconfigure({url,referrer:url})
+{if(this)
+ this.reconfigure({url})
+,fetch=freefetch.bind(this.window)
+,note.call(3,"navigated browser to "+url);
  return window=revert(async function(expose,reject,url)
 {infer("close")(window);
  let {JSDOM}=await resolve("./Domenic_2010_jsdom.js","default");
