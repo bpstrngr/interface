@@ -1,12 +1,12 @@
  import {note,prompt,when,functor,string,pattern,revert,each,describe,clock,observe,is,has,same,slip,something,compound,infer,tether,wether,collect,provide,route,buffer,differ,compose,combine,either,drop,crop,swap,record,wait,exit,pass,remember,binary,simple,array} from "./Blik_2023_inference.js";
- import {thread,resolve,access,list,window,jsdom,fetch,persist,version,compress,stage,cookies,cookie} from "./Blik_2023_interface.js";
+ import {thread,resolve,access,list,window,jsdom,fetch,persist,version,compress,stage,cookies,cookie,feature} from "./Blik_2023_interface.js";
  import {search,merge,sum,prune,extract} from "./Blik_2023_search.js";
  import {scope,mime} from "./Blik_2023_meta.js";
  import local,{classify} from "./Blik_2024_static.js";
  import syndication from "./Blik_2024_syndication.js";
  import {document} from "./Blik_2023_fragment.js";
  import {animal} from "./Blik_2024_svg.js";
- var {memory}=Object.assign(globalThis,{memory});
+ var {memory}=Object.assign(globalThis,{memory:{}});
 
  export async function expose(source,storage,protocol="http",record)
 {let {default:path}=await import("path");
@@ -55,12 +55,13 @@
 ,combine(notify,memory&&!secret?remember.call(memory,compose(drop(1),resolve),distinction):resolve)
 ,pass(report),drop(1,3),response||request,tether(submit)
 )
-))});
+),compose(note,exit))});
 };
 
  function distinction(routes,{url,headers})
 {// useragent needed in index for eg. dynamic import attributes syntax support. 
- let field=url+JSON.stringify(version(headers));
+ let query=Number(url.includes("?"));
+ let field=[url,new URLSearchParams(feature(version(headers)))].join("?&"[query]);
  if(this[field]?.status===500)delete this[field];
  return field;
 };

@@ -18,7 +18,7 @@
  agent.split("/")).map(([name,version])=>({[name]:Number(version)})).reduce(merge);
 };
 
- var feature=agent=>agent&&prune.call
+ export var feature=agent=>agent&&prune.call
 ({attributes:{node:21,Chrome:123}
  ,assertions:{node:16.14,Chrome:91,Firefox:Infinity}
  ,json:{Chrome:125,Firefox:Infinity}
