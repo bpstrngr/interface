@@ -217,7 +217,7 @@
  return fill.call(this,this.getAttribute("method"));
 };
 
- export function media(resource,{incumbent,source,...fields}={})
+ export function media(resource,{source,...fields}={})
 {if(pdflike(resource))
  return print(resource);
  if(resource instanceof ArrayBuffer||resource.constructor.name==="Buffer")
@@ -389,6 +389,17 @@
  return viewer.container;
 });
 };
+
+ export var progress=
+ {div:{class:"progress",style:{"#text":css({".progress":
+ {position:"absolute",width:"100%",height:"100%"
+ ,background:"linear-gradient(transparent 0%,rgba(33,150,243,0.25) 75%,transparent 100%)"
+ ,animation:"wave 3s ease 1s infinite"
+ },"@keyframes wave":
+ {"0%":{height:0,transform:"translate(0,-100%)",opacity:0}
+ ,"50%":{opacity:0.25},"100%":{transform:"translate(0,100%)",opacity:0}
+ }})}}
+ };
 
  export function image(source,alt)
 {if(/image/i.test(source?.nodeName))return source;
@@ -566,17 +577,17 @@
  })).sort(({post:past},{post:next})=>new Date(next)-new Date(past)).reverse();
 };
 
- export async function feed({name,icon,pub,sub},{source})
+ export async function* feed({name,icon,pub,sub},{source})
 {let items=Object.entries(pub).map(([source,common])=>({source,common}));
  let feed=await compose.call
 ({source:"pub",feed:{image:icon},items,common:{icon,author:{name}}}
 ,combine(author,compose(each(syndicate),provide,each(article)))
 ,collect,"flat",infer("reduce",compose(pass("appendChild"),crop(1)))
 );
- let peer=document({div:
- {...await compose(Object.entries,provide,each(consume),each(author),collect)(sub)
- }});
- return [feed,peer].flat();
+ yield feed;
+ let peer=document({div:{}});
+ yield peer;
+ await compose(Object.entries,provide,each(compose(consume,author,peer.append.bind(peer))),collect)(sub);
 };
 
  async function author({source,common,...feed},index)
@@ -873,9 +884,10 @@
 {let events=Object.values(actions).flatMap(Object.keys);
  new Set(events).forEach(event=>fragment.addEventListener(event,dispatch,{passive:false}));
  buffered.forEach(event=>fragment.removeEventListener(event,buffer));
- console.groupCollapsed("routing all propagated events to actions by scoped selector in "+(lead+module)+": ",fragment);
- console.log(Object.fromEntries(Object.entries(actions).map(([selector,actions])=>[selector,Object.keys(actions)])));
+ console.groupCollapsed("routing all propagated events to actions from scope: ",{fragment});
+ console.log(actions);
  console.log(events.sort().join(" "));
+ console.log(globalThis.window.location.origin+lead+module);
  console.groupEnd();
 });
  function dispatch(event)

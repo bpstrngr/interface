@@ -6,6 +6,7 @@
  import syndication from "./Blik_2024_syndication.js";
  import {document} from "./Blik_2023_fragment.js";
  import {animal} from "./Blik_2024_svg.js";
+ var {memory}=Object.assign(globalThis,{memory});
 
  export async function expose(source,storage,protocol="http",record)
 {let {default:path}=await import("path");
@@ -33,7 +34,7 @@
 ,revert((listen,cancel,host,port)=>host.listen(port,infer(listen))),...virtualize
 ,pass(report),pass(compose(broadcast,open,resolve))
 ,revert((close,error,channel)=>observe.call(channel,{close}))
-)(agent,...certification,compose(routes,record&&{},tether(supply)));
+)(agent,...certification,compose(routes,record&&memory,tether(supply)));
 };
 
  function supply(request,response,source,memory)

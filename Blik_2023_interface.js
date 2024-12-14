@@ -829,8 +829,10 @@
  body=JSON.parse(serialize(body.constructor?.name=="Buffer"?body.toString():body));
  if(js&&importing&&!features.assertions)
  body=(string(body)?body:body.toString()).replace(/(import\([^,\)]+),(.*?\(.*?\))*[^\)]*/,"$1");
+ if(json&&simple(body))
+ body=JSON.stringify(body);
  if(json&&importing&&!features.json)
- body=Buffer.from("export default "+(simple(body)?JSON.stringify(body):body)+";"),headers["Content-Type"]=mime("js"),js=true;
+ body=Buffer.from("export default "+body+";"),headers["Content-Type"]=mime("js"),js=true;
  if(browser&&js)
  body=await compress(body),headers["Content-Encoding"]="gzip";
  if(response?.nodeName)
