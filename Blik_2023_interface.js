@@ -404,7 +404,7 @@
 ,resolve
 ),module=>scope.tests=module.tests&&compose
 (test,result=>
- scope.tests="\x1b[4m"+source+"\x1b[0m:\n"+result
+ scope.tests="\x1b[4m"+target+"\x1b[0m:\n"+result
 ,note
 )(module)
 )

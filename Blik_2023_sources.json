@@ -753,7 +753,10 @@
         "(requestAnimationFrame)":"$1?.",
         ", StyleSpec":""
       },
-      "blockview.ts":{"(DOM\\(|hack = )document":"$1view.dom.ownerDocument"},
+      "blockview.ts":{
+        "(DOM\\(|hack = )document":"$1view.dom.ownerDocument",
+        "(elt = )document":"$1arguments[0].dom.ownerDocument"
+      },
       "inlineview.ts":{"d(ocument.create(TextNode|Element))":"this.parent.dom.ownerD$1"},
       "layer.ts":{"\\(d(ocument.createElement)":"(view.dom.ownerD$1"},
       "extension.ts":{
