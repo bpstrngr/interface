@@ -3,7 +3,6 @@
  import {search,merge,prune,extract} from "./Blik_2023_search.js";
  import {serialize,proceduralize,mime,data} from "./Blik_2023_meta.js";
  import layout,{color} from "./Blik_2023_layout.js";
- import syndication from "./Blik_2024_syndication.js";
  // var [jss,...plugins]=await resolve(["","nested","extend","global"].map(plugin=>
  // ["./Isonen_2014_jss",plugin].filter(Boolean).join("_")+".js")).then(modules=>
  // modules.map(module=>module.default||module));

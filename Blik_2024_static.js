@@ -5,21 +5,21 @@
  import {search,merge,prune,random,extract} from "./Blik_2023_search.js";
 
  export var encryption={code:undefined};
- export var classified=[/.*\.git*.*/];
+ export var classified=[/.*\.git.*/];
  export var classify=compose
 (when(are(either(string,pattern)))
-,each(wether(string,compose(crop(1),slip("path","resolve"),resolve),infer()))
+,each(wether(string,compose(crop(1),slip("path","resolve"),resolve),crop(1)))
 ,classified.push.bind(classified)
 );
  export var published=[];
  export var publish=compose
 (when(are(either(string,pattern)))
-,each(wether(string,compose(crop(1),slip("path","resolve"),resolve),infer()))
+,each(wether(string,compose(crop(1),slip("path","resolve"),resolve),crop(1)))
 ,published.push.bind(published)
 );
  export async function permit(name,list,inclusive)
 {let path=await resolve("path","resolve",name);
- let includes=list.some(term=>string(term)?term===path:term.test(path));
+ let includes=list.some(term=>string(term)?path.startsWith(term):term.test(path));
  return (inclusive?includes:!includes)||exit(Error(inclusive?"Unauthorized":"Classified"));
 };
 

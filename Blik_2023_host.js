@@ -16,7 +16,7 @@
  let required={"https:":{domain,signature,certificate}}[agent.globalAgent.protocol];
  ({port,domain,signature,certificate}=await prompt({port,...required}));
  merge(certification,required&&{[domain]:[signature,certificate]});
- merge(globalThis,{cache});
+ merge(globalThis,{cache,published,classified,classify});
  merge(syndication,extract.call(credentials,Object.keys(syndication)));
  merge(encryption,extract.call(credentials,Object.keys(encryption)));
  syndication=await prompt(syndication);
@@ -31,19 +31,19 @@
 (compose("url",/^http/,"match"),fetch
 ,compose(combine(path,infer()),buffer(route.bind(routes),either(compose(tether(routes.error)),crop(1))))
 ),infer()),stage);
+ var immutable=compose
+("url",slip("."),"concat",slip("url","parse"),resolve,"pathname"
+,combine(...[classified,published].map(list=>compose(list,permit)))
+);
+ var distinction=({url,headers})=>[url,new URLSearchParams(feature(version(headers)))].join("");
  var respond=compose
 (revert(decode,new TextDecoder("utf-8")),provide,combine(wether
-(cache&&compose("method",/get/i,"match")
-,remember.call(cache,compose(drop(1),router),async function distinction({url,headers})
-{let field=[url,new URLSearchParams(feature(version(headers)))].join("");
- if(this[field]?.status===500||await buffer(mutable,swap(false))(url))
- delete this[field];
- return field;
-})
+(cache&&buffer(combine(compose("method",/get/i,"match"),immutable),swap(false))
+,remember.call(cache,compose(drop(1),router),distinction)
 ,router
-),infer()),tether(submit)
+),infer()),cache&&pass(bust),tether(submit)
 );
- var mutable=combine(compose(classified,permit),compose(published,true,permit));
+ function bust({status},request){if(status===500)delete cache[distinction(request)];}
  return compose
 ("createServer",port
 ,revert((listen,cancel,host,port)=>host.listen(port,infer(listen)))
