@@ -1,77 +1,64 @@
- import {note,prompt,when,functor,string,pattern,revert,each,describe,clock,observe,is,has,same,slip,something,compound,infer,tether,wether,collect,provide,route,buffer,differ,compose,combine,either,drop,crop,swap,record,wait,exit,pass,remember,binary,simple,array} from "./Blik_2023_inference.js";
- import {thread,resolve,access,list,window,jsdom,fetch,persist,version,compress,stage,cookies,cookie,feature} from "./Blik_2023_interface.js";
- import {search,merge,sum,prune,extract} from "./Blik_2023_search.js";
+ import {note,colors,when,functor,string,pattern,revert,each,describe,clock,observe,is,has,same,slip,something,compound,infer,tether,wether,collect,provide,route,buffer,differ,compose,combine,either,drop,crop,swap,record,wait,exit,pass,remember,binary,simple,array} from "./Blik_2023_inference.js";
+ import {thread,resolve,access,locate,prompt,list,window,jsdom,fetch,persist,version,compress,stage,cookies,cookie,feature} from "./Blik_2023_interface.js";
+ import {search,merge,sum,prune,extract,encrypt} from "./Blik_2023_search.js";
  import {scope,mime} from "./Blik_2023_meta.js";
- import local,{classify} from "./Blik_2024_static.js";
- import syndication from "./Blik_2024_syndication.js";
  import {document} from "./Blik_2023_fragment.js";
  import {animal} from "./Blik_2024_svg.js";
  var {memory}=Object.assign(globalThis,{memory:{}});
 
- export async function expose(source,storage,protocol="http",record)
-{let {default:path}=await import("path");
- ({source,storage,protocol}=await prompt({source,storage,protocol}));
- let parameters=await compose(resolve,"default",[protocol],tether(search))(storage);
- let syndicate=await compose(resolve,"default",tether(extract,Object.keys(syndication())))(storage);
- let required=extract.call(parameters,["port"]);
- let {port,hmac,distinguishedname}=await prompt(required);
- let [agent,{default:routes,broadcast}]=await resolve([protocol,source]);
- if(Object.keys(syndicate).length)
- merge(routes,syndication(syndicate));
- let certificates=Object.values(search.call(parameters,([field])=>field==="certification")).flatMap(Object.values).flat();
- // if(await resolve("cluster","isMaster"))
- // return persistence,history,fork();
- await classify(source,storage,...certificates.map(compose(crop(1),path.resolve)));
- let address=[protocol,"//localhost",port].join(":");
- // send jsdom composition declaration to the loader thread so it can fetch modules from this interface too, during eg. server-side rendering. 
- await jsdom(address),thread&&thread.postMessage([[address],"interface/jsdom"]);
- let certification=[await certify(Object.values(parameters.certification||[])[0],parameters.distinguishedname)].flat();
- let virtualize=Object.entries(parameters.certification||{}).slice(1).map(([name,certificate])=>
- compose(name,certify(certificate,parameters.distinguishedname),combine("addContext",crop(1)),drop(1)));
- let report=compose(combine(swap(agent.globalAgent.protocol,"//"),either("_connectionKey",swap(port))),"/",collect,infer("join",""),"open",note.bind(2));
- return compose
-("createServer",port
-,revert((listen,cancel,host,port)=>host.listen(port,infer(listen))),...virtualize
-,pass(report),pass(compose(broadcast,open,resolve))
-,revert((close,error,channel)=>observe.call(channel,{close}))
-)(agent,...certification,compose(routes,record&&memory,tether(supply)));
-};
-
- function supply(request,response,source,memory)
-{let secret=request.method.toLowerCase()!=="get";
- let remote=compose(drop(1),"url",/^http/,"match");
- let decoder=new TextDecoder("utf-8");
- let body=[];
- let resolve=wether
-(remote,tether(fetch)
-,compose(combine(crop(1),tether(path)),request
-,buffer(tether(route),either(compose(drop(3,1),tether(source.error)),crop(1))),request,stage)
-);
- observe.call(request
-,{data:record(data=>decoder.decode(data)).bind(body)
- ,end:buffer(combine
-(infer((request,body)=>request.body=body.join(""),body),compose
-(slip(source)
-,combine(notify,memory&&!secret?remember.call(memory,compose(drop(1),resolve),distinction):resolve)
-,pass(report),drop(1,3),response||request,tether(submit)
-)
-),compose(note,exit))});
-};
-
- function distinction(routes,{url,headers})
-{// useragent needed in index for eg. dynamic import attributes syntax support. 
- let query=Number(url.includes("?"));
- let field=[url,new URLSearchParams(feature(version(headers)))].join("?&"[query]);
+ export async function expose(source,protocol)
+{({source,protocol}=await prompt({source,protocol}));
+ let [module,...fields]=await locate(protocol.split("/"));
+ let [{default:routes,actions,syndication,encryption,classify},{default:credentials},agent]=await resolve([source,module,fields.at(-1)]);
+ let {port,certification={},distinguishedname,cache}=search.call(credentials,fields);
+ let [[domain,[signature,certificate]=[]]=[]]=Object.entries(certification);
+ let required={"https:":{domain,signature,certificate}}[agent.globalAgent.protocol];
+ ({port,domain,signature,certificate}=await prompt({port,...required}));
+ merge(certification,required&&{[domain]:[signature,certificate]});
+ merge(syndication,extract.call(credentials,Object.keys(syndication)));
+ merge(encryption,extract.call(credentials,Object.keys(encryption)));
+ syndication=await prompt(syndication);
+ encryption=prune.call(await prompt(encryption),([field,value])=>encrypt(value));
+ let certificates=Object.values(certification).flat().map(compose(crop(1),slip("path","resolve"),resolve));
+ await classify?.(module,...certificates);
+ jsdom([agent.globalAgent.protocol+"//localhost",port].join(":"));
+ let certifications=prune.call(certification,([domain,certificates])=>
+ certify(certificates,distinguishedname),0,0);
+ // if(await resolve("cluster","isMaster"))return fork();
+ var router=compose(combine(wether
+(compose("url",/^http/,"match"),fetch
+,compose(combine(path,infer()),buffer(route.bind(routes),either(compose(tether(routes.error)),crop(1))))
+),infer()),stage);
+ var respond=compose
+(revert(decode,new TextDecoder("utf-8")),provide,combine(wether
+(cache&&compose("method",/get/i,"match")
+,remember(compose(drop(1),router),function distinction({url,headers})
+{let field=[url,new URLSearchParams(feature(version(headers)))].join("");
  if(this[field]?.status===500)delete this[field];
  return field;
+})
+,router
+),infer()),tether(submit)
+);
+ return compose
+("createServer",port
+,revert((listen,cancel,host,port)=>host.listen(port,infer(listen)))
+,...Object.entries(certifications).map(([domain,certification])=>
+ pass(compose(domain,certification,"addContext")))
+,pass(host=>note.call(2,[host._connectionKey||port," open"].join("")))
+,pass(compose(actions,broadcast,resolve))
+,revert((close,error,channel)=>observe.call(channel,{close}))
+)(agent,Object.values(certifications)[0],buffer(respond,compose(note,exit)));
 };
- var address=compose(drop(1),combine("url",swap(/^/),either(tether(search,["connection","remoteAddress"]),swap(""))),"replace");
- var color=compose(combine(swap({get:36,put:33,delete:33}),compose(drop(1),"method","toLowerCase")),either(tether(search),swap(35)),"m");
- var notify=compose(combine(swap("\x1b["),color,compose(drop(),clock),swap("@"),address),"...\x1b[0m",collect,infer("join",""),pass(console.log));
- var recolor=compose(combine(crop(1),compose(drop(1),"status",wether(is(200),swap(32),swap(31)))),infer("replace",/[0-9]{2}/),infer("slice",0,-7));
- var redate=compose(combine(infer(),compose(drop(),clock,"@","concat")),infer("replace",/(?:[0-9]{2}[:@]){3}/));
- var inform=compose(drop(1),combine("status",compose("headers",infer("get","Content-Type")),swap("\x1b[0m")));//+": \""+String(body).replace(/^([\s\S]{20})[\s\S]*$/,(...match)=>match[1]+"...")+"\"";
- var report=compose(combine(compose(recolor,redate),inform),collect,infer("join"," "),console.log);
+
+ function decode(end,error,decoder,agent,request,response,body=[])
+{let color=colors[["yellow","cyan"][Number(/get/i.test(request.method))]];
+ console.log([color,clock(),"@",request.connection?.remoteAddress||"",request.url,"...",colors.steady].join(""));
+ return observe.call(request
+,{data:record(data=>decoder.decode(data)).bind(body)
+ ,end(){end([request,body.length?body.join(""):undefined,response]);},error
+ });
+};
 
  async function path(request)
 {let {query,pathname}=await resolve("url","parse",request.url,true);
@@ -85,19 +72,19 @@
  return compose(filter,map)(decodeURIComponent(pathname).split("/"));
 };
 
- export async function submit(response)
+ export async function submit(request,body,response)
 {let {status,location,cookie:cookies}=this;
  let type=this.headers.get("Content-Type");
  let gzip=this.headers.get("Content-Encoding")==="gzip";
  let stream=functor(this.body);
- let body=stream?this.body:await buffer(type===mime("json")&&!gzip?"text":compose("arrayBuffer",buffer=>
+ body=stream?this.body:await buffer(type===mime("json")&&!gzip?"text":compose("arrayBuffer",buffer=>
  new Uint8Array(buffer).reduce((buffer,bytes,index)=>
  Object.assign(buffer,{[index]:bytes})
 ,Buffer.alloc(buffer.byteLength))))(this);
  if(is(Error)(body))
  body=note.call(1,body).message,status=500,type=mime("txt");
  let header=compose.call
-({status:response.setHeader?status:undefined
+({status:response?status:undefined
  ,"Access-Control-Allow-Origin":"*"
  //,"X-Frame-Options":"DENY"
  ,"Location":location
@@ -106,8 +93,11 @@
  ,...this.headers
  },JSON.stringify,JSON.parse
 );
- response.setHeader?response.writeHead(status,header):response.respond(header);
- return stream?body(response):response.end(body);
+ response?.writeHead(status,header)||request.respond(header);
+ let color=colors[{200:"green"}[status]||"red"];
+ console.log([color,clock(),"@",request.connection?.remoteAddress||"",request.url," ",type,colors.steady].join(""));
+ let target=response||request;
+ return stream?body(target):target.end(body);
 };
 
  async function fork()
@@ -171,7 +161,7 @@
  return {key,cert};
 };
 
- export async function open(server,actions)
+ export async function broadcast(server,actions)
 {let {default:{WebSocketServer}}=await import("./einaros_2011_ws.js");
  let connection=buffer(function connection(host,peer,request)
 {Object.assign(peer
@@ -179,7 +169,7 @@
  ,connected:true
  ,interval:setInterval(time=>peer.connected
 ?merge(peer,{connected:false}).send(JSON.stringify({action:"check"}))
-:peer.terminate(),30000)
+:peer.terminate(),60*1000)
  });
  observe.call(peer
 ,{close(){clearInterval(this.interval);note.call(3,this.author.name+" left.");}

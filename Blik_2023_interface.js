@@ -1,4 +1,4 @@
- import {note,collect,prompt,same,has,promise,pass,slip,something,observe,describe,remember,expect,control,trace,array,compound,simple,apply,stream,record,revert,provide,tether,differ,wether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,numeric,binary,basic,match,wait,string,defined,compose,combine,exit,clock,route,major} from "./Blik_2023_inference.js";
+ import {note,collect,same,has,promise,pass,slip,something,observe,functor,describe,remember,expect,control,trace,array,compound,simple,apply,stream,record,revert,provide,tether,differ,wether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,numeric,binary,basic,match,wait,string,defined,compose,combine,exit,clock,route,major} from "./Blik_2023_inference.js";
  import {sum,merge,stringify,search,edit,prune,parse as records,relevant} from "./Blik_2023_search.js";
  import {parse,sanitize,serialize,exports,reexport,test,mime,coordinates} from "./Blik_2023_meta.js";
 
@@ -33,7 +33,7 @@
  // --import flag registers loader module on separate thread unlike 
  // --loader, where context is available directly on the primary thread. 
  export var [thread,loader]=["import","loader"].map(name=>agent.node&&
- process.execArgv.some(flag=>new RegExp("^--"+name+"[= ][^ ]*"+file).test(flag)));
+ process.execArgv.some(flag=>new RegExp("^--"+name+"[= ][^ ]*"+file).test(flag))||undefined);
 
  if(!virtual&&thread&&await resolve("worker_threads","isMainThread"))
  // register loader thread. 
@@ -70,16 +70,41 @@
  //console.log=combine(compose(drop(1),console.log),socket.postMessage.bind(socket));
 };
 
+ export async function prompt(...context)
+{// request context from client interface, 
+ // or offer it to the client (syncing the cli 
+ // with debugPort and customizing it don't work yet). 
+ let {createInterface}=await import("readline");
+ let {stdin:input,stdout:output}=process;
+ let socket=await buffer(revert((connect,error,connection)=>
+ observe.call(connection,{connect:infer(connect),error}))
+,compose(swap("debug port unavailable for "+prompt.name),note.bind(1)))(resolve("net","connect",process.debugPort));
+ let interfaces=[{input,output}/*,socket&&{input:socket,output:socket}||[]*/].flat().map(createInterface);
+ let entries=context.flat().flatMap(term=>compound(term)?Object.entries(term):[[term]]);
+ entries=await entries.reduce(record(([field,term])=>
+ control(new AbortController(),revert((resolve,reject,abortion,...interfaces)=>
+ term?resolve(term):interfaces.forEach(infer("question",field+":"
+,combine(compose(note,swap(abortion),"abort"),resolve)))),...interfaces).then(term=>
+ [field,term]))
+,[]);
+ return compose(each("close"),swap(Object.fromEntries(entries)))(...interfaces);
+};
+
  export var locate=async function locate(action)
-{let relative=/^\.*\//.test(action);
- let [module,feature="default"]=action?.replace(/^\.*\//,"").split("/")||["./Blik_2023_fragment.js","media"];
- if(!relative&&!module.includes("_"))
+{if(array(action))
+ return action.reduce((stat,file,index,path)=>stat.catch(async fail=>
+ infer.call(resolve("fs","promises"),"stat",await resolve("path","resolve",path.slice(0,index+1).join("/")||"/")).then(file=>
+ file.isDirectory()&&defined(path[index+1])?exit():[path.splice(0,index+1).join("/"),...path]))
+,Promise.reject());
+ let lead=["/","./"].find(lead=>action.startsWith(lead))||"";
+ let [module,feature="default",...path]=action?.replace(lead,"").split("/")||["./Blik_2023_fragment.js","media"];
+ if(!lead&&!module.includes("_"))
  module=await [2020,new Date().getFullYear()].reduce((min,max)=>
  Array(max-min).fill(max).map((year,index)=>year-index)).flatMap(year=>
  ["Blik"].map(author=>[author,year,module].join("_")+".js")).reduce((file,module)=>
  file.catch(fail=>this[module]=this[module]||import("./"+module).then(swap("./"+module)))
 ,Promise.reject());
- return [module,feature];
+ return [lead+module,feature,...path];
 }.bind({});
 
  var precedent=compose(crop(1),"resolution",collect,slip(scope),tether(search));
@@ -533,7 +558,8 @@
  file=file.replace(/$/,"/");
  let {promises:fs}=await import("fs");
  let files=await fs.readdir(file)//,{withFileTypes:true});
- files=await files.reduce(record(file=>buffer(compose(fs.stat,{name:file},merge),swap(undefined))(file)),[])
+ files=await files.reduce(record(name=>
+ buffer(compose(fs.stat,{name},merge),swap(undefined))(file+name)),[])
  let entries=await files.reduce(record(entry=>
  !exclude.some(exclusion=>RegExp(exclusion).test(file+entry.name))
 ?entry.isDirectory()?recursive
@@ -830,7 +856,7 @@
  if(js&&importing&&!features.assertions)
  body=(string(body)?body:body.toString()).replace(/(import\([^,\)]+),(.*?\(.*?\))*[^\)]*/,"$1");
  if(json&&simple(body))
- body=JSON.stringify(body);
+ body=JSON.stringify(prune.call(body,([field,value])=>functor(value)?null:value));
  if(json&&importing&&!features.json)
  body=Buffer.from("export default "+body+";"),headers["Content-Type"]=mime("js"),js=true;
  if(browser&&js)
@@ -890,8 +916,8 @@
 ,wether(compose("status",not(is(200))),compose("text",Error,exit),infer())
 ,combine(infer(),compose("headers","Content-Type","get",infer
 ((type,xml)=>compose.call(
- {json:"json",pdf:"arrayBuffer",csv:compose("text",records)
- ,svg:compose("text",type,xml),xml:compose("text",type,xml)
+ {json:"json",pdf:"arrayBuffer"
+ ,csv:compose("text",records),svg:compose("text",type,xml),xml:compose("text",type,xml)
  ,png:"blob",jpg:"blob",png:"blob"
  },Object.entries,infer("map",([field,value])=>
  [mime(field),value]),Object.fromEntries)[type]

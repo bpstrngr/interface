@@ -1,12 +1,12 @@
- import {merge,prune} from "./Blik_2023_search.js";
+ import {merge,prune,unfold} from "./Blik_2023_search.js";
  import {aphorize,serialize} from "./Blik_2023_meta.js";
- import {infer,compose,buffer,record,wait,string,note,basic} from "./Blik_2023_inference.js";
+ import {infer,compose,buffer,wether,record,wait,string,note,basic,defined} from "./Blik_2023_inference.js";
  import {window,fetch,digest} from "./Blik_2023_interface.js";
  import {document,css} from "./Blik_2023_fragment.js";
  import {EditorState,Compartment} from './haverbeke_2022_codemirror_state.js';
  import {EditorView,keymap,lineNumbers,drawSelection} from './haverbeke_2022_codemirror_view.js';
  import {history,defaultKeymap,historyKeymap} from './haverbeke_2022_codemirror_commands.js';
- import {foldGutter,foldKeymap,codeFolding,syntaxHighlighting,defaultHighlightStyle,HighlightStyle} from './haverbeke_2022_codemirror_language.js';
+ import {foldGutter,foldKeymap,codeFolding,syntaxHighlighting,defaultHighlightStyle,HighlightStyle,syntaxTree,forceParsing,foldable,foldEffect,foldAll} from './haverbeke_2022_codemirror_language.js';
  import {javascript} from './haverbeke_2022_codemirror_js.js';
  import {StyleModule} from './haverbeke_2022_stylemod.js';
  import {parser} from "./haverbeke_2022_lezer_js.js"
@@ -32,16 +32,32 @@
 {let parent=document({div:{}});
  //let language=(new Compartment).of(js());
  let indentation=(new Compartment).of(EditorState.tabSize.of(1));
- let doc=string(source)?settings.source?source:await compose(fetch,digest,infer(serialize,"json"))(source):JSON.stringify(source);
- if(!string(doc))doc=aphorize(doc);
+ let doc=string(source)?settings.source?source:await compose(fetch,digest,infer(serialize,"json"),buffer(compose(JSON.parse,aphorize),drop(1)))(source):JSON.stringify(source);
  let theme=EditorView.theme(
  {".cm-gutters":{background:"transparent"}
- // gutter heights are calculated dynamically on client-side.  
+ // gutter heights are calculated dynamically on client-side. 
  ,".cm-gutterElement":{height:"4px !important"}
- ,".cm-gutterElement:not(:first-of-type)":{height:"1.4em !important"}
+ ,".cm-gutterElement:not(:first-of-type)":{height:"1.4em !important",transform:"translate(0,-4px)"}
+ ,".cm-foldGutter>.cm-gutterElement>span":
+ {color:"transparent"
+ ,"&:after":{content:"''",display:"block",opacity:".75",transform:"translate(0,-1.1em)",border:".5em solid var(--text)"}
+ ,"&[title='Fold line']":{"&:after":{"border-right":".4em solid transparent","border-bottom":".0em solid transparent","border-left":".4em solid transparent","margin-top":".25em"}}
+ ,"&[title='Unfold line']":{"&:after":{"border-bottom":".4em solid transparent","border-top":".4em solid transparent","border-right":".0em solid transparent","margin-left":".25em"}}
+ }
+ ,".cm-foldPlaceholder":{background:"transparent",border:"none"}
  },{dark:true});
  let state=EditorState.create({doc,extensions:[basetheme,foldtheme,theme,extensions].flat()});
  let view=new EditorView({parent,state},window);
+ if(defined(settings.fold))
+ view.dispatch(
+ {effects:compose.call([],ranges=>syntaxTree(state).iterate(
+ {enter:record(compose
+(drop(1),({stack:{length},from,to})=>
+ settings.fold<=length?foldable(state,from,to):undefined
+,wether(basic,foldEffect.of.bind(foldEffect))
+)).bind(ranges)
+ })||ranges)
+ });
  let style=parent.ownerDocument.querySelector("head").querySelector("style").textContent;
  //let style=view.styleModules.flatMap(({rules})=>rules).reverse().join("\n");
  parent.append(document({style:{"#text":style}}));
@@ -152,96 +168,36 @@
 
  var basetheme=EditorView.baseTheme(compose.call
  // internal basetheme from codemirror, not exposed otherwise to persist stylemodules on server-side. could be exposed in source definition.  
-({wrap:{
-        position: "relative !important",
-        boxSizing: "border-box",
-        "&.cm-focused": {outline_fallback: "1px dotted #212121",outline: "5px auto -webkit-focus-ring-color"},
-        display: "flex !important",
-        flexDirection: "column"
-    },
-    scroller:{display: "flex !important",alignItems: "flex-start !important",fontFamily: "monospace",
-        lineHeight: 1.4,
-        height: "100%",
-        overflowX: "auto"
-    },
-    content: {
-        margin: 0,
-        flexGrow: 2,
-        minHeight: "100%",
-        display: "block",
-        whiteSpace: "pre",
-        boxSizing: "border-box",
-        padding: "4px 0",
-        outline: "none"
-    },
-    "content@light": { caretColor: "black" },
-    "content@dark": { caretColor: "white" },
-    line: {display: "block",padding: "0 2px 0 4px"},
-    button: {
-        verticalAlign: "middle",
-        color: "inherit",
-        fontSize: "70%",
-        padding: ".2em 1em",
-        borderRadius: "3px"
-    },
-    "button@light": {
-        backgroundImage: "linear-gradient(#eff1f5, #d9d9df)",
-        border: "1px solid #888",
-        "&:active": {
-            backgroundImage: "linear-gradient(#b4b4b4, #d0d3d6)"
-        }
-    },
-    "button@dark": {
-        backgroundImage: "linear-gradient(#555, #111)",
-        border: "1px solid #888",
-        "&:active": {
-            backgroundImage: "linear-gradient(#111, #333)"
-        }
-    },
-    textfield: {
-        verticalAlign: "middle",
-        color: "inherit",
-        fontSize: "70%",
-        border: "1px solid silver",
-        padding: ".2em .5em"
-    },
-    "textfield@light": {
-        backgroundColor: "white"
-    },
-    "textfield@dark": {
-        border: "1px solid #555",
-        backgroundColor: "inherit"
-    },
-    secondarySelection: {
-        backgroundColor_fallback: "#3297FD",
-        color_fallback: "white !important",
-        backgroundColor: "Highlight",
-        color: "HighlightText !important"
-    },
-    secondaryCursor: {
-        display: "inline-block",
-        verticalAlign: "text-top",
-        width: 0,
-        height: "1.15em",
-        margin: "0 -0.7px -.7em"
-    },
-    "secondaryCursor@light": { borderLeft: "1.4px solid #555" },
-    "secondaryCursor@dark": { borderLeft: "1.4px solid #ddd" }
+({wrap:
+ {position: "relative !important",boxSizing: "border-box"
+ ,"&.cm-focused":{outline_fallback: "1px dotted #212121",outline: "5px auto -webkit-focus-ring-color"}
+ ,display:"flex !important",flexDirection:"column"
+ }
+ ,scroller:{display: "flex !important",alignItems: "flex-start !important",fontFamily: "monospace",lineHeight: 1.4,height: "100%",overflowX: "auto"}
+ ,content: {margin: 0,flexGrow: 2,minHeight: "100%",display: "block",whiteSpace: "pre",boxSizing: "border-box",padding: "4px 0",outline: "none"}
+ ,"content@light": { caretColor: "black" }
+ ,"content@dark": { caretColor: "white" }
+ ,line: {display: "block",padding: "0 2px 0 4px"}
+ ,button: {verticalAlign: "middle",color: "inherit",fontSize: "70%",padding: ".2em 1em",borderRadius: "3px"}
+ ,"button@light":
+ {backgroundImage: "linear-gradient(#eff1f5, #d9d9df)",border: "1px solid #888"
+ ,"&:active": {backgroundImage: "linear-gradient(#b4b4b4, #d0d3d6)"}
+ }
+ ,"button@dark":
+ {backgroundImage: "linear-gradient(#555, #111)",border: "1px solid #888"
+ ,"&:active": {backgroundImage: "linear-gradient(#111, #333)"}
+ }
+ ,textfield: {verticalAlign: "middle",color: "inherit",fontSize: "70%",border: "1px solid silver",padding: ".2em .5em"}
+ ,"textfield@light": {backgroundColor: "white"}
+ ,"textfield@dark": {border: "1px solid #555",backgroundColor: "inherit"}
+ ,secondarySelection: {backgroundColor_fallback: "#3297FD",color_fallback: "white !important",backgroundColor: "Highlight",color: "HighlightText !important"}
+ ,secondaryCursor: {display: "inline-block",verticalAlign: "text-top",width: 0,height: "1.15em",margin: "0 -0.7px -.7em"}
+ ,"secondaryCursor@light": { borderLeft: "1.4px solid #555" }
+ ,"secondaryCursor@dark": { borderLeft: "1.4px solid #ddd" }
  },Object.entries,infer("map",([field,value])=>[".cm-"+field,value]),Object.fromEntries
 ));
 
-const foldtheme = EditorView.baseTheme({
-  ".cm-foldPlaceholder": {
-    backgroundColor: "#eee",
-    border: "1px solid #ddd",
-    color: "#888",
-    borderRadius: ".2em",
-    margin: "0 1px",
-    padding: "0 1px",
-    cursor: "pointer"
-  },
-  ".cm-foldGutter span": {
-    padding: "0 1px",
-    cursor: "pointer"
-  }
+const foldtheme = EditorView.baseTheme(
+{".cm-foldPlaceholder":{backgroundColor: "#eee",border: "1px solid #ddd",color: "#888",borderRadius: ".2em",margin: "0 1px",padding: "0 1px",cursor: "pointer"}
+,".cm-foldGutter span": {padding: "0 1px",cursor: "pointer"}
 });

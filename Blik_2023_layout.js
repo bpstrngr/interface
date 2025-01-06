@@ -90,15 +90,15 @@
  var message=
  {display:"table-row","text-align":"left"
  ,"&>span":
- {display:"table-cell","vertical-align":"middle"
+ {display:"table-cell","vertical-align":"top"
  ,"&:first-of-type":
  {"& img,& svg,& canvas[role=img]":
- {...material,position:"relative",display:"inline-block","vertical-align":"middle",height:"2em",width:"2em",margin:".5em","z-index":1
+ {...material,position:"relative",display:"inline-block","vertical-align":"middle",height:"2em",width:"2em",margin:"0 .5em","z-index":1
  ,"border-radius":"50%","background-color":"var(--isle)"
  }
  ,"& svg":{padding:".25em",width:"1em",height:"1em",overflow:"visible"}
  ,"&>span.actions":
- {...material,margin:0,position:"absolute",display:"inline-block","margin-top":".5em","margin-left":"-2.5em","padding-left":"2.5em","border-radius":"2em",background:"var(--isle)"
+ {...material,margin:0,position:"absolute",display:"inline-block","margin-left":"-2.5em","padding-left":"2.5em","border-radius":"2em",background:"var(--isle)"
  ,"&>svg":{width:"1.5em",height:"1.5em",margin:"0","&:hover":glow.amber}
  }
  }
@@ -188,16 +188,16 @@
  }
  ,label:
  {position:"relative",display:"inline-block","white-space":"nowrap","vertical-align":"middle"
- ,"&:hover":{"&>svg":glow.white,"&>input,&>span[role=input]":text.glow}
+ ,"&:hover":{"&>svg":glow.white,"&>input,&>span[role=textbox]":text.glow}
  ,"&>svg":{float:"left",height:"1em","vertical-align":"middle",cursor:"pointer",overflow:"visible"}
- ,"&>span:not([role=input])":
+ ,"&>span:not([role=textbox])":
  {"white-space":"nowrap"
  ,"&:not(:empty)":{"&:before":{content:"' '"},"&:after":{content:"' '"}}
  }
  }
  };
 
- merge(form.label,{"&>span[role=input]":form.input});
+ merge(form.label,{"&>span[role=textbox]":form.input});
 
  export default
  {middle,material,inset,glow,form,link,table,vignette,text,message

@@ -1,7 +1,7 @@
  export const address=new URL(import.meta.url).pathname;
  export const location=address.replace(/\/[^/]*$/,"");
  var browser=globalThis.window||(globalThis.constructor.name==="DedicatedWorkerGlobalScope");
- export var colors={steady:"\x1b[0m",alarm:"\x1b[31m",ready:"\x1b[32m",busy:"\x1b[33m",bright:"\x1b[1m",dim:"\x1b[2m",bold:"\x1b[3m",underscore:"\x1b[4m", blink:"\x1b[5m", reverse:"\x1b[7m",invisible:"\x1b[8m", black:"\x1b[30m", red:"\x1b[31m", green:"\x1b[32m",yellow:"\x1b[33m",blue:"\x1b[34m", magenta:"\x1b[35m",cyan:"\x1b[36m", white:"\x1b[37m",gray:"\x1b[90m",night:"\x1b[40m",fire:"\x1b[41m",grass:"\x1b[42m",sun:"\x1b[43m",sea:"\x1b[44m",club:"\x1b[45m",sky:"\x1b[46m",milk:"\x1b[47m",fog:"\x1b[100m"};
+ export var colors={steady:"\x1b[0m",alarm:"\x1b[31m",ready:"\x1b[32m",busy:"\x1b[33m",bright:"\x1b[1m",dim:"\x1b[2m",bold:"\x1b[3m",underscore:"\x1b[4m",blink:"\x1b[5m",reverse:"\x1b[7m",invisible:"\x1b[8m",black:"\x1b[30m",red:"\x1b[31m",green:"\x1b[32m",yellow:"\x1b[33m",blue:"\x1b[34m",magenta:"\x1b[35m",cyan:"\x1b[36m",white:"\x1b[37m",gray:"\x1b[90m",night:"\x1b[40m",fire:"\x1b[41m",grass:"\x1b[42m",sun:"\x1b[43m",sea:"\x1b[44m",club:"\x1b[45m",sky:"\x1b[46m",milk:"\x1b[47m",fog:"\x1b[100m"};
  var {log,trace:trc}=console;
 
  export var crop=drop.bind(null,0);
@@ -67,7 +67,10 @@
  export function match(next,past)
 {if(arguments.length<2)
  return infer(match,next);
- return pattern(past)?past.test(next)
+ return pattern(past)
+?past.test(next)
+:functor(past)
+?past(next)
 :compound(past)
 ?!Object.entries(past).some(([field,value])=>!match(value,next[field]))
 :past===next;
@@ -87,25 +90,6 @@
  if(index+1)
  throw Error(terms[index].name+": "+context[index]);
  return provide(context,true);
-};
-
- export async function prompt(...context)
-{// request context from client interface, 
- // or offer it to the client (syncing the cli 
- // with debugPort and customizing it don't work yet). 
- let {createInterface}=await import("readline");
- let {stdin:input,stdout:output}=process;
- let socket=await new Promise((resolve,error)=>import("net").then(({connect})=>
- observe.call(connect(process.debugPort),{connect(){resolve(this)},error}))).catch(fail=>undefined);
- let interfaces=[{input,output}/*,socket&&{input:socket,output:socket}*/].filter(Boolean).map(createInterface);
- let abortion=new AbortController();
- let entries=context.flat().flatMap(term=>compound(term)?Object.entries(term):[[term]]);
- entries=await entries.reduce(record(([field,term])=>new Promise(resolve=>
- term?resolve(term):each(compose(drop(2,1),"question"),field+":",{signal:abortion.signal}
-,combine(compose(note,swap(abortion),"abort"),resolve))(...interfaces)).then(term=>
- [field,term]))
-,[]);
- return compose(each("close"),swap(Object.fromEntries(entries)))(...interfaces);
 };
 
  export function drop(stop=Infinity,start=0,...inject)
@@ -356,7 +340,7 @@
  if(this instanceof Promise)
  return this.then(scope=>each.call(scope,...arguments));
  let scope=plural(this)?this:provide([this].flat(),true);
- let next=(scope,past)=>past.push(scope.next())&&infer.call(past.at(-1),"done");
+ let next=(scope,past)=>infer.call(past[past.push(scope.next())-1],"done");
  let unfold=describe(generator(scope)&&!asynchronous(term)
 ?function*({past,scope,resolve})
 {while(!next(scope,past))
@@ -391,7 +375,7 @@
 );
 };
 
- export function remember(term,distinction=0)
+ export function remember(term,distinction="0")
 {// record on an implicit scope. 
  let scope=this||[];
  return either
@@ -595,7 +579,14 @@
  export function exit(fail){throw fail;}
 
  export function clock(mark,precision="time")
-{if(!isNaN(Number(mark)))
+{let number=!isNaN(Number(mark));
+ if(number)
+ mark=new Date(string(mark)
+?mark.split("").reduce((date,mark,index,{length})=>
+ date+(index&&!(index%2)?index>2?index>7?index===8?" ":":":"/":"":"")+mark
+,"")
+:mark);
+ if(string(mark))
  mark=new Date(mark);
  //[new Date(mark),new Date(new Date(mark).getTime()+new Date(mark).getTimezoneOffset()*60*1000)].reduce((utc,date)=>
  //date.setHours(utc.getHours()-utc.getTimezoneOffset()/60)&&date);

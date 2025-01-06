@@ -1,5 +1,5 @@
- import {note,wait,pass,drop,swap,infer,either,buffer,observe,compose,combine,revert,collect,stream,record,provide,compound,tether,bind,slip,string,numeric,functor,is,not,iterable,defined,exit,expect} from "./Blik_2023_inference.js";
- import {search,merge,prune,route,random,relevant} from "./Blik_2023_search.js";
+ import {note,wait,pass,drop,swap,infer,either,buffer,observe,compose,combine,revert,collect,stream,record,provide,compound,tether,bind,slip,string,numeric,functor,is,not,basic,iterable,array,defined,exit,expect} from "./Blik_2023_inference.js";
+ import {search,merge,prune,route,random,relevant,sum} from "./Blik_2023_search.js";
  let address=new URL(import.meta.url).pathname;
 
  export async function parse(source,syntax="javascript",options={})
@@ -426,9 +426,11 @@
 ,[declaration,name].find(name=>!/function\**/.test(name))?.replace(/^(.)/," $1")
 ].join(""):
 [prefix.test(source)?"async ":"","function",space||format&&" ",format].join("")));
- if(syntax[Symbol.toStringTag]==="Module"&&format!=="json")
- return prune.call(syntax,([field,term],path)=>
- functor(term)?!path.length?" export var "+field+"="+serialize(term,field):String(term):term);
+ if(syntax[Symbol.toStringTag]==="Module"||format==="module")
+ return Object.values(prune.call(syntax,([field,term],path)=>
+ functor(term)?!path.length
+?[term.name!==field?" export var "+field+"=":"",serialize(term,field)].join("")
+:String(term):term)).join("\n\n");
  if(string(syntax))
  return syntax.startsWith("data:text/javascript;")?syntax.replace(/^data:text\/javascript;/,""):JSON.stringify(syntax);
  let parser=
@@ -441,10 +443,11 @@
  let {exports,imports,procedures}=syntax;
  if(![exports,imports,procedures].some(Boolean)||format==="json")
  return Object.entries(prune.call(syntax,([field,value])=>
- functor(value)?"data:text/javascript;"+serialize(value,null):value)).reduce((literal,[field,value],index,{length})=>[literal,
-[/[^\w]/.test(field)?JSON.stringify(field):field
+ functor(value)?"data:text/javascript;"+serialize(value,null):value)).reduce(infer((literal,array,[field,value],index)=>[literal,
+[array?"":/[^\w]/.test(field)?JSON.stringify(field):field
 ,serialize(value,null)
-].join(":")].join(index?",":"")
+].join(array?"":":")].join(index?",":"")
+,array(syntax))
 ,"{")+"}";
  imports=Object.entries(imports||{}).map(([module,names])=>[module,[names].flat()]).flatMap(([module,names],index)=>
 [(index=names.findIndex(name=>name.startsWith("*")))>-1?[module,names.splice(index,1)]:[]
@@ -476,18 +479,26 @@
 };
 
  export function aphorize(source)
-{//let semiotics=
-//  {"}":function(last){last.replace(/{[^{[]+?/,match=>"\n "+match);}
-//  ,"}":function(){}
-//  };
-//  if(compound(source))
-//  return Array.from(JSON.stringify(source)).reduce(([last,...aphorisms],symbol,index,text)=>
-//  [semiotics[symbol]?.(last)||last+symbol,aphorisms].flat()
-// ,[]);
- return [/[:,]{\"[^\"]+?[^(:{),}]+?/g,/}[},]|\"}|\",\"/g].reduce((source,pattern)=>
- source.replace(pattern,match=>match[0]+"\n "+match.substring(1)+(/["}]}/.test(match)?"\n ":""))
-,JSON.stringify(source).replace(/^[{]/,match=>" "+match).replace(/[:,]\[([^\[\],]{2,},|{[^}\]]+)|(,[^\],]+?|[\]}])\]/g,match=>match[0]+"\n"+match.slice(1)));
- return source.replace(/(\}\})(,\"[^\"]*\":)(\{)/g,(...match)=>match.slice(1,4).join("\n "));
+{if(compound(source))
+ return infer(function aphorize(source,field)
+{if(!basic(source))
+ return JSON.stringify(source);
+ let entries=Object.entries(source).map(([field,value])=>
+[array(source)?[]:/[^\w]/.test(field)?JSON.stringify(field):field
+,aphorize.call(source,value,field)
+].flat().join(":"));
+ let {length}=entries;
+ let long=length>1&&
+ sum(entries.map(({length})=>length))>100||
+ entries.some(entry=>entry.includes("\n"));
+ let space=long?"\n"+" ".repeat(simple(source)):"";
+ let [top,end]=simple(source)?"{}":"[]";
+ let content=entries.reduce((content,entry,index,entries)=>
+ [content,entries[index-1]?.endsWith("\n]")&&entry.endsWith("}")?"":space,",",entry].join("")
+,entries.shift());
+ let join=content?.endsWith("\n]")&&simple(source);
+ return [simple(this)?space:" ".repeat(!this&&simple(source)),top,content,join?"":space,end].join("")
+})(source);
 };
 
  export async function imports(syntax,format={})

@@ -84,32 +84,23 @@ export function calendar(timestamps)
 ,{});
 }
 
-export function kmeans(samples, bounds, size, projection) {
-  const clusters = bounds.reduce(([left, top], [right, bottom]) =>
-    Array(Math.floor((right - left) / size))
-      .fill(left)
-      .flatMap((left, x) =>
-        Array(Math.floor((bottom - top) / size))
-          .fill(top)
-          .map((top, y) => ({
-            center: projection.invert([left + (x + 0.5) * size, top + (y + 0.5) * size]),
-            nodes: [],
-          })),
-      ),
-  );
-  samples = samples.filter((sample) => {
-    const { lat: y, lon: x } = sample;
-    const distances = clusters.map(
-      ({ center: [cx, cy] }) => Math.pow(cx - x, 2) + Math.pow(cy - y, 2),
-    );
-    const closest = Math.min(Infinity, ...distances);
-    const cluster = clusters.at(distances.indexOf(closest));
-    return !cluster?.nodes.push(sample);
-  });
-  return clusters
-    .filter(({ nodes }) => nodes.length)
-    .flatMap((cluster) => (cluster.nodes.length > 1 ? cluster : cluster.nodes))
-    .concat(samples);
+ export function kmeans(samples,bounds,size,projection)
+{const clusters=bounds.reduce(([left,top],[right,bottom])=>
+ Array(Math.floor((right-left)/size)).fill(left).flatMap((left,x)=>
+ Array(Math.floor((bottom-top)/size)).fill(top).map((top,y)=>(
+ {center:projection.invert([left+(x+0.5)*size,top+(y+0.5)*size])
+ ,nodes:[]
+ }))));
+ samples=samples.filter((sample)=>
+{const {lat:y,lon:x}=sample;
+ const distances=clusters.map(({center:[cx,cy]})=>
+ Math.pow(cx-x,2)+Math.pow(cy-y,2));
+ const closest=Math.min(Infinity,...distances);
+ const cluster=clusters.at(distances.indexOf(closest));
+ return !cluster?.nodes.push(sample);
+});
+ return clusters.filter(({nodes})=>nodes.length).flatMap((cluster)=>
+ cluster.nodes.length>1?cluster:cluster.nodes).concat(samples);
 };
 
  export function nearest(range,value)
@@ -251,13 +242,13 @@ export function kmeans(samples, bounds, size, projection) {
  let Group=[Set,Map].find(group=>target instanceof group);
  //[target,source].every(part=>part instanceof group));
  if(Group)return override?source:new Group([source,target].flatMap(part=>Array.from(part)));
- let extensible=[target,source].every(array)&&!override;
- if(extensible)return target.concat(source);
- let index=Number(Boolean(override));
- let opaque=[target,source].some(term=>!compound(term)||array(term)&&override);
- //||([source,target].every(array)&&override);
+ let extensible=[target,source].every(array);
+ if(extensible&&!override)
+ return target.concat(source);
+ let codomain=array(target)?!simple(source):array(source);
+ let opaque=codomain||[target,source].some(term=>!compound(term));
  if(opaque)
- return [target,source][index];
+ return [target,source][Number(Boolean(override))];
  return Object.entries(source).reduce(function(target,[field,next])
 {const past=target[field];
  const value=defined(past)?merge(past,next,override):next;
@@ -265,7 +256,7 @@ export function kmeans(samples, bounds, size, projection) {
  if(something(value))
  return buffer(Object.assign,drop(1,2))(target,{[field]:value});
  delete target[field];
- return target;
+ return array(target)?[target].flat():target;
 },target);
 };
 
@@ -352,8 +343,8 @@ export function isolate(path)
  return record(search.call(this,path),path);
 };
 
- export function extract(fields)
-{if(!this)return tether(extract,fields);
+ export function extract(fields,source)
+{if(!this)return source?extract.call(source,fields):tether(extract,fields);
  return [fields].flat().reduce((term,field)=>merge(term,{[field]:this[field]}),{});
 };
 

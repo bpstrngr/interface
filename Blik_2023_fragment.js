@@ -169,7 +169,7 @@
  ,span:
 [{"#text":label}
 ,defined(value)
-?{role:"input",contenteditable:true,id,name:id
+?{role:"textbox",tabindex:"0",contenteditable:true,id,name:id
  ,type:["select","date"].includes(type)?"text":type
  ,checked:{checkbox:value?value.toString():undefined}[type]
  ,"#text":String(type==="checkbox"?String(value)==="true":(type==="date")?clock(value,"datetime"):(type==="text"&&value&&String(value))||
@@ -187,7 +187,7 @@
  let past=input?.textContent;
  if(something(past))
  label.span[1]["#text"]=past;
- let elements=this.querySelectorAll("span[role=input]");
+ let elements=this.querySelectorAll("span[role=textbox]");
  let reference=input?.closest("label")||
  Array.from(elements).reverse().find(input=>input.closest("label"))?.closest("label")||
  this.lastChild;
@@ -209,7 +209,7 @@
  return compose(Array.from
 ,infer("filter",input=>!fields||input.parentNode.classList.contains(fields))
 ,infer("map",input=>[input.getAttribute("name"),input.textContent])
-,Object.fromEntries)(this.querySelectorAll("span[role=input]"));
+,Object.fromEntries)(this.querySelectorAll("span[role=textbox]"));
  if(fields)
  Object.entries(fields||{}).filter(([field,value])=>
  !compound(value)&&this.querySelector("[name="+field+"]")).forEach(([field,value])=>
@@ -218,10 +218,12 @@
 };
 
  export function media(resource,{source,...fields}={})
-{if(pdflike(resource))
+{if(is(ArrayBuffer)(resource))
+ resource=new Uint8Array(resource);
+ if(pdflike(resource))
  return print(resource);
- if(resource instanceof ArrayBuffer||resource.constructor.name==="Buffer")
- resource=new TextDecoder("utf-8").decode(new Uint8Array(resource));
+ if(is(Uint8Array)(resource)||resource.constructor.name==="Buffer")
+ resource=new TextDecoder("utf-8").decode(resource);
  return simple(resource)
 ?document({span:{style:"white-space:pre;","#text":JSON.stringify(resource,null,2)}})
 :resource.startsWith("<")
@@ -266,7 +268,8 @@
 ,[[],[]]);
  link.push({rel:"icon",type:"image/svg+xml",href:favicon||"favicon.ico"})
  return {html:
- {head:
+ {lang:"en"
+ ,head:
  {title:{"#text":title}
  //,"base":{"href":"/"}
  ,meta:
@@ -274,7 +277,7 @@
 ,{"http-equiv":"content-language",content:"en-us"}
 ,{"http-equiv":"Content-Type",content:"text/html;charset=UTF-8"}
 ,{name:"theme-color",content:"#000000"}
-,{name:"description",content:""}
+,{name:"description",content:title}
 ,{name:"viewport",content:"width=device-width, initial-scale=1"}
 ],link,style,script
 //,{"#text":"setInterval(done=>fetch('/authority',{method:'POST',headers:sessionStorage.getItem('authority')}).then(done=>console.log(done)),1000*60)"}
@@ -347,31 +350,29 @@
 
  export function print(file)
 {return resolve(
-["./mozilla_2010_pdf_viewer_brightspace.js"
-,"./mozilla_2010_pdf_link_service_brightspace.js"
-,"./mozilla_2010_pdf_brightspace.js"
+["/mozilla_2010_pdf_viewer_brightspace.js"
+,"/mozilla_2010_pdf_link_service_brightspace.js"
+,"/mozilla_2010_pdf_brightspace.js"
 ]).then(function([{PDFViewer},{PDFLinkService},pdf])
-{pdf.default.GlobalWorkerOptions.workerSrc="mozilla_2010_pdf_worker_brightspace.js";
+{pdf.default.GlobalWorkerOptions.workerSrc="/mozilla_2010_pdf_worker_brightspace.js";
  let viewer=new PDFViewer(
  {linkService:new PDFLinkService(),renderer:"svg"
  ,textLayerMode:0,disableRange:true,forceRendering:true
  ,container:document({div:
- {class:"pdfjs",style:"margin:auto;width:90vw;height:670px;overflow:scroll;"
+ {class:"pdfjs",style:"margin:auto;height:670px;overflow:scroll;"
  ,div:{id:"viewer"}
  }})
  });
  viewer.linkService.setViewer(viewer);
  pdf.getDocument(file).promise.then(combine
 (viewer.setDocument.bind(viewer)
-,compose(1,"getPage",1,"getViewport",combine("width","height"),note
-,(width,height)=>viewer.container.append(document({style:{"#text":css(
- {"div.pdfjs":
- {"&:hover":{transform:"scale(1.1)"}
- ,"&>div#viewer":
+,compose(1,"getPage",1,"getViewport",combine("width","height")
+,(width,height)=>viewer.container.append(document({style:{"#text":css({"div.pdfjs":
+ {"&>div#viewer":
  {width:"100%",height:"100%"
  ,"&>div.page":
  {margin:"auto",width:"100% !important",height:"unset !important","aspect-ratio":width/height
- ,"background-image":"url('icon/blackboard.png')"
+ ,"background-image":"url('/icon/blackboard.png')"
  ,"&>.loadingIcon":{content:"",fill:"red","border-radius":"50%",width:"20px",height:"20px"}
  ,"&~div.page>div.canvasWrapper>svg image":{opacity:0.3}
  ,"&>div.canvasWrapper":
@@ -383,9 +384,8 @@
  }
  }
  }
- }
- })}})))
-));
+ }})}})))
+)).catch(note);
  return viewer.container;
 });
 };
@@ -566,7 +566,7 @@
  Object.assign(next
 ,{author:next.author?.name||common?.author?.name||source.substring(0,source.search(/_\d\d/)).replace("_"," & ")
  ,avatar:common?.icon||next.avatar||next.author?.avatar_URL||feed.feed?.image
- ,post:either("createdTime","pubDate","created_time","date",swap(0))(next)||
+ ,post:either("createdTime","pubDate","created_time","date",swap(0))(next)||next.common?.put||
  next.source?.substring(next.source.search(/_\d\d/)+1,next.source?.search(/\d\d_/)+2).split("").map((digit,index,date)=>
 {if([3,6].includes(index))date.splice(index+1,0,"-");return digit;
 }).join("")
@@ -574,7 +574,8 @@
  ,title:next.title||next.message||next.source?.substring(next.source?.search(/\d\d_/)+3).replace(/\.txt/g,"").replace(/_/g," ")
  ,content:next.content
  ,media:next.enclosure&&next.enclosure.link
- })).sort(({post:past},{post:next})=>new Date(next)-new Date(past)).reverse();
+ })).sort(({post:past},{post:next})=>[next,past].map(time=>
+ new Date(clock(time,"datetime")).getTime()).reduce((next,past)=>next-past)).reverse();
 };
 
  export async function* feed({name,icon,pub,sub},{source})
@@ -654,7 +655,7 @@
  {class:"article",id:item.source,source:item.source,platform:item.platform,index:String(index)
  ,...metamarkup(item.common)
  ,canvas:await compose(image,canvas)(item.avatar,item.author)
- ,"#text":" "+(item.post?clock(new Date(item.post),"date"):item.name.substring(5,13))
+ ,"#text":" "+(item.post?clock(item.post,"date"):item.name.substring(5,13))
  ,span:{"#text":item.title+"\n"}
  }
  }
@@ -729,32 +730,43 @@
 )(syntax);
 };
 
- export function activate(fragment,actions,path=[])
-{// dispose actions on node/fragment to event listeners. 
- if(!actions)
- return fragment;
- if(string(actions))
- return import(actions).then(({default:actions})=>activate(fragment,actions));
- let node=fragment instanceof window.DocumentFragment
-?Array.from(fragment.childNodes)
-:fragment.nodeName
-?[fragment]
-:fragment;
- let dispatch=proceduralize(function(){dispatch.call(this,event)});
- let nodes=Object.entries(node).flatMap(([nodename,node])=>
- [node].flat().filter(compound).map(node=>compose
-(tether(select)
-,Object.keys
-,infer("map",event=>["on"+event,dispatch])
-,Object.fromEntries
-,node
-,(events,node)=>document.call(node,events)
-,node=>node.childNodes?Array.from(node.childNodes):node
-)(node,actions)
-));
- nodes.forEach(infer(activate,actions,path.concat(node?.nodeName)));
- return fragment;
+ export function activate(event)
+{if(this!==event.target.body)
+ // ignore propagated load events. 
+ return;
+ this.querySelectorAll("canvas[role=img]").forEach(canvas=>
+ canvas.dispatchEvent(new canvas.ownerDocument.defaultView.Event("contextrestored",{bubbles:true})));
+ this.querySelectorAll("[actions]").forEach(scope=>
+ capture(scope,scope.getAttribute("actions"))||
+ scope.dispatchEvent(new scope.ownerDocument.defaultView.Event("contextrestored")));
 };
+
+//  export function activate(fragment,actions,path=[])
+// {// dispose actions on node/fragment to event listeners. 
+//  if(!actions)
+//  return fragment;
+//  if(string(actions))
+//  return import(actions).then(({default:actions})=>activate(fragment,actions));
+//  let node=fragment instanceof window.DocumentFragment
+// ?Array.from(fragment.childNodes)
+// :fragment.nodeName
+// ?[fragment]
+// :fragment;
+//  let dispatch=proceduralize(function(){dispatch.call(this,event)});
+//  let nodes=Object.entries(node).flatMap(([nodename,node])=>
+//  [node].flat().filter(compound).map(node=>compose
+// (tether(select)
+// ,Object.keys
+// ,infer("map",event=>["on"+event,dispatch])
+// ,Object.fromEntries
+// ,node
+// ,(events,node)=>document.call(node,events)
+// ,node=>node.childNodes?Array.from(node.childNodes):node
+// )(node,actions)
+// ));
+//  nodes.forEach(infer(activate,actions,path.concat(node?.nodeName)));
+//  return fragment;
+// };
 
  export function keyboard(code)
 {let [key]=Object.entries({enter:13,escape:27,space:32,leftright:[37,39],updown:[38,40]}).find(({1:codes})=>
@@ -938,18 +950,26 @@
  if(/^#/.test(src))
  return;
  event.preventDefault();
- source===title
-?insert(document(source),"under",this)&&this.removeAttribute('source')
-:collect(each.call((/^http/.test(src)
-?compose(["iframe","src"],record,{a:{href:src,"#text":src,style:"position:absolute;left:51vw;bottom:1em;transform:rotate(-90deg);transform-origin:left;width:460px;overflow:scroll;white-space:nowrap"}},merge,document)
-:compose(fetch,digest,{source:src},transform,["div"],record,document))(src)
-,compose(pass(compose("childNodes",0,{style:"display:block;width:80%;height:470px;margin:auto;border-radius:15px;"},note,tether(document)))
-,note,fragment=>compose.call(fragment,"under",this,insert,"parentNode",{source:title},tether(document)))));
+ if(this.nextSibling.classList.contains("media"))
+ return this.nextSibling.remove();
+ let fragment=(/^http/.test(src)
+?compose(["iframe","src"],record,{iframe:{class:"media"},a:
+ {href:src,"#text":src
+ ,style:"position:absolute;left:51vw;bottom:1em;transform:rotate(-90deg);transform-origin:left;width:460px;overflow:scroll;white-space:nowrap"
+ }},merge,document)
+:compose(fetch,digest,{source:src},media,["div"],record,document))(src);
+ return collect(each.call(fragment,compose
+(pass(compose("childNodes",0,{style:"display:block;height:470px;margin:auto;border-radius:15px;"},tether(document)))
+,pass(compose("classList","media","add"))
+,compose(infer(insert,"after",this),{source:title},tether(document))
+)));
 };
 
  export async function spell(block,recursion)
 {if(recursion&&!recursion.nodeName)
  exit(Error("recursion argument of "+spell.name+" passed externally: "+typeof recursion));
+ if(!block.ownerDocument.contains(block)||["style","script"].includes(block.nodeName.toLowerCase()))
+ return block;
  let spelling=!recursion&&await expect((past,{textContent:{length:next}})=>
  past<next,300,2)(block.textContent.length,block);
  if(spelling)
@@ -958,29 +978,30 @@
  let textcontents=nodes.map(node=>node.nodeName==="#text"
 ?[node.textContent,node.textContent=""][0]
 :node.style.setProperty("visibility","collapse"));
+ let element=block.nodeName==="#text"?block.parentNode:block;
  if(!recursion)
-{let expanded=block.ownerDocument.defaultView.getComputedStyle(block).display!=="none";
+{let expanded=block.ownerDocument.defaultView.getComputedStyle(element).display!=="none";
  let display=expanded?"none":"";
  let {rules,ownerNode:style}=Array.from(block.ownerDocument.styleSheets).find(({ownerNode:style})=>style?.parentNode===block)||{};
  // let rule=rules&&select.call(block,Object.fromEntries(Array.from(rules).map(rule=>
  // [rule.selectorText,rule])));
  !style
-?block.style.setProperty("display",display)
+?element.style.setProperty("display",display)
 :Object.entries({textContent:style/*,cssText:rule*/}).forEach(([field,node])=>
  node[field]=node[field].replace(/display:[^;]+/,"display: "+display));
  await either(expect((block,condition)=>
  // internal scoped style tags may not obey being no browser standard. 
  condition(is("none"))(block.ownerDocument.defaultView.getComputedStyle(block).display)
-,500,2)
-,fail=>exit(Error("updating non-standard internal scoped style tag failed."))
-)(block,display==="none"?is:not);
- if(expanded||spelling)return;
+,500,20)
+,fail=>note(Error("updating non-standard internal scoped style tag failed."))
+)(element,display==="none"?is:not);
+ if(expanded||spelling)return block;
  block.skip=0;
  block.onclick=function(){if("skip" in this)this.skip+=1;};
 };
- let origin=recursion||block;
+ let origin=recursion||element;
  await collect(each.call(provide(nodes),async (node,index)=>
- !origin.parentNode||origin.ownerDocument.defaultView.getComputedStyle(origin)==="none"
+ !origin.parentNode||origin.ownerDocument.defaultView.getComputedStyle(origin).display==="none"
 ?undefined
 :node.nodeName!=="#text"
 ?node.style.setProperty("visibility","visible")||spell(node,origin)
@@ -1039,19 +1060,18 @@
 {if(!semiotics)
  exit("no semiotics provided for parsing text");
  return each.call(provide(Array.from(text)),async function* interpret(text,index,length,syntax)
-{let fragments=await semiotics[text]?.(...syntax)||
- semiotics.text(text,...syntax);
- fragments=fragments.flat();
- let past=fragments.findIndex(fragment=>syntax.includes(fragment));
- let last=index+1===length;
- if(!past&&!last)return;
- Object.assign(syntax,fragments);
- let next=fragments.slice(0,past<0?undefined:past).filter(fragment=>!simple(fragment)).reverse();
+{let end=index+1===length;
+ let trail=Array(2).fill().map(syntax.shift.bind(syntax)).filter(Boolean);
+ let fragments=await semiotics[text]?.(...trail)||semiotics.text(text,...trail);
+ syntax.unshift(...fragments.flat());
+ let previous=syntax.findIndex(fragment=>trail.includes(fragment));
+ if(!previous&&!end)return;
+ let next=syntax.slice(0,previous<0?undefined:previous).filter(fragment=>!simple(fragment)).reverse();
  if(!next.length)
- if(last)
- next=[document({span:{"#text":fragments[0].text}})];
+ if(end)
+ next=[document({span:{"#text":syntax[0].text}})];
  else return;
- let block=fragments.find(fragment=>fragment?.classList?.contains("inline"));
+ let block=syntax.find(fragment=>fragment?.classList?.contains("inline"));
  // block style rules can't be applied to inline elements, hence the back-population of a div. 
  if(block&&!next.includes(block))
  return block.append(...next);
@@ -1064,11 +1084,11 @@
  {text(text,last={},...syntax)
 {let field=Object.values(semiotics).map(({name})=>name).find(field=>defined(last[field]))||semiotics.text.name;
  let start=!simple(last);
- let style=[last,...syntax].find(fragment=>simple(fragment)&&fragment.style)?.style;
+ //let style=[last,...syntax].find(fragment=>simple(fragment)&&fragment.style)?.style;
  if(last.tag?.length===0&&!/[\w\d]/.test(text))
  return [{text:last.title+"#"+text,style},...syntax];
  if(start)
- return [{text,style},last,...syntax];
+ return [{text},last,...syntax];
  last[field]=[last[field]||"",text].join("");
  return [last,...syntax];
 },phrase(last)
@@ -1102,18 +1122,18 @@
  let next=link
 ?reference(last.title,link)
 :Object.entries(qualify(tag)).flat().reduce((tag,qualifiers)=>
- document({[tag]:{["#text"]:last.title.replace(/_/g," "),...qualifiers}}));
+ document({[tag]:{["#text"]:last.title,...qualifiers}}));
  //let style=[past,...syntax].find(fragment=>simple(fragment)&&fragment.style)?.style;
  if(simple(past))
  past=document({span:{"#text":past.text}});
- return [{text:text+" "},next,past||[],syntax];
+ return [{text:text+" "},next,past||[],...syntax];
 },"\n":function terminate(last,...syntax)
 {let past=this[" "](...arguments).slice?.(1);
  if(!past&&string(last?.text)||string(last?.action)||last?.compound||string(last?.style))
  return false;
- let style=[last,...syntax].find(fragment=>simple(fragment)&&fragment.style)?.style;
- let next={text:[last?.text||"","\n"].join(""),style};
- return [next,past||[last?.text?[]:last],syntax];
+ //let style=[last,...syntax].find(fragment=>simple(fragment)&&fragment.style)?.style;
+ let next={text:[last?.text||"",""].join("\n")};
+ return [next,past||(last?.text?[]:last||[]),...syntax];
 },"#":function tag(last,...syntax)
 {if(last.style||string(last?.link)||last?.action||last?.compound||/^{|:$/.test(last?.style)||last?.text?.endsWith(" "))
  return false;
@@ -1141,7 +1161,7 @@
 [context,context.pop().split(json).reduce((before,after)=>
  "\"'`".split("").some(quote=>Array.from(before.matchAll(quote)).length%2)
 ?[before,json,after].join("")
-:[before,JSON.parse(json),after].filter(Boolean))
+:[before,...JSON.parse("["+json+"]"),after].filter(Boolean))
 ].flat(),[last.action]).flatMap(term=>string(term)
 ?Array.from(term.replace(/(^(\n|,| +)|( +|,|\n)$)/g,"")).reduce(([last,...context],symbol,index,{length})=>
 [!last.length&&/ |,/.test(symbol)?last:last[0]===symbol
@@ -1200,7 +1220,7 @@
  close<open);
  if(open)
  return false;
- let fragment=await buffer(infer(resolve),crop(1))(JSON.parse(compound));
+ let fragment=await buffer(infer(resolve),compose(crop(1),"message",["span","#text"],record,document))(JSON.parse(compound));
  this.annotate(fragment,last.title);
  return [fragment,syntax];
 }//,"<":function(last,...syntax){if(last.style||last.action)return;return this.text("&lt;",...arguments);}
