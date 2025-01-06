@@ -18,7 +18,7 @@
 ,published.push.bind(published)
 );
  export async function permit(name,list,inclusive)
-{let path=await resolve("path","resolve",name);
+{let path=[await resolve("path","resolve",name),name.endsWith("/")?"/":""].join("");
  let includes=list.some(term=>string(term)?path.startsWith(term):term.test(path));
  return (inclusive?includes:!includes)||exit(Error(inclusive?"Unauthorized":"Classified"));
 };
