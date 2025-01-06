@@ -15,6 +15,7 @@
  let required={"https:":{domain,signature,certificate}}[agent.globalAgent.protocol];
  ({port,domain,signature,certificate}=await prompt({port,...required}));
  merge(certification,required&&{[domain]:[signature,certificate]});
+ merge(globalThis,{cache});
  merge(syndication,extract.call(credentials,Object.keys(syndication)));
  merge(encryption,extract.call(credentials,Object.keys(encryption)));
  syndication=await prompt(syndication);
@@ -32,7 +33,7 @@
  var respond=compose
 (revert(decode,new TextDecoder("utf-8")),provide,combine(wether
 (cache&&compose("method",/get/i,"match")
-,remember(compose(drop(1),router),function distinction({url,headers})
+,remember.call(cache,compose(drop(1),router),function distinction({url,headers})
 {let field=[url,new URLSearchParams(feature(version(headers)))].join("");
  if(this[field]?.status===500)delete this[field];
  return field;
