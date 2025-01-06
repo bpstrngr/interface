@@ -9,7 +9,8 @@
  export async function expose(source,protocol)
 {({source,protocol}=await prompt({source,protocol}));
  let [module,...fields]=await locate(protocol.split("/"));
- let [{default:routes,actions,syndication,encryption,classify},{default:credentials},agent]=await resolve([source,module,fields.at(-1)]);
+ let [{default:routes,actions,syndication,encryption,classify,classified,published,permit},{default:credentials},agent]=
+ await resolve([source,module,fields.at(-1)]);
  let {port,certification={},distinguishedname,cache}=search.call(credentials,fields);
  let [[domain,[signature,certificate]=[]]=[]]=Object.entries(certification);
  let required={"https:":{domain,signature,certificate}}[agent.globalAgent.protocol];
@@ -33,14 +34,16 @@
  var respond=compose
 (revert(decode,new TextDecoder("utf-8")),provide,combine(wether
 (cache&&compose("method",/get/i,"match")
-,remember.call(cache,compose(drop(1),router),function distinction({url,headers})
+,remember.call(cache,compose(drop(1),router),async function distinction({url,headers})
 {let field=[url,new URLSearchParams(feature(version(headers)))].join("");
- if(this[field]?.status===500)delete this[field];
+ if(this[field]?.status===500||await buffer(mutable,swap(false))(url))
+ delete this[field];
  return field;
 })
 ,router
 ),infer()),tether(submit)
 );
+ var mutable=combine(compose(classified,permit),compose(published,true,permit));
  return compose
 ("createServer",port
 ,revert((listen,cancel,host,port)=>host.listen(port,infer(listen)))
