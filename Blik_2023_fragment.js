@@ -357,10 +357,12 @@
  return [this];
  let matching=!limited&&(!/[\.#]/.test(selector)
 ?node.nodeName.toLowerCase()===selector
-:(selector instanceof Function)
+:functor(selector)
 ?selector(this)
+:fragment
+?node.matches(selector)
 :// match selectors on node. 
-[qualify(qualify(node)),prune.call({"":qualify(selector)},({1:value})=>
+[qualify(qualify(node)),prune.call({"":note(qualify(selector))},({1:value})=>
  Object.keys(value).every(field=>["id","class"].includes(field))?value:undefined,1,1)
 ].map(Object.entries).reduce(([[nodename,node]],[[name,selector]])=>
  (!name||nodename===name)&&
