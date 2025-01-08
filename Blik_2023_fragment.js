@@ -1220,7 +1220,9 @@
  close<open);
  if(open)
  return false;
- let fragment=await buffer(infer(resolve),compose(crop(1),"message",["span","#text"],record,document))(JSON.parse(compound));
+ let context=JSON.parse(compound);
+ if(context[0]==="this")context.splice(0,1,syntax[0]);
+ let fragment=await buffer(infer(resolve),compose(crop(1),"message",["span","#text"],record,document))(context);
  this.annotate(fragment,last.title);
  return [fragment,syntax];
 }//,"<":function(last,...syntax){if(last.style||last.action)return;return this.text("&lt;",...arguments);}
