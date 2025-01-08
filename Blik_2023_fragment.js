@@ -1086,7 +1086,7 @@
  let start=!simple(last);
  //let style=[last,...syntax].find(fragment=>simple(fragment)&&fragment.style)?.style;
  if(last.tag?.length===0&&!/[\w\d]/.test(text))
- return [{text:last.title+"#"+text,style},...syntax];
+ return [{text:last.title+"#"+text},...syntax];
  if(start)
  return [{text},last,...syntax];
  last[field]=[last[field]||"",text].join("");
