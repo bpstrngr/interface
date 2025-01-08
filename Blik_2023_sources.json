@@ -708,7 +708,7 @@
       "export":"import","(\"./error\")":"$1;export default {BuildOptions,buildParser,buildParserFile,GenError}"
     }}}]}
   },
-  "haverbeke_2022_codemirror_language.js":{"https://github.com/codemirror/language/src":{"6.10.2":["src/index.ts",{"alias":{
+  "haverbeke_2022_codemirror_language.js":{"https://github.com/codemirror/language/src":{"6.10.8":["src/index.ts",{"alias":{
     "@codemirror/state":"./haverbeke_2022_codemirror_state.js",
     "@codemirror/view":"./haverbeke_2022_codemirror_view.js",
     "@lezer/common": "./haverbeke_2022_lezer.js",

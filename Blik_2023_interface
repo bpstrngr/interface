@@ -100,7 +100,7 @@ inference#script/highlight(
 
 ( node ./Blik_2023_interface.js;
  > resolve("./Blik_2023_search.js","sum",1,2,3);
- 6
+ < 6
 )#span{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
  To ensure your modules work properly, an exposed "tests" object will get traversed after modularization. Tests map a module's namespace to a composition declarations of an input scope to terms and conditions of its output: 
 
@@ -126,7 +126,7 @@ definitions#script/highlight(
  ,"module.js":{"protocol://domain/author/module/sparse/checkout/path sparse/checkout/path":{"branch or tag":["path/index.js"]}}
  };
 `){background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
- Let's see source definitions for the external syntax parser, bundler and serializer Interface uses to standardize dialects ((acorn)@https://github.com/bpstrngr/interface/issues/4 and rollup@https://github.com/bpstrngr/interface/issues/5 are under deprecation in favor of generic parsing and bundling due to their obsolete complexity): 
+ Let's see source definitions for the external syntax parser, bundler and serializer Interface uses to standardize dialects ((acorn)#fragment/link("https://github.com/bpstrngr/interface/issues/4","acorn") and rollup#fragment/link("https://github.com/bpstrngr/interface/issues/5","rollup") are under deprecation in favor of generic parsing and bundling due to their obsolete complexity): 
  sources#[["/Blik_2023_sources.json"],"interface/fetch",["json",["haverbeke_2012_acorn.js","Harris_2015_rollup.js","davidbonnet_2015_astring.js"]],"inference/collect",["reverse"],"inference/iterate","search/extract","meta/aphorize",{"source":"Blik_2023_sources.json","fold":4},"script"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
 
  When importing these the first time, they will perform parsing and bundling of their own source by being loaded from right there, before replacing their arbitrarily structured sources with an idempotent bundle. 
@@ -266,7 +266,7 @@ definitions#script/highlight(
  In conclusion, the following are some common maintenance applications of Interface for your javascript projects. 
  
  To format between different dialects, substitute modularisation with persistence in the default loading sequence: 
-(` compose(access,parse,"astring",serialize,slip("./module.js"),true,access)("./module.js")`){background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
+ host#script/highlight(` compose(access,parse,"astring",serialize,slip("./module.js"),true,access)("./module.js")`){background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
  or use you client's commands to invoke them sequentially if it also supports composition: 
 ( node ./Blik_2023_interface.js ./Blik_2023_interface.js access "module.ts" | xargs -0text \
  node ./Blik_2023_interface.js ./Blik_2023_interface.js parse $text "typescript" | xargs -0syntax\

@@ -1,12 +1,12 @@
  import {merge,prune,unfold} from "./Blik_2023_search.js";
  import {aphorize,serialize} from "./Blik_2023_meta.js";
  import {infer,compose,buffer,wether,record,wait,string,note,basic,defined} from "./Blik_2023_inference.js";
- import {window,fetch,digest} from "./Blik_2023_interface.js";
- import {document,css} from "./Blik_2023_fragment.js";
+ import {window,fetch,digest,path,agent} from "./Blik_2023_interface.js";
+ import {document,css,capture,metamarkup,destroy} from "./Blik_2023_fragment.js";
  import {EditorState,Compartment} from './haverbeke_2022_codemirror_state.js';
  import {EditorView,keymap,lineNumbers,drawSelection} from './haverbeke_2022_codemirror_view.js';
  import {history,defaultKeymap,historyKeymap} from './haverbeke_2022_codemirror_commands.js';
- import {foldGutter,foldKeymap,codeFolding,syntaxHighlighting,defaultHighlightStyle,HighlightStyle,syntaxTree,forceParsing,foldable,foldEffect,foldAll} from './haverbeke_2022_codemirror_language.js';
+ import {foldGutter,foldKeymap,codeFolding,syntaxHighlighting,defaultHighlightStyle,HighlightStyle,syntaxTree,ensureSyntaxTree,foldable,foldEffect,foldAll} from './haverbeke_2022_codemirror_language.js';
  import {javascript} from './haverbeke_2022_codemirror_js.js';
  import {StyleModule} from './haverbeke_2022_stylemod.js';
  import {parser} from "./haverbeke_2022_lezer_js.js"
@@ -29,7 +29,7 @@
  ];
 
  export default async function(source,settings={})
-{let parent=document({div:{}});
+{let parent=settings.parent||document({div:{...metamarkup(settings),class:"codemirror"}});
  //let language=(new Compartment).of(js());
  let indentation=(new Compartment).of(EditorState.tabSize.of(1));
  let doc=string(source)?settings.source?source:await compose(fetch,digest,infer(serialize,"json"),buffer(compose(JSON.parse,aphorize),drop(1)))(source):JSON.stringify(source);
@@ -48,14 +48,20 @@
  },{dark:true});
  let state=EditorState.create({doc,extensions:[basetheme,foldtheme,theme,extensions].flat()});
  let view=new EditorView({parent,state},window);
- if(defined(settings.fold))
+ ensureSyntaxTree(state,doc.length,5000);
+ view.dispatch({});
+ if(!globalThis.window)
+ buffer(capture)(parent
+,["",new URL(import.meta.url).pathname.replace(/.*\//,""),"actions"].join("/"));
+ else if(defined(settings.fold))
  view.dispatch(
- {effects:compose.call([],ranges=>syntaxTree(state).iterate(
+ {effects:compose.call([],ranges=>ensureSyntaxTree(state,doc.length,5000).iterate(
  {enter:record(compose
 (drop(1),({stack:{length},from,to})=>
  settings.fold<=length?foldable(state,from,to):undefined
 ,wether(basic,foldEffect.of.bind(foldEffect))
 )).bind(ranges)
+ ,from:0,to:doc.length
  })||ranges)
  });
  let style=parent.ownerDocument.querySelector("head").querySelector("style").textContent;
@@ -63,6 +69,16 @@
  parent.append(document({style:{"#text":style}}));
  return parent;
 };
+
+ export var actions=
+ {".codemirror":
+ {contextrestored(event)
+{let lines=Array.from(this.querySelectorAll(".cm-line")).map(({textContent:line})=>line);
+ let meta=[this.dataset,{parent:this}].reduce(merge,{});
+ this.childNodes.forEach(destroy);
+ resolve(import.meta.url,"default",lines.join("\n"),meta);
+}}
+ };
 
  export function highlight(source)
 {let fragment=[];

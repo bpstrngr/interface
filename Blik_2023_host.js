@@ -23,7 +23,10 @@
  encryption=prune.call(await prompt(encryption),([field,value])=>encrypt(value));
  let certificates=Object.values(certification).flat().map(compose(crop(1),slip("path","resolve"),resolve));
  await classify?.(module,...certificates);
- jsdom([agent.globalAgent.protocol+"//localhost",port].join(":"));
+ // send jsdom composition loader thread too so it can fetch modules from this interface during eg. server-side rendering.
+ let origin=[agent.globalAgent.protocol+"//localhost",port].join(":");
+ thread?.postMessage([[origin],"interface/jsdom"]);
+ jsdom(origin);
  let certifications=prune.call(certification,([domain,certificates])=>
  certify(certificates,distinguishedname),0,0);
  // if(await resolve("cluster","isMaster"))return fork();

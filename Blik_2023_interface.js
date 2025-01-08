@@ -5,6 +5,7 @@
  export const address=new URL(import.meta.url).pathname;
  export const location=address.replace(/\/[^/]*$/,"");//path.dirname(address);
  export const file=address.replace(/.*\//,"");//path.basename(address);
+ export const remote=/^http/.test(import.meta.url);
  export const virtual=typeof imports!=="undefined";// modularise tracks imports in context. 
  export const agent=globalThis.process
 ?prune.call(process.versions,({1:value})=>string(value)?Number(value.match(/(\.{0,1}\d+){1,2}/)[0]):value)
@@ -35,7 +36,7 @@
  export var [thread,loader]=["import","loader"].map(name=>agent.node&&
  process.execArgv.some(flag=>new RegExp("^--"+name+"[= ][^ ]*"+file).test(flag))||undefined);
 
- if(!virtual&&thread&&await resolve("worker_threads","isMainThread"))
+ if(thread&&!virtual&&!remote&&await resolve("worker_threads","isMainThread"))
  // register loader thread. 
  await compose.call
 ("worker_threads",resolve,["MessageChannel"],tether(search),[],Reflect.construct
@@ -43,8 +44,7 @@
  // ,resolve("net","connect",process.debugPort).then(inspector=>new Promise((resolve,reject)=>
  //  observe.call(inspector,{connect(){resolve(infer.bind(this,"write"))},error(){resolve()}})))
 ,revert(function register(message,onerror,{port1,port2})
-{// promise resolves on message from registration port. 
- observe.call(thread=port1,{message,onerror});
+{observe.call(thread=port1,{message,onerror});
  resolve("module","register",address,import.meta.url,{data:{socket:port2},transferList:[port2]});
 }),"data",note.bind(2)
 ,drop(),globalThis
@@ -117,7 +117,7 @@
  }[fail.code])||exit(fail)
 );
 
- var remote=compose
+ var request=compose
 (address=>fetch(address),when(compose("status",is(200))),"headers","location"
 ,address=>({url:window.location.origin+address})
 );
@@ -170,7 +170,7 @@
  let module=command
 ?import(source,json&&{[feature(agent).attributes?"with":"assert"]:{type:"json"}})
 :either(precedent,compose
-(either(buffer(next,buffer(recover)),compose(swap(source),remote))
+(either(buffer(next,buffer(recover)),compose(swap(source),request))
 ,shortcircuit,{imports:new Set()},merge,[absolute],record,slip(scope),merge
 ,[absolute,"resolution"],tether(search)
 ))(absolute,context);
@@ -534,7 +534,7 @@
  export async function access(file,encoding,content)
 {// access folder/file's metadata, content with specified encoding, or overwrite its content.
  if(file.startsWith("http"))
- return request(file);
+ return compose(fetch,wether(compose("status",is(200)),"text",compose("text",exit)))(file);
  if(/^file:\/\//.test(file))
  file=new URL(file).pathname;
  let {promises:fs}=await import("fs");
@@ -814,7 +814,7 @@
 
  export async function jsdom(url)
 {if(this)
- this.reconfigure({url})
+ return this.reconfigure({url})
 ,fetch=freefetch.bind(this.window)
 ,note.call(3,"navigated browser to "+url);
  return window=revert(async function(expose,reject,url)

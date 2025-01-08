@@ -240,11 +240,12 @@ export function calendar(timestamps)
 ?(scope[field]=route.length-index>2?scope[field]||{}:route[index+1])
 :route[0]);
  let Group=[Set,Map].find(group=>target instanceof group);
- //[target,source].every(part=>part instanceof group));
- if(Group)return override?source:new Group([source,target].flatMap(part=>Array.from(part)));
+ if(Group)
+ return override?source:new Group([source,target].flatMap(part=>Array.from(part)));
  let extensible=[target,source].every(array);
  if(extensible&&!override)
  return target.concat(source);
+ // to merge array domains, pass the source as plain object. 
  let codomain=array(target)?!simple(source):array(source);
  let opaque=codomain||[target,source].some(term=>!compound(term));
  if(opaque)

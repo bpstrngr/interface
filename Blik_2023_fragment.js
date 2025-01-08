@@ -875,9 +875,10 @@
 
  export function capture(fragment,actions)
 {// synchronously register events to be routed to actions scoped by selector (eg. {#form:{change(){}}}). 
- // common procedure in deferred scripts, so no return statement (needs {ascend,fields} inference composed). 
+ // common procedure in deferred scripts (with {ascend,fields} composed), hence no return statements. 
  if(!globalThis.window)
- fragment.setAttribute("actions",actions),exit("no browser environment to capture.");
+ fragment.setAttribute("actions",actions)
+,exit(fragment.nodeName+" marked interactive: "+actions+". Re-invoke "+capture.name+" on client load to route events.");
  let exclusion=
 [["motion","orientation","orientationabsolute"].map(sensor=>"device"+sensor)
 ,["start","run","end","cancel"].map(state=>"transition"+state)

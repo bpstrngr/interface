@@ -1,4 +1,4 @@
- import {note,wait,pass,drop,swap,infer,either,buffer,observe,compose,combine,revert,collect,stream,record,provide,compound,tether,bind,slip,string,numeric,functor,is,not,basic,iterable,array,defined,exit,expect} from "./Blik_2023_inference.js";
+ import {note,wait,pass,drop,swap,infer,either,buffer,observe,compose,combine,revert,collect,stream,record,provide,compound,tether,bind,slip,string,numeric,functor,is,not,basic,simple,iterable,array,defined,exit,expect} from "./Blik_2023_inference.js";
  import {search,merge,prune,route,random,relevant,sum} from "./Blik_2023_search.js";
  let address=new URL(import.meta.url).pathname;
 
@@ -307,10 +307,10 @@
  ["OpaqueType","TypeAlias"].includes(value.declaration?.type)||
  value.exportKind==="type";
 },ecma(value)
-{return value.declaration?merge(value,{declaration:
+{return value.declaration?[value,{declaration:
  {type:"VariableDeclaration",kind:"const"
  ,declarations:[{id:value.declaration.id,init:{type:"Literal",kind:"undefined"}}]
- }},1):undefined;
+ }}].reduce(merge,{}):undefined;
 }}
  ,typeimport:
  {condition(value)
@@ -359,8 +359,8 @@
  }
 :[]
 ].flat());
- let index=body.findIndex(statement=>statement.expression?.callee?.type==="Super")+1;
- body.splice(index,0,...assignments);
+ let inheritence=body.findIndex(statement=>statement.expression?.callee?.type==="Super")+1;
+ body.splice(inheritence,0,...assignments);
  structure[method]=[structure[method],{value:{body:{body}}}].reduce(merge,{});
  return [value,{body:{body:structure.flat()}}].reduce(merge,{});
 }}
@@ -381,10 +381,10 @@
  :["LogicalExpression",parameter].reduce((type,{left,right})=>({type,operator:"||",left,right}))
  }}));
  let inheritence=body.findIndex(statement=>statement.expression?.callee?.type==="Super")+1;
- params=[Array(params.length).fill(undefined),params.map(param=>param.type==="TSParameterProperty"?param.parameter:param)].flat();
- body=[Array(body.length).fill(undefined),body.slice(0,inheritence),assignments,body.slice(inheritence)].flat();
+ params=params.map(param=>param.type==="TSParameterProperty"?param.parameter:param);
+ body=[body.slice(0,inheritence),assignments,body.slice(inheritence)].flat();
  method=[method,{value:{params,body:{body}}}].reduce(merge,{});
- structure={...[Array(structure.length).fill(undefined),structure].flat(),[index+structure.length]:method};
+ structure[index]=method;
  return [value,{body:{body:structure}}].reduce(merge,{});
 }}
  ,annotation:{condition(value){return value?.type?.startsWith("TS");},ecma(){return undefined;}}
