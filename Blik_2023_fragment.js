@@ -1,5 +1,5 @@
  import {locate,resolve,modularise,agent,virtual,window,jsdom,fetch,digest} from "./Blik_2023_interface.js";
- import {note,wait,observe,provide,collect,slip,infer,either,each,pass,tether,buffer,differ,compose,revert,record,combine,wether,swap,compound,something,string,basic,functor,defined,simple,exit,route,drop,crop,same,major,binary,is,has,not,array,pdflike,when,expect,generator,clock,fields} from "./Blik_2023_inference.js";
+ import {note,wait,observe,provide,collect,slip,infer,either,each,pass,tether,buffer,differ,compose,revert,record,combine,wether,swap,compound,something,string,basic,functor,defined,simple,exit,route,drop,crop,same,major,binary,is,has,not,numeric,array,pdflike,when,expect,generator,clock,fields} from "./Blik_2023_inference.js";
  import {search,merge,prune,extract} from "./Blik_2023_search.js";
  import {serialize,proceduralize,mime,data} from "./Blik_2023_meta.js";
  import layout,{color} from "./Blik_2023_layout.js";
@@ -345,6 +345,33 @@
  return name+Object.entries(selectors).flatMap(([attribute,selector])=>
  [attribute==="classList"?Array.from(node[attribute]):["class","className"].includes(attribute)?node[attribute]?.split(' '):node[attribute]].flat().filter(value=>
  string(value)&&value?.length).map(value=>selector+value)).join('')+attributes;
+};
+
+ export function ascend(selector,descendants=new Set())
+{let fragment=this instanceof window.Node;
+ let selection=!fragment&&!simple(this);
+ let node=fragment?this:selection?this.node():this;
+ if((selection||fragment)&&!defined(selector))selector="svg";
+ let limited=numeric(selector);
+ if(limited&&!selector)
+ return [this];
+ let matching=!limited&&(!/[\.#]/.test(selector)
+?node.nodeName.toLowerCase()===selector
+:(selector instanceof Function)
+?selector(this)
+:// match selectors on node. 
+[qualify(qualify(node)),prune.call({"":qualify(selector)},({1:value})=>
+ Object.keys(value).every(field=>["id","class"].includes(field))?value:undefined,1,1)
+].map(Object.entries).reduce(([[nodename,node]],[[name,selector]])=>
+ (!name||nodename===name)&&
+ Object.entries(selector).every(([field,value])=>
+ value.every(value=>node[field]?.includes(value)))));
+ if(matching)
+ return [this];
+ let parent=fragment||selection?node.parentNode:node.parent;
+ return !descendants.has(node)&&parent
+?[...ascend.call(selection?select(parent):parent,limited?selector-1:selector,descendants.add(node)),this]
+:[this];
 };
 
  export function print(file)
@@ -875,7 +902,7 @@
 
  export function capture(fragment,actions)
 {// synchronously register events to be routed to actions scoped by selector (eg. {#form:{change(){}}}). 
- // common procedure in deferred scripts (with {ascend,fields} composed), hence no return statements. 
+ // common procedure in deferred scripts (with {fields} composed), hence no return statements. 
  if(!globalThis.window)
  fragment.setAttribute("actions",actions)
 ,exit(fragment.nodeName+" marked interactive: "+actions+". Re-invoke "+capture.name+" on client load to route events.");

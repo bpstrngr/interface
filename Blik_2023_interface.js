@@ -143,9 +143,10 @@
  // composition declarations: ["module/name",[context],"module/name"]
 :agent.node&&!thread
 ?exit(Error("Resolving composition declarations not allowed on main thread."))
-:compose(infer("reduce",record(term=>string(term)
-?compose(locate,([module,action])=>[resolve(module),action],provide,Reflect.get)(term)
-:[term].flat()),[]),"flat",provide,tether(compose))(source);
+:compose(infer("reduce",record(term=>string(term)?compose
+(locate,([module,action])=>[resolve(module),action]
+,provide,Reflect.get,/tether /.test(term)?tether:undefined
+)(term.replace(/^tether /,"")):[term].flat()),[]),"flat",provide,tether(compose))(source);
  if(!string(source))
  return exit(Error("can't resolve type "+typeof source));
  let internal=context?.parentURL;
