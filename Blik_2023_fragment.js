@@ -354,26 +354,26 @@
  if((selection||fragment)&&!defined(selector))selector="svg";
  let limited=numeric(selector);
  if(limited&&!selector)
- return [this];
+ return [node];
  let matching=!limited&&(!/[\.#]/.test(selector)
 ?node.nodeName.toLowerCase()===selector
 :functor(selector)
-?selector(this)
+?selector(node)
 :fragment
 ?node.matches(selector)
 :// match selectors on node. 
-[qualify(qualify(node)),prune.call({"":note(qualify(selector))},({1:value})=>
+[qualify(qualify(node)),prune.call({"":qualify(selector)},({1:value})=>
  Object.keys(value).every(field=>["id","class"].includes(field))?value:undefined,1,1)
 ].map(Object.entries).reduce(([[nodename,node]],[[name,selector]])=>
  (!name||nodename===name)&&
  Object.entries(selector).every(([field,value])=>
  value.every(value=>node[field]?.includes(value)))));
  if(matching)
- return [this];
+ return [node];
  let parent=fragment||selection?node.parentNode:node.parent;
  return !descendants.has(node)&&parent
-?[...ascend.call(selection?select(parent):parent,limited?selector-1:selector,descendants.add(node)),this]
-:[this];
+?[...ascend.call(parent,limited?selector-1:selector,descendants.add(node)),node]
+:[node];
 };
 
  export function print(file)
