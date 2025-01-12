@@ -14,9 +14,11 @@
  var log=console.log;
 
  export function version(navigator)
-{return ["user-agent","userAgent"].reduce((agent,field)=>
- agent||navigator?.[field],undefined)?.match(/[\w\.]+\/(\.{0,1}\d+){1,2}/g).map(agent=>
- agent.split("/")).map(([name,version])=>({[name]:Number(version)})).reduce(merge);
+{let agent=["user-agent","userAgent"].reduce((agent,field)=>
+ agent||navigator?.[field],undefined);
+ let entries=agent?.match(/[\w\.]+\/(\.{0,1}\d+){1,2}/g)?.map(agent=>agent.split("/"))||
+ [[agent]];
+ return entries.map(([name,version])=>({[name]:Number(version)})).reduce(merge);
 };
 
  export var feature=agent=>agent&&prune.call
