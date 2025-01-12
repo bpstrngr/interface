@@ -14,7 +14,7 @@
  let {port,certification={},distinguishedname,cache}=search.call(credentials,fields);
  let [[domain,[signature,certificate]=[]]=[]]=Object.entries(certification);
  let [encrypted,syndicated]=await [encryption,syndication].reduce(record(required=> 
- prompt(extract.call(credentials,Object.keys(required)))),[]);
+ required?prompt(extract.call(credentials,Object.keys(required))):{}),[]);
  let required={"https:":{domain,signature,certificate}}[agent.globalAgent.protocol];
  ({port,domain,signature,certificate}=await prompt({port,...required}));
  merge(syndication,syndicated);

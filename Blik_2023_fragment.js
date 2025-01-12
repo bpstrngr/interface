@@ -767,8 +767,9 @@
  this.querySelectorAll("canvas[role=img]").forEach(canvas=>
  canvas.dispatchEvent(new canvas.ownerDocument.defaultView.Event("contextrestored",{bubbles:true})));
  this.querySelectorAll("[actions]").forEach(scope=>
- capture.call(scope,scope.getAttribute("actions"))||
- scope.dispatchEvent(new scope.ownerDocument.defaultView.Event("contextrestored")));
+(capture.call(scope,scope.getAttribute("actions"))
+,scope.dispatchEvent(new scope.ownerDocument.defaultView.Event("contextrestored"))
+));
  socket("/peer");
 },popstate(event)
 {//note(event);this.document.forms[0]?.dispatchEvent(new Event("submit"));
