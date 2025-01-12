@@ -1,4 +1,4 @@
- import {note,colors,when,functor,string,pattern,revert,each,describe,clock,observe,is,has,same,slip,something,compound,infer,tether,wether,collect,provide,route,buffer,differ,compose,combine,either,drop,crop,swap,record,wait,exit,pass,remember,binary,simple,array} from "./Blik_2023_inference.js";
+ import {note,colors,when,functor,string,pattern,revert,each,describe,clock,observe,is,has,same,slip,something,compound,infer,tether,whether,collect,provide,route,buffer,differ,compose,combine,either,drop,crop,swap,record,wait,exit,pass,remember,binary,simple,array} from "./Blik_2023_inference.js";
  import {thread,resolve,access,locate,prompt,list,window,jsdom,fetch,persist,version,compress,stage,cookies,cookie,feature} from "./Blik_2023_interface.js";
  import {search,merge,sum,prune,extract,encrypt} from "./Blik_2023_search.js";
  import {scope,mime} from "./Blik_2023_meta.js";
@@ -13,14 +13,14 @@
  await resolve([source,module,fields.at(-1)]);
  let {port,certification={},distinguishedname,cache}=search.call(credentials,fields);
  let [[domain,[signature,certificate]=[]]=[]]=Object.entries(certification);
+ let [encrypted,syndicated]=await [encryption,syndication].reduce(record(required=> 
+ prompt(extract.call(credentials,Object.keys(required)))),[]);
  let required={"https:":{domain,signature,certificate}}[agent.globalAgent.protocol];
  ({port,domain,signature,certificate}=await prompt({port,...required}));
+ merge(syndication,syndicated);
  merge(certification,required&&{[domain]:[signature,certificate]});
+ merge(encryption,prune.call(encrypted,([field,value])=>encrypt(value)));
  merge(globalThis,{cache,published,classified,classify});
- merge(syndication,extract.call(credentials,Object.keys(syndication)));
- merge(encryption,extract.call(credentials,Object.keys(encryption)));
- syndication=await prompt(syndication);
- encryption=prune.call(await prompt(encryption),([field,value])=>encrypt(value));
  let certificates=Object.values(certification).flat().map(compose(crop(1),slip("path","resolve"),resolve));
  await classify?.(module,...certificates);
  // send jsdom composition loader thread too so it can fetch modules from this interface during eg. server-side rendering.
@@ -30,7 +30,7 @@
  let certifications=prune.call(certification,([domain,certificates])=>
  certify(certificates,distinguishedname),0,0);
  // if(await resolve("cluster","isMaster"))return fork();
- var router=compose(combine(wether
+ var router=compose(combine(whether
 (compose("url",/^http/,"match"),fetch
 ,compose(combine(path,infer()),buffer(route.bind(routes),either(compose(tether(routes.error)),crop(1))))
 ),infer()),stage);
@@ -40,7 +40,7 @@
 );
  var distinction=({url,headers})=>[url,new URLSearchParams(feature(version(headers)))].join("");
  var respond=compose
-(revert(decode,new TextDecoder("utf-8")),provide,combine(wether
+(revert(decode,new TextDecoder("utf-8")),provide,combine(whether
 (cache&&buffer(combine(compose("method",/get/i,"match"),immutable),swap(false))
 ,remember.call(cache,compose(drop(1),router),distinction)
 ,router
@@ -63,7 +63,9 @@
  console.log([color,clock(),"@",request.connection?.remoteAddress||"",request.url,"...",colors.steady].join(""));
  return observe.call(request
 ,{data:record(data=>decoder.decode(data)).bind(body)
- ,end(){end([request,body.length?body.join(""):undefined,response]);},error
+ ,end(){end([request,body.length?body.join(""):undefined,response]);}
+ ,finish:note
+ ,error
  });
 };
 
@@ -186,8 +188,8 @@
 {let message=JSON.parse(event.data);
  if(message.action!=="check")
  console.log({from:peer.author.name+"@"+peer._socket.remoteAddress,message});
- return buffer(tether(actions[message.action||"message"]),note.bind(2))(host,message,peer);
-},message=>peer.send(JSON.stringify(is(Error)(message)?{error:note.call(1,message).message}:message))
+ return buffer(tether(actions[message.action]),note.bind(2))(host,message,peer);
+},message=>peer.send(JSON.stringify(is(Error)(note(message))?{error:note.call(1,message).message}:message))
 ),host)
  });
 },note.bind(1));

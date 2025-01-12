@@ -463,14 +463,16 @@
 ,functor(term)?serialize(term,{[field]:field,default:term.name}[field]):serialize(term,null)
 ].join("")).join("\n\n")
 ,""].join("\n");
- procedures=[procedures].flat().filter(Boolean).map(proceduralize);
- let output=compose(collect,infer("filter",Boolean),"\n\n","join",)(imports,exports,...procedures);
+ procedures=proceduralize(...[procedures].flat().filter(Boolean));
+ let output=compose(collect,infer("filter",Boolean),"\n\n","join")(imports,exports,procedures);
  return functor(format)?format(output):output;
 };
 
  export function proceduralize(term,...terms)
 {if(terms.length)
  return Array.from(arguments).map(term=>proceduralize(term)).join("\n");
+ if(!term)
+ return "";
  if(string(term))
  return term;
  if(term instanceof Function)

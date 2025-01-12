@@ -1,5 +1,5 @@
  import {locate,resolve,modularise,agent,virtual,window,jsdom,fetch,digest} from "./Blik_2023_interface.js";
- import {note,wait,observe,provide,collect,slip,infer,either,each,pass,tether,buffer,differ,compose,revert,record,combine,wether,swap,compound,something,string,basic,functor,defined,simple,exit,route,drop,crop,same,major,binary,is,has,not,numeric,array,pdflike,when,expect,generator,clock,fields} from "./Blik_2023_inference.js";
+ import {note,wait,observe,provide,collect,slip,infer,either,each,pass,tether,buffer,differ,compose,revert,record,combine,whether,swap,compound,something,string,basic,functor,defined,simple,exit,route,drop,crop,same,major,binary,is,has,not,numeric,array,pdflike,when,expect,generator,clock,heritage} from "./Blik_2023_inference.js";
  import {search,merge,prune,extract} from "./Blik_2023_search.js";
  import {serialize,proceduralize,mime,data} from "./Blik_2023_meta.js";
  import layout,{color} from "./Blik_2023_layout.js";
@@ -106,7 +106,7 @@
 {fields=[fields].flat().filter(Boolean);
  if(fields.length)
  return Object.fromEntries(fields.map(field=>
- [field,compose(infer("getAttribute",field),wether(isNaN,crop(1),Number))(node)]));
+ [field,compose(infer("getAttribute",field),whether(isNaN,crop(1),Number))(node)]));
  node.normalize();
  if(node.documentElement)
  return demarkup(node.documentElement);
@@ -160,7 +160,7 @@
 :[entry,id];
  if(!defined(value))
  return;
- let type=wether([is(Date),is(Set),either(array,compound),either(binary,infer("match",/^(true|false)$/))]
+ let type=whether([is(Date),is(Set),either(array,compound),either(binary,infer("match",/^(true|false)$/))]
 ,...["date","radio","select","checkbox","text"].map(type=>swap(type)))(value);
  return JSON.parse(JSON.stringify(
  {for:id,title:id
@@ -230,7 +230,7 @@
 :parse(resource,semiotics);
 };
 
- export function defer(form)
+ export function dispatch(form)
 {return document(
  {"img":
  {onload:"!function expect(){setTimeout(tick=>(typeof dispatch=='undefined'?expect:dispatch).call(this,event),500)}.call(this)"
@@ -341,7 +341,7 @@
  let selectors=name?{id:"#",classList:"."}:{id:'#',class:'.',classed:'.'};
  let attributes=Array.from(node.attributes||[]).filter(({name})=>
  !["id","class","style"].includes(name.toLowerCase())&&!name.startsWith("on")).map(({name,value})=>
- "["+[name,value].join("=")+"]").join("");
+ "["+[name,value].join("='")+"']").join("");
  return name+Object.entries(selectors).flatMap(([attribute,selector])=>
  [attribute==="classList"?Array.from(node[attribute]):["class","className"].includes(attribute)?node[attribute]?.split(' '):node[attribute]].flat().filter(value=>
  string(value)&&value?.length).map(value=>selector+value)).join('')+attributes;
@@ -526,7 +526,7 @@
 {let {width:limitx,height:limity}=this.parentNode.getBoundingClientRect();
  let {left,top,width,height}=this.getBoundingClientRect();
  let overflow=[-left,-top,left+width-limitx,top+height-limity];
- overflow.forEach(wether(major(0),(overflow,index)=>
+ overflow.forEach(whether(major(0),(overflow,index)=>
  this.style[index%2?"top":"left"]=Number(this.style[index%2?"top":"left"].match(/\d+/)?.[0])+overflow*(index<2||-1)+"px",infer()));
 };
 
@@ -659,7 +659,7 @@
  }
  }
  });
- buffer(capture)(author,"/feed");
+ capture.call(author,"/feed");
  return author;
 };
 
@@ -703,7 +703,7 @@
  ,style
  ,span:
 [{canvas:await buffer
-(compose(icon&&fetch,digest,wether(is(Blob),compose(image,canvas),infer()))
+(compose(icon&&fetch,digest,whether(is(Blob),compose(image,canvas),infer()))
 ,swap({role:"img"})
 )(icon)
  }
@@ -758,46 +758,115 @@
 )(syntax);
 };
 
- export function activate(event)
+ export var actions=
+ {body:
+ {load(event)
 {if(this!==event.target.body)
  // ignore propagated load events. 
  return;
  this.querySelectorAll("canvas[role=img]").forEach(canvas=>
  canvas.dispatchEvent(new canvas.ownerDocument.defaultView.Event("contextrestored",{bubbles:true})));
  this.querySelectorAll("[actions]").forEach(scope=>
- capture(scope,scope.getAttribute("actions"))||
+ capture.call(scope,scope.getAttribute("actions"))||
  scope.dispatchEvent(new scope.ownerDocument.defaultView.Event("contextrestored")));
+ socket("/peer");
+},popstate(event)
+{//note(event);this.document.forms[0]?.dispatchEvent(new Event("submit"));
+},async message(event)
+{let {data:message}=event;
+ console.info("send",message);
+ if(this.ownerDocument.defaultView.socket?.readyState===3)
+ await socket("/peer");
+ this.ownerDocument.defaultView.socket?.send(JSON.stringify(message));
+}}
+ ,"canvas[role=img]":
+ {contextrestored(event)
+{let [src,alt]=["data-source","aria-label"].map(this.getAttribute.bind(this));
+ compose(image,canvas,infer(insert,"over",this))(src,alt);
+}}
+ ,"span[role=link]":
+ {click(){this.ownerDocument.defaultView.open(this.getAttribute("source"),this.classList.contains("redirect")?undefined:"_blank")}
+ }
+ ,".defer":
+ {load(event)
+{if(!this.dataset.subject)
+ return;
+ let subject=JSON.parse(this.dataset.subject);
+ compose(combine(compose("source",fetch,digest),infer()),transform,"over",this,insert)(subject);
+}}
+ ,".reference":{click(){expand.call(this,...arguments);}}
+ ,"#extend":
+ {keydown(event)
+{event.stopPropagation();
+ event.preventDefault();
+ let {target,keyCode}=event;
+ let {enter}=keyboard(keyCode);
+ if(!enter)return;
+ let value=target.textContent;
+ if(Array.from(value).every(is(".")))
+ return this.dispatchEvent(new Event("submit",{bubbles:true}));
+ let form=this.closest("form");
+ let method=form.getAttribute("method");
+ fragment.form.call(form,{[method]:annotate({[value]:""},labels)});
+ target.textContent="...";
+}}
+ ,".spell":{click(){spell(this);}}
+ ,".field":{click({target}){form.call(target.closest("form"),{extend:{key:"",value:""}})}}
+ ,".carousel":
+ {scroll({target})
+{let timeout=target.timeout=setTimeout(tick=>
+{if(target.timeout!==timeout)return;
+ delete target.timeout;
+ let to=
+[target.scrollLeft,target.getBoundingClientRect().width
+].reduce((offset,width)=>Math.round(offset/width)*width);
+ let duration=500;
+ !function animateScroll(start,change,time,increment)
+{time+=increment;
+ time/=span/2;
+ if(time<1) 
+ target.scrollLeft=delta/2*time*time+start;
+ else
+ target.scrollLeft=-delta/2*(--time*(time-2)-1)+start;
+ if(currentTime<duration)
+ setTimeout(tick=>animateScroll(start,change,currentTime,increment),increment);
+}(target.scrollLeft,to-target.scrollLeft,0,20);
+},100);
+}}
+ };
+
+ export async function socket(actions)
+{var {default:peer}=await import(actions);
+ var {protocol,host}=window.location;
+ return revert((resolve,reject,socket)=>
+ Object.assign(window
+,{socket:Object.assign(new WebSocket(socket)
+,{async onopen({target})
+{console.warn("Websocket open: ",target);
+ let {author:name}=cookies(window.document.cookie);
+ if(name)
+ this.send(JSON.stringify({action:"sign",name}));
+ resolve(this);
+},onmessage(event)
+{let message=JSON.parse(event.data);
+ if(message.action!=="check")
+ console.log("receive",message);
+ peer[message.action]?.call(this,message,window);
+},onerror({target}){console.warn("Websocket not available at "+target.url);reject(target);}
+ ,onclose({target}){console.warn("Websocket closed: ",target);}
+ })
+ }))(["ws",/s/.test(protocol)?"s":"","://",host].join(""));
 };
 
-//  export function activate(fragment,actions,path=[])
-// {// dispose actions on node/fragment to event listeners. 
-//  if(!actions)
-//  return fragment;
-//  if(string(actions))
-//  return import(actions).then(({default:actions})=>activate(fragment,actions));
-//  let node=fragment instanceof window.DocumentFragment
-// ?Array.from(fragment.childNodes)
-// :fragment.nodeName
-// ?[fragment]
-// :fragment;
-//  let dispatch=proceduralize(function(){dispatch.call(this,event)});
-//  let nodes=Object.entries(node).flatMap(([nodename,node])=>
-//  [node].flat().filter(compound).map(node=>compose
-// (tether(select)
-// ,Object.keys
-// ,infer("map",event=>["on"+event,dispatch])
-// ,Object.fromEntries
-// ,node
-// ,(events,node)=>document.call(node,events)
-// ,node=>node.childNodes?Array.from(node.childNodes):node
-// )(node,actions)
-// ));
-//  nodes.forEach(infer(activate,actions,path.concat(node?.nodeName)));
-//  return fragment;
-// };
-
  export function keyboard(code)
-{let [key]=Object.entries({enter:13,escape:27,space:32,leftright:[37,39],updown:[38,40]}).find(({1:codes})=>
+{let [key]=Object.entries(
+ {enter:13,escape:27,space:32,leftright:[37,39],updown:[38,40],backspace:8,tab:9
+ ,shift:16,ctrl:17,alt:18,caps:20,end:35,home:36,insert:45,delete:46
+ ,...Object.fromEntries(
+[Array.from({length:10},(number,index)=>index)
+,Array.from("abcdefghijklmnopqrstuvwxyz")
+].flat().map((key,index)=>[key,(index>9?55:48)+index]))
+ }).find(({1:codes})=>
  [codes].flat().includes(code))||[];
  return key?{[key]:true}:{};
 };
@@ -854,39 +923,21 @@
  Promise.all(["/Blik_2023_interface.js","/Blik_2023_inference.js","/Blik_2023_search.js","/Blik_2023_fragment.js"].map(module=>
  import(module))).then((
 [{resolve,cookies}
-,{note,provide,collect,record,infer,tether,compose,combine,either,wether,drop,crop,swap,slip,match,is,not,has,simple}
+,{note,provide,collect,record,infer,tether,compose,combine,either,whether,drop,crop,swap,slip,match,is,not,has,simple}
 ,{merge,prune,search}
 ,{css}
 ])=>Object.assign(window
 ,{resolve,cookies
- ,note,provide,collect,record,infer,tether,compose,combine,either,wether,drop,crop,swap,slip,match,is,not,has,simple
+ ,note,provide,collect,record,infer,tether,compose,combine,either,whether,drop,crop,swap,slip,match,is,not,has,simple
  ,merge,prune,search
  ,css
  }));
- var {peer}=import("/peer").then(({default:module})=>peer=module);
- var {protocol,host}=window.location;
- let socket=["ws",/s/.test(protocol)?"s":"","://",host].join("");
- Object.assign(window
-,{socket:Object.assign(new WebSocket(socket)
-,{async onopen({target})
-{console.warn("Websocket open: ",target);
- await new Promise(function defer(resolve){window.cookies?resolve():setTimeout(time=>defer(resolve),500);});
- let {author:name}=cookies(window.document.cookie);
- if(name)
- this.send(JSON.stringify({action:"sign",name}));
-},onmessage(event)
-{let message=JSON.parse(event.data);
- if(message.action!=="check")
- console.log("receive",message);
- peer[message.action]?.call(this,message,window);
-},onerror({target}){console.warn("Websocket not available at "+target.url);}
- ,onclose({target}){console.warn("Websocket closed: ",target);}
- })
- ,worker:import("/Blik_2023_interface.js").then(({delegate})=>delegate("/worker")).then(worker=>
+ Object. assign(window
+,{worker:import("/Blik_2023_interface.js").then(({delegate})=>delegate("/worker")).then(worker=>
  Object.assign(window,{worker})).catch(fail=>
  Object.assign(window,{worker:console.warn("Worker not available at /worker.")}))
  ,dispatch(event,buffering)
-{// deprecated in favor of capture(fragment,actions).
+{// deprecated in favor of capture.call(fragment,actions).
  // rarely needed for unpropagated server-rendered events like focus/blur. 
  // explicit stopPropagation should be reproduced with event target conditions on scopes 
  // (eg. {form:{input({target}){if(target)return;}}}). 
@@ -902,55 +953,49 @@
 }});
 };
 
- export function capture(fragment,actions)
+ export function capture(module)
 {// synchronously register events to be routed to actions scoped by selector (eg. {#form:{change(){}}}). 
- // common procedure in deferred scripts (with {fields} composed), hence no return statements. 
  if(!globalThis.window)
- fragment.setAttribute("actions",actions)
-,exit(fragment.nodeName+" marked interactive: "+actions+". Re-invoke "+capture.name+" on client load to route events.");
+ // Re-invoke on client to capture events. 
+ return this.setAttribute("actions",module),this;
  let exclusion=
 [["motion","orientation","orientationabsolute"].map(sensor=>"device"+sensor)
 ,["start","run","end","cancel"].map(state=>"transition"+state)
 ].flat().map(event=>"on"+event);
  let inclusion=["focusout","focusin","message"].map(event=>"on"+event);
- let buffered=new Set([fields(fragment).filter(event=>
- event.startsWith?.("on")&&!exclusion.includes(event)),inclusion].flat().map(event=>
- event.replace(/^on/,"")));
- buffered.forEach(event=>fragment.addEventListener(event,buffer,{passive:false}));
- let lead=["/","./"].find(lead=>actions.startsWith(lead));
- let [module,...route]=actions.replace(lead,"").split("/").filter(Boolean);
- import(lead+module).then(module=>
- actions=Object.assign(["default"],route).reduce((module,field)=>
- module[field],module)).then(function(actions)
-{let events=Object.values(actions).flatMap(Object.keys);
- new Set(events).forEach(event=>fragment.addEventListener(event,dispatch,{passive:false}));
- buffered.forEach(event=>fragment.removeEventListener(event,buffer));
- console.groupCollapsed("routing all propagated events to actions from scope: ",{fragment});
- console.log(actions);
- console.log(events.sort().join(" "));
- console.log(globalThis.window.location.origin+lead+module);
+ let lead=["/","./"].find(lead=>module.startsWith(lead));
+ let route=module.replace(lead,"").split("/").filter(Boolean);
+ let actions=import(lead+route.shift()).then(module=>
+ Object.assign(["default"],route).reduce((module,field)=>module[field],module));
+ let refer=defer.bind(actions),deferred=new Set([heritage(this).filter(event=>
+ event.startsWith?.("on")&&!exclusion.includes(event)),inclusion].flat());
+ deferred.forEach(event=>this.addEventListener(event.slice(2),refer,{passive:false}));
+ actions.then(actions=>
+ new Set(Object.values(actions).flatMap(Object.keys)).forEach(event=>
+ this.addEventListener(event,delegate.bind(actions),{passive:false}))).then(ready=>
+ deferred.forEach(event=>this.removeEventListener(event.slice(2),refer)));
+ console.groupCollapsed("routing all propagated events to actions from scope: ",{fragment:this});
+ console.log({[globalThis.window.location.origin+lead+module]:actions});
  console.groupEnd();
-});
- function dispatch(event)
+ return this;
+};
+
+ export function delegate(event)
 {let target=event.target.document?.body||event.target.body||event.target;
  if(target.nodeName==="#text")target=target.parentNode;
- let scopes=Object.entries(actions).filter(([selector,actions])=>
+ let scopes=Object.entries(this).filter(([selector,actions])=>
  actions[event.type]&&target.closest(selector));
  scopes.map(([selector,actions])=>
  [target.closest(selector),actions[event.type]]).forEach(([scope,action])=>
  console.log({[event.type]:target,scope})||
  action.call(scope,event));
- //if(!scopes.length)
- //console.info("consumed:",{[event.type]:event});
 };
- function buffer(event,buffering=0)
+
+ export function defer(event)
 {// asynchronizing event dispatch unblocks its synchronous default unless prevented. 
- if(typeof actions==="string")
- return setTimeout(buffer.bind(this,event,buffering+1),500)&&
- buffering||event.defaultPrevented||event.preventDefault()||console.warn(
- {["waiting for actions to dispatch "+event.type+" event from"]:event.target});
- dispatch(event);
-};
+ this.then(actions=>delegate.call(actions,event));
+ event.preventDefault();
+ console.warn({["captured "+event.type+" event from"]:event.target});
 };
 
  export function dispose(){if(globalThis.window)Object.assign(window.actions,actions);}

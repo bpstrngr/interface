@@ -767,7 +767,10 @@
       "gutter.ts":{"this.dom = document":"this.dom=view.dom.ownerDocument","(toDOM\\()\\) {":"$1view){let document=view.dom.ownerDocument;"},
       "draw-selection.ts":{"import {StyleSpec} from \"style-mod\"\n":""},
       "bidi.ts":{"T.L | T.R | T.AL":"1","T.EN | T.AN":"8"},
-      "viewstate.ts":{"(constructor\\(public state: EditorState)\\)":"$1,window)","VP.Margin / 4":"1000 / 4"},
+      "viewstate.ts":{
+        "(constructor\\(public state: EditorState)\\)":"$1,window)","VP.Margin / 4":"1000 / 4",
+        "(elt = )document":"$1arguments[0].dom.ownerDocument"
+      },
       "domobserver.ts":{"(private view: EditorView)":"$1,window","new (MutationObserver)":"new window.$1","= Margin \\* 3":"= 10000 * 3"}
     },
     "comment":"edited ambiguous type/namespace imports, browser context assumptions. latter might be inferrable from this.dom.ownerDocument more often."

@@ -1,4 +1,4 @@
- import {note,something,record,provide,has,compose,buffer,slip,drop,stream,infer,either,swap,not,wether,pass,collect,simple,defined,string,compound,tether,is,numeric,array,basic,iterable} from "./Blik_2023_inference.js";
+ import {note,something,record,provide,has,compose,buffer,slip,drop,stream,infer,either,swap,not,whether,pass,collect,simple,defined,string,compound,tether,is,numeric,array,basic,iterable} from "./Blik_2023_inference.js";
  import {resolve} from "./Blik_2023_interface.js";
 
  export var stringify=scope=>
@@ -203,9 +203,9 @@ export function calendar(timestamps)
 // ].map(compose("flat","/","join")).reduce(Object.is));
 //  let dispensible=!collapse||terminal;
 //  return compose(tether(term),either
-// (wether(dispensible&&not(defined),swap([]))
-// ,wether(terminal,value=>[[field,value]])
-// ,either(wether(collapse&&not(defined),swap(true,source)),slip(false))
+// (whether(dispensible&&not(defined),swap([]))
+// ,whether(terminal,value=>[[field,value]])
+// ,either(whether(collapse&&not(defined),swap(true,source)),slip(false))
 // ),collect,([graft,...scope])=>[graft,scope.map(scope=>
 //  prune.call(scope,term,collapse,limit,path.concat(field)))]
 // ,"flat",provide,collect,([graft,...range])=>range.flatMap(scope=>graft
@@ -214,7 +214,7 @@ export function calendar(timestamps)
 // }),[]),"flat",index);
 };
 
- var index=wether
+ var index=whether
 (entries=>!entries.length||!entries.some(([field],index,entries)=>
  isNaN(field)||[entries[index-1]?.[0],field].map(Number).reduce((past,next)=>next<past))
 ,compose(pass(infer("forEach",function([field],index,entries)

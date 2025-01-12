@@ -1,4 +1,4 @@
- import {note,collect,same,has,promise,pass,slip,something,observe,functor,describe,remember,expect,control,trace,array,compound,simple,apply,stream,record,revert,provide,tether,differ,wether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,numeric,binary,basic,match,wait,string,defined,compose,combine,exit,clock,route,major} from "./Blik_2023_inference.js";
+ import {note,collect,same,has,promise,pass,slip,something,observe,functor,describe,remember,expect,control,trace,array,compound,simple,apply,stream,record,revert,provide,tether,differ,whether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,numeric,binary,basic,match,wait,string,defined,compose,combine,exit,clock,route,major} from "./Blik_2023_inference.js";
  import {sum,merge,stringify,search,edit,prune,parse as records,relevant} from "./Blik_2023_search.js";
  import {parse,sanitize,serialize,exports,reexport,test,mime,coordinates} from "./Blik_2023_meta.js";
 
@@ -48,9 +48,9 @@
  resolve("module","register",address,import.meta.url,{data:{socket:port2},transferList:[port2]});
 }),"data",note.bind(2)
 ,drop(),globalThis
-,{collect,provide,drop,crop,infer,differ,buffer,compose,either,wether,tether,resolve,sum,search,prune,merge,record
+,{collect,provide,drop,crop,infer,differ,buffer,compose,either,whether,tether,resolve,sum,search,prune,merge,record
  },0,merge
-),wether
+),whether
 (compose(collect,"length",major(0))
 ,either(compose(resolve,note.bind(2)),compose(note.bind(1),wait(60*1000),exit))
 ,infer()
@@ -144,7 +144,7 @@
 :agent.node&&!thread
 ?exit(Error("Resolving composition declarations not allowed on main thread."))
 :compose(infer("reduce",record(term=>string(term)?compose
-(locate,([module,action])=>[resolve(module),action]
+(locate,([module,field])=>[resolve(module),field]
 ,provide,Reflect.get,/tether /.test(term)?tether:undefined
 )(term.replace(/^tether /,"")):[term].flat()),[]),"flat",provide,tether(compose))(source);
  if(!string(source))
@@ -423,7 +423,7 @@
 {if(scope.format!=="module"||scope.tests||!scope.responseURL)
  return scope;
  let target=new URL(scope.responseURL).pathname;
- compose(buffer(compose(wether
+ compose(buffer(compose(whether
 (false//compose.call(resolve("vm"),has("Module"))
  // dispatch new import thread for tests until modularization halts on self-referential imports. 
 ,compose(true,access,target,modularise)
@@ -474,30 +474,28 @@
  export var compress=revert((revert,reject,buffer)=>import("zlib").then(({gzip})=>
  gzip(buffer,(fail,buffer)=>fail?reject(fail):revert(buffer))));
 
- export async function decompress(buffer,target)
-{let address=string(buffer)&&buffer;
- let [zip,tar]=address?[/\.(gz|zip)$/,/\.tar$/].map(pattern=>pattern.test(buffer)):[];
- if(address)
- buffer=await access(buffer,"binary");
- if(is(Error)(buffer))
- exit(buffer);
- if(zip&&globalThis.DecompressionStream)
-{let gzip=new DecompressionStream("gzip");
- let [readable,writable]=["read","writ"].map(stream=>
- gzip[stream+"able"]["get"+stream.replace(/^./,infer("toUpperCase"))+"er"]());
- writable.write(buffer),writable.close();
- let expanded=[],size=0,{done,value}=await readable.read();
- while(!done)
+ export async function decompress(source,target)
+{let [buffer,zip,tar]=string(source)
+?[await access(buffer,"binary"),[/\.(gz|zip)$/,/\.tar$/].map(pattern=>pattern.test(buffer))].flat()
+:[source,true];
+ if(zip)
+ return globalThis.DecompressionStream
+?compose(gzip=>["writ","read"].map(stream=>
+ gzip[stream+"able"]["get"+stream.replace(/^./,infer("toUpperCase"))+"er"]())
+,([writable,readable])=>(writable.write(buffer),writable.close(),readable)
+,combine(infer(),"read"),[],0
+,async function read(readable,{done,value},expanded,size)
+{while(!done)
  expanded.push(value),size+=value.byteLength,{done,value}=await readable.read();
  return expanded.reduce((buffer,array,index,arrays)=>
  buffer.set(array,size+=arrays[index-1]?.byteLength??-size)||buffer
 ,new Uint8Array(size));
-};
- if(zip)
- return revert((decompress,reject,buffer)=>
+})(new DecompressionStream("gzip"))
+:revert((decompress,reject,buffer)=>
  resolve("zlib","gunzip",buffer,(fail,buffer)=>fail?reject(fail):decompress(buffer)))(buffer);
- let stream=await import("stream").then(({Duplex})=>
- [new Duplex(),buffer,null].reduce((duplex,buffer)=>(duplex.push(buffer),duplex)));
+ let tarstream=await import("stream").then(({Duplex})=>
+ [new Duplex(),buffer,null].reduce((duplex,buffer)=>(
+ duplex.push(buffer),duplex)));
  let extractor=await import("./isaacs_2011_node-tar.js").then(({Parser})=>new Parser());
  let folder={};
  let prefix="extracting ";
@@ -517,7 +515,7 @@
 ?["export *,{default} from \""+entry.linkpath+"\";"]
 :[])))
 },close(){console.log("\nextracted "+target+".");resolve(folder)}
- }))(stream.pipe(extractor),process.stdout.write(prefix));
+ }))(tarstream.pipe(extractor),process.stdout.write(prefix));
  if(target)
  return persist(Object.values(folder)[0],target);
  /*try
@@ -535,7 +533,7 @@
  export async function access(file,encoding,content)
 {// access folder/file's metadata, content with specified encoding, or overwrite its content.
  if(file.startsWith("http"))
- return compose(fetch,wether(compose("status",is(200)),"text",compose("text",exit)))(file);
+ return compose(fetch,whether(compose("status",is(200)),"text",compose("text",exit)))(file);
  if(/^file:\/\//.test(file))
  file=new URL(file).pathname;
  let {promises:fs}=await import("fs");
@@ -544,7 +542,9 @@
  if(/\/$/.test(file))
  return fs.readdir(file,{withFileTypes:true});
  if(content)
- return fs.writeFile(file,...binary(content)?[encoding,'utf8']:[content,encoding]).then(written=>file);
+ return fs.writeFile(file,...binary(content)
+?[basic(encoding)?JSON.stringify(encoding):encoding,'utf8']
+:[content,encoding]).then(written=>file);
  let buffer=await fs.readFile(file);
  if(["binary",1].includes(encoding))
  return buffer;
@@ -762,7 +762,7 @@
  Object.assign(self
 ,{onmessage({data:[id,term,...context]})
 {compose(buffer(compose(...[term].flat().map(term=>differ(term))))
-//,wether(string,infer(),JSON.stringify),wether(string,compose(TextEncoder.prototype.encode.bind(new TextEncoder()),"buffer"),infer())
+//,whether(string,infer(),JSON.stringify),whether(string,compose(TextEncoder.prototype.encode.bind(new TextEncoder()),"buffer"),infer())
 ,combine(compose(slip(id),collect),compose(collect,infer("filter",term=>term instanceof ArrayBuffer)))
 ,postMessage)(import(address),...context);
 },onerror:compose(drop(1),postMessage)
@@ -771,46 +771,37 @@
 }]
  };
 
- async function freefetch(request,header)
+ async function freefetch(request,{method,body,headers}={})
 {let remote=/^http/.test(request);
  let url=string(request)?!remote
 ?[this.location.origin,request?.replace(/^[\.\/]+/,"")||""].join("/")
 :request:request.url;
- let {href:address,hostname,path,port}=await resolve("url","parse",url);
- if(!compound(request))request=
- {end(response){return Object.assign(this.response,response);}
- ,respond(header){Object.assign(this.response,{header});}
- ,response:{}
- ,url:address,port,method:"get"
- ,...merge(header,{origin:window.location.origin},0)
- };
- let method=request?.method?.toUpperCase()||"GET";
- let protocol=address.match(/[^:]*/)?.[0];
- let agent=await peer(protocol);
- return revert((respond,reject,protocol,request)=>compose
+ let {protocol,host,hostname,path,port}=await resolve("url","parse",url);
+ return revert((respond,reject,request,body)=>compose
 (infer(resolve,"request",request,function forward(response)
-{let {statusCode:status,headers:{location}}=response;
- let type=response.headers["content-type"];
- let redirect=status===302;
- if(redirect)
- console.log(address,"redirected to",location,"...");
+{let {statusCode:status,headers}=response;
  let body=[];
  observe.call(response
 ,{data:record(body=>body).bind(body)
  ,error:compose(note,reject)
- ,end:infer((end,body)=>redirect
-?compose.call({...request,url:location},fetch,respond).then(respond).catch(reject)
-:compose(stage,respond)({body:Buffer.concat(body,sum(body.map(({length})=>length))),status,type,headers:response.headers},request)
-,body)
- });
+ ,end:compose
+(swap(body),body=>Buffer.concat(body,sum(body.map(({length})=>length))),buffer(status===302
+?compose(swap({...request,url:headers.location}),fetch)
+:compose(body=>({body,status,headers,type:headers["content-type"]}),request,stage)
+,reject),respond
+)});
 })
 ,tether(observe
 ,{error(fail){this.destroy();reject(fail);}
  ,timeout(fail){this.destroy();reject(fail||Error("timeout: "+this.path));}
  ,close:infer("destroy")
- })
-,combine(infer("write",String(request.body||"")),"end")
-)(protocol))(protocol,{method,hostname,path,port,agent});
+ }),body,"end"
+)(request.agent.protocol.replace(/:/,"")))(
+ {host,hostname,path,port
+ ,headers:{origin:[protocol,host].join("//"),...headers}
+ ,method:method||request?.method?.toUpperCase()||"GET"
+ ,agent:await peer(protocol.replace(/:/,""))
+ },body||request.body);
 };
 
  export async function jsdom(url)
@@ -843,14 +834,14 @@
  let success=status<400;
  let cookie=response?.body&&response?.cookie;
  let headers={"Content-Type":type,...response.headers,get(key){return this[key];}};
- let body=wether
+ let body=whether
 ([fail,has("nodeName"),something]
 ,"message"
 ,compose(combine
-(wether(is(window.HTMLHtmlElement),swap("<!DOCTYPE html>"),drop())
-,wether(is(window.DocumentFragment),compose("children",Array.from,infer("map",infer("outerHTML")),"","join"),"outerHTML")
+(whether(is(window.HTMLHtmlElement),swap("<!DOCTYPE html>"),drop())
+,whether(is(window.DocumentFragment),compose("children",Array.from,infer("map",infer("outerHTML")),"","join"),"outerHTML")
 ),collect,"","join")
-,wether(has("body"),infer(Reflect.get,"body"),infer())
+,whether(has("body"),infer(Reflect.get,"body"),infer())
 )(response);
  if(json&&!basic(body))
  body=JSON.parse(serialize(body.constructor?.name=="Buffer"?body.toString():body));
@@ -890,7 +881,7 @@
 };
 
  export var script=compose
-(combine(fetch,infer()),wether
+(combine(fetch,infer()),whether
 (match({status:200})
 ,compose(combine(compose(crop(1),"text"),drop(1,2)),modularise)
 ,compose(crop(1),"text",Error,exit)
@@ -914,14 +905,14 @@
  // read response in its specified format. 
  // Response objects may be imitated, hence not when(is(Response)). 
 (when(has(["status","text","json","headers"]))
-,wether(compose("status",not(is(200))),compose("text",Error,exit),infer())
-,combine(infer(),compose("headers","Content-Type","get",infer
+,whether(compose("status",not(is(200))),compose("text",Error,exit),infer())
+,combine(infer(),compose("headers",infer("get","Content-Type"),infer
 ((type,xml)=>compose.call(
  {json:"json",pdf:"arrayBuffer"
  ,csv:compose("text",records),svg:compose("text",type,xml),xml:compose("text",type,xml)
  ,png:"blob",jpg:"blob",png:"blob"
- },Object.entries,infer("map",([field,value])=>
- [mime(field),value]),Object.fromEntries)[type]
+ },Object.entries,provide
+ ,each(([field,value])=>[mime(field),value]),collect,Object.fromEntries)[type]
 ,(text,mime)=>mime==="text/html"
 ?window.document.createRange().createContextualFragment(text)
 :new window.DOMParser().parseFromString(text,mime).documentElement
@@ -941,7 +932,7 @@
 
  export var cookie=cookie=>string(cookie)?cookies(window.document.cookie)[cookie]:Object.entries(cookie||{}).map(([field,value])=>field+"="+value).join(";");
  export var cookies=buffer(compose(when(string),/ *; */,"split",provide,each(entry=>entry.split("=")),collect,Object.fromEntries),swap({}));
- export var query=compose(when(string),wether(compose("/","startsWith"),path=>window.location.origin+path,infer()),collect,slip(URL),Reflect.construct,"searchParams","entries",Array.from,Object.fromEntries);
+ export var query=compose(when(string),whether(compose("/","startsWith"),path=>window.location.origin+path,infer()),collect,slip(URL),Reflect.construct,"searchParams","entries",Array.from,Object.fromEntries);
  export function path(request)
 {let address=!string(request)?request.headers.origin+request.url:request;
  return new URL(address).pathname.replace(/^\/*|\/*$/g,"");

@@ -128,7 +128,7 @@
  return (term??undefined)!==undefined?[...ascend(Object.getPrototypeOf(term),limit,[path,term].flat()),term]:[];
 };
 
- export function fields(term)
+ export function heritage(term)
 {return ascend(...arguments).flatMap(term=>
 {try{return Reflect.ownKeys(term);}catch(fail)
 {console.warn("warning: can't see all properties on",typeof term," - ",fail.message);
@@ -163,6 +163,7 @@
  
  export function collect(...context)
 {// cumulate context (whether singular, plural and/or asynchronous) in an array. 
+ if(defined(this))context.unshift(this);
  return expand.reduce((context,expand)=>
  context instanceof Promise?context.then(expand):expand(context)
 ,context);
@@ -207,7 +208,7 @@
  let attach=map&&prefix.test(term.name)&&term;
  let attend=!prebound&&!attach&&defined(scope??undefined)&&!array(term)&&!combinator
 ?[Object(scope),detach||term].reduce((domain,term)=>map
-?(domain[term.name]===term||fields(domain?.buffer instanceof ArrayBuffer?Object.getPrototypeOf(domain):domain).find(field=>
+?(domain[term.name]===term||heritage(domain?.buffer instanceof ArrayBuffer?Object.getPrototypeOf(domain):domain).find(field=>
 {try{return Object.is(Reflect.get(domain,field),term);}catch(fail){};
 }))&&term
 :Reflect.get(domain,term?.toString?term:null))
@@ -251,7 +252,7 @@
  return confer(differ,term);
  let context=collect(this);
  let fail=compose(swap([term?.name||String(term),"yielded identity of",JSON.stringify(this)].join(" ")),Error,exit);
- return compose.call(this,infer(term,provide(context)),wether(same(provide(context)),fail,infer()));
+ return compose.call(this,infer(term,provide(context)),whether(same(provide(context)),fail,infer()));
 };
 
  export function buffer(term,quit=infer())
@@ -273,16 +274,16 @@
  let reset=swap(...context);
  let identity=same(...context);
  let valid=are(something,not(is(false)),not(is(Error)));
- return terms.reduce((context,term,index)=>compose(wether
+ return terms.reduce((context,term,index)=>compose(whether
 ([!index,identity,valid]
 ,term,term,infer(),compose(reset,term)
 ))(context),provide(context));
 };
 
- export function wether(condition,...terms)
+ export function whether(condition,...terms)
 {// conditional inference. 
  if(!defined(this))
- return confer(wether,...arguments);
+ return confer(whether,...arguments);
  let context=collect(this);
  let conditions=[condition].flat();
  return compose.call
@@ -295,7 +296,7 @@
 )(provide(context));
 },0),[])
 ,([track])=>terms[track??conditions.length]??infer()
- //compose(swap(Error(["conditions not satisfied:",trace().reverse().find(([term])=>term?.startsWith(wether.name))[0]].join(" "))),exit)
+ //compose(swap(Error(["conditions not satisfied:",trace().reverse().find(([term])=>term?.startsWith(whether.name))[0]].join(" "))),exit)
 ,infer.bind(provide(context,true))
 );
 };
@@ -397,11 +398,11 @@
  let fail=compose(swap(branch),Error("not found"),"concat",infer("find",is(Error)),exit);
  let terms=path.map(term=>infer(either
 (term
-,wether(has(method),buffer(compose(methodic,differ(term),pass(record(drop(1,2)).bind(branch))),swap(undefined)),infer())
+,whether(has(method),buffer(compose(methodic,differ(term),pass(record(drop(1,2)).bind(branch))),swap(undefined)),infer())
 ,tether(scope[term])
 ,fail
 ),...context));
- let composition=compose(...terms,wether
+ let composition=compose(...terms,whether
  // invoke method if not done already. 
 (branched,infer(),either(infer(method,...context),crop(1))
 ));
@@ -686,7 +687,7 @@
  ,promise:{context:[provide([a=>false,a=>2])],terms:[Promise.resolve(1),Function.call,2],condition:["equal"]}
  //,fail:{context:[provide([a=>exit(Error("b")),(a,b)=>b.message])],terms:[1,Function.call,"b"],condition:["equal"]}
  }
- ,wether:
+ ,whether:
  {boolean:
 [{context:[provide([a=>true,1,2])],terms:[{1:"a"},infer(Function.call),"a"],condition:["equal"]}
 ,{context:[provide([a=>false,1,2])],terms:[{2:"a"},infer(Function.call),"a"],condition:["equal"]}

@@ -1,8 +1,8 @@
  import {merge,prune,unfold} from "./Blik_2023_search.js";
  import {aphorize,serialize} from "./Blik_2023_meta.js";
- import {infer,compose,buffer,wether,record,wait,string,note,basic,defined} from "./Blik_2023_inference.js";
+ import {infer,compose,buffer,whether,record,wait,string,note,basic,defined} from "./Blik_2023_inference.js";
  import {window,fetch,digest,path,agent} from "./Blik_2023_interface.js";
- import {document,css,capture,metamarkup,destroy} from "./Blik_2023_fragment.js";
+ import {document,css,capture,metamarkup,destroy,keyboard} from "./Blik_2023_fragment.js";
  import {EditorState,Compartment} from './haverbeke_2022_codemirror_state.js';
  import {EditorView,keymap,lineNumbers,drawSelection} from './haverbeke_2022_codemirror_view.js';
  import {history,defaultKeymap,historyKeymap} from './haverbeke_2022_codemirror_commands.js';
@@ -34,7 +34,8 @@
  let indentation=(new Compartment).of(EditorState.tabSize.of(1));
  let doc=string(source)?settings.source?source:await compose(fetch,digest,infer(serialize,"json"),buffer(compose(JSON.parse,aphorize),drop(1)))(source):JSON.stringify(source);
  let theme=EditorView.theme(
- {".cm-gutters":{background:"transparent"}
+ {".cm-content":{"text-align":"left"}
+ ,".cm-gutters":{background:"transparent"}
  // gutter heights are calculated dynamically on client-side. 
  ,".cm-gutterElement":{height:"4px !important"}
  ,".cm-gutterElement:not(:first-of-type)":{height:"1.4em !important",transform:"translate(0,-4px)"}
@@ -48,18 +49,13 @@
  },{dark:true});
  let state=EditorState.create({doc,extensions:[basetheme,foldtheme,theme,extensions].flat()});
  let view=new EditorView({parent,state},window);
- ensureSyntaxTree(state,doc.length,5000);
- view.dispatch({});
- if(!globalThis.window)
- buffer(capture)(parent
-,["",new URL(import.meta.url).pathname.replace(/.*\//,""),"actions"].join("/"));
- else if(defined(settings.fold))
- view.dispatch(
+ if(defined(settings.fold))
+ settings.fold<1?foldAll(view):view.dispatch(
  {effects:compose.call([],ranges=>ensureSyntaxTree(state,doc.length,5000).iterate(
  {enter:record(compose
 (drop(1),({stack:{length},from,to})=>
  settings.fold<=length?foldable(state,from,to):undefined
-,wether(basic,foldEffect.of.bind(foldEffect))
+,whether(basic,foldEffect.of.bind(foldEffect))
 )).bind(ranges)
  ,from:0,to:doc.length
  })||ranges)
@@ -67,7 +63,14 @@
  let style=parent.ownerDocument.querySelector("head").querySelector("style").textContent;
  //let style=view.styleModules.flatMap(({rules})=>rules).reverse().join("\n");
  parent.append(document({style:{"#text":style}}));
- return parent;
+ if(!globalThis.window)
+ parent.querySelector(".cm-content").cmView.view.viewState.state.doc.toString().split("\n").forEach((line,index)=>
+ [".cm-line",".cm-lineNumbers>.cm-gutterElement"].map(name=>
+ Array.from(parent.querySelectorAll(name))).forEach((lines,gutter)=>
+ lines[index+gutter]||lines.at(-1).after(Object.assign(lines[gutter].cloneNode(true)
+,{textContent:gutter?index+1:line}))));
+ return capture.call(parent
+,["",new URL(import.meta.url).pathname.replace(/.*\//,""),"actions"].join("/"));
 };
 
  export var actions=
@@ -77,6 +80,23 @@
  let meta=[this.dataset,{parent:this}].reduce(merge,{});
  this.childNodes.forEach(destroy);
  resolve(import.meta.url,"default",lines.join("\n"),meta);
+},keydown({keyCode,ctrlKey})
+{let {s}=keyboard(keyCode);
+ if(!s||!ctrlKey)return;
+ arguments[0].preventDefault();
+ let source=this.querySelector(".cm-content").cmView.view.viewState.state.doc.toString();
+ let bytes=new Array(source.length);
+ for(let index in source)
+ bytes[index]=source.charCodeAt(index);
+ var blob=new Blob([new Uint8Array(bytes)],{type:'text/plain'});
+ let target=this.dataset.source+"?override=true";
+ let buffer=Object.assign(new FileReader(),{onload:compose
+((file,event)=>fetch(target,{method:"put",body:btoa(event.target.result)})
+,compose("text",["message"],record,{action:"broadcast",room:this.dataset.source},merge
+,["data"],record,{bubbles:true},merge,slip("message"),collect,slip(MessageEvent)
+,Reflect.construct,slip(this),"dispatchEvent")
+)})
+ buffer.readAsBinaryString(blob);
 }}
  };
 
@@ -91,95 +111,6 @@
 ,{".snippet":{width:"100%",margin:0}
  },merge,css
 )}}});
-};
-
- export async function collaborate(source,settings={})
-{//if(!Array.prototype.find.call(document.styleSheets[0].rules,rule=>rule.selectorText==".CodeMirror-scroll"))document.styleSheets[0].addRule(".CodeMirror-scroll","width:100vw");
- // if(globalThis.document.onkeydown!==suppresssave)
- // globalThis.document.onkeydown=suppresssave;
- source=string(source)?settings.source?source:await compose(fetch,digest)(source):JSON.stringify(source);
- let worksheet=CodeMirror(document({div:{}})
-,{lineNumbers:true,mode:"text",theme:"monokai",lineWrapping:true
- ,cursorHeight:1,indentUnit:2,indentWithTabs:false,tabSize:2
- ,foldGutter:["CodeMirror-linenumbers","CodeMirror-foldgutter"]
- ,minimap:true,autoCloseBrackets:true,matchBrackets:true
- ,extraKeys:{"Ctrl-S":contribute,"Ctrl-/":"undo"}
- });
-  //("rel","stylesheet");window.monokai.href="./codemirror_2019/codemirror-5.48.4/theme/monokai.css";
- //document.styleSheets[0].insertRule(Array.prototype.reduce.call(document.styleSheets[0].rules,(ruletext,rule,index)=>{if(rule.selectorText!=".cm-s-monokai.CodeMirror")return ruletext;document.styleSheets[0].removeRule(index);return ruletext},".cm-s-monokai.CodeMirror{position:absolute;background-color:transparent;text-align:left; height:"+window.innerHeight+"px;width:"+window.innerWidth+"px;"));
- worksheet.setValue(source);
- // rooms[settings.end].socket.on("welcome",socket=>console.log("welcome aboard:",socket));
- // rooms[settings.end].socket.on("enter",({guest,subject})=>console.log(guest,"joined",subject));
- // rooms[settings.end].socket.on("join",guest=>console.log(guest,"arrived"));
- // rooms[settings.end].socket.on("leave",guest=>console.log(guest,"left"));
- // rooms[settings.end].socket.on("save",({author,subject,content})=>subject?author!=socket[subject].socket.id?socket[subject].setValue(decodeURIComponent(escape(atob(content)))):window.Tone.Transport.start():console.log("failed"));
- let {wrapper}=worksheet.display;
- wrapper.id=settings.source;
- wrapper.append(document({style:{"#text":[codemirror,monokai].join("\n")}}));
- return wrapper;
-/*else
-{console.info("opening",label.textContent)
- if(!window.mirrors)window.mirrors={};
- else if(Object.keys(mirrors).reduce((present,key)=>
-{if(key==label.id)return window[key].replaceChild(document.createRange().createContextualFragment(awesome["fas fa-book-open"]).firstChild,window[key].lastChild).onclick=tunemirror;
- window[key].replaceChild(document.createRange().createContextualFragment(awesome["fas fa-journal-whills"]).firstChild,window[key].lastChild);mirrors[key].display.wrapper.style.display="none";return present
-},false))
- return mirrors[label.id].display.wrapper.style.display="block";
- spin(label,true);
- if(typeof CodeMirror=="undefined")await import('./codemirror_2019/codemirror-5.48.4/lib/codemirror.js').then(response=>import('./codemirror_2019/codemirror-5.48.4/mode/javascript/javascript.js').then(mode=>
-{//if(!Array.prototype.find.call(document.styleSheets[0].rules,rule=>rule.selectorText==".CodeMirror-sizer"))document.styleSheets[0].addRule(".CodeMirror-sizer","margin-left:0");
- if(!Array.prototype.find.call(document.styleSheets[0].rules,rule=>rule.selectorText==".CodeMirror-scroll"))document.styleSheets[0].addRule(".CodeMirror-scroll","width:100vw");
- return response
-}))//.then(response=>response.CodeMirror)'//.then(response=>response.CodeMirror)
- gapi.client.request(
-{'path':'/drive/v2/files/'+label.id,'method':'GET',callback:function(response)
-{if(document.onkeydown!==suppresssave)document.onkeydown=suppresssave;
- if(!window.mirrorstyle){window.mirrorstyle=document.head.appendChild(document.createElement("link"));window.mirrorstyle.setAttribute("rel","stylesheet");window.mirrorstyle.href="./codemirror_2019/codemirror-5.48.4/lib/codemirror.css";}
- if(!window.monokai)
-{window.monokai=document.head.appendChild(document.createElement("link"));window.monokai.setAttribute("rel","stylesheet");window.monokai.href="./codemirror_2019/codemirror-5.48.4/theme/monokai.css";
- document.styleSheets[0].insertRule(Array.prototype.reduce.call(document.styleSheets[0].rules,(ruletext,rule,index)=>{if(rule.selectorText!=".cm-s-monokai.CodeMirror")return ruletext;document.styleSheets[0].removeRule(index);return ruletext},".cm-s-monokai.CodeMirror{position:absolute;background-color:transparent;text-align:left; height:"+window.innerHeight+"px;width:"+window.innerWidth+"px;"));
- //if(!Array.prototype.find.call(document.styleSheets[0].rules,rule=>rule.selectorText==".cm-s-monokai.CodeMirror"))document.styleSheets[0].addRule()
-}
- mirrors[response.id]=mirrors[response.id]||CodeMirror(document.body,{lineNumbers:true,mode:"text",theme:"monokai",lineWrapping:true,cursorHeight:1,indentUnit:2,indentWithTabs:false,tabSize:2,foldGutter:["CodeMirror-linenumbers","CodeMirror-foldgutter"],minimap:true,autoCloseBrackets:true,matchBrackets:true,extraKeys:{"Ctrl-S":publishfile,"Ctrl-/":"undo"}});
- mirrors[response.id].display.wrapper.name=response.id;
- mirrors[response.id].display.wrapper.style.fontSize="12px"
- fetch(response.downloadUrl,{"headers":{"Authorization":"Bearer "+gapi.auth.getToken().access_token}}).then(file=>file.text()).then(text=>
-{spin(label);label.appendChild(document.createRange().createContextualFragment(awesome["fas fa-book-open"]).firstChild).onclick=tunemirror;
- mirrors[response.id].setValue(text)
-})
- //console.log(mirrors[response.id])
- /*if(!window.cartridge)document.body.appendChild(document.createElement("div")).id="cartridge";
- if(!window.livepress)window.livepress=new MutationObserver(mutations=>console.log(mutations)).observe(window.cartridge,{attributes:false,childList:true,characterData:false});
- if(!Array.prototype.find.call(document.styleSheets[0].rules,rule=>rule.selectorText=="#cartridge"))document.styleSheets[0].addRule("#cartridge","position:absolute;text-align:left;display:block;width:100vw;height:100vh;overflow:scroll;font-size:20px;z-index:0");
- cartridge.contentEditable="true";
- cartridge.setAttribute("name",click.target.id);
- cartridge.textContent="";
- cartridge.textContent=text;*/
-//});
-};
- 
- function contribute(instance)
-{let parcel=unescape(encodeURIComponent(instance.getValue()));
- let parcelarray=new Array(parcel.length);
- for(let i=0;i<parcel.length;i++){parcelarray[i]=parcel.charCodeAt(i);};
- let bytes=new Uint8Array(parcelarray);
- var blob=new Blob([bytes],{type:'text/plain'});
- let buffer=new FileReader();
- buffer.onload=function(event)
-{globalThis.postMessage(
- {action:"put"
- ,subject:instance.display.wrapper.id
- ,content:btoa(event.target.result)
- },globalThis.origin);
-};
- buffer.readAsBinaryString(blob);
-};
-
- function suppresssave(e)
-{e=e||window.event;if(!e.ctrlKey)return;
- switch(e.which||e.keyCode)
-{case 83:case 87:e.preventDefault();e.stopPropagation();break;
-}
 };
 
  var basetheme=EditorView.baseTheme(compose.call
