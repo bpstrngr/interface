@@ -60,7 +60,7 @@
 
  if(!thread&&!loader&&agent.node&&process.argv[1]?.endsWith(file))
  // without either loader flag, context begins at second index. 
- resolve(...process.argv.slice(2));
+ compose(resolve,note,drop(),0,process.exit)(...process.argv.slice(2));
 
 
  // https://nodejs.org/api/esm.html#esm_loaders 

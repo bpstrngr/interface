@@ -6,7 +6,7 @@
  import {EditorState,Compartment} from './haverbeke_2022_codemirror_state.js';
  import {EditorView,keymap,lineNumbers,drawSelection} from './haverbeke_2022_codemirror_view.js';
  import {history,defaultKeymap,historyKeymap} from './haverbeke_2022_codemirror_commands.js';
- import {foldGutter,foldKeymap,codeFolding,syntaxHighlighting,defaultHighlightStyle,HighlightStyle,syntaxTree,ensureSyntaxTree,foldable,foldEffect,foldAll} from './haverbeke_2022_codemirror_language.js';
+ import {foldGutter,foldKeymap,codeFolding,syntaxHighlighting,defaultHighlightStyle,HighlightStyle,syntaxTree,ensureSyntaxTree,foldable,foldEffect,unfoldAll,foldAll} from './haverbeke_2022_codemirror_language.js';
  import {javascript} from './haverbeke_2022_codemirror_js.js';
  import {StyleModule} from './haverbeke_2022_stylemod.js';
  import {parser} from "./haverbeke_2022_lezer_js.js"
@@ -80,8 +80,12 @@
  let meta=[this.dataset,{parent:this}].reduce(merge,{});
  this.childNodes.forEach(destroy);
  resolve(import.meta.url,"default",lines.join("\n"),meta);
-},keydown({keyCode,ctrlKey})
-{let {s}=keyboard(keyCode);
+},keydown({keyCode,ctrlKey,altKey})
+{let {s,w}=keyboard(keyCode);
+ if(w&&altKey)
+ return compose(combine(infer(),({whiteSpace})=>whiteSpace==="pre-wrap"
+?{maxWidth:"",whiteSpace:"",wordBreak:""}
+:{maxWidth:"calc(100% - 2.5em)",whiteSpace:"pre-wrap",wordBreak:"break-all"}),note,Object.assign)(this.querySelector(".cm-content").style);
  if(!s||!ctrlKey)return;
  arguments[0].preventDefault();
  let source=this.querySelector(".cm-content").cmView.view.viewState.state.doc.toString();

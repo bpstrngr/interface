@@ -50,7 +50,7 @@
 ,combine
 (compose(path,slip("path","resolve","./"),resolve,pass(permit,classified))
 ,compose(drop(1),buffer(JSON.parse,compose(drop(1,2),"base64",Buffer.from,"toString")))
-,compose("url",query,buffer(differ("override"),swap(undefined)),Boolean)
+,compose("url",query,buffer(differ("override"),swap(undefined)),is("true"))
 )
 ,combine
 (crop(1)
@@ -112,7 +112,7 @@
  if(!body.code&&unauthorised)
  exit(Error("invalid signature."));
  let put=Date.now();
- let expiry=1000*60*60;
+ let expiry=1000*60*60*6;
  let expired=put-record?.put>expiry;
  signature=signature&&!expired?signature:random(20);
  record=[record,body,{signature,put}].reduce(merge);

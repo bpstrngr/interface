@@ -860,15 +860,17 @@
 };
 
  export function keyboard(code)
-{let [key]=Object.entries(
+{let codes=
  {enter:13,escape:27,space:32,leftright:[37,39],updown:[38,40],backspace:8,tab:9
  ,shift:16,ctrl:17,alt:18,caps:20,end:35,home:36,insert:45,delete:46
  ,...Object.fromEntries(
 [Array.from({length:10},(number,index)=>index)
 ,Array.from("abcdefghijklmnopqrstuvwxyz")
 ].flat().map((key,index)=>[key,(index>9?55:48)+index]))
- }).find(({1:codes})=>
- [codes].flat().includes(code))||[];
+ };
+ if(string(code))
+ return codes[code];
+ let [key]=Object.entries(codes).find(({1:codes})=>[codes].flat().includes(code))||[];
  return key?{[key]:true}:{};
 };
 

@@ -54,7 +54,7 @@ Ecmascript module loader for commands and procedures.
 
   For an explanation why, see my notes on Form#fragment/link("https://jsinterface.org/Blik_2024_form/","Form"). 
 
-  This module paves a way out. 
+  In summary: 
 
 {text-align:justify;margin:0px 10%;}
   The javascript platform has been increasingly convoluted by non-standard syntactic variations in its ecosystem (commonjs, typescript, flow, jsx &c.), requiring growing amounts of configuration to maintain (manifest, tsconfig, webpack/babel, eslint &c.). 
@@ -63,11 +63,13 @@ Ecmascript module loader for commands and procedures.
 
   As insult to injury, package managers (npm, yarn, jsr &c.) have long obscured these configurations of external libraries, contributing to overengineering and growing complexity on the web by concealing implementation details in a language that is ultimately still distributed in source format (so to browsers as to servers). 
 
+  This module paves a way out.
+
 {text-align:center;}
 (Programmming should make us creative, not complacent.)#b 
 {text-align:left;}
 
- With the arrival of a loader interface in the (Ecmascript specification)@https://whatwg.github.io/loader/{"class":"invert reference","style":{"& *":{"filter":"invert(0.8)"}}} and its (Node.js implementation)@https://nodejs.org/api/module.html#customization-hooks, volatile dialects can finally be standardized dynamically, without a need for external configurations or a new platform trying to contain this heterogeneity (UMD ✞@https://jameshfisher.com/2020/10/04/what-are-umd-modules/, Deno@https://www.youtube.com/embed/M3BM9TB-8yA, Bun@https://bun.sh/docs). 
+ With the arrival of a loader interface in the (Ecmascript specification)@https://whatwg.github.io/loader/{"class":"invert reference","style":{"& *":{"filter":"invert(0.8)"}}} and its (Node.js implementation)@https://nodejs.org/api/module.html#customization-hooks, volatile dialects can finally be standardized dynamically, without a need for external configurations or a new platform trying to contain this heterogeneity (UMD @https://jameshfisher.com/2020/10/04/what-are-umd-modules/, Deno@https://www.youtube.com/embed/M3BM9TB-8yA, Bun@https://bun.sh/docs). 
 
 (Loading modules)#b takes 3 steps: 
 
@@ -102,7 +104,7 @@ inference#script/highlight(
  > resolve("./Blik_2023_search.js","sum",1,2,3);
  < 6
 )#span{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
- To ensure your modules work properly, an exposed "tests" object will get traversed after modularization. Tests map a module's namespace to a composition declarations of an input scope to terms and conditions of its output: 
+ To ensure your modules work properly, an exposed "tests" object will get traversed after modularization. Tests map a module's namespace to composition declarations from an input scope to terms and conditions on its output ((testcomposition)#script/highlight(`compose(subject,...terms,condition)(...scope)`){display:inline;work-break:break-all}): 
 
 tests#script/highlight(` export var tests=
  {sum:
@@ -156,7 +158,7 @@ node --import=./Blik_2023_interface.js ./haverbeke_2012_astring.js sum 1 2 3;)#s
 
  Since version 20.7, an explicit loader thread registration is required on the primary process, where the generic "--import" flags get executed. Since the client context is lost on secondary threads, Interface will then suppress the primary import and invoke resolution directly. 
 
- All these conditions (import/invocation context, local/remote sources, various dialects &c.) make the registration, resolution and loading procedures a bit lengthy, but you can expand them here to take a look: 
+ All these conditions (invocation context, location, dialects &c.) make the registration, resolution and loading procedures a bit lengthy, but you can expand them here to take a look: 
  sources#[["/Blik_2023_interface.js"],"interface/resolve",[["resolve","load"]],"inference/collect",["reverse"],"inference/iterate","search/extract",["module"],"meta/serialize",{"source":"Blik_2023_interface.js","fold":0},"script"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
 
  Due to lack of loader, git or vm modules, browser clients can't perform modularization, only location, access and testing: 
@@ -174,7 +176,7 @@ clientside#script/highlight(
 {text-align:left;}
 
 
- Now we can consider something potentially more useful than cumulating numbers, like opening a port to route requests from clients. 
+ Now we can consider something potentially more useful than cumulating numbers, like (opening a port)#b to route requests from clients. 
 
  Such a function will need two things: a namespace for the routes you want to expose, and one for the protocol you want to use (both sufficient as module specifiers, eg. "./routes.js" and "./protocol.json/https"). Some of the content of these namespaces can be required, so interactively "prompting" for missing ones (port, certification, encryption keys) can ensure integrity. There's only so many ways to compose these variables into a running server, variations may only differ in style, so here's the exact procedure hosting this document, before we look at examples for routes and protocols: 
 

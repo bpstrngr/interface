@@ -516,7 +516,7 @@
  let type=event.type.replace(/out$/,"");
  let start={focus:"in"}[type]||"over";
  let constructor=type.replace(/^./,infer("toUpperCase"))+"Event";
- this.dispatchEvent(new globalThis[constructor](type+start,event));
+ event.target.dispatchEvent(new globalThis[constructor](type+start,event));
 };
 };
 
