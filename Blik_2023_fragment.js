@@ -957,7 +957,7 @@
 };
 
  export function capture(module)
-{// synchronously register events to be routed to actions scoped by selector (eg. {#form:{change(){}}}). 
+{// register events to be routed to actions scoped by selector (eg. {#form:{submit(){}}}). 
  if(!globalThis.window)
  // Re-invoke on client to capture events. 
  return this.setAttribute("actions",module),this;
