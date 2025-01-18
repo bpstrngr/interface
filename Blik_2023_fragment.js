@@ -1027,7 +1027,7 @@
  if(/^#/.test(src))
  return;
  event.preventDefault();
- if(this.nextSibling.classList.contains("media"))
+ if(this.nextSibling?.classList.contains("media"))
  return this.nextSibling.remove();
  let fragment=(/^http/.test(src)
 ?compose(["iframe","src"],record,{iframe:{class:"media"},a:
