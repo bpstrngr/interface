@@ -54,15 +54,15 @@
  ,dotdot:{"@keyframes dotdot":{"0%":{width:"0em"},"33%":{width:".6em"},"66%":{width:"1em"},"100%":{width:"1.6em"}}}
  };
 
- let material={"box-shadow":"black 0px 0px 10px","&:hover":{"box-shadow":"black 0px 0px 50px"},margin:"1em"};
- let inset={"box-shadow":"black 0px 0px 10px inset","&:hover":{"box-shadow":"black 0px 0px 5px inset"}};
- let glow={white:{filter:"url(#shadow_white)"},amber:{filter:"url(#shadow_amber)"}};
+ export var material={"box-shadow":"black 0px 0px 10px","&:hover":{"box-shadow":"black 0px 0px 50px"},margin:"1em"};
+ export var inset={"box-shadow":"black 0px 0px 10px inset","&:hover":{"box-shadow":"black 0px 0px 5px inset"}};
+ export var glow={white:{filter:"url(#shadow_white)"},amber:{filter:"url(#shadow_amber)"}};
 
- var text=
+ export var text=
  {glow:{"text-shadow":"white 0px 0px 2px,white 0px 0px 2px",transition:"all 0.3s"}
  };
 
- let table=
+ export var table=
  {"font-size":"inherit",transition:"all 1s"
  ,"&#dashboard tr":{"vertical-align":"top"}
  ,"& tr input[type=checkbox]":
@@ -87,7 +87,7 @@
  }
  };
 
- var message=
+ export var message=
  {display:"table-row","text-align":"left"
  ,"&>span":
  {display:"table-cell","vertical-align":"top"
@@ -109,7 +109,18 @@
  }
  };
 
- var vignette=
+ export var list=
+ {display:"block","margin-left":"-5em","max-height":"50vh","min-width":"150px"
+ ,"&>li":
+ {...animation.fade.out,opacity:0,animation:"fadeout 6s","padding-left":0,"min-height":"4em","white-space":"normal"
+ ,...message
+ }
+ ,"&>li:not(:last-of-type)":{animation:"fadeout 2s"}
+ ,"&>span":{position:"fixed",bottom:"1.5em",left:"5.5em",color:"black"}
+ ,"&:hover>li":{opacity:1,animation:"fadein 1s"}
+ };
+
+ export var vignette=
  {position:"relative",width:"fit-content",margin:"auto"
  ,"&>img":{width:"100%"}
  ,"&:before":
@@ -144,7 +155,7 @@
  {"a,span[role='link']":{"text-decoration":"none",position:"relative",color:"#0097a7"}
  };
 
- var form=
+ export var form=
  {dropup:
  {"& ul":
  {display:"none","z-index":"2",padding:"0px","margin-bottom":"0px","text-align":"left","pointer-events":"none","list-style-type":"none"
@@ -199,37 +210,35 @@
 
  merge(form.label,{"&>span[role=textbox]":form.input});
 
- export default
- {middle,material,inset,glow,form,link,table,vignette,text,message
- ,theme:
+ export var theme=
  {":root":Object.fromEntries(Object.entries(
  {abyss:"#111111",isle:"#303030",text:"#dbd1b4",note:"#7a7564",highlight:"rgb(230,238,156)"
  ,font:"averia",hand:"ranger",form:"3.5em",size:"14px",align:"inherit",transition:"1s"
  }).map(([key,value])=>["--"+key,value]))
  ,"::-webkit-scrollbar":{display:"none"}
- }
- ,body:
+ };
+ export var body=
  {margin:0,"text-align":"center",overflow:"hidden","font-family":"var(--font)"
  ,"font-size":"var(--size)",color:"var(--text)","background-color":"var(--abyss)"
  ,transition:"all var(--transition)"
- }
- ,a:{"text-decoration":"none",position:"relative",color:"#0097a7"}
- ,blockquote:
+ };
+ export var a={"text-decoration":"none",position:"relative",color:"#0097a7"};
+ export var blockquote=
  {"&>p:last-child":{"text-transform":"italic","padding-left":"20%","&:before":{content:'"- "',"white-space":"pre"},"&:after":{content:'""'}}
  ,...Object.fromEntries(["before","after"].map(side=>["&>p:"+side,{content:'"\\""'}]))
- }
- ,row:{display:"inline-block",margin:"0 1em",height:"100%","list-style":"none"}
- ,column:{display:"block",margin:"1em 0","list-style":"none"}
- ,shelf:{position:"absolute",bottom:0,left:0,right:0,"text-align":"left"}
- ,radio:
+ };
+ export var row={display:"inline-block",margin:"0 1em",height:"100%","list-style":"none"};
+ export var column={display:"block",margin:"1em 0","list-style":"none"};
+ export var shelf={position:"absolute",bottom:0,left:0,right:0,"text-align":"left"};
+ export var radio=
  {"border-radius":"100%","background-color":"black",transform:"scale(0.8)"
  ,"&[checked=true]":
  {display:"none"
  ,"&[for=talk]~label[for=source]":{display:"none"}
  ,"&[for=module]~label[for=message]":{display:"none"}
  }
- }
- ,frame:
+ };
+ export var frame=
  {"white-space":"pre-wrap","overflow-wrap":"break-word",overflow:"scroll"
  ,width:"100vw",height:"100vh","text-align":"var(--align)"
  ,"& h2[onclick],.entry":{cursor:"pointer","&:hover":{transform:"scale(1.2)"}}
@@ -240,7 +249,7 @@
  // ,"&:not([id]).entry":{position:"relative",display:"block",margin:"auto auto 30px",height:"auto",cursor:"pointer"}
  // }
  }
- ,media:
+ export var media=
  {overflow:"visible",position:"relative","max-width":"100vw","max-height":"100vh"
  ,"& g.node":
  {"& text":{"pointer-events":"none"}
@@ -256,7 +265,7 @@
  }
  }
  }
- ,card:
+ export var card=
  {".card":
  {...material,margin:"1em",position:"relative",display:"inline-block",transition:"all 0.5s","text-align":"center",cursor:"pointer","border-radius":"50%"
  ,"&:hover":{...material["&:hover"],"&>span.post":{top:-15},"&>svg.trash":{display:"block"}}
@@ -269,13 +278,13 @@
  ,"&.record":{padding:"10px","border-radius":"10px","background-color":"var(--isle)"}
  }
  }
- ,multimedialink:{span:{"&[onclick]":{color:"rgb(255,171,0)"}}}
- ,wheel:
+ export var multimedialink={span:{"&[onclick]":{color:"rgb(255,171,0)"}}};
+ export var wheel=
  {"@keyframes dash":{"0%":{"stroke-dashoffset":187},"50%":{"stroke-dashoffset":1,transform:"rotate(135deg)"},"100%":{"stroke-dashoffset":187,transform:"rotate(450deg)"}}
  ,"svg.wheel":{height:"1em","& circle":{"stroke-dasharray":187,"stroke-dashoffset":0,"transform-origin":"center center",animation:"1.5s ease-in-out 0s infinite normal none running dash, 6s ease-in-out 0s infinite normal none running colors"}}
  //,"svg.wheel":{"& circle":{"stroke-dasharray":187,"stroke-dashoffset":0,"transform-origin":"center center",animation:"1.5s ease-in-out 0s infinite normal none running dash, 6s ease-in-out 0s infinite normal none running colors"}}
  }
- ,goo:
+ export var goo=
  {"@keyframes waltz":Object.fromEntries(Array(5).fill(70).map((offset,index,{length})=>
 [index/(length-1)*100+"%"
 ,{transform:"translate("+(index%2?offset:0)*(index<2?-1:1)+"%)"}
@@ -293,8 +302,8 @@
  ,"&+circle":{animation:"6s infinite cubic-bezier(0, 0.5, 1, 0.5) fill,1.5s infinite cubic-bezier(0.75, 0, 0, 1) scaler"}
  }
  }
- }
- ,carousel:
+ };
+ export var carousel=
  {...vignette
  ,margin:"auto"
  ,"&>div.reel":
@@ -308,13 +317,13 @@
  ,"&:hover":{"background-color":"var(--isle)","&>svg>*":{filter:"url(#shadow_white)"}}
  }
  }
- ,audio:
+ export var audio=
  {display:"inline",margin:"auto",height:"0.6em",outline:"none",background:"none"
  ,"&::-webkit-media-controls-panel":{"background-color":"rgb(35, 35, 35)"}
  ,"&::-webkit-media-controls-time-remaining-display":{"text-shadow":"none"}
  ,"&::-webkit-media-controls-current-time-display":{"text-shadow":"none"}
- }
- ,comment:
+ };
+ export var comment=
  {"font-size":"10px","font-family":"Averia Libre","white-space":"nowrap"
  ,"& img":{"height":"2em","width":"2em","vertical-align":"middle","border-radius":"50%"}
  ,"& svg":{"height":"2em","vertical-align":"middle"}
@@ -324,8 +333,8 @@
  ,"&::before":{content:"",color:"rgba(255, 248, 225, 0.5)",position:"absolute",width:"1em",height:"1em",left:"12px",background:"radial-gradient(1em at 1px 1px, transparent, transparent 1em, currentcolor 1em)","margin-left":"-2em",bottom:"0px"}
  ,"& >div":{position:"absolute",display:"block",right:"10px",color:"rgb(97, 97, 97)","font-size":"7px"}
  }
- }
- ,panel()
+ };
+ export function panel()
 {return {...[this.material,this.pill].reduce(merge,{})
  ,width:"100%","font-size":"2em",margin:0,"box-sizing":"border-box","border-radius":"0 0 0 0",transition:"all 0.5s"
  ,"&>label":
@@ -334,13 +343,13 @@
  ,"&:first-of-type":{float:"right","&>svg":{transform:"scale(1.5)"}}
  ,"& rect":{transform:"rotate(0deg)","transform-origin":"center",transition:"all 0.5s"}
  }      };
-},pill:{display:"inline-block","border-radius":"100vh",cursor:"pointer"}
- ,codemirror:{"div.cm-gutters":{"background-color":"var(--abyss) !important"}}
- ,socialecologies:
+};
+ export var pill={display:"inline-block","border-radius":"100vh",cursor:"pointer"}
+ export var codemirror={"div.cm-gutters":{"background-color":"var(--abyss) !important"}}
+ export var socialecologies=
  {".gallery-row":{"white-space":"nowrap",width:"100% !important"}
  ,".gallery-group":{display:"inline-block"}
- }
- ,assistant:{"& input":{"font-size":"20px","font-family":"inherit",color:"rgb(144,164,174)","text-align":"center",border:"none",outline:"none","background-color":"transparent"},"& *":{display:"block",margin:"auto"}}
- ,cloudflare:{"#cf_alert_div>div":{background:"black !important"}}
  };
+ export var assistant={"& input":{"font-size":"20px","font-family":"inherit",color:"rgb(144,164,174)","text-align":"center",border:"none",outline:"none","background-color":"transparent"},"& *":{display:"block",margin:"auto"}};
+ export var cloudflare={"#cf_alert_div>div":{background:"black !important"}};
 

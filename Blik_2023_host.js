@@ -73,12 +73,11 @@
 {let {query,pathname}=await resolve("url","parse",request.url,true);
  let method=request.method.toLowerCase();
  let methodic=pathname==="/"+method;
- if(methodic)
- // root path can't be routed methodically due to necessary leading slash. 
- pathname="";
- let filter=infer("filter",(step,index)=>(index||step)&&step!==".");
- let map={get:infer("map",step=>step||"interface")}[!methodic&&method];
- return compose(filter,map)(decodeURIComponent(pathname).split("/"));
+ return compose
+("/","split",infer("slice",1)
+,infer("filter",(step,index,{length})=>(index+1/length<1?step:true)&&step!==".")
+,{get:infer("map",step=>step||"interface")}[!methodic&&method]
+)(decodeURIComponent(methodic?"":pathname));
 };
 
  export async function submit(request,body,response)

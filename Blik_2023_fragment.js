@@ -2,7 +2,8 @@
  import {note,wait,observe,provide,collect,slip,infer,either,each,pass,tether,buffer,differ,compose,revert,record,combine,whether,swap,compound,something,string,basic,functor,defined,simple,exit,route,drop,crop,same,major,binary,is,has,not,numeric,array,pdflike,when,expect,generator,clock,heritage} from "./Blik_2023_inference.js";
  import {search,merge,prune,extract} from "./Blik_2023_search.js";
  import {serialize,proceduralize,mime,data} from "./Blik_2023_meta.js";
- import layout,{color} from "./Blik_2023_layout.js";
+ import * as layout from "./Blik_2023_layout.js";
+ import {color} from "./Blik_2023_layout.js";
  // var [jss,...plugins]=await resolve(["","nested","extend","global"].map(plugin=>
  // ["./Isonen_2014_jss",plugin].filter(Boolean).join("_")+".js")).then(modules=>
  // modules.map(module=>module.default||module));
@@ -241,7 +242,7 @@
  });
 };
 
- export function reference(title,source,layout,elements={audio:["mp3"],video:["mp4","webm"],img:["png","jpg","svg","gif"]})
+ export function reference(title,source,layout,elements={audio:["mp3"],video:["mp4","webm"],img:["png","jpg","jpeg","svg","gif"]})
 {let url=/^http/.test(source)?source:[window.location.origin,source.replace(/^\/*/,"")].join("/");
  let [extension]=/[^\.]+$/.exec(new URL(url).pathname)||[];
  let tag=layout||extension&&Object.keys(elements).find(key=>
@@ -408,7 +409,7 @@
  ,"&>svg":{width:"100% !important",height:"auto !important"}
  ,"&>svg tspan":{fill:"var(--text,#dbd1b4)"}
  ,"&>svg image":{opacity:0.3}
- ,"&>svg path":{fill:"rgba(33,33,33,0.533)"}
+ //,"&>svg path":{fill:"rgba(33,33,33,0.533)"}
  }
  }
  }
@@ -569,12 +570,12 @@
 
  export var deselect=compose(when(string),/[^\w]/g,"_","replace");
 
- export async function error(request)
+ export async function error(path,request)
 {when(is(Error))(this);
- if(!request.headers?.referer?.endsWith(request.url))
- return this;
+ // if(!request.headers?.referer?.endsWith(request.url))
+ // return this;
  let style=await css({body:{background:"black",color:color.red},"div#frame":layout.middle});
- let report=compose.call({center:{"#text":this.stack}},"Error","/svg/worm/document",[],[style],hypertext,document);
+ let report=compose.call({center:{"#text":this.stack}},"Error","/svg/animal/worm/document",[],[style],hypertext,document);
  let body=report.outerHTML;
  report.innerHTML="";
  return {body,status:500,type:mime("html")};
@@ -796,21 +797,6 @@
  compose(combine(compose("source",fetch,digest),infer()),transform,"over",this,insert)(subject);
 }}
  ,".reference":{click(){expand.call(this,...arguments);}}
- ,"#extend":
- {keydown(event)
-{event.stopPropagation();
- event.preventDefault();
- let {target,keyCode}=event;
- let {enter}=keyboard(keyCode);
- if(!enter)return;
- let value=target.textContent;
- if(Array.from(value).every(is(".")))
- return this.dispatchEvent(new Event("submit",{bubbles:true}));
- let form=this.closest("form");
- let method=form.getAttribute("method");
- fragment.form.call(form,{[method]:annotate({[value]:""},labels)});
- target.textContent="...";
-}}
  ,".spell":{click(){spell(this);}}
  ,".field":{click({target}){form.call(target.closest("form"),{extend:{key:"",value:""}})}}
  ,".carousel":
@@ -964,6 +950,7 @@
  let exclusion=
 [["motion","orientation","orientationabsolute"].map(sensor=>"device"+sensor)
 ,["start","run","end","cancel"].map(state=>"transition"+state)
+,"unhandledrejection"
 ].flat().map(event=>"on"+event);
  let inclusion=["focusout","focusin","message"].map(event=>"on"+event);
  let lead=["/","./"].find(lead=>module.startsWith(lead));

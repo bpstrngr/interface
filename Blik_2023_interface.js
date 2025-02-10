@@ -936,7 +936,7 @@
  export var cookies=buffer(compose(when(string),/ *; */,"split",provide,each(entry=>entry.split("=")),collect,Object.fromEntries),swap({}));
  export var query=compose(when(string),whether(compose("/","startsWith"),path=>window.location.origin+path,infer()),collect,slip(URL),Reflect.construct,"searchParams","entries",Array.from,Object.fromEntries);
  export function path(request)
-{let address=!string(request)?request.headers.origin+request.url:request;
+{let address=!string(request)?"http://"+request.headers.host+request.url:request;
  return new URL(address).pathname.replace(/^\/*|\/*$/g,"");
 };
 
