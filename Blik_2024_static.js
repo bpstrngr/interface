@@ -28,20 +28,20 @@
  };
 
  let format=compose("url",query,either("format",swap("binary")));
-
- export default
- {get:compose(combine(compose
-(swap("path","resolve","./"),resolve,true,classified,remember(compose(drop(1),list),source=>source)//,list
-,tether(prune,([field,value],path)=>value===null
+ let unfold=combine(compose(drop(1),"url",slip("url","parse"),resolve,"pathname"),crop(1));
+ let fold=whether(is("/get"),compose(drop(1),infer(scope,([field,value])=>
+ /[()]/.test(value.name)?value.name:serialize(value,null))),swap({}));
+ let route=tether(prune,([field,value],path)=>value===null
 ?describe(compose(drop(1),combine
 (compose(swap([path,field].flat().join("/")),pass(permit,classified)),format
 ),access),field)
-:value)
-),compose
-(combine(compose(drop(1),"url",slip("url","parse"),resolve,"pathname"),crop(1))
-,whether(is("/get"),compose(drop(1),infer(scope,([field,value])=>
- /[()]/.test(value.name)?value.name:serialize(value,null))),swap({}))
-)),merge)
+:value);
+
+ export default
+ {get:compose(combine(compose
+(swap("path","resolve","./"),resolve,true,classified
+,remember(compose(drop(1),list),source=>source),route
+),compose(unfold,fold)),merge)
  ,put:compose
 (drop(1),pass(buffer(combine
 (compose(path,slip("path","resolve","./"),resolve,published,true,permit)

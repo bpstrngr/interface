@@ -618,6 +618,15 @@
  let peer=document({div:{}});
  yield peer;
  await compose(Object.entries,provide,each(compose(consume,author,peer.append.bind(peer))),collect)(sub);
+ peer.append(document(
+ {hr:{style:"margin-top:3em"}
+ ,h3:{"#text":"Data-driven routing:"}
+ ,span:{"#text":"(until the Form island becomes obvious)"}
+ }));
+ await compose(resolve,peer.append.bind(peer))
+("./Blik_2024_network.js","default",arguments[0]
+,{spread:"force",linear:true,gradual:true,source}
+);
 };
 
  async function author({source,common,...feed},index)
@@ -962,11 +971,11 @@
  deferred.forEach(event=>this.addEventListener(event.slice(2),refer,{passive:false}));
  actions.then(actions=>
  new Set(Object.values(actions).flatMap(Object.keys)).forEach(event=>
- this.addEventListener(event,delegate.bind(actions),{passive:false}))).then(ready=>
+ this.addEventListener(event,delegate.bind(actions),{passive:false}))||
+ console.groupCollapsed("routing all propagated events to actions from scope: ",{fragment:this})||
+ console.log({[globalThis.window.location.origin+lead+module]:actions})||
+ console.groupEnd()).then(ready=>
  deferred.forEach(event=>this.removeEventListener(event.slice(2),refer)));
- console.groupCollapsed("routing all propagated events to actions from scope: ",{fragment:this});
- console.log({[globalThis.window.location.origin+lead+module]:actions});
- console.groupEnd();
  return this;
 };
 
