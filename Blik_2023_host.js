@@ -154,11 +154,12 @@
  certificate.setSubject(authority);
  certificate.setIssuer(authority);
  certificate.setExtensions(
-[{name:"basicConstraints",cA:true},{name:"keyUsage",keyCertSign:true,digitalSignature:true,nonRepudiation:true,keyEncipherment:true,dataEncipherment:true}
+[{name:"subjectAltName",altNames:[{type:6,value:"https://"+distinguishedname.commonName},{type:7,ip:"127.0.0.1"}]}
+,{name:"keyUsage",keyCertSign:true,digitalSignature:true,nonRepudiation:true,keyEncipherment:true,dataEncipherment:true}
 ,{name:"extKeyUsage",serverAuth:true,clientAuth:true,codeSigning:true,emailProtection:true,timeStamping:true}
 ,{name:"nsCertType",client:true,server:true,email:true,objsign:true,sslCA:true,emailCA:true,objCA:true}
-,{name:"subjectAltName",altNames:[{type:6,value:"http://blikpatrik.net"},{type:7,ip:"127.0.0.1"}]}
-,{name: 'subjectKeyIdentifier'}
+,{name:"basicConstraints",cA:true}
+,{name:"subjectKeyIdentifier"}
 ]);
  certificate.sign(rsa.privateKey);
  [key,cert]=await certification.reduce(record((certification,index)=>compose.call

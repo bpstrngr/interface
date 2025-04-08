@@ -9,6 +9,10 @@
  domain.charAt(Math.floor(Math.random()*domain.length))).join("");
 };
 
+ export var rgb=fill=>/^#/.test(fill)?/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(fill).slice(1,4).map(hue=>parseInt(hue,16)):fill;
+
+ export var normal=fraction=>Math.pow(Math.E,-(fraction**2)/2)/Math.sqrt(Math.PI*2);
+
  export function encrypt(hash,algorithm="sha256",value)
 {if(!this)
  return value=import("crypto").then(crypto=>value=crypto),function()
@@ -271,6 +275,14 @@ export function calendar(timestamps)
 :defaults[field],
  }),this);
 };
+
+ export function flatten(factor,path=[])
+{// expose factors in scope. 
+ let scope=this;
+ return [scope].flat().flatMap(scope=>
+ [scope,...flatten.call(scope[factor],factor)]);
+};
+
 
 export function trace(term, path = []) {
   // trace term in scope or stack.

@@ -664,6 +664,7 @@
     }}]},
     "https://github.com/d3/d3-ease":{"v3.0.1":"src/index.js"}
   },
+  "Bostock_2016_axis.js":{"https://github.com/d3/d3-axis":{"v3.0.0":["src/index.js"]}},
   "Bostock_2016_geo.js":{"https://github.com/d3/d3-geo":{"v3.1.1":["src/index.js",{"alias":{"d3-array":"./Bostock_2015_array.js"}}]}},
   "Bostock_2016_tiles.js":{"https://github.com/d3/d3-tile":{"v1.0.0":"src/index.js"}},
   "Bostock_2016_topojson.js":{"https://github.com/topojson/topojson-client":{"v3.1.0":"src/feature.js"}},
@@ -795,5 +796,12 @@
   }}]}},
   "Fogel_2016_polygonclipping.js":{"https://github.com/mfogel/polygon-clipping":{"v0.15.7":["src/index.js",{"alias":{"splaytree":"./Milevski_2018_splaytree.js","robust-predicates":"./Agafonkin_2019_robustpredicates.js"}}]}},
   "Agafonkin_2019_robustpredicates.js":{"https://github.com/mourner/robust-predicates":{"v3.0.2":["src/orient2d.js","src/orient3d.js","src/incircle.js","src/insphere.js"]}},
-  "Milevski_2018_splaytree.js":{"https://github.com/w8r/splay-tree":{"v3.1.2":["src/index.ts"]}}
+  "Milevski_2018_splaytree.js":{"https://github.com/w8r/splay-tree":{"v3.1.2":["src/index.ts"]}},
+  "Reinman_2015_smtp.js":{"https://github.com/nodemailer/smtp-server":{"v3.13.6":["lib/smtp-server.js",{
+    "syntax":"commonjs",
+    "alias":{"punycode.js":"./Bynens_2011_punycode.js","base32.js":"./Lee_2015_base32.js","nodemailer/lib/shared":"./Reinman_2011_nodemailer_shared.js"},
+    "edit":{"const ipv6normalize = require\\('ipv6-normalize'\\)":"function ipv6normalize(address){var _address=address.toLowerCase(),segments=_address.split(':'),length=segments.length,total=8,pos,_segments;\nif(segments[0]===''&&segments[1]===''&&segments[2]==='')segments.shift(),segments.shift();\nelse if(segments[0]===''&&segments[1]==='')segments.shift();\nelse if(segments[length-1]===''&&segments[length-2]==='')segments.pop();\nlength=segments.length;\nif(segments[length-1].indexOf('.')!==-1)total=7;\nfor(pos=0;pos<length;pos++)\nif(segments[pos]==='')break;\nif(pos<total){segments.splice(pos,1,'0000');while(segments.length<total)segments.splice(pos,0,'0000');length=segments.length;}\nfor(var i=0;i<total;i++){_segments=segments[i].split('');for(var j=0;j<3;j++)if(_segments[0]==='0'&&_segments.length > 1)_segments.splice(0,1);else break;segments[i]=_segments.join('');}\nvar best=-1,_best=0,_current=0,current=-1,inzeroes=false;\nfor(i=0;i<total;i++)if(inzeroes)if(segments[i]==='0')_current+=1;else{inzeroes=false;if(_current>_best)best=current,_best=_current;}else if(segments[i]==='0')\ninzeroes=true,current=i,_current=1;\nif(_current>_best)best=current,_best=_current;\nif(_best>1)segments.splice(best, _best, '');\nlength=segments.length;\nvar result='';\nif(segments[0]==='')result=':';\nfor(i in segments)result+=segments[i]+(i===length-1?'':':');\nif(segments[length-1]==='')result+=':';\nreturn result;}"}
+  }]}},
+  "Reinman_2011_nodemailer_shared.js":{"https://github.com/nodemailer/nodemailer":{"v6.9.15":["lib/shared/index.js",{"syntax":"commonjs"}]}},
+  "Lee_2015_base32.js":{"https://github.com/speakeasyjs/base32.js":{"v0.1.0":["index.js",{"syntax":"commonjs"}]}}
 }

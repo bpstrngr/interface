@@ -103,8 +103,8 @@
  if(!lead&&!module.includes("_"))
  module=await [2020,new Date().getFullYear()].reduce((min,max)=>
  Array(max-min).fill(max).map((year,index)=>year-index)).flatMap(year=>
- ["Blik"].map(author=>[author,year,module].join("_")+".js")).reduce((file,module)=>
- file.catch(fail=>this[module]=this[module]||import("./"+module).then(swap("./"+module)))
+ ["Blik"].map(author=>"./"+[author,year,module].join("_")+".js")).reduce((file,module)=>
+ file.catch(fail=>this[module]=this[module]||import(module).then(swap(module)))
 ,Promise.reject());
  return [lead+module,feature,...path];
 }.bind({});
@@ -407,10 +407,12 @@
  merge(entry,{replace:undefined})))
 ].flat().reduce(merge);
  syntax=definition.syntax;
- let foreign=!["javascript","json"].includes(syntax)||Object.keys(definition).length>1;
+ let foreign=!["javascript"].includes(syntax)||Object.keys(definition).length>1;
  // parse foreign to serialize standard syntax. without native interpretter to call (next), all syntax are foreign. 
  // using acorn's Parser methods (parse) until interpretation reducer is complete. 
  let edits=relevant(definition.edit||{},sparse);
+ if(syntax==="json")
+ syntax="module",edits["^((?:.*[\n$])*)"]="export default $1";
  let patriate=foreign?[infer(parse,syntax,{source}),definition,sanitize,serialize,"javascript",{source},parse,serialize]:[];
  let module=await buffer
 (compose(access,edits,edit,...patriate)

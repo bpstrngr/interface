@@ -250,7 +250,7 @@
  let target=/^#/.test(source)?"":undefined;
  return document(
  {[tag]:
- {id:title
+ {id:title.replace(" ","_")
  ,class:"reference",title,alt:title||source,href:source,src:source,controls:"on",target
  ,"#text":(title||source).replace(/_/g," ")
  }
@@ -375,6 +375,12 @@
  return !descendants.has(node)&&parent
 ?[...ascend.call(parent,limited?selector-1:selector,descendants.add(node)),node]
 :[node];
+};
+
+ export function tracenode(node,trail=[])
+{if(!node||node.documentElement)return trail;
+ let ordinal=node.parentNode&&Array.from(node.parentNode.childNodes).filter(({nodeName})=>nodeName==node.nodeName).indexOf(node);
+ return [...tracenode(node.parentNode,[]),node.nodeName+(ordinal?":nth-of-type("+(ordinal+1)+")":"")]
 };
 
  export function print(file)
@@ -618,15 +624,6 @@
  let peer=document({div:{}});
  yield peer;
  await compose(Object.entries,provide,each(compose(consume,author,peer.append.bind(peer))),collect)(sub);
- peer.append(document(
- {hr:{style:"margin-top:3em"}
- ,h3:{"#text":"Data-driven routing:"}
- ,span:{"#text":"(until the Form island becomes obvious)"}
- }));
- await compose(resolve,peer.append.bind(peer))
-("./Blik_2024_network.js","default",arguments[0]
-,{spread:"force",linear:true,gradual:true,source}
-);
 };
 
  async function author({source,common,...feed},index)
