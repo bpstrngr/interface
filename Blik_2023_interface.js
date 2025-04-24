@@ -1,6 +1,6 @@
  import {note,collect,same,has,promise,pass,slip,something,observe,functor,describe,remember,expect,control,trace,array,compound,simple,apply,stream,record,revert,provide,tether,differ,whether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,numeric,binary,basic,match,wait,string,defined,compose,combine,exit,clock,route,major} from "./Blik_2023_inference.js";
  import {sum,merge,stringify,search,edit,prune,parse as records,relevant} from "./Blik_2023_search.js";
- import {parse,sanitize,serialize,exports,reexport,test,mime,coordinates} from "./Blik_2023_meta.js";
+ import {parser,parse,sanitize,serialize,exports,reexport,test,mime,coordinates} from "./Blik_2023_meta.js";
 
  export const address=new URL(import.meta.url).pathname;
  export const location=address.replace(/\/[^/]*$/,"");//path.dirname(address);
@@ -16,9 +16,13 @@
  export function version(navigator)
 {let agent=["user-agent","userAgent"].reduce((agent,field)=>
  agent||navigator?.[field],undefined);
+ let device=/\((.*?)\)/.exec(agent)?.[1];
  let entries=agent?.match(/[\w\.]+\/(\.{0,1}\d+){1,2}/g)?.map(agent=>agent.split("/"))||
  [[agent]];
- return entries.map(([name,version])=>({[name]:Number(version)})).reduce(merge);
+ return entries.map(([name,version])=>({[name]:Number(version)})).reduce(merge
+,device?.split(";").reduce(function(platform)
+{return {[platform]:arguments[3].splice(1).join(";")};
+})||{});
 };
 
  export var feature=agent=>agent&&prune.call
@@ -26,7 +30,8 @@
  ,assertions:{node:16.14,Chrome:91,Firefox:Infinity}
  ,json:{Chrome:125,Firefox:Infinity}
  },([feature,condition])=>
- [true,Object.keys(condition).find(name=>agent[name])].filter(Boolean).reduce((value,name)=>
+[true,Object.keys(condition).find(name=>agent[name])
+].filter(Boolean).reduce((value,name)=>
  condition[name]<=agent[name])
 );
 
@@ -171,7 +176,7 @@
  let json=source.endsWith(".json")||undefined;
  let recover=compose(recovery,infer("call",scope,absolute,target),infer(resolve,context,next));
  let module=command
-?import(source,json&&{[feature(agent).attributes?"with":"assert"]:{type:"json"}})
+?import(source,json&&{[!agent.Linux&&feature(agent).attributes?"with":"assert"]:{type:"json"}})
 :either(precedent,compose
 (either(buffer(next,buffer(recover)),compose(swap(source),request))
 ,shortcircuit,{imports:new Set()},merge,[absolute],record,slip(scope),merge
@@ -335,7 +340,7 @@
  ,transform:(source,address)=>compose.call
 ("url","pathToFileURL",address,resolve,"href"
 ,{format:formats[route(address)[1]]}
-,load,code=>({code,map:{mappings:''}})
+,load,(code,map={mappings:''})=>({code,map})
 ),resolveId:(source,client)=>client
 ?/^\./.test(source)
 ?route(client).reduce((source,entry,index,route)=>
@@ -387,6 +392,8 @@
  Object.assign(context,{format:format="builtin"});
  if(!format&&/\.ts$/.test(source))
  Object.assign(context,{format:format="typescript"});
+ if(format==="module"&&/\.glsl\.js$/.test(source))
+ Object.assign(context,{format:syntax=format="shader"});
  if(format==="commonjs")
  // don't trust default assumption from nearest package.json as it often refers to inaccessible build outputs. 
  await require(target).catch(fail=>
@@ -399,7 +406,7 @@
  [entry,relative.splice(2).join("/")]);
  let {comment,...definition}=
 [{syntax}
-,typeof format==="object"?format||{}:await import(sources).then(sources=>
+,compound(format)?format||{}:await import(sources).then(sources=>
  [Object.values(sources.default[format]||{})[index]||sources.default[format]||{}].reduce(function flat(entries,source)
 {return [entries,!compound(source)||array(source)?source:Object.values(source).reduce(flat,[])].flat();
 },[]).filter(compound).map(entry=>
@@ -409,17 +416,21 @@
  syntax=definition.syntax;
  let foreign=!["javascript"].includes(syntax)||Object.keys(definition).length>1;
  // parse foreign to serialize standard syntax. without native interpretter to call (next), all syntax are foreign. 
- // using acorn's Parser methods (parse) until interpretation reducer is complete. 
+ // using acorn's Parser methods (parse) until semiotic reducer is complete. 
  let edits=relevant(definition.edit||{},sparse);
  if(syntax==="json")
  syntax="module",edits["^((?:.*[\n$])*)"]="export default $1";
- let patriate=foreign?[infer(parse,syntax,{source}),definition,sanitize,serialize,"javascript",{source},parse,serialize]:[];
+ let patriate=foreign?parser[format]||compose
+(infer(parse,syntax,{source}),definition,sanitize,serialize
+,"javascript",{source},parse,serialize):infer();
  let module=await buffer
-(compose(access,edits,edit,...patriate)
+(compose(access,edits,edit,patriate)
 ,fail=>note.call(1,"Failed to patriate "+syntax+" \""+source+"\" due to",fail)&&wait(1000)(fail).then(exit)
 )(source,true);
  if(next)
- return compose.call({source:module,format:{json:"json"}[syntax]||"module"},shortcircuit);
+ return compose.call(module,source=>(
+ {source,format:{json:"json"}[syntax]||"module"
+ }),shortcircuit);
  return module;
 };
 
@@ -778,7 +789,8 @@
  async function freefetch(request,{method,body,headers}={})
 {let remote=/^http/.test(request);
  let url=string(request)?!remote
-?[this.location.origin,request?.replace(/^[\.\/]+/,"")||""].join("/")
+?!this?exit(freefetch.name+" not bound to JSDOM for local origin request. No server context for "+request+"?")
+:[this.location.origin,request?.replace(/^[\.\/]+/,"")||""].join("/")
 :request:request.url;
  let {protocol,host,hostname,path,port}=await resolve("url","parse",url);
  return revert((respond,reject,request,body)=>compose
@@ -789,7 +801,7 @@
 ,{data:record(body=>body).bind(body)
  ,error:compose(note,reject)
  ,end:compose
-(swap(body),body=>Buffer.concat(body,sum(body.map(({length})=>length))),buffer(status===302
+(swap(body),body=>Buffer.concat(body,sum(body.map(({length})=>length))),buffer([302,308].includes(status)
 ?compose(swap({...request,url:headers.location}),fetch)
 :compose(body=>({body,status,headers,type:headers["content-type"]}),request,stage)
 ,reject),respond
@@ -824,15 +836,16 @@
  note.call(3,"navigated browser to "+url);
  expose(window=browser.window);
 })(url);
-}
+};
 
  export async function stage(response,request)
 {let agent=version(request.headers);
- let browser="Mozilla/Chrome/Safari/AppleWebKit".split("/").some(has.bind(agent||{}));
  let features=feature(agent);
- let importing=request.headers?.referer&&!request.headers.referer.endsWith(request.url)&&request?.headers?.["sec-fetch-dest"]==="script";
+ let browser="Mozilla/Chrome/Safari/AppleWebKit".split("/").some(has.bind(agent||{}));
+ let direct=request.headers?.referer?.endsWith(request.url)===false;
+ let importing=!direct&&request?.headers?.["sec-fetch-dest"]==="script";
  let fail=is(Error)(response);
- let type=!fail&&response?.type||mime(response?.nodeName?.toLowerCase()||(either(simple,array)(response)?"json":request.url))||mime(response.nodeName?"html":"txt");
+ let type=!fail&&response?.type||response.headers?.get("Content-Type")||mime(response?.nodeName?.toLowerCase()||(either(simple,array)(response)?"json":path(request)))||mime(response.nodeName?"html":"txt");
  let [js,json]=[type===mime("js"),type===mime("json")];
  let status=response?fail?500:response.status||200:404;
  let success=status<400;
@@ -874,10 +887,10 @@
 {let gzip=this.headers["Content-Encoding"]==="gzip";
  // if(simple(this.body))
  // return compose(JSON.stringify(this.body),"encode","buffer")(new TextEncoder());
- if(this.body.constructor?.name=="Buffer")
+ if(this.body.constructor?.name==="Buffer")
  return compose
-(infer("reduce",(array,byte,index)=>Object.assign(array,{[index]:byte})
-,new Uint8Array(new ArrayBuffer(this.body.length)))
+(new Uint8Array(new ArrayBuffer(this.body.length))
+,(buffer,array)=>{for(let i=0;i<array.length;i++){array[i]=buffer[i]};return array}
 ,"buffer"
 )(this.body);
  return Buffer.from(this.body,"utf-8");

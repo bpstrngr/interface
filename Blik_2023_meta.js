@@ -415,6 +415,17 @@
  }
  };
 
+ export var parser=
+ {async shader(code)
+{let {default:Magic}=await import("./Harris_2014_magic_string.js");
+ let js=new Magic(code).replace(/\/\* glsl \*\/\`(.*?)\`/sg,function(match,p1)
+{return JSON.stringify(
+[/\r/g,/[ \t]*\/\/.*\n/g,/[ \t]*\/\*[\s\S]*?\*\//g].reduce((p1,expression)=>
+ p1.replace(expression,""),p1.trim()).replace(/\n{2,}/g,"\n"));
+});
+ return provide([js.toString(),js.generateMap()]);
+}};
+
  export function serialize(syntax,format="astring",options)
 {// convert abstract syntax tree or runtime namespace to javascript;
  if(functor(syntax))
@@ -565,7 +576,7 @@
  ,image:{jpeg:["jpg","jpeg"],"x-icon":"ico","svg+xml":"svg","":["gif","png"]}
  ,audio:{mpeg:"mp3"}
  ,font:{ttf:"ttf"}
- ,application:{xml:["gexf"],"":["json","pdf","xml"]}
+ ,application:{xml:["gexf"],"geo+json":"geojson","":["json","pdf","xml"]}
  }
 ,(extension,mime)=>
  Object.entries(mime).reduce((mime,[type,subtypes])=>mime||
@@ -575,13 +586,17 @@
 ,undefined)?.join("/")
 );
 
+ export var demarkup=text=>Array.from(text).map(symbol=>
+ ({"<":"&lt;",">":"&gt;"}[symbol]||symbol)).join("");
  export var data=(mime,base64)=>"data:image/"+mime+";base64,"+base64;
  export var quote=text=>"\""+text.replace(/([^\\])\\([^\\])/g,"$1\\\\$2").replace(/\"/g,"\\\"").replace(/\n/g
 // css:after pseudoelement takes \A for linebreak. 
 ,"\\A ")+"\"";
- export var demarkup=text=>Array.from(text).map(symbol=>
- ({"<":"&lt;",">":"&gt;"}[symbol]||symbol)).join("");
-
+ export function bytes(buffer)
+{let bytes=new Uint8Array(buffer),next=Buffer.alloc(buffer.byteLength);
+ for(let i=0;i<buffer.byteLength;i++){next[i]=bytes[i];}
+ return next;
+};
  export async function test(namespace,tests,path=[])
 {// compose tests defined in namespace. 
  let assert=await import("assert");

@@ -16,6 +16,7 @@
  export function binary(term){return typeof term==="boolean";};
  export function string(term){return typeof term==="string";};
  export function numeric(term){return typeof term==="number"};
+ export function finite(term){return numeric(term)&&term<Infinity};
  export function simple(term){return term?.constructor?.name==="Object";};
  export function compound(term){return Boolean(typeof term==="object"&&term);};
  export function basic(term){return compound(term)&&(simple(term)||array(term));};
@@ -316,16 +317,15 @@
  return confer(combine,...arguments);
  let context=collect(this);
  let [factor]=context;
- let records=Object.entries(Object(factor));
  let content=terms.map(term=>!numeric(term)
 ?compose.call(context,provide,term)
 :Object.assign([]
 ,Array(Math.floor(term)).fill(factor)
 ,term%1&&
- {[Math.floor(term)]:records.length
-?compose.call(records.slice(0,term%1*records.length)
-,Object.fromEntries,...array(factor)?[Object.values]:[])
-:term%1*factor
+ {[Math.floor(term)]:infer.call(Object[array(factor)?"values":"entries"](Object(factor))
+,records=>records.length
+?Object[array(factor)?"values":"fromEntries"](records.slice(0,term%1*records.length))
+:term%1*factor)
  }));
  return provide(collect(...content));
 // length?compose(drop(),functor,Math.ceil,Array,fields,"fill","flat",[]

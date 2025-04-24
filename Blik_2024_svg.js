@@ -178,7 +178,14 @@
  };
 
  export var effect=
- {"shadow":{"defs":{"filter":
+ {"contour":{"id":"contour","feMorphology":
+[{"id":"grow","operator":"dilate","radius":1.1,"result":"grow"}
+,{"id":"shrink","in":"SourceGraphic","operator":"erode","radius":0,"result":"shrink"}
+],"feFlood":{"flood-color":"#004ae4","flood-opacity":1,"result":"color"}
+ ,"feComposite":
+[{"id":"plane","operator":"in","in":"color","in2":"grow","result":"plane"}
+,{"id":"mask","operator":"over","in":"shrink","in2":"plane"}
+]},"shadow":{"defs":{"filter":
  {"id":"shadow","height":"150%"
  ,"feGaussianBlur":{"in":"SourceAlpha","stdDeviation":"0.5"}
  ,"feMerge":{"feMergeNode":[{},{"in":"SourceGraphic"}]}

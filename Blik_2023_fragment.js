@@ -51,6 +51,9 @@
  let classlist=name==="class"&&array(value);
  if(classlist)
  return [fragment,...nodes,[name,value.join(" ")]];
+ let style=name==="style"&&simple(value)&&!defined(value["#text"]);
+ if(style)
+ value={"#text":css(value)};
  let defaults=
  {a:{target:"_blank"}
  ,svg:{viewBox:"0 0 1 1",xmlns:namespaces.svg,"xmlns:xlink":namespaces.xlink}
@@ -344,7 +347,7 @@
  !["id","class","style"].includes(name.toLowerCase())&&!name.startsWith("on")).map(({name,value})=>
  "["+[name,value].join("='")+"']").join("");
  return name+Object.entries(selectors).flatMap(([attribute,selector])=>
- [attribute==="classList"?Array.from(node[attribute]):["class","className"].includes(attribute)?node[attribute]?.split(' '):node[attribute]].flat().filter(value=>
+ [attribute==="classList"?Array.from(node[attribute]):["class","className"].includes(attribute)?node[attribute]?.split?.(' ')||[]:node[attribute]].flat().filter(value=>
  string(value)&&value?.length).map(value=>selector+value)).join('')+attributes;
 };
 
@@ -678,11 +681,12 @@
 {return document(
  {style:index?undefined:
  {"#text":await css({".article":
- {color:"#b71c1c",display:"block","white-space":"pre-wrap",cursor:"pointer",padding:"0.5em",position:"relative","z-index":2
+ {color:"#b71c1c",display:"block","white-space":"pre-wrap"
+ ,cursor:"pointer",padding:"0.5em",position:"relative","z-index":2
  ,"&>canvas":{"border-radius":"50%",height:"1em",width:"1em","vertical-align":"bottom"}
  ,"&>span":{color:"var(--text)",display:"block"}
  ,"&:hover>span":layout.text.glow
- ,"&+span":{"text-align":"left","& img":{"max-width":"100%",height:"auto"},"& audio":layout.audio}
+ ,"&+span":{"text-align":"left","&>img":{"max-width":"100%",height:"auto"},"&>audio":layout.audio}
  }})
  }
  ,span:
@@ -989,8 +993,10 @@
 
  export function defer(event)
 {// asynchronizing event dispatch unblocks its synchronous default unless prevented. 
- this.then(actions=>delegate.call(actions,event));
  event.preventDefault();
+ event=Object.fromEntries("type/target/keyCode/isTrusted/bubbles/srcElement".split("/").map(field=>
+ [field,event[field]]));
+ this.then(actions=>delegate.call(actions,event));
  console.warn({["captured "+event.type+" event from"]:event.target});
 };
 
@@ -1260,22 +1266,25 @@
  return false;
  if(!past?.nodeName)
  return [merge(last,{text:""}),simple(past)?document({span:{"#text":past.text}}):past||[],syntax];
- let style=buffer(compose(style=>"{"+style+"}",JSON.parse),drop(1))(last.style);
- if(!style)
+ let fragment=buffer(compose(style=>"{"+style+"}",JSON.parse),drop(1))(last.style);
+ if(!fragment)
  return [{text:""},past,syntax];
- let fragment=defined(style.style)
-?compose.call(style,({style,...fragment})=>fragment)
-:undefined;
- style=compose(style=>simple(style)
-?{"#text":css(
- {[qualify(fragment)]:merge(style,last.block?{position:"relative"}:{},0)
- })}
-:(last.block?"position:relative;":"")+style)(style.style??style);
- let jss=simple(style);
+ let selector=simple(fragment)&&qualify(fragment);
+ // jss text is deprecated in favor of fragment jss
+ let style=selector?fragment.style:simple(fragment)
+?Object.entries(fragment).map(entry=>entry.join(":")).join(";")
+:fragment;
+ let jss=selector&&simple(style);
+ fragment=
+ {...selector&&fragment,style:jss
+?{[selector]:merge(style,last.block?{position:"relative"}:{},0)
+ }
+:style&&((last.block?"position:relative;":"")+style)
+ };
  if(last.block)
- return [document({div:{class:"inline",style,...fragment}}),past,syntax];
- document.call(past,!jss?{style,...fragment}:fragment);
- let next=jss?document({style}):[];
+ return [document({div:{class:"inline",...fragment}}),past,syntax];
+ document.call(past,fragment);
+ let next=jss?document({style:fragment.style}):[];
  return [{text:""},next,past,syntax];
 },"[":function compound(last,...syntax)
 {if(!string(last.tag)||last.compound)

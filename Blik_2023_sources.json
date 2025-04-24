@@ -622,6 +622,17 @@
   "Bostock_2011_internmap.js":{"https://github.com/mbostock/internmap":{"v2.0.3":"src/index.js"}},
   "Bostock_2015_array.js":{"https://github.com/d3/d3-array":{"v3.2.0":["src/index.js",{"alias":{"internmap":"./Bostock_2011_internmap.js"}}]}},
   "Bostock_2011_d3_select.js":{"https://github.com/d3/d3-selection":{"v3.0.0":"src/index.js"}},
+  "Vasturiano_2017_binarytree.js":{"https://github.com/vasturiano/d3-binarytree":{"v1.0.2":"src/index.js"}},
+  "Bostock_2011_quadtree.js":{"https://github.com/d3/d3-quadtree":{"v3.0.1":"src/index.js"}},
+  "Vasturiano_2015_octree.js":{"https://github.com/vasturiano/d3-octree":{"v1.1.0":"src/index.js"}},
+  "Bostock_2011_dispatch.js":{"https://github.com/d3/d3-dispatch":{"v3.0.1":"src/index.js"}},
+  "Bostock_2011_timer.js":{"https://github.com/d3/d3-timer":{"v3.0.1":"src/index.js"}},
+  "Bostock_2011_force.js":{"https://github.com/d3/d3-force":{"v3.0.0":["src/index.js",{"alias":{
+      "d3-quadtree":"./Bostock_2011_quadtree.js",
+      "d3-dispatch":"./Bostock_2011_dispatch.js",
+      "d3-timer":"./Bostock_2011_timer.js"
+    }}]}
+  },
   "Bostock_2011_d3.js":{
     "https://github.com/d3/d3-time":{"v3.0.0":["src/index.js",{"alias":{"d3-array":"./Bostock_2015_array.js"}}]},
     "https://github.com/d3/d3-time-format": {"v4.1.0":["src/index.js",{"alias": {"d3-time": "./Bostock_2011_d3/0/src/index.js"}}]},
@@ -635,32 +646,24 @@
       "d3-interpolate": "./Bostock_2011_d3/3/src/index.js",
       "d3-format": "./Bostock_2011_d3/4/src/index.js"
     }}]},
-    "https://github.com/d3/d3-quadtree":{"v3.0.1":"src/index.js"},
-    "https://github.com/d3/d3-dispatch":{"v3.0.1":"src/index.js"},
-    "https://github.com/d3/d3-timer":{"v3.0.1":"src/index.js"},
-    "https://github.com/d3/d3-force":{"v3.0.0":["src/index.js",{"alias":{
-      "d3-quadtree":"./Bostock_2011_d3/6/src/index.js",
-      "d3-dispatch":"./Bostock_2011_d3/7/src/index.js",
-      "d3-timer":"./Bostock_2011_d3/8/src/index.js"
-    }}]},
     "https://github.com/d3/d3-hierarchy":{"v3.1.2":"src/index.js"},
     "https://github.com/d3/d3-path":{"v3.0.1":"src/index.js"},
-    "https://github.com/d3/d3-drag":{"v3.0.0":["src/index.js",{"alias":{"d3-dispatch":"./Bostock_2011_d3/7/src/index.js","d3-selection":"./Bostock_2011_d3_select.js"}}]},
-    "https://github.com/d3/d3-shape":{"v3.1.0":["src/index.js",{"alias":{"d3-path":"./Bostock_2011_d3/11/src/index.js"}}]},
+    "https://github.com/d3/d3-drag":{"v3.0.0":["src/index.js",{"alias":{"d3-dispatch":"./Bostock_2011_dispatch.js","d3-selection":"./Bostock_2011_d3_select.js"}}]},
+    "https://github.com/d3/d3-shape":{"v3.1.0":["src/index.js",{"alias":{"d3-path":"./Bostock_2011_d3/7/src/index.js"}}]},
     "https://github.com/d3/d3-zoom":{"v3.0.0":["src/index.js",{"alias":{
-      "d3-dispatch":"./Bostock_2011_d3/7/src/index.js",
-      "d3-drag":"./Bostock_2011_d3/12/src/index.js",
+      "d3-dispatch":"./Bostock_2011_dispatch.js",
+      "d3-drag":"./Bostock_2011_d3/8/src/index.js",
       "d3-interpolate":"./Bostock_2011_d3/3/src/index.js",
       "d3-selection":"./Bostock_2011_d3_select.js",
-      "d3-transition":"./Bostock_2011_d3/15/src/index.js"
+      "d3-transition":"./Bostock_2011_d3/11/src/index.js"
     }}]},
     "https://github.com/d3/d3-transition":{"v3.0.1":["src/index.js",{"alias":{
       "d3-selection":"./Bostock_2011_d3_select.js",
       "d3-color":"./Bostock_2011_d3/2/src/index.js",
-      "d3-dispatch":"./Bostock_2011_d3/7/src/index.js",
-      "d3-ease":"./Bostock_2011_d3/16/src/index.js",
+      "d3-dispatch":"./Bostock_2011_dispatch.js",
+      "d3-ease":"./Bostock_2011_d3/12/src/index.js",
       "d3-interpolate":"./Bostock_2011_d3/3/src/index.js",
-      "d3-timer":"./Bostock_2011_d3/8/src/index.js"
+      "d3-timer":"./Bostock_2011_timer.js"
     }}]},
     "https://github.com/d3/d3-ease":{"v3.0.1":"src/index.js"}
   },
@@ -803,5 +806,29 @@
     "edit":{"const ipv6normalize = require\\('ipv6-normalize'\\)":"function ipv6normalize(address){var _address=address.toLowerCase(),segments=_address.split(':'),length=segments.length,total=8,pos,_segments;\nif(segments[0]===''&&segments[1]===''&&segments[2]==='')segments.shift(),segments.shift();\nelse if(segments[0]===''&&segments[1]==='')segments.shift();\nelse if(segments[length-1]===''&&segments[length-2]==='')segments.pop();\nlength=segments.length;\nif(segments[length-1].indexOf('.')!==-1)total=7;\nfor(pos=0;pos<length;pos++)\nif(segments[pos]==='')break;\nif(pos<total){segments.splice(pos,1,'0000');while(segments.length<total)segments.splice(pos,0,'0000');length=segments.length;}\nfor(var i=0;i<total;i++){_segments=segments[i].split('');for(var j=0;j<3;j++)if(_segments[0]==='0'&&_segments.length > 1)_segments.splice(0,1);else break;segments[i]=_segments.join('');}\nvar best=-1,_best=0,_current=0,current=-1,inzeroes=false;\nfor(i=0;i<total;i++)if(inzeroes)if(segments[i]==='0')_current+=1;else{inzeroes=false;if(_current>_best)best=current,_best=_current;}else if(segments[i]==='0')\ninzeroes=true,current=i,_current=1;\nif(_current>_best)best=current,_best=_current;\nif(_best>1)segments.splice(best, _best, '');\nlength=segments.length;\nvar result='';\nif(segments[0]==='')result=':';\nfor(i in segments)result+=segments[i]+(i===length-1?'':':');\nif(segments[length-1]==='')result+=':';\nreturn result;}"}
   }]}},
   "Reinman_2011_nodemailer_shared.js":{"https://github.com/nodemailer/nodemailer":{"v6.9.15":["lib/shared/index.js",{"syntax":"commonjs"}]}},
-  "Lee_2015_base32.js":{"https://github.com/speakeasyjs/base32.js":{"v0.1.0":["index.js",{"syntax":"commonjs"}]}}
+  "Lee_2015_base32.js":{"https://github.com/speakeasyjs/base32.js":{"v0.1.0":["index.js",{"syntax":"commonjs"}]}},
+  "mrdoob_2010_three.js":{"https://github.com/mrdoob/three.js/src":{"r175":["src/Three.js"]}},
+  "mrdoob_2019_svgrenderer.js":{"https://github.com/mrdoob/three.js/examples/jsm":{"r175":["examples/jsm/renderers/SVGRenderer.js","examples/jsm/loaders/SVGLoader.js",{"alias":{"three":"./mrdoob_2010_three.js"}}]}},
+  "mrdoob_2010_three_effects.js":{"https://github.com/mrdoob/three.js/examples/jsm":{"r175":[
+    "examples/jsm/postprocessing/EffectComposer.js",
+    "examples/jsm/postprocessing/OutlinePass.js",
+    "examples/jsm/postprocessing/RenderPass.js",
+    "examples/jsm/postprocessing/ShaderPass.js",
+    "examples/jsm/postprocessing/BloomPass.js",
+    "examples/jsm/postprocessing/FilmPass.js",
+    "examples/jsm/modifiers/SimplifyModifier.js",
+    "examples/jsm/shaders/FXAAShader.js",
+    {"alias":{"three":"./mrdoob_2010_three.js"}}
+  ]}},
+  "mrdoob_2010_three_actions.js":{"https://github.com/mrdoob/three.js/examples/jsm":{"r175":[
+    "examples/jsm/controls/OrbitControls.js",
+    {"alias":{"three":"./mrdoob_2010_three.js"}}
+  ]}},
+  "Vasturiano_2016_force3d.js":{"https://github.com/vasturiano/d3-force-3d/src":{"v3.0.6":["src/index.js",{"alias":{
+      "d3-binarytree":"./Vasturiano_2017_binarytree.js",
+      "d3-quadtree":"./Bostock_2011_quadtree.js",
+      "d3-octree":"./Vasturiano_2015_octree.js",
+      "d3-dispatch":"./Bostock_2011_dispatch.js",
+      "d3-timer":"./Bostock_2011_timer.js"
+  }}]}}
 }

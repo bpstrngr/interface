@@ -1,4 +1,4 @@
- import {note,something,record,provide,has,compose,buffer,slip,drop,stream,infer,either,swap,not,whether,pass,collect,simple,defined,string,compound,tether,is,numeric,array,basic,iterable} from "./Blik_2023_inference.js";
+ import {note,something,record,provide,has,compose,buffer,slip,drop,stream,infer,either,swap,not,whether,pass,collect,simple,functor,defined,string,compound,tether,is,numeric,array,basic,iterable} from "./Blik_2023_inference.js";
  import {resolve} from "./Blik_2023_interface.js";
 
  export var stringify=scope=>
@@ -78,7 +78,7 @@ export function calendar(timestamps)
  [year+(month>12),month%12||12].join('/')+'/1 0:0')).getTime();
 };
 
- export function normalize(samples, resolution, range)
+ export function normalize(samples,resolution,range)
 {const grid = range.reduce((min, max) => max - min) / resolution;
  return samples.map(sample=>
 [[sample.lon,sample.lat].map(axis=>Math[axis<0?'ceil':'floor'](axis/grid)*grid).join(':')
@@ -113,11 +113,12 @@ export function calendar(timestamps)
  return range[index];
 };
 
- export const antipode = (point, scale) => point / (scale / 360) - 180;
+ export const antipode=(point,scale)=>point/(scale/360)-180;
 
- export const bisection = (point, scale) => (point / (scale / 2) - 1) * -1;
+ export const bisection=(point,scale)=>(point/(scale/2)-1)*-1;
 
- export const gudermannian = (normal) =>((2 * Math.atan(Math.exp(normal * Math.PI)) - Math.PI / 2) * 180) / Math.PI;
+ export const gudermannian=normal=>
+ ((2*Math.atan(Math.exp(normal*Math.PI))-Math.PI/2)*180)/Math.PI;
 
  export function quadrate(center,width,ratio)
 {return [-1,1].map(unit=>[0,1].map(axis=>
@@ -220,7 +221,8 @@ export function calendar(timestamps)
 
  var index=whether
 (entries=>!entries.length||!entries.some(([field],index,entries)=>
- isNaN(field)||[entries[index-1]?.[0],field].map(Number).reduce((past,next)=>next<past))
+ isNaN(field)||[entries[index-1]?.[0],field].map(Number).reduce((past,next)=>
+ next<past))
 ,compose(pass(infer("forEach",function([field],index,entries)
 {if(!index)
  // snap first index. 
@@ -283,9 +285,8 @@ export function calendar(timestamps)
  [scope,...flatten.call(scope[factor],factor)]);
 };
 
-
-export function trace(term, path = []) {
-  // trace term in scope or stack.
+ export function trace(term,path=[])
+{// trace term in scope or stack.
   let scope = this;
   if (!something(term))
     return stream(
@@ -343,22 +344,25 @@ export function trace(term, path = []) {
 {if(!this||ancestors.has(this))
  return [];
  ancestors.add(this);
- let fold=[field].flat().flatMap(field=>field instanceof Function?field(this):this?.[field]||[]);
+ let fold=[field].flat().flatMap(field=>functor(field)?field(this):this?.[field]||[]);
  return [this,fold.flatMap(scope=>unfold.call(scope,field,ancestors))].flat();
 };
 
-export function clone(scope)
+ export function clone(scope)
 {return merge(JSON.parse(JSON.stringify(scope)),scope);
 };
 
-export function isolate(path)
+ export function isolate(path)
 {// prune scope to specified path.
  return record(search.call(this,path),path);
 };
 
  export function extract(fields,source)
 {if(!this)return source?extract.call(source,fields):tether(extract,fields);
- return [fields].flat().reduce((term,field)=>merge(term,{[field]:this[field]}),{});
+ if(source)
+ return prune.call(this,([field,value])=>fields.includes(field)?undefined:value,0,0);
+ return [fields].flat().reduce((term,field)=>
+ merge(term,{[field]:this[field]}),{});
 };
 
  export function relevant(scope,term)

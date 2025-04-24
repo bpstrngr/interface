@@ -51,12 +51,12 @@
 (compose(path,slip("path","resolve","./"),resolve,pass(permit,classified))
 ,compose(drop(1),buffer(JSON.parse,compose(drop(1,2),"base64",Buffer.from,"toString")))
 ,compose("url",query,buffer(differ("override"),swap(undefined)),is("true"))
-)
+),note
 ,combine
 (crop(1)
 ,compose(combine(buffer(compose(crop(1),infer(access,true),buffer(JSON.parse,drop(1))),swap({})),drop(1)),merge)
 )
-,true,access,true,combine
+,true,note,access,true,combine
 (compose(access,buffer(JSON.parse,drop(1)))
 ,compose(crop(1),slip("path","relative","./"),resolve,"/","split")
 ),record
@@ -65,7 +65,7 @@
 (crop(1),"get",routes=>(
  {pre:{"#text":JSON.stringify(routes,null,2)}
  ,style:{"#text":css({body:{background:"black",color:"white"}})}
- }),"interface","icon",proceduralize(serialize(
+ }),"interface","svg",proceduralize(serialize(
  {exports:{capture,defer,delegate,ascend,heritage}
  ,procedures:function(){capture(window,"/actions"),expose();}
  }),capture,expose),"./style",hypertext,document
@@ -75,7 +75,7 @@
 ),actions:compose
 (drop(),{exports:{default:actions},imports:{"./actions":["actions"],"./Blik_2023_search.js":[,"merge"]}}
 ,serialize,["body"],record,{type:mime("js")},merge
-),icon:compose
+),svg:compose
 (drop(),{svg:{viewBox:"0 0 1 1",width:"10px",height:"10px",circle:{cx:"0.5",cy:"0.5",r:"0.3"}}},document
 ),scope(request)
 {return compose.call

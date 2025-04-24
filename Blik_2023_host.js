@@ -1,7 +1,7 @@
  import {note,colors,when,functor,string,pattern,revert,each,describe,clock,observe,is,has,same,slip,something,compound,infer,tether,whether,collect,provide,route,buffer,differ,compose,combine,either,drop,crop,swap,record,wait,exit,pass,remember,binary,simple,array} from "./Blik_2023_inference.js";
  import {thread,resolve,access,locate,prompt,list,window,jsdom,fetch,persist,version,compress,stage,cookies,cookie,feature} from "./Blik_2023_interface.js";
  import {search,merge,sum,prune,extract,encrypt} from "./Blik_2023_search.js";
- import {scope,mime} from "./Blik_2023_meta.js";
+ import {scope,mime,bytes} from "./Blik_2023_meta.js";
  import {document} from "./Blik_2023_fragment.js";
  import {animal} from "./Blik_2024_svg.js";
  var {memory}=Object.assign(globalThis,{memory:{}});
@@ -85,10 +85,8 @@
  let type=this.headers.get("Content-Type");
  let gzip=this.headers.get("Content-Encoding")==="gzip";
  let stream=functor(this.body);
- body=stream?this.body:await buffer(type===mime("json")&&!gzip?"text":compose("arrayBuffer",buffer=>
- new Uint8Array(buffer).reduce((buffer,bytes,index)=>
- Object.assign(buffer,{[index]:bytes})
-,Buffer.alloc(buffer.byteLength))))(this);
+ body=stream?this.body:await buffer(type===mime("json")&&!gzip?"text"
+:is(Buffer)(this.body)?"body":compose("arrayBuffer",bytes))(this);
  if(is(Error)(body))
  body=note.call(1,body).message,status=500,type=mime("txt");
  let header=compose.call
