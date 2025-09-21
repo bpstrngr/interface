@@ -45,9 +45,9 @@
  Parser.extend(plugin));
  let comments=[];
  let scope=Parser.parse(source,{ecmaVersion:2022,sourceType:"module",onComment:comments,locations:typescript});
- comments.map(comment=>
- Object.assign(comment,{type:comment.type+"Comment"})).forEach(comment=>
- route(scope,comment,path));
+ // comments.map(comment=>
+ // Object.assign(comment,{type:comment.type+"Comment"})).forEach(comment=>
+ // route(scope,comment,path));
  if(url&&!scope.meta?.url)
  scope.meta={url};
  return scope;

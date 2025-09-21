@@ -235,7 +235,7 @@
  return provide(context);
  let [scope]=context;
  let map=functor(term);
- let lambda=map&&(!term.name||term.name.includes("(")||term.name===infer.name||term.name===when.name||term.name===not.nameg||term.name===provide.name||term===Object.assign);
+ let lambda=map&&(!term.name||term.name.includes("(")||term.name===infer.name||term.name===when.name||term.name===not.name||term.name===provide.name||term===Object.assign);
  let prebound=map&&term.name.startsWith("bound ");
  let tether=/^tether /;
  let detach=string(term)&&tether.test(tether)&&term.replace(tether,"");
