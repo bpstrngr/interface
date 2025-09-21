@@ -1,6 +1,6 @@
- import {merge,prune,unfold} from "./Blik_2023_search.js";
+ import {merge,prune,unfold,record} from "./Blik_2023_search.js";
  import {aphorize,serialize} from "./Blik_2023_meta.js";
- import {infer,compose,buffer,whether,record,wait,string,note,basic,defined} from "./Blik_2023_inference.js";
+ import {infer,compose,buffer,whether,wait,string,note,basic,defined,drop,modular,observe} from "./Blik_2023_inference.js";
  import {window,fetch,digest,path,agent} from "./Blik_2023_interface.js";
  import {document,css,capture,metamarkup,destroy,keyboard} from "./Blik_2023_fragment.js";
  import {EditorState,Compartment} from './haverbeke_2022_codemirror_state.js';
@@ -9,8 +9,9 @@
  import {foldGutter,foldKeymap,codeFolding,syntaxHighlighting,defaultHighlightStyle,HighlightStyle,syntaxTree,ensureSyntaxTree,foldable,foldEffect,unfoldAll,foldAll} from './haverbeke_2022_codemirror_language.js';
  import {javascript} from './haverbeke_2022_codemirror_js.js';
  import {StyleModule} from './haverbeke_2022_stylemod.js';
- import {parser} from "./haverbeke_2022_lezer_js.js"
+ import {parser as lezer} from "./haverbeke_2022_lezer_js.js"
  import {highlightCode,tags,classHighlighter} from "./haverbeke_2022_lezer_highlight.js";
+ var file=new URL(import.meta.url).pathname.replace(/.*\//,"/");
  var highlights=
  {variableName:{color:"#0097a7"}
  ,string:{color:"#43a047"}
@@ -29,59 +30,25 @@
  ];
 
  export default async function(source,settings={})
-{let parent=settings.parent||document({div:{...metamarkup(settings),class:"codemirror"}});
- //let language=(new Compartment).of(js());
- let indentation=(new Compartment).of(EditorState.tabSize.of(1));
- let doc=string(source)?settings.source?source:await compose(fetch,digest,infer(serialize,"json"),buffer(compose(JSON.parse,aphorize),drop(1)))(source):JSON.stringify(source);
- let theme=EditorView.theme(
- {".cm-content":{"text-align":"left"}
- ,".cm-gutters":{background:"transparent"}
- // gutter heights are calculated dynamically on client-side. 
- ,".cm-gutterElement":{height:"4px !important"}
- ,".cm-gutterElement:not(:first-of-type)":{height:"1.4em !important",transform:"translate(0,-4px)"}
- ,".cm-foldGutter>.cm-gutterElement>span":
- {color:"transparent"
- ,"&:after":{content:"''",display:"block",opacity:".75",transform:"translate(0,-1.1em)",border:".5em solid var(--text)"}
- ,"&[title='Fold line']":{"&:after":{"border-right":".4em solid transparent","border-bottom":".0em solid transparent","border-left":".4em solid transparent","margin-top":".25em"}}
- ,"&[title='Unfold line']":{"&:after":{"border-bottom":".4em solid transparent","border-top":".4em solid transparent","border-right":".0em solid transparent","margin-left":".25em"}}
+{if(this&&!modular(this)||source.constructor.name==="IncomingMessage")
+ return {imports:
+ {"/Blik_2023_search.js":["","merge","record"]
+ ,"/Blik_2023_interface.js":["","resolve","fetch"]
+ ,"/Blik_2023_inference.js":["","note","slip","compose","collect","combine"]
+ ,"/Blik_2023_fragment.js":["","metamarkup as dataset"]
+ ,[file]:["script","fold","resize"]
  }
- ,".cm-foldPlaceholder":{background:"transparent",border:"none"}
- },{dark:true});
- let state=EditorState.create({doc,extensions:[basetheme,foldtheme,theme,extensions].flat()});
- let view=new EditorView({parent,state},window);
- if(defined(settings.fold))
- settings.fold<1?foldAll(view):view.dispatch(
- {effects:compose.call([],ranges=>ensureSyntaxTree(state,doc.length,5000).iterate(
- {enter:record(compose
-(drop(1),({stack:{length},from,to})=>
- settings.fold<=length?foldable(state,from,to):undefined
-,whether(basic,foldEffect.of.bind(foldEffect))
-)).bind(ranges)
- ,from:0,to:doc.length
- })||ranges)
- });
- let style=parent.ownerDocument.querySelector("head").querySelector("style").textContent;
- //let style=view.styleModules.flatMap(({rules})=>rules).reverse().join("\n");
- parent.append(document({style:{"#text":style}}));
- if(!globalThis.window)
- parent.querySelector(".cm-content").cmView.view.viewState.state.doc.toString().split("\n").forEach((line,index)=>
- [".cm-line",".cm-lineNumbers>.cm-gutterElement"].map(name=>
- Array.from(parent.querySelectorAll(name))).forEach((lines,gutter)=>
- lines[index+gutter]||lines.at(-1).after(Object.assign(lines[gutter].cloneNode(true)
-,{textContent:gutter?index+1:line}))));
- return capture.call(parent
-,["",new URL(import.meta.url).pathname.replace(/.*\//,""),"actions"].join("/"));
-};
-
- export var actions=
+ ,exports:{default:
  {".codemirror":
  {contextrestored(event)
 {let lines=Array.from(this.querySelectorAll(".cm-line")).map(({textContent:line})=>line);
- let meta=[this.dataset,{parent:this}].reduce(merge,{});
+ let meta=[dataset(this),{parent:this}].reduce(merge,{});
  this.childNodes.forEach(destroy);
- resolve(import.meta.url,"default",lines.join("\n"),meta);
+ script(lines.join("\n"),meta);
 },keydown({keyCode,ctrlKey,altKey})
-{let {s,w}=keyboard(keyCode);
+{let {s,w,f}=keyboard(keyCode);
+ if(ctrlKey&&altKey&&f)
+ return fold.call(this);
  if(w&&altKey)
  return compose(combine(infer(),({whiteSpace})=>whiteSpace==="pre-wrap"
 ?{maxWidth:"",whiteSpace:"",wordBreak:""}
@@ -101,24 +68,92 @@
 ,Reflect.construct,slip(this),"dispatchEvent")
 )})
  buffer.readAsBinaryString(blob);
-}}
+},...observe({pinch(event)
+{if(event.touches.length!==2)
+ return;
+ event.preventDefault();
+ let {type,touches,isTrusted:start}=event;
+ let [[x1,y1],[x2,y2]]=Array.from(touches).map(({pageX:x,pageY:y})=>[x,y]);
+ let width=Math.hypot(x1-x2,y1-y2);
+ if(start)
+ return this.start=width;
+ let scale=2**(Math.floor(width-this.start)/50);
+ resize.call(this,scale);
+}})}
+ }}};
+ let parent=settings.parent||document({div:{class:"codemirror",...metamarkup(settings)}});
+ //let language=(new Compartment).of(js());
+ let indentation=new Compartment().of(EditorState.tabSize.of(1));
+ let doc=string(source)?settings.source?source:await compose(fetch,digest,infer(serialize,"json"),buffer(compose(JSON.parse,aphorize),drop(1)))(source):JSON.stringify(source);
+ let theme=new Compartment().of(EditorView.theme(
+ {".cm-content":{"text-align":"left","font-family":settings.font,"font-size":"1em"}
+ ,".cm-gutters":{background:"transparent"}
+ // gutter heights are calculated dynamically on client-side. 
+ ,".cm-gutterElement":{height:"4px !important",color:"var(--note)"}
+ ,".cm-gutterElement:not(:first-of-type)":{height:"1.4em !important",transform:"translate(0,-4px)"}
+ ,".cm-foldGutter>.cm-gutterElement>span":
+ {color:"transparent"
+ ,"&:after":{content:"''",display:"block",opacity:".75",transform:"translate(0,-1.1em)",border:".5em solid var(--text)"}
+ ,"&[title='Fold line']":{"&:after":{"border-right":".4em solid transparent","border-bottom":".0em solid transparent","border-left":".4em solid transparent","margin-top":".25em"}}
+ ,"&[title='Unfold line']":{"&:after":{"border-bottom":".4em solid transparent","border-top":".4em solid transparent","border-right":".0em solid transparent","margin-left":".25em"}}
+ }
+ ,".cm-foldPlaceholder":{background:"transparent",border:"none"}
+ },{dark:true}));
+ let state=EditorState.create({doc,extensions:[basetheme,foldtheme,theme,extensions].flat()});
+ let view=new EditorView({parent,state},window);
+ if(defined(settings.fold))
+ settings.fold<1?foldAll(view):fold.call(parent,settings.fold);
+ let style=parent.ownerDocument.querySelector("head").querySelector("style").textContent;
+ //let style=view.styleModules.flatMap(({rules})=>rules).reverse().join("\n");
+ parent.prepend(document({style:{"#text":style}}));
+ if(!globalThis.window)
+ parent.querySelector(".cm-content").cmView.view.viewState.state.doc.toString().split("\n").forEach((line,index)=>
+ [".cm-line",".cm-lineNumbers>.cm-gutterElement"].map(name=>
+ Array.from(parent.querySelectorAll(name))).forEach((lines,gutter)=>
+ lines[index+gutter]||lines.at(-1).after(Object.assign(lines[gutter].cloneNode(true)
+,{textContent:gutter?index+1:line}))));
+ return capture.call(parent,file+"/module/default/module");
+};
+
+ export function resize(scale)
+{let text=this.querySelector(".cm-content");
+ let {view}=text.cmView;
+ let {fontSize}=window.getComputedStyle(text);
+ let theme=view.viewState.state.config.base[2];
+ let size=Number(fontSize.replace(/[a-z]/g,"")||1)*scale;
+ view.dispatch({effects:theme.compartment.reconfigure([theme.inner,EditorView.theme(
+ {".cm-content":{"font-size":size+"em"}
+ ,".cm-gutters":{"font-size":size+"em"}
+ })])});
+};
+
+ export function fold(depth=0)
+{let {view}=this.querySelector(".cm-content").cmView;
+ let {state}=view.viewState;
+ let effects=[];
+ ensureSyntaxTree(state,state.doc.length,5000).iterate(
+ {enter({stack:{length},from,to})
+{let effect=depth<=length?foldable(state,from,to):undefined;
+ if(effect)effects.push(foldEffect.of(effect));
+},from:0,to:state.doc.length
+ });
+ view.dispatch({effects});
  };
 
  export function highlight(source)
-{let fragment=[];
- let emit=record((text,classes)=>classes?{class:classes,"#text":text}:text).bind(fragment);
- let line=fragment.push.bind(fragment,"\n");
- highlightCode(source,parser.parse(source),classHighlighter,emit,line);
- return document({pre:{class:"snippet",span:fragment,style:{"#text":compose.call
-(highlights
-,Object.entries,infer("map",([field,value])=>[".snippet>.tok-"+field,value]),Object.fromEntries
-,{".snippet":{width:"100%",margin:0}
- },merge,css
+{let span=[];
+ let emit=record((text,classes)=>({"#text":text,class:classes||null})).bind(span);
+ let line=span.push.bind(span,{"#text":"\n"});
+ highlightCode(source,lezer.parse(source),classHighlighter,emit,line);
+ return document({pre:{class:"snippet",span,style:{"#text":compose.call
+(highlights,Object.entries
+,infer("map",([field,value])=>[".snippet>.tok-"+field,value])
+,Object.fromEntries,{".snippet":{width:"100%",margin:0}},merge,css
 )}}});
 };
 
  var basetheme=EditorView.baseTheme(compose.call
- // internal basetheme from codemirror, not exposed otherwise to persist stylemodules on server-side. could be exposed in source definition.  
+ // internal basetheme from codemirror, not exposed by it to render stylemodules on server-side. could be exposed in source definition.  
 ({wrap:
  {position: "relative !important",boxSizing: "border-box"
  ,"&.cm-focused":{outline_fallback: "1px dotted #212121",outline: "5px auto -webkit-focus-ring-color"}

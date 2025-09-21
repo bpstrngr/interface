@@ -1,4 +1,4 @@
- import {note,something,record,provide,has,compose,buffer,slip,drop,stream,infer,either,swap,not,whether,pass,collect,simple,functor,defined,string,compound,tether,is,numeric,array,basic,iterable} from "./Blik_2023_inference.js";
+ import {note,something,provide,has,compose,combine,buffer,slip,drop,stream,infer,either,swap,crop,not,whether,pass,promise,collect,simple,functor,defined,string,compound,tether,is,numeric,array,basic,iterable,construct} from "./Blik_2023_inference.js";
  import {resolve} from "./Blik_2023_interface.js";
 
  export var stringify=scope=>
@@ -9,7 +9,9 @@
  domain.charAt(Math.floor(Math.random()*domain.length))).join("");
 };
 
- export var rgb=fill=>/^#/.test(fill)?/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(fill).slice(1,4).map(hue=>parseInt(hue,16)):fill;
+ export var rgb=fill=>/^#/.test(fill)
+?/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(fill).slice(1,4).map(hue=>parseInt(hue,16))
+:fill.replace("rgb(","rgba(").replace(/((?:[\(,] *\d+ *){3})\)/,"$1,1)");
 
  export var normal=fraction=>Math.pow(Math.E,-(fraction**2)/2)/Math.sqrt(Math.PI*2);
 
@@ -133,36 +135,29 @@ export function calendar(timestamps)
  let scope=this;
  if(typeof scope!=='object'||scope===null)
  return [];
- let condition=term instanceof Function;
+ let condition=functor(term);
  if(!condition)
- return [term].flat().reduce((scope,field)=>scope?.[field],scope);
- let [domain,range]=Object.entries(this).reduce(function sort(group, entry)
-{group[term(entry,path)?1:0].push(entry);
- return group;
-},[[],[]]);
+ return !compound(term)?scope[term]:array(term)
+?[term].flat().reduce((scope,field)=>scope?.[field],scope)
+:Object.entries(term).flatMap(([field,term])=>
+ [term].flat().flatMap(term=>scope[field]&&search.call(scope[field],term)));
+ let group=whether(compose(path,tether(term)),[1],[0]);
+ let length=stash(compose(drop(2,1),tether(search),"length"));
+ let route=compose(group,length,drop(2),collect,"flat");
+ let [domain,range]=[[],[]];
+ for(let field in this)
+ compose(stash(route),merge)([domain,range],[field,this[field]]);
  if(recursive)
  domain=[domain,range].flat();
- let subrange=domain.flatMap(([field,value])=>
- Object.entries(search.call(value,term,recursive,path.concat(field))).map(([path,value])=>
-[[field,path].join('/'),value
-]));
+ if(domain.some(promise))
+ debugger
+ let subrange=domain.flatMap(([field,value])=>Object.entries
+(search.call(value,term,recursive,path.concat(field))
+).map(([path,value])=>[[field,path].join('/'),value]));
  return Object.fromEntries([range,subrange].flat());
 };
 
- export function route(scope,term,path)
-{// insert/invoke term in scope on given path.
- if(!scope)return;
- let paths=[path(scope,term)].flat().filter(path=>(path??false)!==false);
- if(!paths.length)return;
- let descended=paths.find(field=>route(scope[field],term,path));
- if(descended)return descended;
- let entries=paths.map(path=>[path,term instanceof Function?term([path,scope[path]]):term]);
- return entries.reduce(record(([path,term])=>infer(term,term=>
- Array.isArray(scope)?scope.splice(path,0,term):Object.assign(scope,{[path]:term})))
-,[]);
-};
-
- export function prune(term,collapse,limit=[],path=[])
+ export function prune(term,collapse,limit=[],path=[],trace=[])
 {// map entries recursively.
  let scope=this;
  if(!compound(scope))return scope;
@@ -174,20 +169,21 @@ export function calendar(timestamps)
 {let terminal=numeric(limit)?path.length===limit:[limit].flat().some(limit=>
 [[limit],[array(limit)?path:[],field]
 ].map(compose("flat","/","join")).reduce(Object.is))
- let value=term.call(scope,[field,source],path);
+ let value=term.call(scope,[field,source],path,trace);
  let pluck=!defined(value);
  if(pluck&&(!collapse||terminal))
  return [];
  if(terminal)
  return [[field,value]];
  let graft=pluck&&collapse;
- let range=[...collect(graft?source:value)].map(scope=>
- prune.call(scope,term,collapse,limit,path.concat(field)));
+ let range=[...collect(graft?source:value)].map(value=>
+ prune.call(value,term,collapse,limit,path.concat(field),trace.concat([scope])));
  return range.flatMap(scope=>graft
 ?Object.entries(compound(scope)?scope:{})
 :[[field,scope]]);
 });
- let iterable=!entries.length||!entries.some(([field],index,entries)=>
+ let iterable=//!entries.length||
+ (entries.length||array(scope))&&!entries.some(([field],index,entries)=>
  isNaN(field)||[entries[index-1]?.[0],field].map(Number).reduce((past,next)=>next<past));
  if(iterable)
  entries.forEach(function([field],index,entries)
@@ -202,25 +198,25 @@ export function calendar(timestamps)
  scope=Object.fromEntries(entries);
  return iterable?Object.assign(Array(0),scope):scope;
  // composition for async terms, makes some optimization overdue. 
-//  return compose.call(entries,infer("reduce",record(function([field,source],index,entries)
-// {let terminal=numeric(limit)?path.length===limit:[limit].flat().some(limit=>
-// [[limit],[array(limit)?path:[],field]
-// ].map(compose("flat","/","join")).reduce(Object.is));
-//  let dispensible=!collapse||terminal;
-//  return compose(tether(term),either
-// (whether(dispensible&&not(defined),swap([]))
-// ,whether(terminal,value=>[[field,value]])
-// ,either(whether(collapse&&not(defined),swap(true,source)),slip(false))
-// ),collect,([graft,...scope])=>[graft,scope.map(scope=>
-//  prune.call(scope,term,collapse,limit,path.concat(field)))]
-// ,"flat",provide,collect,([graft,...range])=>range.flatMap(scope=>graft
-// ?Object.entries(compound(scope)?scope:{})
-// :[[field,scope]]))(scope,[field,source],path);
-// }),[]),"flat",index);
+ return compose.call(entries,infer("reduce",record(function([field,source],index,entries)
+{let terminal=numeric(limit)?path.length===limit:[limit].flat().some(limit=>
+[[limit],[array(limit)?path:[],field]
+].map(compose("flat","/","join")).reduce(Object.is));
+ let dispensible=!collapse||terminal;
+ return compose(tether(term),either
+(whether(dispensible&&not(defined),swap([]))
+,whether(terminal,value=>[[field,value]])
+,either(whether(collapse&&not(defined),swap(true,source)),slip(false))
+),collect,([graft,...scope])=>[graft,scope.map(scope=>
+ prune.call(scope,term,collapse,limit,path.concat(field)))]
+,"flat",provide,collect,([graft,...range])=>range.flatMap(scope=>graft
+?Object.entries(compound(scope)?scope:{})
+:[[field,scope]]))(scope,[field,source],path);
+}),[]),"flat",scope,index);
 };
 
  var index=whether
-(entries=>!entries.length||!entries.some(([field],index,entries)=>
+((entries,scope)=>(entries.length||array(scope))&&!entries.some(([field],index,entries)=>
  isNaN(field)||[entries[index-1]?.[0],field].map(Number).reduce((past,next)=>
  next<past))
 ,compose(pass(infer("forEach",function([field],index,entries)
@@ -235,15 +231,26 @@ export function calendar(timestamps)
 ,Object.fromEntries
 );
 
+//  export function route(scope,term,path)
+// {// insert/invoke term in scope on given path.
+//  if(!scope)return;
+//  let paths=[path(scope,term)].flat().filter(something);
+//  if(!paths.length)return;
+//  let descended=paths.find(field=>route(scope[field],term,path));
+//  if(descended)return descended;
+//  let entries=paths.map(path=>[path,functor(term)?term([path,scope[path]]):term]);
+//  return entries.reduce(record(([path,term])=>infer(term,term=>
+//  array(scope)?scope.splice(path,0,term):Object.assign(scope,{[path]:term})))
+// ,[]);
+// };
+
  export function merge(target,source,override=1)
 {// unite scopes (assign if path specified to override).
- let path=[override].flat();
- if(!path.length)
- return source;
- let assign=path.some(string);
+ let assign=array(override)||string(override);
  if(assign)
- return [target,...path,source].reduce((scope,field,index,route)=>route.length-index-1
-?(scope[field]=route.length-index>2?scope[field]||{}:route[index+1])
+ return [target,...[override].flat(),source].reduce((scope,field,index,route)=>
+ route.length-index-1
+?scope[field]=route.length-index>2?scope[field]||{}:route[index+1]
 :route[0]);
  let Group=[Set,Map].find(group=>target instanceof group);
  if(Group)
@@ -252,8 +259,8 @@ export function calendar(timestamps)
  if(extensible&&!override)
  return target.concat(source);
  // to merge array domains, pass the source as plain object. 
- let codomain=array(target)?!simple(source):array(source);
- let opaque=codomain||[target,source].some(term=>!compound(term));
+ let disjunct=construct(target)?!simple(source):construct(source);
+ let opaque=disjunct||[target,source].some(term=>!compound(term));
  if(opaque)
  return [target,source][Number(Boolean(override))];
  return Object.entries(source).reduce(function(target,[field,next])
@@ -265,6 +272,51 @@ export function calendar(timestamps)
  delete target[field];
  return array(target)?[target].flat():target;
 },target);
+};
+
+ export function record(range,field="length")
+{// assign range to field of dynamic scope.
+ if(array(field))
+ return field.filter(something).reverse().reduce((range,field)=>({[field]:range}),range);
+ let path=compose(tether(field),collect,"flat");
+ let composition=compose(combine(crop(1),tether(range),path),merge);
+ return defined(this)?composition(this):composition;
+};
+
+ export function remember(term,distinction="0")
+{// record on an implicit scope. 
+ let scope=this||[];
+ return either
+(compose(slip(scope),tether(distinction),slip(scope),Reflect.get)
+,compose(slip(scope),combine(record(term,distinction),tether(distinction)),Reflect.get)
+);
+};
+
+ export function route(term,...context)
+{// compose with static context, methodic and scope-rebound alternatives. 
+ if(functor(context[1]))
+ throw Error("Route variant to merge dynamic values on dynamic paths is deprecated. Use search.merge to support it.");
+ if(!this)return tether(route,...arguments);
+ let scope=this;
+ let path=[term].flat();
+ let method=context[0]?.method?.toLowerCase();
+ let methodic=combine(method,drop(1));
+ // record for methodic route taken. 
+ let branch=[];
+ let branched=compose(swap(branch),"length",major(0));
+ let store=pass(record(drop(1,2)).bind(branch));
+ let fail=compose(swap(branch),Error("not found"),"concat",infer("find",is(Error)),exit);
+ let terms=path.map((term,index,path)=>infer(either
+(term
+,whether(has(method),buffer(compose(methodic,differ(term),store),compose(store,swap(undefined))),infer())
+,tether(scope[term])
+,fail
+),...context,path.slice(0,index)));
+ let composition=compose(...terms,whether
+ // invoke method if not done already. 
+(branched,infer(),either(infer(method,...context),crop(1))
+));
+ return scope?composition(scope):composition;
 };
 
  function set(options,namespace)
@@ -287,48 +339,20 @@ export function calendar(timestamps)
 
  export function trace(term,path=[])
 {// trace term in scope or stack.
-  let scope = this;
-  if (!something(term))
-    return stream(
-      [Infinity, Error.stackTraceLimit].reduce(
-        ({ stack }, stackTraceLimit) =>
-          (Object.assign(Error, { stackTraceLimit }) && stack) || Error(),
-        {}
-      ),
-      stream(
-        {
-          functor: /at (?:async )*([^ ]*)/,
-          file: /(?:.*[\(_|\/])*(.*?)/,
-          location: /(?:.js)*(?::[0-9]+){0,2}/,
-        },
-        Object.values,
-        (expressions) => expressions.map(({ source }) => source).join(""),
-        RegExp
-      ),
-      (stack, details) =>
-        stack
-          .split(/\n */)
-          .slice(1)
-          .map((stack) => stack.match(details) || [stack]),
-      (details) => details.map((details) => details.slice(1, 3).concat(details.input).reverse()),
-      (details) => details.slice(details.findIndex(({ 2: term }) => term === trace.name))
-    );
-  if (scope === term || !scope) return path;
-  return Object.entries(scope).reduce(
-    (hit, [track, scope]) =>
-      hit ||
-      [term === scope, path.concat(track)].reduce((hit, path) =>
-        hit ? path : typeof scope == "object" ? trace.call(scope, term, path) : undefined
-      ),
-    undefined
-  );
+ let scope=this;
+ if(scope===term||!scope)return path;
+ return Object.entries(scope).reduce((hit,[track,scope])=>hit||
+ [term===scope,path.concat(track)].reduce((hit,path)=>
+ hit?path:compound(scope)?trace.call(scope,term,path):undefined)
+,undefined);
 };
 
  export function parse(records,separator="\",\"")
 {if(records instanceof ArrayBuffer||records.constructor?.name==="Buffer")
  records=new TextDecoder('utf-8').decode(records);
- return records.split("\n").map(record=>
- record.split(separator)).reduce((fields,record,index,records)=>
+ return records.split("\n").filter(({length})=>length).map(record=>
+ record.replace(/^"|"$/g,"").split(separator).map(field=>
+ field.includes(";")?field.split(/; */g):field)).reduce((fields,record,index,records)=>
  records.splice(index).map(record=>
  Object.fromEntries(fields.map((field,index)=>[field,record[index]]))));
 };
@@ -337,6 +361,19 @@ export function calendar(timestamps)
 {return records.reduce((clusters,record)=>record[field]
 ?Object.assign(clusters,{[record[field]]:sum(clusters[record[field]],1)})
 :clusters
+,{});
+};
+
+ export function cooccurrence(records,{field="phrases"}={})
+{return records.reduce((clusters,record)=>
+ record[field]?.map(phrase=>
+ phrase.toLowerCase()).reduce((clusters,phrase,index,phrases)=>
+ phrases.filter((phrase,coindex)=>coindex!==index).reduce((clusters,cophrase)=>
+ [phrase,cophrase][clusters[phrase]?"slice":"reverse"]().reduce((phrase,cophrase)=>
+ merge(clusters,sum(clusters[phrase]?.[cophrase],1),[phrase,cophrase]))
+,clusters)
+,clusters)
+ ||clusters
 ,{});
 };
 
@@ -365,6 +402,10 @@ export function calendar(timestamps)
  merge(term,{[field]:this[field]}),{});
 };
 
+ export var fields=(record,term=something)=>
+ Object.keys(record).filter(field=>
+ term(record[field]));
+
  export function relevant(scope,term)
 {return Object.fromEntries(Object.entries(scope).flatMap(([field,value])=>!string(value)
 ?["ends","starts"].some(side=>term[side+"With"](field))?Object.entries(value):[]
@@ -389,4 +430,12 @@ export function calendar(timestamps)
  ,collapse:{scope:{a:{b:{b:2,c:3}}},context:[([field,value])=>field!=='b'?value:undefined,true],terms:[{a:{c:3}}],condition:"deepEqual"}
  ,shave:{scope:{a:{b:{c:{d:1},f:2}},e:3},context:[([field,value],path)=>path.length<2?value:undefined],terms:[{a:{b:[]},e:3}],condition:"deepEqual"}
  //,agnostic:{scope:{a:{b:[]},e:3},context:[([field,value])=>Promise.resolve(value)],terms:[note,{a:{b:[]},e:3}],condition:"deepEqual"}
-}};
+},route:
+ {path:{scope:{a:{b:c=>c.body}},context:[["a","b"],{body:1}],terms:[1],condition:["equal"]}
+ ,method:{scope:{a:{get:c=>c.method}},context:[["a"],{method:"get"}],terms:["get"],condition:["equal"]}
+ ,beyond:{scope:{a:{get:c=>({b:c.method})}},context:[["a","b"],{method:"get"}],terms:["get"],condition:["equal"]}
+ ,broken:
+[{scope:{a:{b:c=>{throw Error("fail")}}},context:[["a","b"]],terms:[is(Error)],condition:["ok"]}
+,{scope:{a:{b:{get:c=>{throw Error("fail")}}}},context:[["a","b"],{method:"get"}],terms:[is(Error)],condition:["ok"]}
+]}
+ };

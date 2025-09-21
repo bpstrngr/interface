@@ -1,8 +1,8 @@
- import {note,compose,buffer,when,collect,infer,combine,remember,wait,drop,slip,differ,crop,each,swap,pass,not,compound,exit,tether,either,whether,record,describe,string,pattern,major,match,has,is,are,ascend,defined,heritage} from "./Blik_2023_inference.js";
- import {access,persist,purge,resolve,list,modularise,cookies,cookie,query,fetch,path} from "./Blik_2023_interface.js";
- import {document,hypertext,css,expose,throttle,error,capture,defer,delegate} from "./Blik_2023_fragment.js";
- import {serialize,scope,mime,proceduralize} from "./Blik_2023_meta.js";
- import {search,merge,prune,random,extract} from "./Blik_2023_search.js";
+ import {note,compose,buffer,when,collect,infer,combine,wait,drop,slip,differ,crop,each,swap,pass,not,compound,functor,native,exit,tether,either,whether,describe,string,pattern,major,match,has,is,are,ascend,defined,flip,heritage} from "./Blik_2023_inference.js";
+ import {access,persist,purge,resolve,list,modularise,cookies,cookie,query,fetch,path,thread,delegate} from "./Blik_2023_interface.js";
+ import {document,hypertext,css,throttle,error,capture,defer} from "./Blik_2023_fragment.js";
+ import {serialize,mime,proceduralize,sourcemap} from "./Blik_2023_meta.js";
+ import {search,merge,prune,random,extract,record,remember} from "./Blik_2023_search.js";
 
  export var encryption={code:undefined};
  export var classified=[/.*\.git.*/];
@@ -23,25 +23,29 @@
  return (inclusive?includes:!includes)||exit(Error(inclusive?"Unauthorized":"Classified"));
 };
 
- var actions=
- {body:{load:function(){console.log("abc")}}
- };
+ let filesystem=compose
+(drop(1),path,infer("split","/"),"reverse"
+,infer("reduce",(route,file,index,path)=>(
+ {[file==="get"?"files":file]:compose(combine
+(compose(swap("path","resolve",".",path.slice(index,path.at(-1)==="files"?-1:undefined).reverse().join("/")),resolve
+,pass(permit,classified),access)
+,compose(drop(1),"url",query,either("format",swap("binary")))
+),whether(infer("isDirectory")
+,index?swap(route):compose("path",true,classified,list)
+,access))
+ }),{})
+);
 
- let format=compose("url",query,either("format",swap("binary")));
- let unfold=combine(compose(drop(1),"url",slip("url","parse"),resolve,"pathname"),crop(1));
- let fold=whether(is("/get"),compose(drop(1),infer(scope,([field,value])=>
- /[()]/.test(value.name)?value.name:serialize(value,null))),swap({}));
- let route=tether(prune,([field,value],path)=>value===null
-?describe(compose(drop(1),combine
-(compose(swap([path,field].flat().join("/")),pass(permit,classified)),format
-),access),field)
-:value);
+ let routes=compose
+(combine(crop(1),compose(drop(1),path)),flip,whether(is("get")
+,compose(drop(1),tether(prune,([field,term])=>functor(term)
+?/[()]/.test(term.name)?term.name:serialize(term,null)
+:!native(term)?String(term):term))
+,swap({}))
+);
 
  export default
- {get:compose(combine(compose
-(swap("path","resolve","./"),resolve,true,classified
-,remember(compose(drop(1),list),source=>source),route
-),compose(unfold,fold)),merge)
+ {get:compose(combine(filesystem,routes),merge)
  ,put:compose
 (drop(1),pass(buffer(combine
 (compose(path,slip("path","resolve","./"),resolve,published,true,permit)
@@ -64,25 +68,35 @@
  ,interface:compose
 (crop(1),"get",routes=>(
  {pre:{"#text":JSON.stringify(routes,null,2)}
- ,style:{"#text":css({body:{background:"black",color:"white"}})}
- }),"interface","svg",proceduralize(serialize(
- {exports:{capture,defer,delegate,ascend,heritage}
- ,procedures:function(){capture(window,"/actions"),expose();}
- }),capture,expose),"./style",hypertext,document
+ ,style:{body:{background:"black",color:"white"}}
+ }),"interface","svg",[],"./style",hypertext,document
 ),style:compose
 (drop(),{"@font-face":{"font-family":"averia",src:"url(/Sayers_2011_averia.ttf)"}}
 ,css,["body"],record,{type:"css"},merge
-),actions:compose
-(drop(),{exports:{default:actions},imports:{"./actions":["actions"],"./Blik_2023_search.js":[,"merge"]}}
-,serialize,["body"],record,{type:mime("js")},merge
-),svg:compose
+),feed()
+{let body=serialize({imports:{"./Blik_2023_search.js":["","merge"]},exports:{default:{}}});
+ return {body,type:mime("js")};
+},svg:compose
 (drop(),{svg:{viewBox:"0 0 1 1",width:"10px",height:"10px",circle:{cx:"0.5",cy:"0.5",r:"0.3"}}},document
-),scope(request)
+),namespace()
 {return compose.call
-(this,"toString","."+request.url.replace(/\/scope.*/,"")
-,buffer(modularise,compose(note,exit)),either("namespace",crop(1)),infer(scope,([field,value])=>"data:text/javascript;"+serialize(value,field))
+(this,when(modular),tether(prune,([field,term],path,trace)=>
+ trace.includes(term)?path:functor(term)
+?"data:text/javascript;"+serialize(term,field)
+:!native(term)?String(term):term)
 );
-}};
+},module(request,body,response,route)
+{let file=route.join("/");
+ let term=path(request).replace(file+"/module","");
+ return compose
+(simple(this)?serialize:"toString",term?compose
+("./"+file,buffer(modularise
+,compose(swap(file),resolve)),either("namespace",crop(1))
+):compose(["body"],record,{type:mime("js")},merge)
+)(this);
+},sourcemap
+ ,scope(){return delegate.call(thread,"infrastructure");}
+ };
 
  export function persistence(resource)
 {classify(resource);
@@ -105,8 +119,8 @@
  exit(Error("missing "+Object.keys(credentials)+" or signature for "+name));
  let records=await this.get();
  let record=search.call(records,name);
- let mismatch=Object.entries(credentials).find(([field,value])=>value!==record[field])?.[0];
- if(record&&mismatch)
+ let mismatch=record&&Object.entries(credentials).find(([field,value])=>value!==record[field])?.[0];
+ if(mismatch)
  exit(Error(mismatch+" not authorized."));
  let unauthorised=!signature||signature!==record.signature;
  if(!body.code&&unauthorised)
@@ -135,3 +149,5 @@
  if(author.rank!==authority)
  exit(Error("unauthorised"));
 };
+
+ export var peer={};

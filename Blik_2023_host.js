@@ -1,17 +1,19 @@
- import {note,colors,when,functor,string,pattern,revert,each,describe,clock,observe,is,has,same,slip,something,compound,infer,tether,whether,collect,provide,route,buffer,differ,compose,combine,either,drop,crop,swap,record,wait,exit,pass,remember,binary,simple,array} from "./Blik_2023_inference.js";
- import {thread,resolve,access,locate,prompt,list,window,jsdom,fetch,persist,version,compress,stage,cookies,cookie,feature} from "./Blik_2023_interface.js";
- import {search,merge,sum,prune,extract,encrypt} from "./Blik_2023_search.js";
- import {scope,mime,bytes} from "./Blik_2023_meta.js";
+ import {note,debug,colors,when,stash,flip,functor,string,not,pattern,revert,each,describe,clock,observe,is,has,same,minor,slip,something,compound,infer,tether,whether,collect,provide,buffer,differ,compose,combine,either,drop,crop,swap,wait,exit,pass,binary,simple,array,expect} from "./Blik_2023_inference.js";
+ import {thread,resolve,access,locate,prompt,list,window,jsdom,fetch,digest,persist,version,compress,stage,cookies,cookie,feature} from "./Blik_2023_interface.js";
+ import {search,merge,sum,prune,extract,encrypt,record,remember,route} from "./Blik_2023_search.js";
+ import {mime,bytes} from "./Blik_2023_meta.js";
  import {document} from "./Blik_2023_fragment.js";
  import {animal} from "./Blik_2024_svg.js";
  var {memory}=Object.assign(globalThis,{memory:{}});
 
- export async function expose(source,protocol)
+ export async function expose(source,protocol,suspend=true)
 {({source,protocol}=await prompt({source,protocol}));
- let [module,...fields]=await locate(protocol.split("/"));
- let [{default:routes,actions,syndication,encryption,classify,classified,published,permit},{default:credentials},agent]=
- await resolve([source,module,fields.at(-1)]);
- let {port,certification={},distinguishedname,cache}=search.call(credentials,fields);
+ let [module,...fields]=string(protocol)?await locate(protocol.split("/")):[protocol];
+ let [{default:routes,relay,syndication,encryption,classify,classified,published,permit},{default:credentials}]=
+ await [source,module].reduce(record(module=>
+ string(module)?resolve(module):{default:module}),[]);
+ let {network,port,certification={},distinguishedname,cache}=note(search.call(credentials,fields));
+ let agent=await resolve(network);
  let [[domain,[signature,certificate]=[]]=[]]=Object.entries(certification);
  let [encrypted,syndicated]=await [encryption,syndication].reduce(record(required=> 
  required?prompt(extract.call(credentials,Object.keys(required))):{}),[]);
@@ -25,17 +27,17 @@
  await classify?.(module,...certificates);
  // send jsdom composition loader thread too so it can fetch modules from this interface during eg. server-side rendering.
  let origin=[agent.globalAgent.protocol+"//localhost",port].join(":");
- thread?.postMessage([[origin],"interface/jsdom"]);
+ delegate.call(thread,[[origin],"interface/jsdom"]);
  jsdom(origin);
  let certifications=prune.call(certification,([domain,certificates])=>
- certify(certificates,distinguishedname),0,0);
+ certify(certificates,distinguishedname,[domain]),0,0);
  // if(await resolve("cluster","isMaster"))return fork();
  var router=compose(combine(whether
 (compose("url",/^http/,"match"),fetch
-,compose(combine(path,infer()),buffer(route.bind(routes),either(compose(tether(routes.error)),crop(1))))
+,compose(combine(path,infer()),buffer(route.bind(routes),either(tether(routes.error),crop(1))))
 ),infer()),stage);
  var immutable=compose
-("url",slip("."),"concat",slip("url","parse"),resolve,"pathname"
+("url",slip("."),"concat"
 ,combine(...[classified,published].map(list=>compose(list,permit)))
 );
  var distinction=({url,headers})=>[url,new URLSearchParams(feature(version(headers)))].join("");
@@ -51,10 +53,11 @@
 ("createServer",port
 ,revert((listen,cancel,host,port)=>host.listen(port,infer(listen)))
 ,...Object.entries(certifications).map(([domain,certification])=>
+ // for self-signed certificates, assign them to the NODE_EXTRA_CA_CERTS option. 
  pass(compose(domain,certification,"addContext")))
 ,pass(host=>note.call(2,[host._connectionKey||port," open"].join("")))
-,pass(compose(actions,broadcast,resolve))
-,revert((close,error,channel)=>observe.call(channel,{close}))
+,pass(compose(relay,broadcast,resolve))
+,revert((close,error,channel)=>observe.call(channel,{close,error})&&suspend||close(channel))
 )(agent,Object.values(certifications)[0],buffer(respond,compose(note,exit)));
 };
 
@@ -70,7 +73,7 @@
 };
 
  async function path(request)
-{let {query,pathname}=await resolve("url","parse",request.url,true);
+{let {query,pathname}=new URL(request.url.replace(/^\//,"http://localhost/"));
  let method=request.method.toLowerCase();
  let methodic=pathname==="/"+method;
  return compose
@@ -131,7 +134,7 @@
  note("\x1b[33marchiving logs daily...\x1b[0m");
 };
 
- async function certify(certification,distinguishedname)
+ async function certify(certification,distinguishedname,altnames,duration=1)
 {if(!certification)
  return [];
  let [path,url]=await resolve(["path","url"]);
@@ -142,30 +145,113 @@
  return {key,cert};
  note("creating "+certification+"...");
  let {default:forge}=await import("./digitalbazaar_2013_nodeforge.js");
- let rsa=forge.rsa.generateKeyPair(2048);
+ let method=altnames.includes("localhost")?selfsign:authorize;
+ let encryption=forge.rsa.generateKeyPair(2048);
+ [key,cert]=await method.call(forge,encryption,distinguishedname,duration);
+ [key,cert]=await certification.reduce(record((certification,index)=>compose.call
+(path.resolve(location,certification),[key,cert][index],true,access,true,access
+)),[]);
+ return {key,cert};
+};
+
+ async function selfsign({privateKey,publicKey},distinguishedname,duration)
+{// self-signed certificate. 
  let authority=Object.entries(distinguishedname).map(([key,value])=>(
  {[key.match(/^[A-Z]{2}$/)?"shortName":"name"]:key,value}));
- let certificate=forge.createCertificate();
- Object.assign(certificate,{publicKey:rsa.publicKey,serialNumber:"01"});
+ let altnames={name:"subjectAltName",altNames:[{type:2,value:"localhost"},{type:7,ip:"127.0.0.1"}]};//,{type:6,value:"https://"+distinguishedname.commonName}]};
+ let certificate=this.pki.createCertificate();
+ let asn1=await resolve("crypto","randomBytes",19).then(infer("toString","hex"));
+ Object.assign(certificate,{publicKey,serialNumber:"01"+asn1});
  Object.assign(certificate.validity,{notBefore:new Date(),notAfter:new Date()});
- certificate.validity.notAfter.setFullYear(certificate.validity.notBefore.getFullYear()+1);
+ certificate.validity.notAfter.setFullYear(certificate.validity.notBefore.getFullYear()+duration);
  certificate.setSubject(authority);
  certificate.setIssuer(authority);
  certificate.setExtensions(
-[{name:"subjectAltName",altNames:[{type:6,value:"https://"+distinguishedname.commonName},{type:7,ip:"127.0.0.1"}]}
+[altnames
 ,{name:"keyUsage",keyCertSign:true,digitalSignature:true,nonRepudiation:true,keyEncipherment:true,dataEncipherment:true}
 ,{name:"extKeyUsage",serverAuth:true,clientAuth:true,codeSigning:true,emailProtection:true,timeStamping:true}
 ,{name:"nsCertType",client:true,server:true,email:true,objsign:true,sslCA:true,emailCA:true,objCA:true}
 ,{name:"basicConstraints",cA:true}
 ,{name:"subjectKeyIdentifier"}
 ]);
- certificate.sign(rsa.privateKey);
- [key,cert]=await certification.reduce(record((certification,index)=>compose.call
-(path.resolve(location,certification)
-,forge[["privateKey","certificate"][index]+"ToPem"]([rsa.privateKey,certificate][index])
-,true,access,true,access
-)),[]);
- return {key,cert};
+ certificate.sign(privateKey);
+ return Object.entries({privateKey,certificate}).map(([name,value])=>
+ this.pki[name+"ToPem"](value));
+};
+
+ async function authorize({privateKey,publicKey},distinguishedname)
+{let encryption=this.rsa.generateKeyPair(2048);
+ let hash=compose(stash(compose(drop(),"crypto","createHash","sha256",resolve)),flip,"update","digest");
+ let {asn1:{Class:{UNIVERSAL},Type:{SEQUENCE,OID,NULL,OCTETSTRING}}}=this;
+ let SHA256identifier=this.asn1.create(UNIVERSAL,SEQUENCE,true,
+[this.asn1.oidToDer(this.oids.sha256).getBytes(),''
+].map(asn1=>this.asn1.create(UNIVERSAL,asn1?OID:NULL,false,asn1)));
+ let digestinfo=compose
+(slip(UNIVERSAL,OCTETSTRING,false),this.asn1.create,SHA256identifier,flip,collect
+,slip(UNIVERSAL,SEQUENCE,true),this.asn1.create
+);
+ let pad=compose(stash(compose
+("length",Math.ceil(encryption.privateKey.n.bitLength()/8),whether
+(compose(stash(compose(crop(1),11,sum)),drop(1),minor)
+,compose("text longer than encryption modulus",exit)
+),flip,each([crop(1),combine(-1)]),-3,sum,slip(String.fromCharCode(0xFF)),"repeat"
+)),flip,slip("\x00\x01"),drop(2,2,"\x00"),"concat"
+);
+ let sign=compose(when(is(Buffer)),"binary","toString",digestinfo,this.asn1.toDer,"getBytes",pad,slip(encryption.privateKey),"RAW","decrypt","binary",Buffer.from);
+ let base64url=compose(whether(simple,JSON.stringify),whether(not(is(Buffer)),Buffer.from),infer("toString","base64url"));
+ let jwk=["e","n"].map(factor=>encryption.publicKey[factor]).map(factor=>
+ base64url(factor.toByteArray().slice(factor.bitLength()===2048))).reduce((e,n)=>(
+ {e,kty:"RSA",n}));
+ let ACME="https://acme-"+(0?"staging-":"")+"v02.api.letsencrypt.org/acme";
+ let acme=compose(note,stash(compose
+(stash(compose(swap(ACME+"/new-nonce"),{method:"HEAD"},fetch,"headers","replay-nonce"))
+,(url,body,identity,nonce)=>[{alg:"RS256",url,nonce,...identity},body].map(base64url),combine
+(compose(infer("join","."),hash,sign,base64url,["signature"],record)
+,compose(0,["protected"],record)
+,compose(1,["payload"],record)
+),collect,infer("reduce",merge),JSON.stringify,["body"],record
+,{method:"POST",headers:{"Content-Type":"application/jose+json"}},merge
+)),drop(3,1),fetch);
+ let account={termsOfServiceAgreed:true};
+ let kid=await compose(acme,"headers","location")(ACME+"/new-acct",account,{jwk});
+ let identifiers=[{type:"dns",value:distinguishedname.commonName}];
+ let [order,{authorizations,finalize}]=await compose(acme,combine(compose("headers","location"),digest))(ACME+"/new-order",{identifiers},{kid});
+ let challenges=await compose(infer("reduce",record(compose(drop(1,2),"",{kid},acme,digest,"challenges")),[]),"flat")(authorizations);
+ note({challenges});
+ let identity=await compose(JSON.stringify,hash,base64url)(jwk);
+ let {http,dns,tls}=challenges.reduce((challenges,challenge)=>merge(challenges
+,{[challenge.type.match(/^[^-]+/)[0]]:[challenge]},0),{});
+ let routes={".well-known":{"acme-challenge":http.map(({token})=>({[token]:[token,identity].join(".")})).reduce(merge)}};
+ note({http,routes});
+ let host=await expose(routes,{network:"http",port:8000},false);
+ await http.reduce(record(({url})=>combine(acme,either
+(expect(compose(fetch,digest,note,combine("status","error"),note,whether
+(is("invalid"),compose(drop(1),JSON.stringify,Error,exit),is("valid")
+)))
+,compose(Error,exit)
+))(url,{},{kid})),[]);
+ for(let url of authorizations)
+ await either
+(expect(compose(acme,digest,"status",is("valid")),1000*3,40)
+,compose(Error,exit)
+)(url,"",{kid});
+ host.close();
+ let authority=Object.entries(distinguishedname).map(([key,value])=>(
+ {[key.match(/^[A-Z]{2}$/)?"shortName":"name"]:key,value}));
+ let altnames={name:"subjectAltName",altNames:[{type:2,value:distinguishedname.commonName}]};
+ let csr=merge(this.pki.createCertificationRequest(),{publicKey});
+ csr.setSubject(authority);
+ csr.setAttributes([{name:"extensionRequest",extensions:[altnames]}]);
+ csr.sign(privateKey,this.md.sha256.create());
+ let submission={csr:base64url(Buffer.from(this.asn1.toDer(this.pki.certificationRequestToAsn1(csr)).getBytes(),"binary"))};
+ await compose(acme,digest,note)(finalize,submission,{kid});
+ let certificate=await either
+(expect(compose(acme,digest,whether
+(compose("status",is("valid")),compose("certificate",fetch,digest),swap(false)
+)),1000*5,12*5)
+,compose(Error,exit)
+)(order,"",{kid});
+ return [this.pki.privateKeyToPem(privateKey),certificate];
 };
 
  export async function broadcast(server,actions)
@@ -197,3 +283,11 @@
 
  var anonymous=Object.entries(animal).map(([name,svg])=>
  ({name,icon:"/svg/animal/"+name+"/document"}));
+
+ export async function traverse(source)
+{let {default:{interface:html,...routes}}=await resolve(source);
+ if(!functor(html))
+ return;
+ return prune.call(routes,([field,value],path)=>
+ compose(note,stash(value),flip,tether(html),note)({url:"http://localhost/"+path.join("/")})&&value);
+};

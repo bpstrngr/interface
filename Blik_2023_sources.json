@@ -1,5 +1,5 @@
 {
-  "digitalbazaar_2013_nodeforge.js":{"https://github.com/digitalbazaar/forge":{"v1.3.1":["lib/pki.js",{"syntax":"commonjs"}]}},
+  "digitalbazaar_2013_nodeforge.js":{"https://github.com/digitalbazaar/forge":{"v1.3.1":["lib/index.js",{"syntax":"commonjs"}]}},
   "haverbeke_2012_acorn.js":{"https://github.com/acornjs/acorn":{"8.9.0":["acorn/src/index.js"]}},
   "haverbeke_2012_acorn_walk.js":{"https://github.com/acornjs/acorn/acorn-walk":{"8.9.0":"acorn-walk/src/index.js"}},
   "davidbonnet_2015_astring.js":{"https://github.com/davidbonnet/astring":{"v1.8.6":["src/astring.js"]}},
@@ -15,28 +15,29 @@
   "Harris_2016_is_reference.js":{"https://github.com/Rich-Harris/is-reference":{"v3.0.1":["src/index.js"]}},
   "Harris_2015_estree_walker.js":{"https://github.com/Rich-Harris/estree-walker":{"v2.0.2":["src/index.js"]}},
   "Harris_2016_locate_character.js":{"https://github.com/Rich-Harris/locate-character":{"v3.0.0":["src/index.js"]}},
+  "lukeed_2019_dequal.js":{"https://github.com/lukeed/flru":{"v2.0.3":["src/index.js"]}},
   "lukeed_2019_flru.js":{"https://github.com/lukeed/flru":{"v1.0.2":["src/index.js"]}},
-  "sindresorhus_2015_builtin_modules_static.js":{"https://github.com/sindresorhus/builtin-modules":{"v3.3.0":["builtin-modules.json",{"syntax":"commonjs","./Harris_2015_json.js":{}}]}},
+  "sindresorhus_2015_builtin_modules_static.js":{"https://github.com/sindresorhus/builtin-modules":{"v3.3.0":["builtin-modules.json",{"syntax":"commonjs"}]}},
   "sindresorhus_2015_builtin_modules.js":{"https://github.com/sindresorhus/builtin-modules":{"v3.3.0":["index.js",{"syntax":"commonjs"}]}},
   "sindresorhus_2015_is-builtin-module.js":{"https://github.com/sindresorhus/is-builtin-module":{"v3.2.1":["index.js",{"syntax":"commonjs","alias":{"builtin-modules":"./sindresorhus_2015_builtin_modules.js"}}]}},
   "micromatch_2018_picomatch.js":{"https://github.com/micromatch/picomatch":{"2.3.0":["lib/picomatch.js",{"syntax":"commonjs"}]}},
   "definitely_2015_estree.js":{"https://registry.npmjs.org/@types/estree/-/estree-1.0.0.tgz":["index.d.ts"]},
   "definitely_2015_resolve.js":{"https://registry.npmjs.org/@types/resolve/-/resolve-1.20.2.tgz":["index.d.ts"]},
   "jorgebucaran_2018_colorette.js":{"https://github.com/jorgebucaran/colorette":{"2.0.20":["index.js",{"syntax":"commonjs"}]}},
-  "browserify_2011_resolve.js":{"https://github.com/browserify/resolve":{"v1.22.1":["index.js",{"syntax":"commonjs","./Harris_2015_json.js":{},"alias":{
+  "browserify_2011_resolve.js":{"https://github.com/browserify/resolve":{"v1.22.1":["index.js",{"syntax":"commonjs","alias":{
     "path-parse":"./jbgutierrez_2021_path_parse.js",
     "supports-preserve-symlinks-flag":"./ljharb_2022_preserve_symlinks_flag.js",
     "is-core-module":"./ljharb_2014_is_core_module.js"
   }}]}},
   "Raynos_2014_function_bind.js":{"https://github.com/Raynos/function-bind":{"v1.1.1":["index.js",{"syntax":"commonjs"}]}},
   "tarruda_2013_has.js":{"https://github.com/tarruda/has":{"v1.0.3":["src/index.js",{"syntax":"commonjs","alias":{"function-bind":"./Raynos_2014_function_bind.js"}}]}},
-  "ljharb_2014_is_core_module.js":{"https://github.com/inspect-js/is-core-module":{"v2.9.0":["index.js",{"syntax":"commonjs","alias":{"has":"./tarruda_2013_has.js"},"./Harris_2015_json.js":{}}]}},
+  "ljharb_2014_is_core_module.js":{"https://github.com/inspect-js/is-core-module":{"v2.9.0":["index.js",{"syntax":"commonjs","alias":{"has":"./tarruda_2013_has.js"}}]}},
   "ljharb_2022_preserve_symlinks_flag.js":{"https://github.com/inspect-js/node-supports-preserve-symlinks-flag":{"v1.0.0":["index.js",{"syntax":"commonjs"}]}},
   "jbgutierrez_2021_path_parse.js":{"https://github.com/jbgutierrez/path-parse":{"v1.0.7":["index.js",{"syntax":"commonjs"}]}},
   "timaschew_2014_is-module.js":{"https://github.com/component/is-module":{"1.0.0":["index.js",{"syntax":"commonjs"}]}},
   "Fisher_2012_deepmerge.js":{"https://github.com/TehShrike/deepmerge":{"v4.2.2":["index.js",{"syntax":"commonjs","alias":{"is-mergeable-object":"./TehStrike_2017_is-mergeable-object.js"}}]}},
   "TehStrike_2017_is-mergeable-object.js":{"https://github.com/TehShrike/is-mergeable-object":{"v1.1.0":["index.js",{"syntax":"commonjs"}]}},
-  "Harris_2015_rollup.js":{"https://github.com/rollup/rollup/src cli browser":{"v3.28.1":["src/node-entry.ts",{"./Harris_2015_json.js":{},"alias":{
+  "Harris_2015_rollup.js":{"https://github.com/rollup/rollup/src cli browser":{"v3.28.1":["src/node-entry.ts",{"alias":{
     "package.json":"./Harris_2015_rollup/0/package.json",
     "acorn":"./haverbeke_2012_acorn.js",
     "locate-character":"./Harris_2016_locate_character.js",
@@ -73,7 +74,6 @@
     "alias":{"matched":"./jonschlinkert_2015_matched.js","@rollup/plugin-virtual":"./Harris_2015_virtual.js"}
   }]}},
   "Harris_2015_noderesolve.js":{"https://github.com/rollup/plugins/packages/node-resolve":{"node-resolve-v15.2.1":["packages/node-resolve/src/index.js",{
-    "./Harris_2015_json.js":{},
     "alias":{
       "deepmerge":"./Fisher_2012_deepmerge.js",
       "resolve":"./browserify_2011_resolve.js",
@@ -249,6 +249,19 @@
   "Bynens_2022_unicode_Neutral_Boundary.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Boundary_Neutral":{"v1.3.1":["Bidi_Class/Boundary_Neutral/code-points.js",{"syntax":"commonjs"}]}},
   "Bynens_2022_unicode_Neutral.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Other_Neutral":{"v1.3.1":["Bidi_Class/Other_Neutral/code-points.js",{"syntax":"commonjs"}]}},
   "Bynens_2022_unicode_Arabic_number.js":{"https://github.com/node-unicode/unicode-15.0.0/Bidi_Class/Arabic_Number":{"v1.3.1":["Bidi_Class/Arabic_Number/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_whitespace.js":{"https://github.com/node-unicode/unicode-15.0.0/Binary_Property/White_Space":{"v1.3.1":["Binary_Property/White_Space/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_diacritics.js":{"https://github.com/node-unicode/unicode-15.0.0/Block/Combining_Diacritical_Marks":{"v1.3.1":["Block/Combining_Diacritical_Marks/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_letter.js":{"https://github.com/node-unicode/unicode-15.0.0/General_Category/Letter":{"v1.3.1":["General_Category/Letter/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_lowercase.js":{"https://github.com/node-unicode/unicode-15.0.0/General_Category/Lowercase_Letter":{"v1.3.1":["General_Category/Lowercase_Letter/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_Mark.js":{"https://github.com/node-unicode/unicode-15.0.0/General_Category/Mark":{"v1.3.1":["General_Category/Mark/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_number.js":{"https://github.com/node-unicode/unicode-15.0.0/General_Category/Number":{"v1.3.1":["General_Category/Number/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_dash.js":{"https://github.com/node-unicode/unicode-15.0.0/General_Category/Dash_Punctuation":{"v1.3.1":["General_Category/Dash_Punctuation/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_connector.js":{"https://github.com/node-unicode/unicode-15.0.0/General_Category/Connector_Punctuation":{"v1.3.1":["General_Category/Connector_Punctuation/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_initial.js":{"https://github.com/node-unicode/unicode-15.0.0/General_Category/Initial_Punctuation":{"v1.3.1":["General_Category/Initial_Punctuation/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_other_punctuation.js":{"https://github.com/node-unicode/unicode-15.0.0/General_Category/Other_Punctuation":{"v1.3.1":["General_Category/Other_Punctuation/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_open_punctuation.js":{"https://github.com/node-unicode/unicode-15.0.0/General_Category/Open_Punctuation":{"v1.3.1":["General_Category/Open_Punctuation/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_close_punctuation.js":{"https://github.com/node-unicode/unicode-15.0.0/General_Category/Close_Punctuation":{"v1.3.1":["General_Category/Close_Punctuation/code-points.js",{"syntax":"commonjs"}]}},
+  "Bynens_2022_unicode_final_punctuation.js":{"https://github.com/node-unicode/unicode-15.0.0/General_Category/Final_Punctuation":{"v1.3.1":["General_Category/Final_Punctuation/code-points.js",{"syntax":"commonjs"}]}},
   "Bynens_2013_regenerate.js":{"https://github.com/mathiasbynens/regenerate":{"v1.4.2":["regenerate.js",{"syntax":"commonjs"}]}},
   "Isonen_2014_jss.js":{"https://github.com/cssinjs/jss/packages/jss":{"v10.10.0":["packages/jss/src/index.js",{
     "alias":{"is-in-browser":"./Anderson_2016_isinbrowser.js"},
@@ -462,7 +475,7 @@
     "edit":{"scripts/generate.js":{"transformer\\.generate": "module.exports=transformer.generate"}},
     "comment":"commonjs executes synchronously, so its thread needs to be exported to track after modularization."
   }]}},
-  "jonathanong_2014_mimedb.js":{"https://github.com/jshttp/mime-db":{"v1.24.0":["index.js",{"syntax":"commonjs","./Harris_2015_json.js":{}}]}},
+  "jonathanong_2014_mimedb.js":{"https://github.com/jshttp/mime-db":{"v1.24.0":["index.js",{"syntax":"commonjs"}]}},
   "felixge_2011_delayedstream.js":{"https://github.com/felixge/node-delayed-stream":{"1.0.0":["lib/delayed_stream.js",{"syntax":"commonjs"}]}},
   "jonathanong_2014_mimetypes.js":{"https://github.com/jshttp/mime-types":{"2.1.12":["index.js",{"syntax":"commonjs","alias":{"mime-db":"./jonathanong_2014_mimedb.js"}}]}},
   "felixge_2015_combined_stream.js":{"https://github.com/felixge/node-combined-stream":{"v1.0.8":["lib/combined_stream.js",{"syntax":"commonjs","alias":{"delayed-stream":"./felixge_2011_delayedstream.js"}}]}},
@@ -604,7 +617,8 @@
   }}]}},
   "jonschlinkert_2014_braces.js":{"https://github.com/micromatch/braces":{"3.0.2":["index.js",{"syntax":"commonjs","alias":{"fill-range":"./jonschlinkert_2014_fill_range.js"}}]}},
   "phated_2021_glob_parent.js":{"https://github.com/gulpjs/glob-parent":{"v5.1.2":["index.js",{"syntax":"commonjs","alias":{"is-glob":"./jonschlinkert_2015_is_glob.js"}}]}},
-  "sindresorhus_2015_binary_extensions.js":{"https://github.com/sindresorhus/binary-extensions":{"v2.0.0":["index.js",{"syntax":"commonjs","./Harris_2015_json.js":{}}]}},
+  "sindresorhus_2015_is-plain-obj.js":{"https://github.com/sindresorhus/is-plain-obj":{"v4.1.0":["index.js"]}},
+  "sindresorhus_2015_binary_extensions.js":{"https://github.com/sindresorhus/binary-extensions":{"v2.0.0":["index.js",{"syntax":"commonjs"}]}},
   "sindresorhus_2015_is_binary_path.js":{"https://github.com/sindresorhus/is-binary-path":{"v2.1.0":["index.js",{"syntax":"commonjs","alias":{"binary-extensions":"./sindresorhus_2015_binary_extensions.js"}}]}},
   "jonschlinkert_2015_is_extglob.js":{"https://github.com/micromatch/is-extglob":{"2.1.1":["index.js",{"syntax":"commonjs"}]}},
   "jonschlinkert_2015_is_glob.js":{"https://github.com/micromatch/is-glob":{"4.0.1":["index.js",{"syntax":"commonjs","alias":{"is-extglob":"./jonschlinkert_2015_is_extglob.js"}}]}},
@@ -685,7 +699,7 @@
   "haverbeke_2020_crelt.js":{"https://github.com/marijnh/crelt":{"1.0.6":["index.js"]}},
   "haverbeke_2022_lezer.js":{"https://github.com/lezer-parser/common/src":{"1.2.1":["src/index.ts"]}},
   "haverbeke_2022_lezer_lr.js":{"https://github.com/lezer-parser/lr/src":{"1.4.2":["src/index.ts",{"alias":{
-    "@lezer/common": "./haverbeke_2022_lezer.js"
+    "@": "./haverbeke_2022_lezer.js"
   }}]}},
   "haverbeke_2022_lezer_lr_constants.js":{"https://github.com/lezer-parser/lr/src/constants":{"1.4.2":["src/constants.ts"]}},
   "haverbeke_2022_lezer_highlight.js":{"https://github.com/lezer-parser/highlight/src":{"1.2.1":["src/highlight.ts",{"alias":{
@@ -830,5 +844,86 @@
       "d3-octree":"./Vasturiano_2015_octree.js",
       "d3-dispatch":"./Bostock_2011_dispatch.js",
       "d3-timer":"./Bostock_2011_timer.js"
-  }}]}}
+  }}]}},
+  "Wormer_2015_bail.js":{"https://github.com/wooorm/bail":{"2.0.2":["index.js"]}},
+  "Wormer_2023_devlop.js":{"https://github.com/wooorm/devlop":{"1.1.0":["lib/default.js",{"alias":{"dequal":"./lukeed_2019_dequal.js"}}]}},
+  "justmoon_2012_extend.js":{"https://github.com/justmoon/node-extend":{"v3.0.2":["index.js",{"syntax":"commonjs"}]}},
+  "Wormer_2016_trough.js":{"https://github.com/wooorm/trough":{"2.2.0":["lib/index.js"]}},
+  "Wormer_2015_unified.js":{"https://github.com/unifiedjs/unified/lib":{"11.0.5":["lib/index.js",{"alias":{
+    "bail": "./Wormer_2015_bail.js",
+    "devlop": "./Wormer_2023_devlop.js",
+    "extend": "./justmoon_2012_extend.js",
+    "is-plain-obj": "./sindresorhus_2015_is-plain-obj.js",
+    "trough": "./Wormer_2016_trough.js",
+    "vfile":"./Wormer_2015_vfile.js"
+  }}]}},
+  "Wormer_2014_array-iterate.js":{"https://github.com/wooorm/array-iterate/lib":{"2.0.1":["lib/index.js"]}},
+  "Wormer_2015_unist-modify-children.js":{"https://github.com/syntax-tree/unist-util-modify-children/lib":{"4.0.0":["lib/index.js",{"alias":{
+    "array-iterate":"./Wormer_2014_array-iterate.js"
+  }}]}},
+  "Wormer_2015_unist-visit-children.js":{"https://github.com/syntax-tree/unist-util-visit-children/lib":{"3.0.0":["lib/index.js"]}},
+  "Wormer_2014_parse-latin.js":{"https://github.com/wooorm/parse-latin":{"7.0.0":["index.js",{"alias":{
+    "nlcst-to-string":"./Wormer_2014_nlcst2string.js",
+    "unist-util-modify-children":"./Wormer_2015_unist-modify-children.js",
+    "unist-util-visit-children":"./Wormer_2015_unist-visit-children.js",
+    "vfile":"./Wormer_2015_vfile.js",
+    "regenerate":"./Bynens_2013_regenerate.js",
+    "@unicode/unicode-15.0.0/Binary_Property/White_Space/code-points.js":"./Bynens_2022_unicode_whitespace.js",
+    "@unicode/unicode-15.0.0/Block/Combining_Diacritical_Marks/code-points.js":"./Bynens_2022_unicode_diacritics.js",
+    "@unicode/unicode-15.0.0/General_Category/Letter/code-points.js":"./Bynens_2022_unicode_letter.js",
+    "@unicode/unicode-15.0.0/General_Category/Lowercase_Letter/code-points.js":"./Bynens_2022_unicode_lowercase.js",
+    "@unicode/unicode-15.0.0/General_Category/Mark/code-points.js":"./Bynens_2022_unicode_Mark.js",
+    "@unicode/unicode-15.0.0/General_Category/Number/code-points.js":"./Bynens_2022_unicode_number.js",
+    "@unicode/unicode-15.0.0/General_Category/Dash_Punctuation/code-points.js":"./Bynens_2022_unicode_dash.js",
+    "@unicode/unicode-15.0.0/General_Category/Connector_Punctuation/code-points.js":"./Bynens_2022_unicode_connector.js",
+    "@unicode/unicode-15.0.0/General_Category/Close_Punctuation/code-points.js":"./Bynens_2022_unicode_close_punctuation.js",
+    "@unicode/unicode-15.0.0/General_Category/Final_Punctuation/code-points.js":"./Bynens_2022_unicode_final_punctuation.js",
+    "@unicode/unicode-15.0.0/General_Category/Initial_Punctuation/code-points.js":"./Bynens_2022_unicode_initial.js",
+    "@unicode/unicode-15.0.0/General_Category/Other_Punctuation/code-points.js":"./Bynens_2022_unicode_other_punctuation.js",
+    "@unicode/unicode-15.0.0/General_Category/Open_Punctuation/code-points.js":"./Bynens_2022_unicode_open_punctuation.js"
+  },"scripts":"./Wormer_2014_parse-latin/0/script/build-expressions.js"}]}},
+  "Wormer_2014_retext-stringify.js":{"https://github.com/retextjs/retext/packages/retext-stringify":{"retext-stringify@4.0.0":["packages/retext-stringify/index.js",{"alias":{
+    "nlcst-to-string":"./Wormer_2014_nlcst2string.js",
+    "unified":"./Wormer_2015_unified.js"
+  }}]}},
+  "Wormer_2014_retext-latin.js":{"https://github.com/retextjs/retext/packages/retext-latin":{"retext-latin@4.0.0":["packages/retext-latin/index.js",{"alias":{
+    "parse-latin":"./Wormer_2014_parse-latin.js",
+    "unified":"./Wormer_2015_unified.js"
+  }}]}},
+  "Wormer_2014_retext.js":{"https://github.com/retextjs/retext/packages/retext":{"9.0.0":["packages/retext/index.js",{"alias":{
+    "retext-latin":"./Wormer_2014_retext-latin.js",
+    "retext-stringify":"./Wormer_2014_retext-stringify.js",
+    "unified":"./Wormer_2015_unified.js"
+  }}]}},
+  "Wormer_2017_vfile-message.js":{"https://github.com/vfile/vfile-message/lib":{"4.0.2":["lib/index.js",{"alias":{
+    "unist-util-stringify-position":"./Wormer_2016_unist-string-position.js"
+  }}]}},
+  "Wormer_2015_vfile.js":{"https://github.com/vfile/vfile/lib":{"6.0.3":["lib/index.js",{"alias":{
+    "vfile-message":"./Wormer_2017_vfile-message.js"
+  },"edit":{"(from ')#(min[^']+)":"$1./$2.browser.js"}}]}},
+  "Wormer_2016_unist-string-position.js":{"https://github.com/syntax-tree/unist-util-stringify-position/lib":{"4.0.0":["lib/index.js"]}},
+  "Wormer_2015_unist-is.js":{"https://github.com/syntax-tree/unist-util-is/lib":{"6.0.0":["lib/index.js"]}},
+  "Wormer_2016_unist-visit-parents.js":{"https://github.com/syntax-tree/unist-util-visit-parents/lib":{"6.0.1":["lib/index.js",{"alias":{
+    "unist-util-is":"./Wormer_2015_unist-is.js",
+    "unist-util-visit-parents/do-not-use-color":"./Wormer_2016_unist-visit-parents/0/lib/color.node.js"
+  }}]}},
+  "Wormer_2015_unist-visit.js":{"https://github.com/syntax-tree/unist-util-visit/lib":{"5.0.0":["lib/index.js",{"alias":{
+    "unist-util-visit-parents":"./Wormer_2016_unist-visit-parents.js",
+    "unist-util-is":"./Wormer_2015_unist-is.js"
+  }}]}},
+  "Wormer_2014_stemmer.js":{"https://github.com/words/stemmer":{"2.0.1":["index.js"]}},
+  "Wormer_2014_nlcst2string.js":{"https://github.com/syntax-tree/nlcst-to-string/lib":{"4.0.0":["lib/index.js"]}},
+  "Wormer_2014_retext-keywords.js":{"https://github.com/retextjs/retext-keywords/lib":{"8.0.2":["lib/index.js",{"alias":{
+    "nlcst-to-string":"./Wormer_2014_nlcst2string.js",
+    "stemmer":"./Wormer_2014_stemmer.js",
+    "unist-util-visit":"./Wormer_2015_unist-visit.js",
+    "vfile":"./Wormer_2015_vfile.js"
+  }}]}},
+  "Kazemi_2011_pos.js":{"https://github.com/dariusk/pos-js":{"9daabf9f086998aaefaee75efb88f634cb292531":["index.js",{"syntax":"commonjs"}]}},
+  "Wormer_2014_retext-pos.js":{"https://github.com/retextjs/retext-pos/lib":{"5.0.0":["lib/index.js",{"alias":{
+    "nlcst-to-string":"./Wormer_2014_nlcst2string.js",
+    "unist-util-visit":"./Wormer_2015_unist-visit.js",
+    "pos":"./Kazemi_2011_pos.js"
+  }}]}},
+  "McMahon_2012_async.js":{"https://github.com/caolan/async/lib":{"v3.2.6":["lib/index.js"]}}
 }
