@@ -675,7 +675,7 @@
 };
 
  export function purge(path)
-{return compose(path,{recursive:true},"rm",swap(path))(resolve("fs","promises"));
+{return compose(path,{recursive:true,force:true},"rm",swap(path))(resolve("fs","promises"));
 };
 
  export var compile=compose(drop(1),load,parse,serialize);
