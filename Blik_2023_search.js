@@ -254,7 +254,8 @@ export function calendar(timestamps)
  if(extensible&&!override)
  return target.concat(source);
  // to merge array domains, pass the source as plain object. 
- let disjunct=construct(target)?!simple(source):construct(source);
+ let disjunct=[target,source].some((term,index,terms)=>
+ construct(term)&&!simple(terms[(index+1)%2]));
  let opaque=disjunct||[target,source].some(term=>!compound(term));
  if(opaque)
  return [target,source][Number(Boolean(override))];

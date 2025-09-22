@@ -75,8 +75,13 @@
 // ,(channel,context)=>console[channel](...context)
 // )})
 ),whether
-(compose(collect,"length",major(0))
-,buffer(compose(resolve,note.bind(2)),compose(note.bind(1),wait(60*1000),swap(1),process.exit))
+(compose(collect,"length",major(0)),buffer(compose
+(resolve,note.bind(2),pass(expect(buffer
+(compose(done=>delegate.call(thread,"bundling"),undefine)
+,swap(true)
+),10000))
+)
+,compose(note.bind(1),wait(60*1000),swap(1),process.exit))
 ,infer()
 )(...process.argv.slice(1));
 
@@ -285,7 +290,7 @@
 ]:[])
  // target entry indicates source resolution available for re-import. 
 ,entry=>this[target]=this[target]||compose.call
-(target,pass(target=>note.call(2,"Collecting source of \""+relative+"\" for",dependent+"..."))
+(target,pass(target=>note.call(2,"Collecting source of \""+relative+"\" for "+dependent+"..."))
 ,buffer(purge),swap(entries)
 ,buffer(infer("reduce",record(assemble),[]),fail=>purge(target).finally(done=>exit(fail)))
  // temporary re-export of all namespaces for multientry bundle. 
@@ -299,7 +304,7 @@
 ,pass(parts=>resolve(entry).catch(note))
 ,parts=>compose.call
 (entry,parts,bundle,slip(absolute),true,access,"bundle ready.",note.bind(2)
-).finally(done=>purge(target))&&
+).finally(done=>delete this[target]&&purge(target))&&
  // not returning bundle promise after source assembly to unblock immediate resolution from source. 
  entry
 )
@@ -309,7 +314,7 @@
  await ["js","ts","tsx","d.ts"].map(extension=>absolute+"."+extension).reduce((module,file)=>
  module.catch(fail=>access(file).then(present=>file))
 ,Promise.reject()).catch(fail=>false);
- return sloppy||exit(Error("no source definition for "+absolute));
+ return sloppy||exit("no source definition for "+absolute);
 };
 
  async function assemble({remote,branch,input,target},index,{length}={})
@@ -721,10 +726,10 @@
 };
 };
 
- function bundling(fail,source)
-{let [bundle]=Object.entries(scope).find(([field,module])=>
- source.startsWith(field)&&is(Promise)(module));
- return scope[bundle]||exit(fail);
+ export function bundling(fail,source)
+{let bundle=Object.entries(scope).find(([field,module])=>
+ (!source||source.startsWith(field))&&promise(module));
+ return bundle?true:exit(fail);
 };
 
  export async function require(path)
@@ -745,9 +750,12 @@
 ,{message({data:[id,term,...context]})
 {compose(buffer(compose(...compound(term)
 ?[swap(term),resolve]
-:[term].flat().map(term=>differ(term,...context))))
+:[term].flat().map(term=>differ(term,...context))),crop(1))
 //,whether(string,infer(),JSON.stringify),whether(string,compose(TextEncoder.prototype.encode.bind(new TextEncoder()),"buffer"),infer())
-,combine(compose(slip(id),collect),compose(collect,tether(search,compose(drop(1),1,either(is(ArrayBuffer)))),Object.values))
+,combine
+(compose(slip(id),collect)
+,compose(collect,tether(search,compose(drop(1),1,either(is(ArrayBuffer)))),Object.values)
+)
 ,this.postMessage.bind(this))(import(address));
 },error:compose(drop(1),this.postMessage.bind(this))
  });

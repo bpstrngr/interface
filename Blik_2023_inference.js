@@ -525,7 +525,7 @@
  return new Promise(resolve=>setTimeout(resolve,time)).then(infer.bind(this));
 };
 
- export function expect(condition=something,interval=500,limit=Infinity)
+ export function expect(condition=something,interval=0,limit=Infinity)
 {// hold thread until context satisfies condition. 
  if(!defined(this))
  return confer(expect,...arguments);

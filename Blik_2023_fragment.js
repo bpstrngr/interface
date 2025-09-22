@@ -24,6 +24,8 @@
 
  export function document(source,namespace,language)
 {let scope=is(window.EventTarget)(this)&&this;
+ if(is(window.EventTarget)(source))
+ return source;
  let fragment=scope||Reflect.construct(window.DocumentFragment,[]);
  let texts=compose(swap(fragment),"childNodes",Array.from,infer("filter",compose("nodeType",is(3))));
  let erase=compose(texts,infer("forEach",node=>node.remove()));
@@ -309,7 +311,7 @@
 
  export function capture(module=this.dataset.actions)
 {// register events to be routed to actions scoped by selector (eg. {#form:{submit(){}}}). 
- if(!module)return;
+ if(!module)return this;
  if(!globalThis.window||this?.constructor?.name==="Object")
  // Re-invoke on client to capture events. 
  return this?.constructor?.name==="Object"
@@ -586,7 +588,7 @@
  {linkService:new PDFLinkService(),renderer:"svg"
  ,textLayerMode:0,disableRange:true,forceRendering:true
  ,container:document({div:
- {class:"pdfjs",style:"margin:auto;height:670px;overflow:scroll;"
+ {class:"pdfjs",style:"margin:auto;height:100%;overflow:scroll;"
  ,div:{id:"viewer"}
  }})
  });
@@ -594,7 +596,7 @@
  pdf.getDocument(file).promise.then(combine
 (viewer.setDocument.bind(viewer)
 ,compose(1,"getPage",1,"getViewport",combine("width","height")
-,(width,height)=>viewer.container.append(document({style:{"#text":css({"div.pdfjs":
+,(width,height)=>viewer.container.append(document({style:{"@scope":{":scope":
  {"&>div#viewer":
  {width:"100%",height:"100%"
  ,"&>div.page":
@@ -613,7 +615,7 @@
  }
  }
  }
- }})}})))
+ }}}})))
 )).catch(note);
  return viewer.container;
 });
@@ -628,17 +630,20 @@
  ,"50%":{opacity:0.25},"100%":{transform:"translate(0,100%)",opacity:0}
  }}}}};
 
- export function image(source,alt)
+ export function image(source,alt,sync)
 {if(/image/i.test(source?.nodeName))return source;
- let src=is(Blob)(source)?URL.createObjectURL(source):source
- return revert((resolve,reject,src,alt)=>compose.call
-(document({img:{}})//crossOrigin:"anonymous"}})
+ let src=is(Blob)(source)?URL.createObjectURL(source):source;
+ let img=document({img:{}});//crossOrigin:"anonymous"}})
+ if(sync)
+ return document.call(img,{src,alt});
+ return revert((resolve,reject,img,src,alt)=>compose.call
+(img
 ,{onload(){if(/^blob:/.test(this.src))URL.revokeObjectURL(this.src);resolve(this,...arguments);}
  ,onerror(){if(/^blob:/.test(this.src))URL.revokeObjectURL(this.src);reject(this,...arguments);}
  ,src,alt
  },Object.assign
 ,globalThis.window?undefined:infer("dispatchEvent",new window.Event("load"))
-))(src,alt);
+))(img,src,alt);
  //if(!colors[color])svg.select("circle#"+id).attr("fill",["rgb(",...new Vibrant(this).swatches()["Vibrant"].rgb].reduce((hex,hue,index)=>hex+hue+(index<2?",":")")));
 };
 
@@ -1048,7 +1053,7 @@
  return {imports:
  {"/Blik_2023_inference.js":["","compose","each","pass","infer"]
  ,"/Blik_2023_interface.js":["","fetch","digest"]
- ,"/Blik_2023_fragment.js":["","document","demarkup","insert"]
+ ,"/Blik_2023_fragment.js":["","document","demarkup","insert","destroy"]
  ,"/Blik_2023_search.js":["","record","merge"]
  }
  ,exports:
@@ -1067,8 +1072,8 @@
  ,img:["png","jpg","jpeg","svg","gif","webp"]
  },value=>value.includes(extension))||[];
  if(this.nextSibling?.classList.contains("media"))
- return this.nextSibling.remove();
- this.style.pointerEvents="none";
+ return destroy(this.nextSibling);
+ merge(this.style,{pointerEvents:"none",animation:"glow 2s infinite"});
  let style={span:{class:"media",style:{"@scope":{":scope":
  {display:"block",position:"relative"
  ,width:"90%",height:"470px",margin:"auto"
@@ -1077,7 +1082,7 @@
  }}}}};
  let fragment=format
 ?compose([format,"src"],record)
-:/^http/.test(address)
+:/^http/.test(address)&&extension!=="pdf"
 ?compose(["iframe","src"],record,{a:
  {href:address
  ,style:{"@scope":{":scope":
@@ -1088,21 +1093,36 @@
  }}}
  ,"#text":address
  }},merge)
-:compose(fetch,digest,{source:src},media);
+:compose(fetch,digest,{source:address},media,["span"],record);
  return compose
-(fragment,["span"],record,style,merge,document
-,infer(insert,"after",this)
-,pass(compose("previousSibling",{style:{pointerEvents:null}},merge))
+(buffer
+(compose(fragment,["span"],record,style,merge,document,infer(insert,"after",this)),drop()
+),pass(compose(swap(this),{style:{pointerEvents:null,animation:null}},merge))
 )(address);
 }}
  }
  }
  };
- let style={"@scope":{":scope":{color:"#0097a7"}}};
+ address=/^http/.test(address)?address:[window.location.origin,address.replace(/^\/*/,"")].join("/");
+ let {1:extension}=new URL(address).pathname.match(/\.([^\/]+)$/)||[];
+ let [format]=extension&&fields(
+ {audio:["mp3"],video:["mp4","webm"]
+ ,img:["png","jpg","jpeg","svg","gif","webp"]
+ },value=>value.includes(extension))||[];
+ let style={"@scope":
+ {":scope":{color:"#0097a7"}
+ ,"@keyframes glow":
+ {"0%":{"text-shadow":"0 0 0 var(--text)"}
+ ,"50%":{"text-shadow":"0 0 8px var(--text)"}
+ ,"100%":{"text-shadow":"0 0 0 var(--text)"}
+ }
+ }};
+ if(format)
+ return format==="img"?image(address,title,true):{[format]:{src:address,alt:title}};
  return capture.call
 ({span:
  {role:"link",class:fields({redirect}),style
- ,"data-address":/^http/.test(address)?address:[window.location.origin,address.replace(/^\/*/,"")].join("/")
+ ,"data-address":address
  ,"#text":title
  }
  }
@@ -1537,7 +1557,7 @@
  if(text)
  [tag,address]=[tag,address].map(phrase=>phrase?.slice(0,-text.length));
  let next=address
-?capture.call(document(link(address,last.title)))
+?compose(link,document,tether(capture))(address,last.title)
 :Object.entries(qualify(tag)).flat().reduce((tag,qualifiers)=>document({[tag]:
  {"#text":last.title
  ,id:/h\d/.test(tag)?last.title:undefined
@@ -1738,9 +1758,8 @@
  }
 ],parse:
  {tag:{context:["Figure 1: Author_YEAR#h1 ",semiotics],terms:[collect,1,"nodeName","H1"],condition:"equal"}
- ,link:{context:["Figure 1: Author_YEAR@reference.pdf ",semiotics],terms:[collect,1,"role","link"],condition:"equal"}
- ,insert:{context:["Figure 1: Author_YEAR@reference.pdf#insert ",semiotics],terms:[collect,1,"nodeName","A"],condition:"equal"}
- ,image:{context:["Figure 1: Author_YEAR@image.png ",semiotics],terms:[collect,1,"nodeName","IMG"],condition:"equal"}
+ ,link:{context:["Figure 1: Author_YEAR@reference.pdf ",semiotics],terms:[collect,1,infer("getAttribute","role"),stash("link")],condition:"equal"}
+ ,image:{context:["Figure 1: Author_YEAR#fragment/media(\"image.png\") ",semiotics],terms:[collect,1,"nodeName","IMG"],condition:"equal"}
  ,action:{context:["Figure 1: title#chart/plot([1,2]) ",semiotics],terms:[collect,1,"nodeName","svg"],condition:"equal"}
  ,composition:{context:['Figure 1: title#[[[1,2]],"chart/plot"] ',semiotics],terms:[collect,1,"nodeName","svg"],condition:"equal"}
  ,reflow:{context:["abc\n{text-align:left}\ndef",semiotics],terms:[collect,1,"nodeName","DIV"],condition:"equal"}
