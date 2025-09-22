@@ -141,16 +141,11 @@ export function calendar(timestamps)
 ?[term].flat().reduce((scope,field)=>scope?.[field],scope)
 :Object.entries(term).flatMap(([field,term])=>
  [term].flat().flatMap(term=>scope[field]&&search.call(scope[field],term)));
- let group=whether(compose(path,tether(term)),[1],[0]);
- let length=stash(compose(drop(2,1),tether(search),"length"));
- let route=compose(group,length,drop(2),collect,"flat");
  let [domain,range]=[[],[]];
  for(let field in this)
- compose(stash(route),merge)([domain,range],[field,this[field]]);
+ [domain,range][term.call(this,[field,this[field]],path)?1:0].push([field,this[field]]);
  if(recursive)
  domain=[domain,range].flat();
- if(domain.some(promise))
- debugger
  let subrange=domain.flatMap(([field,value])=>Object.entries
 (search.call(value,term,recursive,path.concat(field))
 ).map(([path,value])=>[[field,path].join('/'),value]));
@@ -314,7 +309,7 @@ export function calendar(timestamps)
 ),...context,path.slice(0,index)));
  let composition=compose(...terms,whether
  // invoke method if not done already. 
-(branched,infer(),either(infer(method,...context),crop(1))
+(branched,infer(),buffer(compose(infer(method,...context),crop(1)),crop(1))
 ));
  return scope?composition(scope):composition;
 };
@@ -426,9 +421,9 @@ export function calendar(timestamps)
 ,{scope:{a:{b:1}},context:[entry=>entry,true],terms:[{a:{b:1},"a/b":1}],condition:["deepEqual"]}
 ,{scope:{a:{b:1}},context:[([field,value])=>!isNaN(value)],terms:[{"a/b":1}],condition:["deepEqual"]}
 ],prune:
- {trim:{scope:{a:{b:{c:3}}},context:[([field,value])=>field!=='b'?value:undefined],terms:[{a:[]}],condition:"deepEqual"}
+ {trim:{scope:{a:{b:{c:3}}},context:[([field,value])=>field!=='b'?value:undefined],terms:[{a:{}}],condition:"deepEqual"}
  ,collapse:{scope:{a:{b:{b:2,c:3}}},context:[([field,value])=>field!=='b'?value:undefined,true],terms:[{a:{c:3}}],condition:"deepEqual"}
- ,shave:{scope:{a:{b:{c:{d:1},f:2}},e:3},context:[([field,value],path)=>path.length<2?value:undefined],terms:[{a:{b:[]},e:3}],condition:"deepEqual"}
+ ,shave:{scope:{a:{b:{c:{d:1},f:2}},e:3},context:[([field,value],path)=>path.length<2?value:undefined],terms:[{a:{b:{}},e:3}],condition:"deepEqual"}
  //,agnostic:{scope:{a:{b:[]},e:3},context:[([field,value])=>Promise.resolve(value)],terms:[note,{a:{b:[]},e:3}],condition:"deepEqual"}
 },route:
  {path:{scope:{a:{b:c=>c.body}},context:[["a","b"],{body:1}],terms:[1],condition:["equal"]}
@@ -436,6 +431,6 @@ export function calendar(timestamps)
  ,beyond:{scope:{a:{get:c=>({b:c.method})}},context:[["a","b"],{method:"get"}],terms:["get"],condition:["equal"]}
  ,broken:
 [{scope:{a:{b:c=>{throw Error("fail")}}},context:[["a","b"]],terms:[is(Error)],condition:["ok"]}
-,{scope:{a:{b:{get:c=>{throw Error("fail")}}}},context:[["a","b"],{method:"get"}],terms:[is(Error)],condition:["ok"]}
+,{scope:{a:{b:{get:c=>{throw Error("fail")}}}},context:[["a","b"],{method:"get"}],terms:[note,is(Error)],condition:["ok"]}
 ]}
  };

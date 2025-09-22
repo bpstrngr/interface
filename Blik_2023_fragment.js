@@ -1213,7 +1213,7 @@
 },{});
  return target.parentNode.insertBefore(document(
  {ol:
- {li:note(prune.call(note(list(tree)),([field,value])=>
+ {li:prune.call(list(tree),([field,value])=>
  field!=="span"||!value?.["#text"]?value
 :{a:
  {"#text":value["#text"]
@@ -1221,7 +1221,7 @@
  ,target:null
  ,style:"display:block;white-space:pre;font-weight:bold;"
  }
- }))
+ })
  ,style:{"#text":css({["#"+id+"+ol ul"]:{"list-style-type":"disc"}})}
  }
  }),target.nextSibling);
