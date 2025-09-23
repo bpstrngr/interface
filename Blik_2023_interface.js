@@ -304,7 +304,8 @@
 ,pass(parts=>resolve(entry).catch(note))
 ,parts=>compose.call
 (entry,parts,bundle,slip(absolute),true,access,"bundle ready.",note.bind(2)
-).finally(done=>delete this[target]&&purge(target))&&
+).finally(done=>purge(target)&&delete this[target]&&
+ note.call(2,"purged sources of "+target+"."))&&
  // not returning bundle promise after source assembly to unblock immediate resolution from source. 
  entry
 )

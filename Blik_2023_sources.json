@@ -687,7 +687,7 @@
   "haverbeke_2020_crelt.js":{"https://github.com/marijnh/crelt":{"1.0.6":["index.js"]}},
   "haverbeke_2022_lezer.js":{"https://github.com/lezer-parser/common/src":{"1.2.1":["src/index.ts"]}},
   "haverbeke_2022_lezer_lr.js":{"https://github.com/lezer-parser/lr/src":{"1.4.2":["src/index.ts",{"alias":{
-    "@": "./haverbeke_2022_lezer.js"
+    "@lezer/common": "./haverbeke_2022_lezer.js"
   }}]}},
   "haverbeke_2022_lezer_lr_constants.js":{"https://github.com/lezer-parser/lr/src/constants":{"1.4.2":["src/constants.ts"]}},
   "haverbeke_2022_lezer_highlight.js":{"https://github.com/lezer-parser/highlight/src":{"1.2.1":["src/highlight.ts",{"alias":{
