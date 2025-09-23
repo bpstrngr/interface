@@ -91,7 +91,7 @@
  return compose
 (simple(this)?serialize:"toString",term?compose
 ("./"+file,buffer(modularise
-,compose(swap(file),resolve)),either("namespace",crop(1))
+,compose(swap("./"+file),resolve)),either("namespace",crop(1))
 ):compose(["body"],record,{type:mime("js")},merge)
 )(this);
 },sourcemap
