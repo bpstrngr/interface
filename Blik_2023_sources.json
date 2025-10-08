@@ -913,5 +913,9 @@
     "unist-util-visit":"./Wormer_2015_unist-visit.js",
     "pos":"./Kazemi_2011_pos.js"
   }}]}},
-  "McMahon_2012_async.js":{"https://github.com/caolan/async/lib":{"v3.2.6":["lib/index.js"]}}
+  "McMahon_2012_async.js":{"https://github.com/caolan/async/lib":{"v3.2.6":["lib/index.js"]}},
+  "Shiranuit_2021_segfault.node":{
+    "https://github.com/Shiranuit/node-segfault-handler":{"v1.4.2":["binding.gyp",{"syntax":"gyp","edit":{"'nan'":"'../1/include_dirs.js'"}}]},
+    "https://github.com/nodejs/nan":{"v2.23.0":[]}
+  }
 }

@@ -1,5 +1,4 @@
  import {note,something,provide,has,compose,combine,buffer,slip,drop,stream,infer,either,swap,crop,not,whether,pass,promise,collect,simple,functor,defined,string,compound,tether,is,numeric,array,basic,iterable,construct} from "./Blik_2023_inference.js";
- import {resolve} from "./Blik_2023_interface.js";
 
  export var stringify=scope=>
  scope&&iterable(Object(scope))?String(scope):JSON.stringify(scope);
@@ -262,8 +261,10 @@ export function calendar(timestamps)
  return Object.entries(source).reduce(function(target,[field,next])
 {const past=target[field];
  const value=defined(past)?merge(past,next,override):next;
+ if(past===value)
+ return target;
  // mutation warning - reduce on an empty target to copy.
- if(something(value))
+ if(defined(value))
  return buffer(Object.assign,drop(1,2))(target,{[field]:value});
  delete target[field];
  return array(target)?[target].flat():target;

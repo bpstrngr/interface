@@ -484,6 +484,8 @@
 
  export function serialize(namespace,format="astring",options)
 {// convert abstract syntax tree or runtime namespace to javascript;
+ if(string(namespace))
+ return namespace.startsWith("data:text/javascript;")?namespace.replace(/^data:text\/javascript;/,""):JSON.stringify(namespace);
  if(functor(namespace))
  // functions may be serialized as "name(){}", "function(){}", or with a name different from the object field. 
  return composed(namespace)
@@ -500,16 +502,11 @@
  functor(term)?!path.length
 ?[term.name!==field?" export var "+field+"=":"",serialize(term,field)].join("")
 :String(term):term)).join("\n\n");
- if(string(namespace))
- return namespace.startsWith("data:text/javascript;")?namespace.replace(/^data:text\/javascript;/,""):JSON.stringify(namespace);
- let parser=
- {astring:["./davidbonnet_2015_astring.js","generate"]
- }[functor(format)?"astring":format];
+ let parser={astring:["./davidbonnet_2015_astring.js","generate"]}[format];
  if(parser&&namespace.type==="Program")
- return parser.reduce((module,term)=>
- import(module).then(module=>module[term](namespace,options))).then(functor(format)?format:infer());
+ return resolve(...parser,namespace,options);
  let {exports,imports,procedures}=namespace;
- if(![exports,imports,procedures].some(Boolean)||format==="json")
+ if(format==="json"||![exports,imports,procedures].some(Boolean))
  return Object.entries(prune.call(namespace,([field,value])=>
  functor(value)?"data:text/javascript;"+serialize(value,null):value)).reduce(infer((literal,array,[field,value],index)=>[literal,
 [array?"":/[^\w]/.test(field)?JSON.stringify(field):field
@@ -517,7 +514,8 @@
 ].join(array?"":":")].join(index?",":"")
 ,array(namespace))
 ,"{")+"}";
- imports=Object.entries(imports||{}).map(([module,names])=>[module,[names].flat()]).flatMap(([module,names],index)=>
+ imports=Object.entries(imports||{}).map(([module,names])=>
+ [module,[names].flat()]).flatMap(([module,names],index)=>
 [(index=names.findIndex(name=>name.startsWith("*")))>-1?[module,names.splice(index,1)]:[]
 ,[module,names]
 ]).filter(({1:names})=>names?.join("").length).map(([module,names])=>!module.endsWith(".json")
@@ -532,8 +530,7 @@
 ].join("")).join("\n\n")
 ,""].join("\n");
  procedures=proceduralize(...[procedures].flat().filter(Boolean));
- let output=compose(collect,infer("filter",Boolean),"\n\n","join")(imports,exports,procedures);
- return functor(format)?format(output):output;
+ return compose(collect,infer("filter",Boolean),"\n\n","join")(imports,exports,procedures);
 };
 
  export function proceduralize(term,...terms)
@@ -545,15 +542,16 @@
  return String(term||"").replace(/(^(async ){0,1}function *\w*\([\w,\n]*\)\n* *\{\n*)|(\}$)/g,"");
 };
 
- export async function sourcemap(request)
-{let {pathname:address}=new URL(request.url);
- address=address.replace("/sourcemap","");
+ export async function sourcemap(request,body,response,route)
+{let address=route.join("/");
+ debugger
  let {default:actions,...exports}=await modularize(this);
+ note(this, exports)
  let namespace=
  {["./"+await resolve("path","relative",".",address)]:
  [exports,...Object.values(actions)].flatMap(names=>
  Object.entries(names).map(([field,value])=>
- is(Function)(value)&&value.name||field))
+ functor(value)&&value.name||field))
  };
  let names=Object.values(namespace).flat();
  let sources=await Object.keys(namespace).reduce

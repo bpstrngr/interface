@@ -316,7 +316,10 @@
  // Re-invoke on client to capture events. 
  return this?.constructor?.name==="Object"
 ?prune.call(this,({1:value})=>merge(value,{dataset:{actions:[module]}}),0,0)
-:this.dataset.actions=JSON.stringify([JSON.parse(this.dataset.actions||"[]"),module].flat())
+:this.dataset.actions=JSON.stringify(Array.from(new Set(
+[JSON.parse(this.dataset.actions||"[]")
+,this.dataset.actions===module?[]:module
+].flat())))
 ,this;
  try{module=JSON.parse(module)}catch(fail){}
  let actions=Promise.all([module].flat().map(module=>
@@ -349,7 +352,7 @@
  actions[event.type]&&target.closest(selector));
  scopes.map(([selector,actions])=>
  [target.closest(selector),actions[event.type]]).forEach(([scope,action])=>
- console.log({[event.type]:target,scope,event})||
+ console.debug({[event.type]:scope})||
  action.call(scope,event));
 };
 
@@ -1361,6 +1364,13 @@
 )(node.ownerDocument.defaultView.getSelection(),node.ownerDocument.createRange());
 };
 
+ export function transform({transform})
+{if(string(transform))
+ transform={baseVal:[{matrix:new DOMMatrixReadOnly(transform)}]};
+ let [x,y]=search.call(transform,{baseVal:{0:{matrix:["e","f"]}}});
+ return {x,y};
+};
+
  export function transition(node,style,seconds)
 {return !seconds?Object.assign(node.style,style)&&node:compose
 ((transition,node)=>Object.assign(node.style,{transition})&&node
@@ -1496,7 +1506,7 @@
  exit("no semiotics provided for parsing "+type(text));
  return each.call(provide(Array.from(text)),async function* interpret(text,index,length,syntax)
 {let end=index+1===length;
- let trail=Array(2).fill().map(syntax.shift.bind(syntax)).filter(Boolean);
+ let trail=syntax.splice(0,2).filter(Boolean);
  let fragments=await semiotics[text]?.(...trail)||semiotics.text(text,...trail);
  syntax.unshift(...fragments.flat());
  let previous=syntax.findIndex(fragment=>trail.includes(fragment));

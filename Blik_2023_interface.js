@@ -5,12 +5,12 @@
  export const address=new URL(import.meta.url).pathname;
  export const location=address.replace(/\/[^/]*$/,"");//path.dirname(address);
  export const file=address.replace(/.*\//,"");//path.basename(address);
- export const agent=globalThis.process
+ export const agent=globalThis.process?.versions
 ?prune.call(process.versions,({1:value})=>string(value)?Number(value.match(/(\.{0,1}\d+){1,2}/)[0]):value)
 :version(globalThis.navigator);
- export const entry=agent.node&&await resolve("worker_threads","isMainThread")
- export const remote=/^http/.test(import.meta.url);
  export const virtual=typeof imports!=="undefined";// interface/modularise tracks imports in context. 
+ export const entry=agent.node&&await resolve("worker_threads","isMainThread");
+ export const remote=/^http/.test(import.meta.url);
  var sources="./Blik_2023_sources.json";
  export var scope={};// interface/resolve tracks imports in interface/scope. 
  export var {window,fetch}=globalThis.window?globalThis:{fetch:freefetch};// create window with interface/jsdom. 
@@ -59,7 +59,7 @@
  }).map(([field,value])=>agent.node&&process.execArgv.some((flag,index)=>
  new RegExp("^--"+field+(value?"=[^ ]*"+value:"")).test(flag))||undefined);
 
- if(thread&&!virtual&&!remote&&entry)
+ if(entry&&thread&&!virtual&&!remote)
  // register loader thread. 
  thread=await compose.call
 ("worker_threads",resolve,["MessageChannel"],tether(search),[],Reflect.construct
@@ -69,17 +69,13 @@
  ,onerror,messageerror:onerror
  },{once:true});
  resolve("module","register",address,import.meta.url,{data:{socket},transferList:[socket]});
-})//,tether(observe
-// ,{message:compose
-// (drop(1),"data",combine("channel","context")
-// ,(channel,context)=>console[channel](...context)
-// )})
+})
 ),whether
 (compose(collect,"length",major(0)),buffer(compose
-(resolve,note.bind(2),pass(expect(buffer
-(compose(done=>delegate.call(thread,"bundling"),undefine)
-,swap(true)
-),10000))
+(resolve,note.bind(2),pass(expect(compose(drop(),combine
+(delegate.bind(thread,"bundling")
+,delegate.bind(thread,"testing")
+),are(false)),5000))
 )
 ,compose(note.bind(1),wait(60*1000),swap(1),process.exit))
 ,infer()
@@ -89,8 +85,11 @@
  // without either loader flag, context begins at second index. 
  compose(resolve,drop(),0,process.exit)(...process.argv.slice(2));
 
+ // if(entry&&await compose.call(resolve("vm"),has("Module")))
+ // await compose("default","registerHandler")(import("./Shiranuit_2021_segfault.node"));
+
  if(inspected&&entry&&!virtual)
- // restart inspector so DevTools switches to the main thread. 
+ // restart inspector to trigger a DevTools switch back to the main thread in case open. 
  await compose
 (resolve,pass("close"),pass(compose(process.debugPort,"localhost","open"))
 ,infer(Reflect.get,"Session"),[],Reflect.construct,{inspectorNotification:note},tether(observe)
@@ -101,8 +100,7 @@
 
  export async function initialize({socket:thread})
 {if(inspected)
- //await compose(note,buffer(tether(delegate),compose(note,exit)),note)(thread,clientwidth),
- // https://issues.chromium.org/issues/435880513
+ // Inspect thread. 
  await combine
 (compose(slip("node:inspector","open"),resolve)
 ,skip(compose(inspector,slip("Inspect:\n"),"concat",note.bind("cyan")))
@@ -166,7 +164,7 @@
  var modulepath=when(is([match(/^[\/\.]/),not(match(RegExp(sources+"$")))]));
  var format=compose
 (combine(infer(),compose(swap(sources),"default",resolve,Object.keys)),(source,sources)=>
- sources.find(field=>source.startsWith([location,field.replace(/\.js$/,"/")].join("/"))),["format"],record
+ sources.find(field=>source.startsWith([location,field.replace(/\.js$|\.node$/,"/")].join("/"))),["format"],record
 );
  var shortcircuit=compose
 (combine(infer(),either(buffer(compose(respecify,modulepath,format)),swap({}))),merge
@@ -210,7 +208,7 @@
  let loading=next?.name==="nextResolve";
  let primary=loading&&!internal;
  if(primary&&thread&&!await resolve("worker_threads","isMainThread"))
- // suppress primary import on loader thread (registered with --import) in favor of explicit inference with context available only on the main one. 
+ // suppress primary import on loader thread (registered with --import) in favor of dynamic inference of command line context only available on the main one. 
  return next("worker_threads",context);
  let command=!loading||!internal;
  let target=internal?decodeURI(new URL(internal).pathname):address;
@@ -228,7 +226,7 @@
  let module=command
 ?import(source,json&&{[!agent.Linux&&feature(agent).attributes?"with":"assert"]:{type:"json"}})
 :either(precedent,compose
-(either(buffer(next,buffer(recover)),compose(swap(source),request))
+(buffer(next,buffer(recover,either(compose(swap(source),request),exit)))
 ,shortcircuit,{imports:new Set()},merge,[absolute],record,slip(scope),merge
 ,[absolute,"resolution"],tether(search)
 ))(absolute,context);
@@ -270,7 +268,7 @@
  if(!defined(this))
  exit([acquire.name,"requires bound scope to track source imports."].join(" "));
  let path=await import("path");
- let target=absolute.replace(/\.js$/,"");
+ let target=absolute.replace(/\.js$|\.node$/,"");
  let relative=path.relative(location,absolute);
  let definition=await compose("default",resolve,either(relative,swap({})))(sources);
  let entry=!compound(definition)||array(definition);
@@ -281,18 +279,20 @@
  {target,remote,branch,input:[input].flat()
  }));
 });
+ let input=entries.flatMap(({input})=>input).filter(string);
+ let binding=/\.gyp$/.test(input[0]);
+ let clean=pass(buffer(compose(swap(target),purge,done=>delete this[target]&&note.call(2,"purged sources of "+target+".")),note));
  if(entries.length)
  return compose.call
-(entries,([{remote,input},...parts])=>path.resolve(location,...remote?
-[target,![input,parts.flatMap(({input})=>input)].flat().filter(string).some((input,index)=>index||/\/$/.test(input))
-?"0/"+input.find(string)
-:"reexports.js"
+(path.resolve(location,...entries[0].remote?
+[target,!input.some((input,index)=>index||/\/$/.test(input))
+?"0/"+input.find(string):"reexports.js"
 ]:[])
  // target entry indicates source resolution available for re-import. 
 ,entry=>this[target]=this[target]||compose.call
 (target,pass(target=>note.call(2,"Collecting source of \""+relative+"\" for "+dependent+"..."))
 ,buffer(purge),swap(entries)
-,buffer(infer("reduce",record(assemble),[]),fail=>purge(target).finally(done=>exit(fail)))
+,buffer(infer("reduce",record(assemble),[]),compose(clean,exit))
  // temporary re-export of all namespaces for multientry bundle. 
 ,pass(/reexports\.js$/.test(entry)&&compose
 (infer("flatMap",({source})=>source)
@@ -301,15 +301,19 @@
 ,[]),"\n","join",slip(entry),true,access
 ))
  // perform idempotent source resolution before bundling to support re-imports. 
-,pass(parts=>resolve(entry).catch(note))
-,parts=>compose.call
-(entry,parts,bundle,slip(absolute),true,access,"bundle ready.",note.bind(2)
-).finally(done=>purge(target).then(done=>delete this[target]&&
- note.call(2,"purged sources of "+target+".")))&&
- // not returning bundle promise after source assembly to unblock immediate resolution from source. 
- entry
+,pass(parts=>!binding&&buffer(resolve,note)(entry))
+,slip(entry)
+,binding
+?buffer
+(compose(make,absolute,slip(resolve("fs","promises")),"rename",swap(absolute),pass(infer(note.bind(2),"bundle ready.")),clean)
+,compose(clean,exit)
 )
-,pass(note.bind(3,"Accessing source entry of \""+relative+"\" for "+dependent+":\n "))
+ // not returning bundle promise after source assembly to unblock immediate resolution from source. 
+:compose(skip(buffer
+(compose(bundle,slip(absolute),true,access,pass(infer(note.bind(2),"bundle ready.")),clean)
+,compose(clean,exit)
+)),swap(entry),pass(note.bind(3,"Accessing source entry of \""+relative+"\" for "+dependent+":\n ")))
+)
 );
  let sloppy=!/\.(js|json)$/.test(absolute)&&
  await ["js","ts","tsx","d.ts"].map(extension=>absolute+"."+extension).reduce((module,file)=>
@@ -353,11 +357,12 @@
 :input)
 ,[]);
  let {source=[],format=[],patches=[]}=[entries.flat()].flat().map(function sort(part)
-{let field=string(part)?(/\.patch$/.test(part)?"patches":"source"):"format";
+{let field=string(part)?/\.patch$/.test(part)?"patches":"source":"format";
  return {[field]:[part]};
 }).reduce((entries,entry)=>merge(entries,entry,0),{});
  format=format.reduce(merge,{});
- await patch(path.dirname(source[0]), patches);
+ if(source.length)
+ await patch(path.dirname(source[0]),patches);
  let scripts=[format.scripts].flat().filter(Boolean);
  if(scripts.length)
  await scripts.reduce(record(script=>
@@ -415,6 +420,18 @@
  return code;
 };
 
+ async function make(source,parts)
+{let path=source.split("/");
+ let file=path.pop();
+ let binding=await access(source,true);
+ let edits=parts.map(({format})=>format?.edit).filter(Boolean).reduce(merge,{});
+ if(Object.keys(edits).length)
+ await compose(edits,edit,slip(source),true,access)(binding);
+ let {1:target}=binding.match(/"target_name": *"(.*)"/);
+ await buffer(compose(spawn.bind(true),note),exit)("node-gyp","-C",path.join("/"),"configure","build");
+ return path.join("/")+"/build/Release/"+target+".node";
+};
+
  export async function load(source,context,next)
 {// access source as module specifier, ie. 
  // compose(source,true,access,interpret,format,sanitize,serialize,modularize). 
@@ -451,11 +468,11 @@
  Object.assign(context,{format:syntax=format="shader"});
  if(format==="commonjs")
  // don't trust default assumption from nearest package.json as it often refers to inaccessible build outputs. 
- await require(target).catch(fail=>
- Object.assign(context,{format:format="module"}));
+ await buffer(require,commonjs=>is(Error)(note(commonjs))&&
+ Object.assign(context,{format:format="module"}))(target);
  let native=["json","module","wasm","builtin","commonjs",undefined].includes(format);
  if(native&&next)
- return compose.call(source,context,next,shortcircuit,skip(check));
+ return compose(next,whether(match({format:"addon"}),infer(merge,{source:null})),shortcircuit,skip(check))(source,context);
  let relative=await resolve("path","relative",location,target);
  let [index,sparse]=relative.split("/").reduce((folder,entry,index,relative)=>
  [entry,relative.splice(2).join("/")]);
@@ -496,10 +513,10 @@
  return compose(buffer
 (compose(whether
 (false//compose.call(resolve("vm"),has("Module"))
- // dispatch new import thread for tests until modularization halts on self-referential imports. 
-,compose(true,access,target,modularise)
+ // modularization multiplies fragment.js for some reason, and their contexts break tests yet.  
+,compose(true,access,target,modularise,"namespace")
 ,resolve
-),module=>scope.tests=module.tests&&test(module,module.tests,target))
+),module=>scope.tests=module.tests&&compose(buffer(test),tests=>scope.tests=tests)(module,module.tests,target))
 ,compose(crop(1),target,note.bind(1))
 ))(target);
 };
@@ -507,18 +524,18 @@
  export async function checkout(remote,target,branch,path)
 {// git clone remote branch to target, restricted to subfolder if present. (to be replaced with js-git)
  if(!/^http/.test(remote))
- return fs.cp(remote,target,{dereference:true,recursive:true}).then(copy=>branch&&spawn("git","-C",target,"checkout",branch));
+ return fs.cp(remote,target,{dereference:true,recursive:true}).then(copy=>branch&&spawn.call(0,"git","-C",target,"checkout",branch));
  let commit=branch.length===40&&!/[^a-z0-9]/.test(branch);
- let clone=await spawn("git","clone","--depth=1",...path.length?["--no-checkout","--sparse","--filter=tree:0"]:[]
+ let clone=await spawn.call(0,"git","clone","--depth=1",...path.length?["--no-checkout","--sparse","--filter=tree:0"]:[]
 ,...commit?["--no-checkout","-c","remote.origin.fetch=+"+branch+":refs/remotes/origin/"+branch]:branch?["--single-branch","--branch",branch]:[]
 ,remote,target);
  if(commit)
- clone=await spawn("git","-C",target,"checkout",branch);
+ clone=await spawn.call(0,"git","-C",target,"checkout",branch);
  if(!path.length)
  return target;
- clone=await spawn("git","-C",target,"sparse-checkout","add",...[path.join("/").split(" ")].flat());
+ clone=await spawn.call(0,"git","-C",target,"sparse-checkout","add",...[path.join("/").split(" ")].flat());
  if(!commit&&branch)
- clone=await spawn("git","-C",target,"checkout",branch);
+ clone=await spawn.call(0,"git","-C",target,"checkout",branch);
  return target;
 };
 
@@ -640,9 +657,9 @@
  !exclude.some(exclusion=>RegExp(exclusion).test(file+entry.name))
 ?entry.isDirectory()?recursive
 ?list(file+entry.name+"/",recursive,exclude).then(files=>[entry.name,files])
-:undefined
+:[]
 :[entry.name,null]
-:undefined)
+:[])
 ,[]);
  return Object.fromEntries(entries);
 };
@@ -686,56 +703,70 @@
 
  export var compile=compose(drop(1),load,parse,serialize);
 
- export async function modularise(resource,identifier,context={},parents={})
+ export async function modularise(resource,identifier,context={},depth=0)
 {// uses --experimental-vm-modules 
  let {SourceTextModule,SyntheticModule,createContext,isContext}=await import("vm");
- let {default:{resolve}}=await import("path");
  let {pathToFileURL}=await import("url");
- identifier=resolve(identifier);
- if(identifier.endsWith(".json"))
- try{return {default:JSON.parse(resource),[Symbol.toStringTag]:"Module"};}catch(fail){};
+ let synthetic=!resource&&/^[a-z]/.test(identifier);
+ if(!synthetic)
+ identifier=await resolve("path","resolve",identifier)
+,resource=await expect(buffer(access,whether
+(tether(bundling)
+,compose(crop(1),slip("awaiting bundle to "+modularise.name),note,undefine)
+,exit
+)),3000)(identifier,true);
  if(!isContext(context))
  context=createContext(
- {imports:new Map(),URL,Object,Blob,Reflect,Buffer,TextEncoder,TextDecoder,RegExp
- //,isNaN,Error,Math,JSON,Date,Symbol,Object,Function,Promise,String,Array,Boolean,ArrayBuffer,crypto,global,globalThis
- ,ReadableStream,WritableStream
- ,process,console,setTimeout,setInterval,global,window,fetch,...context
+ {imports:{},URL,Object,Blob,Reflect,Buffer,TextEncoder,TextDecoder,RegExp
+ ,process:{env:{},stdout:process.stdout,stderr:process.stderr,version:process.version}
+ // ,navigator:{}
+ // ,isNaN,Error,Math,JSON,Date,Symbol,Object,Function,Promise,String,Array,Boolean,ArrayBuffer,crypto
+ // //,ReadableStream,WritableStream
+ ,setTimeout,setInterval
+ ,global//,globalThis
+ ,...context
  });
- let cachedData=context.imports.get(identifier);
- let module=new SourceTextModule(resource||""
+ let precedent=context.imports[identifier];
+ if(precedent)
+ return precedent;
+ let cachedData=await scope[identifier]?.virtual;
+ let module=synthetic
+?await import(identifier).then(module=>new SyntheticModule(Object.keys(module),function()
+{Object.entries(module).reduce((module,entry)=>
+ module.setExport(...entry)||module
+,this);
+},{identifier,context}))
+:new SourceTextModule(resource||""
 ,{identifier,context,cachedData
- ,importModuleDynamically:identifier=>import(identifier)
+ ,importModuleDynamically:specifier=>import(specifier)//compose(link,"namespace")({specifier})
  ,initializeImportMeta:meta=>Object.assign(meta,{url:pathToFileURL(identifier)})
  });
- if(!cachedData)
- context.imports.set(identifier,module.createCachedData());
- //note(identifier,module?.constructor?.name)
- await module.link(link);
+ merge(context.imports,module,[identifier]);
+ //await module.link((specifier,{context})=>
+ let links=await module.moduleRequests?.reduce(record(({specifier})=>
+ modularise(null,specifier,context,depth+1)),[]);
+ await module.linkRequests?.(links);
+ module.instantiate?.();
+ if(!synthetic)
+ merge(scope,module.createCachedData(),[identifier,"virtual"]);
+ if(!depth)
  await module.evaluate().catch(compose(note,exit));
  return module;
- async function link(identifier,{context})
-{return Object.assign(parents
-,{[identifier]:parents[identifier]||/^[a-z]/.test(identifier)
-?import(identifier).then(module=>new SyntheticModule(Object.keys(module),function()
-{Object.entries(module).reduce((module,entry)=>
- module.setExport(...entry)||module,this);
-},{identifier,context}))
-:compose.call(identifier,true
-,buffer(access,compose(bundling,swap(identifier),true,access))
-,identifier,context,parents,modularise)
- })[identifier];
-};
 };
 
- export function bundling(fail,source)
-{let bundle=Object.entries(scope).find(([field,module])=>
+ export function bundling(source)
+{return Object.entries(scope).some(([field,module])=>
  (!source||source.startsWith(field))&&promise(module));
- return bundle?true:exit(fail);
+};
+
+ export function testing(source)
+{return Object.entries(scope).some(([field,{module}])=>
+ (!source||source.startsWith(field))&&promise(module?.tests));
 };
 
  export async function require(path)
 {// to be deprecated in favor of commonjs compilation. 
- let instance=globalThis.require||require.instance;
+ let instance=require.instance;
  //path=new URL(note(path)).pathname;
  if(instance)
  return instance(path);
@@ -980,16 +1011,21 @@
  return new URL(address).pathname.replace(/^\/*|\/*$/g,"");
 };
 
- export async function spawn(command, ...context)
+ export async function spawn(command,...context)
 {// bound scope defines output color: undefined=quiet, other=default
  note.call(3,command,...context,"...");
  let process=await resolve("child_process","spawn",command,context);
- let streams=["out","err"].map(stream=>process["std"+stream]);
- if(this)
- streams.forEach((stream,index,[out])=>stream.on("data",data=>
- console[index?"error":"log"](data.toString("utf8"))));
- return new Promise((resolve,reject)=>process.on("exit",exit=>
- exit?reject(Error(exit)):resolve()));
+ return revert((resolve,reject,process,output)=>
+[[process,{exit:exit=>exit?reject(Error(exit)):resolve(output.join("\n"))}]
+,...this?["out","err"].map((stream,index)=>
+[process["std"+stream]
+,{data:compose
+(drop(1),data=>data.toString("utf8"),pass(console[index?"error":"log"])
+,slip(output),"push"
+)}
+]):[]
+].forEach(([stream,actions])=>
+ observe.call(stream,actions)))(process,[]);
 };
 
  export var tests=

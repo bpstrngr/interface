@@ -1,4 +1,3 @@
- import * as inference from "./Blik_2023_inference.js";
  export const {pathname:address,origin}=new URL(import.meta.url);
  export const location=address.replace(/\/[^/]*$/,"");
  var browser=globalThis.window||(globalThis.constructor.name==="DedicatedWorkerGlobalScope");
@@ -180,7 +179,7 @@
 };
 
  var expand=
-[term=>term instanceof Promise,context=>Promise.all(context)
+[promise,context=>Promise.all(context)
 ,generator,context=>context.flatMap(term=>generator(term)?[...term]:[term])
 ,asyncgenerator,context=>context.reduce(function resolve(context,term)
 {return context instanceof Promise
@@ -190,7 +189,7 @@
  next.splice(context.length,0,value)&&next):[...context])
 :[...context,term]
 },[])
-,term=>term instanceof Promise,context=>Promise.all(context)
+,promise,context=>Promise.all(context)
 ].map((condition,index,actions)=>
  actions.splice(index,2,actions.slice(index,index+2))).map(([condition,expand])=>
  context=>context.some(condition)?expand(context):context);
@@ -467,7 +466,7 @@
  ,focus:['focusin','focusout']
  ,touch:['pointerover','pointerout']
  ,pinch:['touchstart',"touchmove",'touchend']
- ,draw:['mousedown','mouseup']
+ ,draw:['pointerdown','pointerup']
  };
  let entries=[action].flat().flatMap(action=>
  simple(action)?Object.entries(action):[[action?.name,action]]).flatMap(([name,action])=>
@@ -490,7 +489,8 @@
  function rebind(event)
 {//if(!propagate)event.stopPropagation();
  let type=event.type.replace(/(out|move|end|up)$/,"");
- let start={focus:"in",touch:"start"}[type]||"over";
+ let mode=event.type.replace(type,"");
+ let start={focus:"in",touch:"start"}[type]||{up:"down",out:"over",end:"start"}[mode]||"over";
  let constructor=type.replace(/^./,infer("toUpperCase"))+"Event";
  event.target.dispatchEvent(new globalThis[constructor](type+start,event));
 };
@@ -553,7 +553,7 @@
 }},{once:true})))(...arguments);
 };
 
- export function exit(fail){throw is(Error)(fail)?fail:Error(fail);}
+ export function exit(fail){throw is(Error)(fail)?fail:Error(fail,{reason:fail});}
 
  export function clock(mark,precision="time")
 {let number=!isNaN(Number(mark));

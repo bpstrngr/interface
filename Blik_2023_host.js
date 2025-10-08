@@ -25,8 +25,8 @@
  merge(globalThis,{cache,published,classified,classify});
  let certificates=Object.values(certification).flat().map(compose(crop(1),slip("path","resolve"),resolve));
  await classify?.(module,...certificates);
- // send jsdom composition loader thread too so it can fetch modules from this interface during eg. server-side rendering.
- let origin=[agent.globalAgent.protocol+"//localhost",port].join(":");
+ // send jsdom composition to loader thread too so it can fetch modules from this interface during eg. server-side rendering.
+ let origin=agent.globalAgent.protocol+"//localhost"+":"+port;
  delegate.call(thread,[[origin],"interface/jsdom"]);
  jsdom(origin);
  let certifications=prune.call(certification,([domain,certificates])=>
