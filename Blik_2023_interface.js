@@ -2,6 +2,16 @@
  import {search,merge,prune,sum,stringify,edit,parse as records,relevant,route,record,remember} from "./Blik_2023_search.js";
  import {parser,parse,sanitize,serialize,exports,reexport,test,mime,coordinates} from "./Blik_2023_meta.js";
 
+export var feature=agent=>agent&&prune.call
+({attributes:{node:21,Chrome:123}
+ ,assertions:{node:16.14,Chrome:91,Firefox:Infinity}
+ ,json:{Chrome:125,Firefox:Infinity}
+ },([feature,condition])=>
+[true,Object.keys(condition).find(name=>agent[name])
+].filter(Boolean).reduce((value,name)=>
+ condition[name]<=agent[name])
+);
+
  export const address=new URL(import.meta.url).pathname;
  export const location=address.replace(/\/[^/]*$/,"");//path.dirname(address);
  export const file=address.replace(/.*\//,"");//path.basename(address);
@@ -9,7 +19,7 @@
 ?prune.call(process.versions,({1:value})=>string(value)?Number(value.match(/(\.{0,1}\d+){1,2}/)[0]):value)
 :version(globalThis.navigator);
  export const virtual=typeof imports!=="undefined";// interface/modularise tracks imports in context. 
- export const entry=agent.node&&await resolve("worker_threads","isMainThread");
+ export const entry=agent.node&&await resolve.call(import.meta.url,"worker_threads","isMainThread");
  export const remote=/^http/.test(import.meta.url);
  var sources="./Blik_2023_sources.json";
  export var scope={};// interface/resolve tracks imports in interface/scope. 
@@ -33,16 +43,6 @@
 })||{});
 };
 
- export var feature=agent=>agent&&prune.call
-({attributes:{node:21,Chrome:123}
- ,assertions:{node:16.14,Chrome:91,Firefox:Infinity}
- ,json:{Chrome:125,Firefox:Infinity}
- },([feature,condition])=>
-[true,Object.keys(condition).find(name=>agent[name])
-].filter(Boolean).reduce((value,name)=>
- condition[name]<=agent[name])
-);
-
  export var peer=remember(function peer(protocol)
 {return import(protocol).then(({Agent})=>Agent({timeout:5*60*1000}));
 },protocol=>protocol);
@@ -50,19 +50,19 @@
  if(agent.node&&!virtual)
   // expose module to console. 
 [import.meta.url,"./Blik_2023_inference.js","./Blik_2023_search.js"
-].forEach(compose(crop(1),resolve,globalThis,flip,Object.assign));
+].forEach(compose(crop(1),resolve.bind(import.meta.url),globalThis,flip,Object.assign));
 
  // --import flag registers loader module on separate thread unlike 
  // --loader, where context is available directly on the primary thread. 
- export var [thread,loader,inspected]=Object.entries(
+ export var [loader,shared,inspected]=Object.entries(
  {import:file,loader:file,inspect:""
  }).map(([field,value])=>agent.node&&process.execArgv.some((flag,index)=>
  new RegExp("^--"+field+(value?"=[^ ]*"+value:"")).test(flag))||undefined);
 
- if(entry&&thread&&!virtual&&!remote)
+ if(entry&&loader&&!virtual&&!remote)
  // register loader thread. 
- thread=await compose.call
-("worker_threads",resolve,["MessageChannel"],tether(search),[],Reflect.construct
+ loader=await compose.call
+("worker_threads",resolve.bind(import.meta.url),["MessageChannel"],tether(search),[],Reflect.construct
 ,revert(function register(resume,onerror,{port1,port2:socket})
 {observe.call(port1
 ,{message:combine(compose(drop(1),"data",note.bind(2)),resume)
@@ -72,18 +72,18 @@
 })
 ),whether
 (compose(collect,"length",major(0)),buffer(compose
-(resolve,note.bind(2),pass(expect(compose(drop(),combine
-(delegate.bind(thread,"bundling")
-,delegate.bind(thread,"testing")
+(resolve.bind(import.meta.url),note.bind(2),pass(expect(compose(drop(),combine
+(delegate.bind(loader,"bundling")
+,delegate.bind(loader,"testing")
 ),are(false)),5000))
 )
 ,compose(note.bind(1),wait(60*1000),swap(1),process.exit))
 ,infer()
 )(...process.argv.slice(1));
 
- if(!thread&&!loader&&agent.node&&process.argv[1]?.endsWith(file))
+ if(!loader&&!shared&&agent.node&&process.argv[1]?.endsWith(file))
  // without either loader flag, context begins at second index. 
- compose(resolve,drop(),0,process.exit)(...process.argv.slice(2));
+ compose(resolve.bind(import.meta.url),drop(),0,process.exit)(...process.argv.slice(2));
 
  // if(entry&&await compose.call(resolve("vm"),has("Module")))
  // await compose("default","registerHandler")(import("./Shiranuit_2021_segfault.node"));
@@ -91,22 +91,23 @@
  if(inspected&&entry&&!virtual)
  // restart inspector to trigger a DevTools switch back to the main thread in case open. 
  await compose
-(resolve,pass("close"),pass(compose(process.debugPort,"localhost","open"))
+(resolve.bind(import.meta.url),pass("close"),pass(compose(process.debugPort,"localhost","open"))
 ,infer(Reflect.get,"Session"),[],Reflect.construct,{inspectorNotification:note},tether(observe)
 )("node:inspector")
 ,compose(inspector,slip("Inspect: \n"),"concat",note.bind("cyan"))(process.debugPort,"localhost");
 
  // https://nodejs.org/api/esm.html#esm_loaders 
 
- export async function initialize({socket:thread})
-{if(inspected)
+ export async function initialize({socket})
+{loader=socket;
+ if(inspected)
  // Inspect thread. 
  await combine
-(compose(slip("node:inspector","open"),resolve)
+(compose(slip("node:inspector","open"),resolve.bind(import.meta.url))
 ,skip(compose(inspector,slip("Inspect:\n"),"concat",note.bind("cyan")))
 )(process.debugPort+1,"localhost");
  Object.assign(globalThis,{scope});
- worker.procedures[0].call(thread);
+ worker.procedures[0].call(loader);
 };
 
  export async function prompt(...context)
@@ -117,7 +118,7 @@
  let {stdin:input,stdout:output}=process;
  let socket=await buffer(revert((connect,error,connection)=>
  observe.call(connection,{connect:infer(connect),error}))
-,compose(note,swap("debug port unavailable for "+prompt.name),note.bind(1)))(resolve("net","connect",process.debugPort));
+,compose(note,swap("debug port unavailable for "+prompt.name),note.bind(1)))(resolve.bind(import.meta.url)("net","connect",process.debugPort));
  let interfaces=[{input,output}/*,socket&&{input:socket,output:socket}||[]*/].flat().map(createInterface);
  let entries=context.flat().flatMap(term=>compound(term)?Object.entries(term):[[term]]);
  entries=await entries.reduce(record(([field,term])=>
@@ -129,21 +130,23 @@
  return compose(each("close"),swap(Object.fromEntries(entries)))(...interfaces);
 };
 
- export var locate=async function locate(action)
+ export async function locate(action)
 {if(array(action))
- return action.reduce((stat,file,index,path)=>stat.catch(async fail=>
- infer.call(resolve("fs","promises"),"stat",await resolve("path","resolve",path.slice(0,index+1).join("/")||"/")).then(file=>
+ return action.reduce((stat,file,index,path)=>stat.catch(async fail=>infer.call
+(resolve.call(import.meta.url,"fs","promises"),"stat"
+,await resolve.call(import.meta.url,"path","resolve",path.slice(0,index+1).join("/")||"/")
+).then(file=>
  file.isDirectory()&&defined(path[index+1])?exit():[path.splice(0,index+1).join("/"),...path]))
 ,Promise.reject());
  let lead=["/","./"].find(lead=>action.startsWith(lead))||"";
- let [module,feature="default",...path]=action?.replace(lead,"").split("/")||["./Blik_2023_fragment.js","media"];
+ let [module,feature="default",...path]=action.replace(lead,"").split("/");
  if(!lead&&!module.includes("_"))
  module=await either(...[2020,new Date().getFullYear()].reduce((min,max)=>
  Array(max-min).fill(max).map((year,index)=>year-index)).flatMap(year=>
  ["Blik"].map(author=>"./"+[author,year,module].join("_")+".js")).map(module=>
- buffer(compose(swap(module),resolve,swap(module)),drop())),compose("message",note.bind(2),exit))(undefined);
+ buffer(compose(swap(module),resolve.bind(this),swap(module)),drop())),compose("message",note.bind(2),exit))(undefined);
  return [lead+module,feature,...path];
-}.bind({});
+};
 
  var precedent=compose(crop(1),"resolution",collect,slip(scope),tether(search));
 
@@ -163,7 +166,7 @@
  var respecify=compose("url",collect,slip(URL),Reflect.construct,"pathname",decodeURI);
  var modulepath=when(is([match(/^[\/\.]/),not(match(RegExp(sources+"$")))]));
  var format=compose
-(combine(infer(),compose(swap(sources),"default",resolve,Object.keys)),(source,sources)=>
+(combine(infer(),compose(swap(sources),"default",resolve.bind(import.meta.url),Object.keys)),(source,sources)=>
  sources.find(field=>source.startsWith([location,field.replace(/\.js$|\.node$/,"/")].join("/"))),["format"],record
 );
  var shortcircuit=compose
@@ -171,18 +174,20 @@
 ,{shortCircuit:true},merge,["resolution"],record
 );
 
- export var lambda=compose
+ export function lambda(term)
+{return compose
 (when(string)," ","split",provide,each(compose
-(locate,([module,field])=>[resolve(module),field],provide,Reflect.get
+(locate.bind(this),([module,field])=>[resolve.call(this,module),field],provide,Reflect.get
 )),collect,infer("reverse")
 ,infer("reduce",(past,next)=>next(past))
-);
+)(term);
+}
 
  export function recompose(term)
 {when(simple)(...arguments);
  return provide(Object.entries(term).map(compose
 (entry=>entry.flat(),infer("map",term=>
- whether.call(term,[string,simple,array],lambda,recompose,provide))
+ whether.call(term,[string,simple,array],lambda.bind(this),recompose.bind(this),provide))
 ,provide,(term,...context)=>term(...context)
 )));
 };
@@ -194,44 +199,54 @@
  if(compound(source))
  return array(source)&&!source.some(not(string))
 ?source.reduce(record(source=>
- resolve(source,...Array.from(arguments).slice(1)))
+ resolve.call(this,source,...Array.from(arguments).slice(1)))
 ,[])
  // composition declarations: ["module/name",[context],"module/name"]
-:agent.node&&!thread
-?exit(Error("Resolving composition declarations not allowed on main thread."))
+:agent.node&&!loader
+?exit("Resolving composition declarations not allowed on main thread.")
 :compose(infer("reduce",record(term=>
- whether([simple,string],recompose,lambda,infer())(term))
+ whether([simple,string],recompose.bind(this),lambda.bind(this),infer())(term))
 ,[]),"flat",provide,tether(compose))(source);
  if(!string(source))
  return exit("can't resolve type "+typeof source);
- let internal=context?.parentURL;
  let loading=next?.name==="nextResolve";
+ let {importAssertions:assertions,importAttributes:attributes}=context||{};
+ attributes=attributes||assertions;
+ if(attributes?.peer)
+ // clone immutable context without custom attributes. 
+ context=prune.call(context,([field,value])=>field==="peer"?undefined:value);
+ // peer attribute tracks bound url of direct invocations below. 
+ let internal=attributes?.peer||context?.parentURL;
  let primary=loading&&!internal;
- if(primary&&thread&&!await resolve("worker_threads","isMainThread"))
+ if(primary&&loader&&!await resolve.call(import.meta.url,"worker_threads","isMainThread"))
  // suppress primary import on loader thread (registered with --import) in favor of dynamic inference of command line context only available on the main one. 
  return next("worker_threads",context);
  let command=!loading||!internal;
  let target=internal?decodeURI(new URL(internal).pathname):address;
  let relation=target.replace(/\/[^/]*$/,"");
- let absolute=source;
- let [url,path]=[/^file:/.test(source),/^[\/\.]/.test(source)];
- if(url)absolute=await resolve("url","fileURLToPath",source);
- if(path)absolute=!agent.node
-?relation+"/"+source.replace(/^[\/\.]+/,"")
-:await resolve("path","resolve",relation,source)
- if(internal)
- merge(scope,{[target]:{imports:new Set([absolute])}},0);
- let json=source.endsWith(".json")||undefined;
- let recover=compose(recovery,infer("call",scope,absolute,target),infer(resolve,context,next));
- let module=command
-?import(source,json&&{[!agent.Linux&&feature(agent).attributes?"with":"assert"]:{type:"json"}})
-:either(precedent,compose
+ let absolute=await whether
+([match(/^file:/),match(/^[\/\.]/)]
+,resolve.bind(import.meta.url,"url","fileURLToPath"),agent.node
+?resolve.bind(import.meta.url,"path","resolve",relation)
+:infer("replace",/^[\/\.]+/,relation+"/")
+,infer("replace",/^node:/,"")
+)(source);
+ let type=source.endsWith(".json")?"json":undefined;
+ let recover=compose(recovery,infer("call",scope,absolute,target),infer(resolve.bind(internal),context,next));
+ if(command&&!string(this))
+ console.warn("Resolution invoked without peer module's reference in scope for \""+source+"\".\nWill default to \""+location+"/\" (no scope).");
+ if(!command)
+ return compose(either(precedent,compose
 (buffer(next,buffer(recover,either(compose(swap(source),request),exit)))
-,shortcircuit,{imports:new Set()},merge,[absolute],record,slip(scope),merge
-,[absolute,"resolution"],tether(search)
-))(absolute,context);
- if(loading&&internal)
- return module;
+,shortcircuit,{imports:new Set()},merge,[absolute],record
+,slip(scope),0,merge,[absolute,"resolution"],tether(search)
+,pass(compose(swap(colors.yellow+"import:"+colors.cyan+absolute+colors.steady),console.log))
+)),target===location+"/"?undefined:pass(compose
+(swap(scope),{[target]:{imports:new Set([absolute])}},0,merge
+)))(absolute,context);
+ let module=import(source,(compound(loader)||type)&&prune.call(
+ {[!agent.Linux&&feature(agent).attributes?"with":"assert"]:{type,peer:compound(loader)?this||"file://"+location+"/":undefined}
+ },({1:value})=>value));
  [source,...context]=primary?process.argv.slice(1):Array.from(arguments);
  let inference=infer(...context)(module);
  if(!primary)
@@ -270,7 +285,7 @@
  let path=await import("path");
  let target=absolute.replace(/\.js$|\.node$/,"");
  let relative=path.relative(location,absolute);
- let definition=await compose("default",resolve,either(relative,swap({})))(sources);
+ let definition=await compose("default",resolve.bind(import.meta.url),either(relative,swap({})))(sources);
  let entry=!compound(definition)||array(definition);
  let entries=Object.entries(entry?[definition]:definition).flatMap(function sort([remote,input],index)
 {if(remote===index)remote=undefined;
@@ -301,11 +316,11 @@
 ,[]),"\n","join",slip(entry),true,access
 ))
  // perform idempotent source resolution before bundling to support re-imports. 
-,pass(parts=>!binding&&buffer(resolve,note)(entry))
+,pass(parts=>!binding&&buffer(resolve.bind(import.meta.url),note)(entry))
 ,slip(entry)
 ,binding
 ?buffer
-(compose(make,absolute,slip(resolve("fs","promises")),"rename",swap(absolute),pass(infer(note.bind(2),"bundle ready.")),clean)
+(compose(make,absolute,slip(resolve.bind(import.meta.url)("fs","promises")),"rename",swap(absolute),pass(infer(note.bind(2),"bundle ready.")),clean)
 ,compose(clean,exit)
 )
  // not returning bundle promise after source assembly to unblock immediate resolution from source. 
@@ -367,7 +382,7 @@
  if(scripts.length)
  await scripts.reduce(record(script=>
  note.call(3,"running "+script+" for "+target+"...")&&
- compose.call(path.dirname(target),script,path.resolve,resolve,"default",module=>
+ compose.call(path.dirname(target),script,path.resolve,resolve.bind(import.meta.url),"default",module=>
  note.call(2,script+" for "+target+":",module)))
 ,[]).catch(combine(note.bind(1,scripts.join(", ")+":"),exit));
  return {source,format};
@@ -393,10 +408,10 @@
  let plugins=await compose.call
  // rollup plugins shall be deprecated in favor of Interface source formats. 
 (formats,tether(prune,([field,value])=>/^\./.test(field)?value:undefined,true,1)
-,Object.entries,infer("reduce",record(([plugin,settings])=>resolve(plugin,"default",settings)),
+,Object.entries,infer("reduce",record(([plugin,settings])=>resolve.bind(import.meta.url)(plugin,"default",settings)),
 [{name:"interface"
  ,transform:(source,address)=>compose.call
-("url","pathToFileURL",address,resolve,"href"
+("url","pathToFileURL",address,resolve.bind(import.meta.url),"href"
 ,{format:formats[route(address)[1]]}
 ,load,(code,map={mappings:''})=>({code,map})
 ),resolveId:(source,client)=>client
@@ -436,22 +451,29 @@
 {// access source as module specifier, ie. 
  // compose(source,true,access,interpret,format,sanitize,serialize,modularize). 
  //let version=process.versions.node.split(".")[0];
- let target=/^file:/.test(source)?await resolve("url","fileURLToPath",source):source;
- let precedent=scope[target]?.module;
- if(precedent&&next?.name==="nextLoad")
+ let parse=compose(collect,slip(URL),Reflect.construct);
+ let {protocol,host,pathname:absolute}=/^[\/\.]/.test(source)
+?await resolve.call(import.meta.url,"url","pathToFileURL",source)
+:either(parse,compose(/^/,"node:","replace",parse))(source);
+ let loading=next?.name==="nextLoad";
+ // let absolute=/^file:/.test(source)?await resolve.call(import.meta.url,"url","fileURLToPath",source):source.replace(/^node:/,"");
+ let precedent=loading&&scope[absolute]?.module;
+ if(precedent)
  return precedent.source?.length===0
  // buffer is mysteriously cleared sometimes, eg. in reimport for tests without a vm flag below. 
 ?access(precedent.responseURL,1).then(source=>
  Object.assign(precedent,{source}))
 :precedent;
- console.log(colors.yellow+"import:"+colors.cyan+target+colors.steady);
  if(string(context))
  context={format:context};
+ if(loading)
+ // clone immutable context without custom attributes ("peer" used in interface/resolve to track direct invocation). 
+ context=prune.call(context,([field,value])=>field==="peer"?undefined:value);
  let {format,importAttributes:attributes,importAssertions:assertion}=context||{};
  attributes=assertion||attributes||{};
  let syntax=attributes?.type||mime(source)?.replace(/.*\//,"");
  // persist shortCircuit on scope to support loading from source while bundling. 
- var shortcircuit=compose({shortCircuit:true},merge,[target,"module"],record,slip(scope),0,merge,target,"module");
+ var shortcircuit=compose({shortCircuit:true},merge,[absolute,"module"],record,slip(scope),0,merge,absolute,"module");
  if(!format&&/^https*/.test(source))
  return compose.call(source,fetch,"text",source=>({source,format:/\.json$/.test(source)?"json":"module"}),shortcircuit);
  if(syntax==="json"&&format!==syntax)
@@ -469,11 +491,11 @@
  if(format==="commonjs")
  // don't trust default assumption from nearest package.json as it often refers to inaccessible build outputs. 
  await buffer(require,commonjs=>is(Error)(note(commonjs))&&
- Object.assign(context,{format:format="module"}))(target);
+ Object.assign(context,{format:format="module"}))(source);
  let native=["json","module","wasm","builtin","commonjs",undefined].includes(format);
  if(native&&next)
  return compose(next,whether(match({format:"addon"}),infer(merge,{source:null})),shortcircuit,skip(check))(source,context);
- let relative=await resolve("path","relative",location,target);
+ let relative=await resolve.bind(import.meta.url)("path","relative",location,absolute);
  let [index,sparse]=relative.split("/").reduce((folder,entry,index,relative)=>
  [entry,relative.splice(2).join("/")]);
  let {comment,...definition}=
@@ -503,6 +525,78 @@
  return compose.call(module,source=>(
  {source,format:{json:"json"}[syntax]||"module"
  }),shortcircuit);
+ return module;
+};
+
+ export async function modularise(source,specifier,context={},depth=0)
+{// uses --experimental-vm-modules 
+ if(modular(source))
+ return source;
+ let {attributes}=specifier;
+ if(simple(specifier))null
+,{specifier}=specifier;
+ let {SourceTextModule,SyntheticModule,createContext,isContext}=await import("vm");
+ let parse=compose(collect,slip(URL),Reflect.construct);
+ let {protocol,host,port,pathname:identifier,href:url}=/^[\/\.]/.test(specifier)
+?await resolve.call(import.meta.url,"url","pathToFileURL",specifier)
+:either(parse,compose(/^/,"node:","replace",parse))(specifier);
+ let precedent=context.imports?.[identifier];
+ if(precedent)
+ return precedent;
+ let builtin=protocol==="node:";
+ if(!source&&!builtin)null
+,{source}=scope[identifier]?.module||
+ await expect(buffer(load,whether
+(compose(swap(identifier),bundling)
+,compose(crop(1),slip("awaiting bundle to "+modularise.name),note,undefine)
+,note
+)),3000)(url,{importAttributes:attributes});
+ if(attributes?.type==="json")
+ source="export default "+source;
+ if(!isContext(context))
+ context=createContext(
+ {imports:{},URL,Object,Blob,Reflect,Buffer,TextEncoder,TextDecoder
+ ,setTimeout,setInterval
+ ,global,performance,process:
+ {env:{},argv:[],execArgv:[],stdout:process.stdout,stderr:process.stderr
+ ,version:process.version,versions:process.versions
+ ,nextTick(term){term();}
+ }//,globalThis,navigator:{},crypto
+ //,isNaN,Object,Function,Promise,String,Array,Boolean,ArrayBuffer
+ //,Math,Error,JSON,Date,Symbol,ReadableStream,WritableStream,RegExp
+ ,...context
+ });
+ let link=compose
+(combine(whether(match(/^[\/\.]/),compose
+(specifier=>resolve.call(import.meta.url,"path","resolve",identifier,"..",specifier)
+,identifier=>protocol+"//"+host+identifier
+)),drop(2)),(specifier,attributes)=>
+ modularise(null,{specifier,attributes},context,depth+1)
+);
+ let cachedData=await scope[identifier]?.virtual;
+ let module=builtin
+?await import(identifier).then(module=>new SyntheticModule(Object.keys(module),function()
+{Object.entries(module).reduce((module,entry)=>
+ module.setExport(...entry)||module
+,this);
+},{identifier,context}))
+:new SourceTextModule(source||""
+,{identifier,context,cachedData
+ ,importModuleDynamically:compose(link,"namespace")
+ ,initializeImportMeta:infer(merge,{url})
+ });
+ merge(context.imports,module,[identifier]);
+ let links=await module.moduleRequests?.reduce(record(compose
+(drop(1),combine("specifier",swap(module),"attributes"),link
+)),[]);
+ module.linkRequests
+?await module.linkRequests?.(links)
+:await module.link(link).catch(undefine);
+ module.instantiate?.();
+ // if(!builtin)
+ // merge(scope,module.createCachedData(),[identifier,"virtual"]);
+ //if(!depth)
+ await module.evaluate().catch(compose({[identifier]:module},note,exit));
  return module;
 };
 
@@ -574,7 +668,7 @@
 ,new Uint8Array(size));
 })(new DecompressionStream("gzip"))
 :revert((decompress,reject,buffer)=>
- resolve("zlib","gunzip",buffer,(fail,buffer)=>fail?reject(fail):decompress(buffer)))(buffer);
+ resolve.bind(import.meta.url)("zlib","gunzip",buffer,(fail,buffer)=>fail?reject(fail):decompress(buffer)))(buffer);
  let tarstream=await import("stream").then(({Duplex})=>
  [new Duplex(),buffer,null].reduce((duplex,buffer)=>(
  duplex.push(buffer),duplex)));
@@ -698,61 +792,10 @@
 };
 
  export function purge(path)
-{return compose(path,{recursive:true,force:true},"rm",swap(path))(resolve("fs","promises"));
+{return compose(path,{recursive:true,force:true},"rm",swap(path))(resolve.bind(import.meta.url)("fs","promises"));
 };
 
  export var compile=compose(drop(1),load,parse,serialize);
-
- export async function modularise(resource,identifier,context={},depth=0)
-{// uses --experimental-vm-modules 
- let {SourceTextModule,SyntheticModule,createContext,isContext}=await import("vm");
- let {pathToFileURL}=await import("url");
- let synthetic=!resource&&/^[a-z]/.test(identifier);
- if(!synthetic)
- identifier=await resolve("path","resolve",identifier)
-,resource=await expect(buffer(access,whether
-(tether(bundling)
-,compose(crop(1),slip("awaiting bundle to "+modularise.name),note,undefine)
-,exit
-)),3000)(identifier,true);
- if(!isContext(context))
- context=createContext(
- {imports:{},URL,Object,Blob,Reflect,Buffer,TextEncoder,TextDecoder,RegExp
- ,process:{env:{},stdout:process.stdout,stderr:process.stderr,version:process.version}
- // ,navigator:{}
- // ,isNaN,Error,Math,JSON,Date,Symbol,Object,Function,Promise,String,Array,Boolean,ArrayBuffer,crypto
- // //,ReadableStream,WritableStream
- ,setTimeout,setInterval
- ,global//,globalThis
- ,...context
- });
- let precedent=context.imports[identifier];
- if(precedent)
- return precedent;
- let cachedData=await scope[identifier]?.virtual;
- let module=synthetic
-?await import(identifier).then(module=>new SyntheticModule(Object.keys(module),function()
-{Object.entries(module).reduce((module,entry)=>
- module.setExport(...entry)||module
-,this);
-},{identifier,context}))
-:new SourceTextModule(resource||""
-,{identifier,context,cachedData
- ,importModuleDynamically:specifier=>import(specifier)//compose(link,"namespace")({specifier})
- ,initializeImportMeta:meta=>Object.assign(meta,{url:pathToFileURL(identifier)})
- });
- merge(context.imports,module,[identifier]);
- //await module.link((specifier,{context})=>
- let links=await module.moduleRequests?.reduce(record(({specifier})=>
- modularise(null,specifier,context,depth+1)),[]);
- await module.linkRequests?.(links);
- module.instantiate?.();
- if(!synthetic)
- merge(scope,module.createCachedData(),[identifier,"virtual"]);
- if(!depth)
- await module.evaluate().catch(compose(note,exit));
- return module;
-};
 
  export function bundling(source)
 {return Object.entries(scope).some(([field,module])=>
@@ -781,7 +824,7 @@
  observe.call(this
 ,{message({data:[id,term,...context]})
 {compose(buffer(compose(...compound(term)
-?[swap(term),resolve]
+?[swap(term),resolve.bind(import.meta.url)]
 :[term].flat().map(term=>differ(term,...context))),crop(1))
 //,whether(string,infer(),JSON.stringify),whether(string,compose(TextEncoder.prototype.encode.bind(new TextEncoder()),"buffer"),infer())
 ,combine
@@ -802,7 +845,7 @@
 ,revert((resume,reject,{signal},worker,...context)=>
  // listen until worker emits request id. 
 [function message({target,data,type,message}={})
-{let ephemeral=![globalThis.worker,thread].includes(target);
+{let ephemeral=![globalThis.worker,loader].includes(target);
  if(ephemeral)target.terminate();
  let [id,value]=data||[];
  if(id===context[0])
@@ -848,7 +891,7 @@
 :request:request.url;
  let {protocol,host,hostname,pathname,search,port}=new URL(url);
  return revert((respond,reject,request,body)=>compose
-(infer(resolve,"request",request,function forward(response)
+(infer(resolve.bind(import.meta.url),"request",request,function forward(response)
 {let {statusCode:status,headers}=response;
  let body=[];
  observe.call(response
@@ -881,7 +924,7 @@
 ,note.call(3,"navigated browser to "+url);
  return window=revert(async function(expose,reject,url)
 {//infer("close")(window);
- let {JSDOM}=await resolve("./Domenic_2010_jsdom.js","default");
+ let {JSDOM}=await resolve.call(import.meta.url,"./Domenic_2010_jsdom.js","default");
  let browser=Reflect.construct(JSDOM,["",{url,referrer:url,contentType:"text/html",includeNodeLocations:true,storageQuota:10000000}]);
  jsdom=jsdom.bind(browser);
  let {protocol,hostname,port}=new URL(url);
@@ -926,7 +969,7 @@
  if(browser&&js)
  body=await compress(body),headers["Content-Encoding"]="gzip";
  if(response?.nodeName)
- await resolve("./Blik_2023_fragment.js","destroy",response);
+ await resolve.bind(import.meta.url)("./Blik_2023_fragment.js","destroy",response);
  return (
  {status,body,location:request.url,cookie,headers
  ,json(){return this.text(true);}
@@ -962,11 +1005,9 @@
 
  export function sourcemap(module,address)
 {let sourcemap="/sourcemap?module="+address;
- let headers=Object.fromEntries(["X-",""].map(field=>[field+"SourceMap",sourcemap]));
- return compose.call
-(module,"\n//# sourceMappingURL="+sourcemap,"concat",["body"],record
-,{type:mime("js"),headers},Object.assign
-);
+ let headers=["X-",""].map(field=>({[field+"SourceMap"]:sourcemap})).reduce(merge);
+ let body=[module,"//# sourceMappingURL="+sourcemap].join("\n");
+ return {body,type:mime("js"),headers};
 };
 
  export var digest=compose
@@ -994,7 +1035,7 @@
 ,Object.entries
 ,infer("map",compose(combine(compose(0,"toLowerCase",/^/,"application/","replace"),infer(1)),collect))
 ,Object.fromEntries
-)),tether(differ),resolve),"body")
+)),tether(differ),resolve.bind(import.meta.url)),"body")
 ,either("parse",drop(1),swap(""))
 );
 
@@ -1014,7 +1055,7 @@
  export async function spawn(command,...context)
 {// bound scope defines output color: undefined=quiet, other=default
  note.call(3,command,...context,"...");
- let process=await resolve("child_process","spawn",command,context);
+ let process=await resolve.bind(import.meta.url)("child_process","spawn",command,context);
  return revert((resolve,reject,process,output)=>
 [[process,{exit:exit=>exit?reject(Error(exit)):resolve(output.join("\n"))}]
 ,...this?["out","err"].map((stream,index)=>
@@ -1033,8 +1074,8 @@
 [{context:[import.meta.url],terms:[value=>typeof value,"object"],condition:"equal"},
  {context:[import.meta.url,true],terms:[value=>typeof value,"string"],condition:"equal"}
 ],resolve:
-[{context:[import.meta.url,"tests"],terms:[entry=>provide([entry,tests]),Object.is],condition:"ok"}
-,{context:[import.meta.url],terms:[swap(scope),address,record=>record.hasOwnProperty("imports")],condition:"ok"}
+[{scope:import.meta.url,context:[import.meta.url,"tests"],terms:[entry=>provide([entry,tests]),Object.is],condition:"ok"}
+,{scope:import.meta.url,context:[import.meta.url],terms:[swap(scope),address,record=>record.hasOwnProperty("imports")],condition:"ok"}
 //,{context:["./Harris_2015_rollup.js"],terms:[swap(scope),location+"/Harris_2015_rollup.js"],condition:"ok"}
 ],load:
 [{context:[import.meta.url],terms:[" import","startsWith"],condition:"ok"}

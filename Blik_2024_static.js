@@ -1,5 +1,5 @@
  import {note,compose,buffer,when,collect,infer,combine,wait,drop,slip,differ,crop,each,swap,pass,not,compound,functor,native,exit,tether,either,whether,describe,string,pattern,major,match,has,is,are,ascend,defined,flip,heritage} from "./Blik_2023_inference.js";
- import {access,persist,purge,resolve,list,modularise,cookies,cookie,query,fetch,path,thread,delegate} from "./Blik_2023_interface.js";
+ import {access,persist,purge,resolve,list,modularise,cookies,cookie,query,fetch,path,loader,delegate,location,window} from "./Blik_2023_interface.js";
  import {document,hypertext,css,throttle,error,capture,defer} from "./Blik_2023_fragment.js";
  import {serialize,mime,proceduralize,sourcemap} from "./Blik_2023_meta.js";
  import {search,merge,prune,random,extract,record,remember} from "./Blik_2023_search.js";
@@ -8,17 +8,17 @@
  export var classified=[/.*\.git.*/];
  export var classify=compose
 (when(are(either(string,pattern)))
-,each(whether(string,compose(crop(1),slip("path","resolve"),resolve),crop(1)))
+,each(whether(string,compose(crop(1),slip("path","resolve"),resolve.bind(import.meta.url)),crop(1)))
 ,classified.push.bind(classified)
 );
  export var published=[];
  export var publish=compose
 (when(are(either(string,pattern)))
-,each(whether(string,compose(crop(1),slip("path","resolve"),resolve),crop(1)))
+,each(whether(string,compose(crop(1),slip("path","resolve"),resolve.bind(import.meta.url)),crop(1)))
 ,published.push.bind(published)
 );
  export async function permit(name,list,inclusive)
-{let path=[await resolve("path","resolve",name),name.endsWith("/")?"/":""].join("");
+{let path=[await resolve.bind(import.meta.url)("path","resolve",name),name.endsWith("/")?"/":""].join("");
  let includes=list.some(term=>string(term)?path.startsWith(term):term.test(path));
  return (inclusive?includes:!includes)||exit(Error(inclusive?"Unauthorized":"Classified"));
 };
@@ -27,7 +27,7 @@
 (drop(1),path,infer("split","/"),"reverse"
 ,infer("reduce",(route,file,index,path)=>(
  {[file==="get"?"files":file]:compose(combine
-(compose(swap("path","resolve",".",path.slice(index,path.at(-1)==="files"?-1:undefined).reverse().join("/")),resolve
+(compose(swap("path","resolve",".",path.slice(index,path.at(-1)==="files"?-1:undefined).reverse().join("/")),resolve.bind(import.meta.url)
 ,pass(permit,classified),access)
 ,compose(drop(1),"url",query,either("format",swap("binary")))
 ),whether(infer("isDirectory")
@@ -48,11 +48,11 @@
  {get:compose(combine(filesystem,routes),merge)
  ,put:compose
 (drop(1),pass(buffer(combine
-(compose(path,slip("path","resolve","./"),resolve,published,true,permit)
+(compose(path,slip("path","resolve","./"),resolve.bind(import.meta.url),published,true,permit)
 ,compose(drop(1),wait(0),JSON.parse,Object.keys,"length",when(major(0)))
 ),compose(drop(1),infer(authorize,"ranger"))))
 ,combine
-(compose(path,slip("path","resolve","./"),resolve,pass(permit,classified))
+(compose(path,slip("path","resolve","./"),resolve.bind(import.meta.url),pass(permit,classified))
 ,compose(drop(1),buffer(JSON.parse,compose(drop(1,2),"base64",Buffer.from,"toString")))
 ,compose("url",query,buffer(differ("override"),swap(undefined)),is("true"))
 ),note
@@ -62,7 +62,7 @@
 )
 ,true,note,access,true,combine
 (compose(access,buffer(JSON.parse,drop(1)))
-,compose(crop(1),slip("path","relative","./"),resolve,"/","split")
+,compose(crop(1),slip("path","relative","./"),resolve.bind(import.meta.url),"/","split")
 ),record
 ),error
  ,interface:compose
@@ -88,14 +88,18 @@
 },module(request,body,response,route)
 {let file=route.join("/");
  let term=path(request).replace(file+"/module","");
+ let {origin}=new URL("http"+(request.client.encrypted?"s":"")+"://"+request.headers.host);
  return compose
 (simple(this)?serialize:"toString",term?compose
-("./"+file,buffer(modularise
-,compose(swap("./"+file),resolve)),either("namespace",crop(1))
-):compose(["body"],record,{type:mime("js")},merge)
+(origin+"/"+file,buffer(modularise
+,compose(drop(2),origin,location,"replace",resolve.bind(import.meta.url))),either("namespace",crop(1))
+):compose(["body"],record
+,{type:mime("js"),headers:["X-",""].map(field=>(
+ {[field+"SourceMap"]:"./sourcemap"})).reduce(merge)
+ },merge)
 )(this);
 },sourcemap
- ,scope(){return delegate.call(thread,"infrastructure");}
+ ,scope(){return delegate.call(loader,"infrastructure");}
  };
 
  export function persistence(resource)

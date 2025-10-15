@@ -7,8 +7,8 @@
  // var [jss,...plugins]=await resolve(["","nested","extend","global"].map(plugin=>
  // ["./Isonen_2014_jss",plugin].filter(Boolean).join("_")+".js")).then(modules=>
  // modules.map(module=>module.default||module));
- if(!window)//&&!virtual)
- // tests require a browser ready. 
+ if(!window&&!virtual)
+ // tests require a browser ready. warning: virtual modules may be used. 
  await jsdom("http://localhost:80/");
  var address=new URL(import.meta.url).pathname;
  export const file=address.replace(/.*\//,"");
@@ -92,10 +92,10 @@
 (when(either(is("Element"),is("Attribute")),string)
 ,whether(compose(drop(2),string),infer(),crop(2))
 ,stash(compose(combine(swap("create"),crop(1),compose(drop(2),whether(string,swap("NS"),drop()))),"concat"))
-,drop(1),flip,slip(window.document),tether(infer)
+,drop(1),flip,slip(window?.document),tether(infer)
 );
 
- export var append=compose(when(is(window.EventTarget))
+ export var append=compose(when(is(window?.EventTarget))
 ,collect,infer("reduce",compose(pass(whether
 (compose(drop(1),"nodeType",is(2)),whether
 (compose(drop(1),infer("specified"))
@@ -108,7 +108,7 @@
 ),compose(each([crop(1),"name"]),"removeAttribute")
 ),whether(not("contains"),"appendChild",crop(1))
 )),crop(1))),whether
-(is([is(window.DocumentFragment),compose("children","length",minor(2))])
+(is([is(window?.DocumentFragment),compose("children","length",minor(2))])
 ,search(["firstChild"])
 ,crop(1)
 ));
@@ -581,7 +581,7 @@
 };
 
  export function print(file)
-{return resolve(
+{return resolve.bind(import.meta.url)(
 ["/mozilla_2010_pdf_viewer_brightspace.js"
 ,"/mozilla_2010_pdf_link_service_brightspace.js"
 ,"/mozilla_2010_pdf_brightspace.js"
@@ -949,13 +949,13 @@
  compose(wait(1000*index),Object.assign)(this.querySelector("span[title="+empty+"]").style,{animation}));
  let source=this.closest(".comments").parentNode.querySelector(".article").getAttribute("source");
  let comments=target.closest(".comments").querySelector(".history");
- let message={put:note(Date.now()),...fields};
- let body=JSON.stringify({[source]:[message]});
+ let text={put:note(Date.now()),...fields};
+ let body=JSON.stringify({[source]:[text]});
  let {status}=await fetch("/Blik_2024_comments.json",{method:"put",body});
  if(status!==200)
  return ["warn 1s","unset"].forEach((animation,index)=>
  compose(wait(1000*index),Object.assign)(target.closest(".comment").style,{animation}));
- await comment(message,comments.childNodes.length,comments);
+ await message(text,comments.childNodes.length,comments);
  fill.call(this,{comment:""});
  if(cookie("author")===fields.name)
  return;
@@ -1260,8 +1260,8 @@
 
  export async function featurefacebook()
 {let module=await import("//connect.facebook.net/en_US/sdk.js");
- let {default:svg}=await resolve("/Blik_2020_svg.json");
- let {default:awesome}=await resolve("/blessochampion_2019_awesomesvgs.json");
+ let {default:svg}=await resolve.bind(import.meta.url)("/Blik_2020_svg.json");
+ let {default:awesome}=await resolve.bind(import.meta.url)("/blessochampion_2019_awesomesvgs.json");
  return new Promise(resolve=>
  window.fbAsyncInit=function()
 {FB.init({appId:"281250585888156",autoLogAppEvents:true,status:false,xfbml:true,version:"v4.0"});
@@ -1289,7 +1289,7 @@
  if(click.srcElement)(facebook.connected?FB.logout:FB.login)(settle,{scope:'user_posts'})
  else settle(click);
 }(response);
- resolve(facebook)
+ resolve.bind(import.meta.url)(facebook)
 })
 }).then(facebook=>facebook)
 };
@@ -1607,7 +1607,7 @@
  close<open);
  if(open)
  return false;
- let [module,feature]=await locate(last.layout);
+ let [module,feature]=await locate.call(import.meta.url,last.layout);
  let jsons=[...last.action.matchAll(new RegExp(/[{\[]{1}(?:[,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]|".*?")+[}\]]{1}/,"mg"))].map(([json])=>json);
  let context=jsons.reduce((context,json)=>
 [context,context.pop().split(json).reduce((before,after)=>
@@ -1622,7 +1622,7 @@
 ,context
 ].flat()
 ,[""]).reverse():[term]);
- let fragment=await buffer(infer(resolve),fail=>document({span:{"#text":fail?.stack}}))(module,feature,...context);
+ let fragment=await buffer(infer(resolve.bind(import.meta.url)),fail=>document({span:{"#text":fail?.stack}}))(module,feature,...context);
  this.annotate(fragment,last.title);
  return [fragment,syntax];
 },"{":function style(last,...syntax)
@@ -1677,7 +1677,7 @@
  let context=JSON.parse(compound);
  if(context[0]==="this")
  context.splice(0,1,syntax[0]);
- let fragment=await buffer(compose(resolve,collect),compose(crop(1),"stack",["span","#text"],record,document,collect))(context);
+ let fragment=await buffer(compose(resolve.bind(import.meta.url),collect),compose(crop(1),"stack",["span","#text"],record,document,collect))(context);
  fragment.forEach(compose(crop(1),last.title,this.annotate));
  return [...fragment,syntax];
 }//,"<":function(last,...syntax){if(last.style||last.action)return;return this.text("&lt;",...arguments);}
@@ -1700,12 +1700,12 @@
 [{context:[{span:[{},{}]}],condition:compose("childNodes",Array.from,provide,when(are(compose("nodeName","toLowerCase",("span")))))}
 ,{context:[{span:{},div:{}}],condition:compose("childNodes",Array.from,provide,when(...["span","div"].map(node=>compose("nodeName","toLowerCase",is(node)))))}
 ],attribute:
- {scope:document({span:{}})
+ {scope:{span:{}},route:document
  ,context:[{id:"node"}]
  ,condition:compose("id",when(is("node")))
  }
  ,children:
- {scope:document({div:{}})
+ {scope:{div:{}},route:document
  ,context:[{id:"node",span:{}}]
  ,condition:compose("outerHTML",when(is("<div id=\"node\"><span></span></div>")))
  }
@@ -1733,7 +1733,8 @@
  ,condition:compose(infer("getAttributeNode","viewBox"),"name",when(is("viewBox")))
  }
  ,redundant:
- {scope:document({span:{id:"node",span:[{class:"first"},{class:"second"}]}})
+ {scope:{span:{id:"node",span:[{class:"first"},{class:"second"}]}}
+ ,route:document
  ,context:[{id:"node",span:[{"#text":"first"},{"#text":"second"}]}]
  ,condition:compose("childNodes",iterate,each(combine("className","textContent")),collect,combine(0.5,-0.5),collect,"flat",when(infer("every",(values,index)=>values.every(is(["first","second"][index])))))
  }

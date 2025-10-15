@@ -276,8 +276,7 @@ export function calendar(timestamps)
  if(array(field))
  return field.filter(something).reverse().reduce((range,field)=>({[field]:range}),range);
  let path=compose(tether(field),collect,"flat");
- let composition=compose(combine(crop(1),tether(range),path),merge);
- return defined(this)?composition(this):composition;
+ return compose.call(this,combine(crop(1),tether(range),path),merge);
 };
 
  export function remember(term,distinction="0")
@@ -302,11 +301,11 @@ export function calendar(timestamps)
  let branch=[];
  let branched=compose(swap(branch),"length",major(0));
  let store=pass(record(drop(1,2)).bind(branch));
- let fail=compose(swap(branch),Error("not found"),"concat",infer("find",is(Error)),exit);
+ let fail=compose(swap(branch),Error("not found: "+path.join("/")),"concat",infer("find",is(Error)),exit);
  let terms=path.map((term,index,path)=>infer(either
-(term
+(buffer(term,store)
 ,whether(has(method),buffer(compose(methodic,differ(term),store),compose(store,swap(undefined))),infer())
-,tether(scope[term])
+,buffer(tether(scope[term]),store)
 ,fail
 ),...context,path.slice(0,index)));
  let composition=compose(...terms,whether

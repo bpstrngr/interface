@@ -1,5 +1,5 @@
  import {note,debug,colors,when,stash,flip,functor,string,not,pattern,revert,each,describe,clock,observe,is,has,same,minor,slip,something,compound,infer,tether,whether,collect,provide,buffer,differ,compose,combine,either,drop,crop,swap,wait,exit,pass,binary,simple,array,expect} from "./Blik_2023_inference.js";
- import {thread,resolve,access,locate,prompt,list,window,jsdom,fetch,digest,persist,version,compress,stage,cookies,cookie,feature} from "./Blik_2023_interface.js";
+ import {loader,resolve,access,locate,prompt,list,window,jsdom,fetch,digest,persist,version,compress,stage,cookies,cookie,feature} from "./Blik_2023_interface.js";
  import {search,merge,sum,prune,extract,encrypt,record,remember,route} from "./Blik_2023_search.js";
  import {mime,bytes} from "./Blik_2023_meta.js";
  import {document} from "./Blik_2023_fragment.js";
@@ -11,9 +11,9 @@
  let [module,...fields]=string(protocol)?await locate(protocol.split("/")):[protocol];
  let [{default:routes,relay,syndication,encryption,classify,classified,published,permit},{default:credentials}]=
  await [source,module].reduce(record(module=>
- string(module)?resolve(module):{default:module}),[]);
+ string(module)?resolve.bind(import.meta.url)(module):{default:module}),[]);
  let {network,port,certification={},distinguishedname,cache}=note(search.call(credentials,fields));
- let agent=await resolve(network);
+ let agent=await resolve.bind(import.meta.url)(network);
  let [[domain,[signature,certificate]=[]]=[]]=Object.entries(certification);
  let [encrypted,syndicated]=await [encryption,syndication].reduce(record(required=> 
  required?prompt(extract.call(credentials,Object.keys(required))):{}),[]);
@@ -23,15 +23,15 @@
  merge(certification,required&&{[domain]:[signature,certificate]});
  merge(encryption,prune.call(encrypted,([field,value])=>encrypt(value)));
  merge(globalThis,{cache,published,classified,classify});
- let certificates=Object.values(certification).flat().map(compose(crop(1),slip("path","resolve"),resolve));
+ let certificates=Object.values(certification).flat().map(compose(crop(1),slip("path","resolve"),resolve.bind(import.meta.url)));
  await classify?.(module,...certificates);
  // send jsdom composition to loader thread too so it can fetch modules from this interface during eg. server-side rendering.
  let origin=agent.globalAgent.protocol+"//localhost"+":"+port;
- delegate.call(thread,[[origin],"interface/jsdom"]);
+ delegate.call(loader,[[origin],"interface/jsdom"]);
  jsdom(origin);
  let certifications=prune.call(certification,([domain,certificates])=>
  certify(certificates,distinguishedname,[domain]),0,0);
- // if(await resolve("cluster","isMaster"))return fork();
+ // if(await resolve.bind(import.meta.url)("cluster","isMaster"))return fork();
  var router=compose(combine(whether
 (compose("url",/^http/,"match"),fetch
 ,compose(combine(path,infer()),buffer(route.bind(routes),either(tether(routes.error),crop(1))))
@@ -56,7 +56,7 @@
  // for self-signed certificates, assign them to the NODE_EXTRA_CA_CERTS option. 
  pass(compose(domain,certification,"addContext")))
 ,pass(host=>note.call(2,[host._connectionKey||port," open"].join("")))
-,pass(compose(relay,broadcast,resolve))
+,pass(compose(relay,broadcast,resolve.bind(import.meta.url)))
 ,revert((close,error,channel)=>observe.call(channel,{close,error})&&suspend||close(channel))
 )(agent,Object.values(certifications)[0],buffer(respond,compose(note,exit)));
 };
@@ -112,13 +112,13 @@
  async function fork()
 {// https://github.com/nodejs/node/issues/35158
  //if(!process.argv[1])process.argv[1]=import.meta.url;
- await resolve("cluster","on","exit",(worker,code,signal)=>note.call(code,worker.process.id+" exited with status "+code));
+ await resolve.bind(import.meta.url)("cluster","on","exit",(worker,code,signal)=>note.call(code,worker.process.id+" exited with status "+code));
  let os=await import("os");
  let cpus=note(os.cpus());
  if(!cpus.length)
  cpus=[{model:os.platform()}];
  return cpus.reduce(record((cpu,index,cpus)=>
- compose.call("cluster","fork",resolve,pass(compose
+ compose.call("cluster","fork",resolve.bind(import.meta.url),pass(compose
 ("id",cpus.length+" "+cpu.model+(!cpus[index+1]?"":"\nnext fork in a second..."),collect,"/","join",note.bind(1)
 )),wait(index*1000)))
 ,[]);
@@ -137,7 +137,7 @@
  async function certify(certification,distinguishedname,altnames,duration=1)
 {if(!certification)
  return [];
- let [path,url]=await resolve(["path","url"]);
+ let [path,url]=await resolve.bind(import.meta.url)(["path","url"]);
  let location=path.dirname(url.fileURLToPath(import.meta.url));
  let [key,cert]=await Promise.all(certification.map(certificate=>
  buffer(access,swap(null))(path.resolve(location,certificate),true)));
@@ -160,7 +160,7 @@
  {[key.match(/^[A-Z]{2}$/)?"shortName":"name"]:key,value}));
  let altnames={name:"subjectAltName",altNames:[{type:2,value:"localhost"},{type:7,ip:"127.0.0.1"}]};//,{type:6,value:"https://"+distinguishedname.commonName}]};
  let certificate=this.pki.createCertificate();
- let asn1=await resolve("crypto","randomBytes",19).then(infer("toString","hex"));
+ let asn1=await resolve.bind(import.meta.url)("crypto","randomBytes",19).then(infer("toString","hex"));
  Object.assign(certificate,{publicKey,serialNumber:"01"+asn1});
  Object.assign(certificate.validity,{notBefore:new Date(),notAfter:new Date()});
  certificate.validity.notAfter.setFullYear(certificate.validity.notBefore.getFullYear()+duration);
@@ -181,7 +181,7 @@
 
  async function authorize({privateKey,publicKey},distinguishedname)
 {let encryption=this.rsa.generateKeyPair(2048);
- let hash=compose(stash(compose(drop(),"crypto","createHash","sha256",resolve)),flip,"update","digest");
+ let hash=compose(stash(compose(drop(),"crypto","createHash","sha256",resolve.bind(import.meta.url))),flip,"update","digest");
  let {asn1:{Class:{UNIVERSAL},Type:{SEQUENCE,OID,NULL,OCTETSTRING}}}=this;
  let SHA256identifier=this.asn1.create(UNIVERSAL,SEQUENCE,true,
 [this.asn1.oidToDer(this.oids.sha256).getBytes(),''
@@ -285,7 +285,7 @@
  ({name,icon:"/svg/animal/"+name+"/document"}));
 
  export async function traverse(source)
-{let {default:{interface:html,...routes}}=await resolve(source);
+{let {default:{interface:html,...routes}}=await resolve.bind(import.meta.url)(source);
  if(!functor(html))
  return;
  return prune.call(routes,([field,value],path)=>

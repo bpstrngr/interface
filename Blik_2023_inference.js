@@ -48,14 +48,21 @@
  export var flip=compose(collect,"reverse",provide);
  export function undefine(){};
 
+ export var expressions=
+ {signature:/ *(async *){0,1}function\*{0,1} *[a-zA-Z]* */
+ ,arguments:/\([\s\S]*?\)[\s\S]*?/
+ };
  export function type(term){return typeof term;};
  export function defined(term){return term!==undefined;};
  export function something(term){return defined(term??undefined);};
  export function none(term){return term===null;};
- export function modular(term){return term[Symbol.toStringTag]==="Module";};
+ export function modular(term){return term?.[Symbol.toStringTag]==="Module";};
  export function functor(term){return typeof term==="function";};
  export function lambda(term){if(functor(term))term=String(term);let index=term.indexOf("=>")+1;return index&&parameters(term.slice(0,index-1));};
- export function imperative(term){if(functor(term))term=String(term);return /^ *(async *){0,1}function\*{0,1} *[a-zA-Z]+ *\([\s\S]*?\)[\s\S]*?\{/.test(term);};
+ export function imperative(term)
+{if(functor(term))term=String(term);
+ return new RegExp("^"+expressions.signature.source+expressions.arguments.source+"\\{").test(term);
+};
  export function asynchronous(term){return ["AsyncGeneratorFunction","AsyncFunction"].includes(term?.constructor?.name);};
  export function composed(term){return functor(term)&&term.name.includes("(");};
  export function binary(term){return typeof term==="boolean";};
@@ -323,7 +330,7 @@
  export function compose(...terms)
 {// recursive inference agnostic of dynamic context. 
  if(!defined(this))
- return confer(compose,...arguments);
+ return confer(compose,...terms);
  return terms.reduce(function inference(context,term)
 {return infer(term)(context);
 },this);
