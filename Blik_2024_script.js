@@ -1,4 +1,4 @@
- import {merge,prune,unfold,record} from "./Blik_2023_search.js";
+ import {merge,prune,unfold,record,extract} from "./Blik_2023_search.js";
  import {aphorize,serialize} from "./Blik_2023_meta.js";
  import {infer,compose,buffer,whether,wait,string,note,basic,defined,drop,modular,observe} from "./Blik_2023_inference.js";
  import {window,fetch,digest,path,agent} from "./Blik_2023_interface.js";
@@ -6,7 +6,7 @@
  import {EditorState,Compartment} from './haverbeke_2022_codemirror_state.js';
  import {EditorView,keymap,lineNumbers,drawSelection} from './haverbeke_2022_codemirror_view.js';
  import {history,defaultKeymap,historyKeymap} from './haverbeke_2022_codemirror_commands.js';
- import {foldGutter,foldKeymap,codeFolding,syntaxHighlighting,defaultHighlightStyle,HighlightStyle,syntaxTree,ensureSyntaxTree,foldable,foldEffect,unfoldAll,foldAll} from './haverbeke_2022_codemirror_language.js';
+ import {foldGutter,foldKeymap,codeFolding,syntaxHighlighting,defaultHighlightStyle,HighlightStyle,syntaxTree,syntaxTreeAvailable,ensureSyntaxTree,forceParsing,foldable,foldEffect,unfoldAll,foldAll} from './haverbeke_2022_codemirror_language.js';
  import {javascript} from './haverbeke_2022_codemirror_js.js';
  import {StyleModule} from './haverbeke_2022_stylemod.js';
  import {parser as lezer} from "./haverbeke_2022_lezer_js.js"
@@ -35,7 +35,7 @@
  {"/Blik_2023_search.js":["","merge","record"]
  ,"/Blik_2023_interface.js":["","resolve","fetch"]
  ,"/Blik_2023_inference.js":["","note","slip","compose","collect","combine"]
- ,"/Blik_2023_fragment.js":["","metamarkup as dataset"]
+ ,"/Blik_2023_fragment.js":["","metamarkup as dataset","destroy","size"]
  ,[file]:["script","fold","resize"]
  }
  ,exports:{default:
@@ -43,17 +43,17 @@
  {contextrestored(event)
 {let lines=Array.from(this.querySelectorAll(".cm-line")).map(({textContent:line})=>line);
  let meta=[dataset(this),{parent:this}].reduce(merge,{});
- this.childNodes.forEach(destroy);
+ Array.from(this.childNodes).forEach(destroy);
  script(lines.join("\n"),meta);
-},keydown({keyCode,ctrlKey,altKey})
+},keydown({keyCode,ctrlKey:ctrl,altKey:alt})
 {let {s,w,f}=keyboard(keyCode);
- if(ctrlKey&&altKey&&f)
- return fold.call(this);
- if(w&&altKey)
- return compose(combine(infer(),({whiteSpace})=>whiteSpace==="pre-wrap"
+ if(alt&&f)
+ return arguments[0].preventDefault(),fold.call(this);
+ if(alt&&w)
+ return compose(stash(({whiteSpace})=>whiteSpace==="pre-wrap"
 ?{maxWidth:"",whiteSpace:"",wordBreak:""}
-:{maxWidth:"calc(100% - 2.5em)",whiteSpace:"pre-wrap",wordBreak:"break-all"}),note,Object.assign)(this.querySelector(".cm-content").style);
- if(!s||!ctrlKey)return;
+:{maxWidth:"calc(100% - 2.5em)",whiteSpace:"pre-wrap",wordBreak:"break-all"}),Object.assign)(this.querySelector(".cm-content").style);
+ if(!s||!ctrl)return;
  arguments[0].preventDefault();
  let source=this.querySelector(".cm-content").cmView.view.viewState.state.doc.toString();
  let bytes=new Array(source.length);
@@ -61,33 +61,52 @@
  bytes[index]=source.charCodeAt(index);
  var blob=new Blob([new Uint8Array(bytes)],{type:'text/plain'});
  let target=this.dataset.source+"?override=true";
- let buffer=Object.assign(new FileReader(),{onload:compose
+ let buffer=Object.assign(new FileReader()
+,{onload:compose
 ((file,event)=>fetch(target,{method:"put",body:btoa(event.target.result)})
-,compose("text",["message"],record,{action:"broadcast",room:this.dataset.source},merge
+,note,"text",combine
+(body=>fetch("/inspect?module="+this.dataset.source,{method:"put",body})
+,compose(["message"],record,{action:"broadcast",room:this.dataset.source},merge
 ,["data"],record,{bubbles:true},merge,slip("message"),collect,slip(MessageEvent)
 ,Reflect.construct,slip(this),"dispatchEvent")
+)
 )})
  buffer.readAsBinaryString(blob);
-},...observe({pinch(event)
-{if(event.touches.length!==2)
+},...observe({touch(event)
+{let {type,touches,isTrusted:start}=event;
+ if(!start)
+ return this.control?.abort();
+ if(touches.length!==2)
  return;
+ let width=({touches})=>Array.from(touches).map(({pageX:x,pageY:y})=>[x,y]).reduce(([x1,y1],[x2,y2])=>Math.hypot(x1-x2,y1-y2));
+ let unit=width(event);
+ let font=size(this.querySelector(".cm-content"));
+ merge(this,{control:new AbortController()});
+ observe.call(this
+,{touchmove(event)
+{event.preventDefault();
+ resize.call(this,Math.max(1,Math.round(width(event)/unit*font)));
+}},{signal:this.control.signal});
+}})
+ ,wheel(event)
+{if(!event.ctrlKey)return;
  event.preventDefault();
- let {type,touches,isTrusted:start}=event;
- let [[x1,y1],[x2,y2]]=Array.from(touches).map(({pageX:x,pageY:y})=>[x,y]);
- let width=Math.hypot(x1-x2,y1-y2);
- if(start)
- return this.start=width;
- let scale=2**(Math.floor(width-this.start)/50);
- resize.call(this,scale);
-}})}
+ let past=size(this.querySelector(".cm-content"));
+ let dy=event.deltaY/4;
+ let scale=1-Math.sign(dy)*Math.min(24,Math.abs(dy))
+ resize.call(this,Math.max(1,Math.round(past*scale)));
+}}
  }}};
  let parent=settings.parent||document({div:{class:"codemirror",...metamarkup(settings)}});
  //let language=(new Compartment).of(js());
  let indentation=new Compartment().of(EditorState.tabSize.of(1));
  let doc=string(source)?settings.source?source:await compose(fetch,digest,infer(serialize,"json"),buffer(compose(JSON.parse,aphorize),drop(1)))(source):JSON.stringify(source);
+ let author=cookie("author");
+ let {font}=author?await compose(fetch,digest)("/author/"+author):{};
+ let size=font?font.size+"px":"1em";
  let theme=new Compartment().of(EditorView.theme(
- {".cm-content":{"text-align":"left","font-family":settings.font,"font-size":"1em"}
- ,".cm-gutters":{background:"transparent"}
+ {".cm-content":{"text-align":"left","font-family":settings.font,"font-size":size}
+ ,".cm-gutters":{background:"transparent","font-size":size}
  // gutter heights are calculated dynamically on client-side. 
  ,".cm-gutterElement":{height:"4px !important",color:"var(--note)"}
  ,".cm-gutterElement:not(:first-of-type)":{height:"1.4em !important",transform:"translate(0,-4px)"}
@@ -101,44 +120,50 @@
  },{dark:true}));
  let state=EditorState.create({doc,extensions:[basetheme,foldtheme,theme,extensions].flat()});
  let view=new EditorView({parent,state},window);
- if(defined(settings.fold))
- settings.fold<1?foldAll(view):fold.call(parent,settings.fold);
- let style=parent.ownerDocument.querySelector("head").querySelector("style").textContent;
+ if(settings.fold!==false&&globalThis.window)
+ fold.call(parent,settings.fold||0);
  //let style=view.styleModules.flatMap(({rules})=>rules).reverse().join("\n");
- parent.prepend(document({style:{"#text":style}}));
+ let style=parent.ownerDocument.querySelector("head").querySelector("style");
  if(!globalThis.window)
- parent.querySelector(".cm-content").cmView.view.viewState.state.doc.toString().split("\n").forEach((line,index)=>
+ parent.prepend(document({style:{"#text":style.textContent}})),style.remove()
+,parent=parent.cloneNode(true),doc.split("\n").forEach((line,index)=>
  [".cm-line",".cm-lineNumbers>.cm-gutterElement"].map(name=>
  Array.from(parent.querySelectorAll(name))).forEach((lines,gutter)=>
- lines[index+gutter]||lines.at(-1).after(Object.assign(lines[gutter].cloneNode(true)
+ lines[index+gutter]||lines.at(-1).after(Object.assign(lines.at(-1).cloneNode(true)
 ,{textContent:gutter?index+1:line}))));
- return capture.call(parent,file+"/module/default/module");
+ return settings.parent?parent:capture.call(parent,file+"/module/default/module");
 };
 
- export function resize(scale)
+ export function resize(next)
 {let text=this.querySelector(".cm-content");
- let {view}=text.cmView;
- let {fontSize}=window.getComputedStyle(text);
+ let past=size(text);
+ if(next===past)return;
+ let {cmView:{view}}=text;
  let theme=view.viewState.state.config.base[2];
- let size=Number(fontSize.replace(/[a-z]/g,"")||1)*scale;
- view.dispatch({effects:theme.compartment.reconfigure([theme.inner,EditorView.theme(
- {".cm-content":{"font-size":size+"em"}
- ,".cm-gutters":{"font-size":size+"em"}
- })])});
+ view.dispatch({effects:theme.compartment.reconfigure([EditorView.theme(
+ {".cm-content":{"font-size":next+"px"}
+ ,".cm-gutters":{"font-size":next+"px"}
+ }),theme.inner])});
+ let author=cookie("author");
+ if(!author)return;
+ buffer(compose
+(wait(10000),size,when(is(next)),drop()
+,"/author/"+author,{method:"put",body:JSON.stringify({font:{size:next}})},fetch,digest,note
+),note)(text);
 };
 
  export function fold(depth=0)
 {let {view}=this.querySelector(".cm-content").cmView;
  let {state}=view.viewState;
  let effects=[];
- ensureSyntaxTree(state,state.doc.length,5000).iterate(
+ ensureSyntaxTree(state,state.doc.length,10000).iterate(
  {enter({stack:{length},from,to})
 {let effect=depth<=length?foldable(state,from,to):undefined;
  if(effect)effects.push(foldEffect.of(effect));
 },from:0,to:state.doc.length
  });
  view.dispatch({effects});
- };
+};
 
  export function highlight(source)
 {let span=[];
@@ -183,7 +208,7 @@
  },Object.entries,infer("map",([field,value])=>[".cm-"+field,value]),Object.fromEntries
 ));
 
-const foldtheme = EditorView.baseTheme(
+ var foldtheme=EditorView.baseTheme(
 {".cm-foldPlaceholder":{backgroundColor: "#eee",border: "1px solid #ddd",color: "#888",borderRadius: ".2em",margin: "0 1px",padding: "0 1px",cursor: "pointer"}
 ,".cm-foldGutter span": {padding: "0 1px",cursor: "pointer"}
 });

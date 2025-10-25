@@ -255,8 +255,7 @@
 };
 
  export async function broadcast(server,actions)
-{let {default:{WebSocketServer}}=await import("./einaros_2011_ws.js");
- let connection=buffer(function connection(host,peer,request)
+{let connection=buffer(function connection(host,peer,request)
 {Object.assign(peer
 ,{author:anonymous[Math.floor(Math.random()*anonymous.length)]
  ,connected:true
@@ -277,6 +276,7 @@
 ),host)
  });
 },note.bind(1));
+ let {default:{WebSocketServer}}=await import("./einaros_2011_ws.js");
  return compose([{server}],Reflect.construct,{rooms:{}},Object.assign
 ,{connection},tether(observe))(WebSocketServer);
 };

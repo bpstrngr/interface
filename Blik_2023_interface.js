@@ -1,65 +1,35 @@
  import {note,collect,same,has,promise,pass,slip,something,observe,functor,describe,expect,control,trace,array,compound,simple,apply,stream,revert,provide,tether,differ,whether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,numeric,binary,basic,match,wait,string,defined,minor,compose,combine,exit,clock,major,colors,skip,flip,debug} from "./Blik_2023_inference.js";
  import {search,merge,prune,sum,stringify,edit,parse as records,relevant,route,record,remember} from "./Blik_2023_search.js";
  import {parser,parse,sanitize,serialize,exports,reexport,test,mime,coordinates} from "./Blik_2023_meta.js";
-
-export var feature=agent=>agent&&prune.call
-({attributes:{node:21,Chrome:123}
- ,assertions:{node:16.14,Chrome:91,Firefox:Infinity}
- ,json:{Chrome:125,Firefox:Infinity}
- },([feature,condition])=>
-[true,Object.keys(condition).find(name=>agent[name])
-].filter(Boolean).reduce((value,name)=>
- condition[name]<=agent[name])
-);
-
  export const address=new URL(import.meta.url).pathname;
  export const location=address.replace(/\/[^/]*$/,"");//path.dirname(address);
  export const file=address.replace(/.*\//,"");//path.basename(address);
+ export const virtual=typeof imports!=="undefined";// interface/modularise tracks imports in context. 
+ export const remote=/^http/.test(import.meta.url);
  export const agent=globalThis.process?.versions
 ?prune.call(process.versions,({1:value})=>string(value)?Number(value.match(/(\.{0,1}\d+){1,2}/)[0]):value)
 :version(globalThis.navigator);
- export const virtual=typeof imports!=="undefined";// interface/modularise tracks imports in context. 
- export const entry=agent.node&&await resolve.call(import.meta.url,"worker_threads","isMainThread");
- export const remote=/^http/.test(import.meta.url);
+ export const entry=agent.node&&await import("worker_threads").then(({isMainThread:is})=>is);
+ // --import flag registers loader module on separate thread unlike 
+ // --loader, where context is available directly on the primary thread. 
+ export var [loader,legacy,inspected]=
+ Object.entries({import:file,loader:file,inspect:""}).map(([field,value])=>
+ agent.node&&process.execArgv.some((flag,index)=>
+ new RegExp("^--"+field+(value?"=[^ ]*"+value:"")).test(flag))||undefined);
  var sources="./Blik_2023_sources.json";
  export var scope={};// interface/resolve tracks imports in interface/scope. 
- export var {window,fetch}=globalThis.window?globalThis:{fetch:freefetch};// create window with interface/jsdom. 
-
- export function clientwidth(){return process.stdout.columns;};
-
- export function inspector(port,host)
-{return compose(fetch,"json",0,"devtoolsFrontendUrl")("http://"+host+":"+port+"/json");
-};
-
- export function version(navigator)
-{let agent=["user-agent","userAgent"].reduce((agent,field)=>
- agent||navigator?.[field],undefined);
- let device=/\((.*?)\)/.exec(agent)?.[1];
- let entries=agent?.match(/[\w\.]+\/(\.{0,1}\d+){1,2}/g)?.map(agent=>agent.split("/"))||
- [[agent]];
- return entries.map(([name,version])=>({[name]:Number(version)})).reduce(merge
-,device?.split(";").reduce(function(platform)
-{return {[platform]:arguments[3].splice(1).join(";")};
-})||{});
-};
-
+ export var {window,fetch}=globalThis.window?globalThis:{fetch:freefetch};// call interface/jsdom to bind fetch to a window with origin. 
  export var peer=remember(function peer(protocol)
 {return import(protocol).then(({Agent})=>Agent({timeout:5*60*1000}));
 },protocol=>protocol);
 
  if(agent.node&&!virtual)
-  // expose module to console. 
+ await infer(async function register(module,...context)
+{// expose modules to console. 
 [import.meta.url,"./Blik_2023_inference.js","./Blik_2023_search.js"
 ].forEach(compose(crop(1),resolve.bind(import.meta.url),globalThis,flip,Object.assign));
 
- // --import flag registers loader module on separate thread unlike 
- // --loader, where context is available directly on the primary thread. 
- export var [loader,shared,inspected]=Object.entries(
- {import:file,loader:file,inspect:""
- }).map(([field,value])=>agent.node&&process.execArgv.some((flag,index)=>
- new RegExp("^--"+field+(value?"=[^ ]*"+value:"")).test(flag))||undefined);
-
- if(entry&&loader&&!virtual&&!remote)
+ if(entry&&loader&&!remote)
  // register loader thread. 
  loader=await compose.call
 ("worker_threads",resolve.bind(import.meta.url),["MessageChannel"],tether(search),[],Reflect.construct
@@ -79,22 +49,24 @@ export var feature=agent=>agent&&prune.call
 )
 ,compose(note.bind(1),wait(60*1000),swap(1),process.exit))
 ,infer()
-)(...process.argv.slice(1));
+)(module,...context);
 
- if(!loader&&!shared&&agent.node&&process.argv[1]?.endsWith(file))
+ if(!loader&&!legacy&&module?.endsWith(file))
  // without either loader flag, context begins at second index. 
- compose(resolve.bind(import.meta.url),drop(),0,process.exit)(...process.argv.slice(2));
+ compose(resolve.bind(import.meta.url),drop(),0,process.exit)(...context);
 
  // if(entry&&await compose.call(resolve("vm"),has("Module")))
+ // Report internal segfault errors (may occur with experimental features). 
  // await compose("default","registerHandler")(import("./Shiranuit_2021_segfault.node"));
 
- if(inspected&&entry&&!virtual)
+ if(inspected&&entry)
  // restart inspector to trigger a DevTools switch back to the main thread in case open. 
  await compose
 (resolve.bind(import.meta.url),pass("close"),pass(compose(process.debugPort,"localhost","open"))
 ,infer(Reflect.get,"Session"),[],Reflect.construct,{inspectorNotification:note},tether(observe)
 )("node:inspector")
 ,compose(inspector,slip("Inspect: \n"),"concat",note.bind("cyan"))(process.debugPort,"localhost");
+})(...process?.argv?.slice(1)||[]);
 
  // https://nodejs.org/api/esm.html#esm_loaders 
 
@@ -118,7 +90,7 @@ export var feature=agent=>agent&&prune.call
  let {stdin:input,stdout:output}=process;
  let socket=await buffer(revert((connect,error,connection)=>
  observe.call(connection,{connect:infer(connect),error}))
-,compose(note,swap("debug port unavailable for "+prompt.name),note.bind(1)))(resolve.bind(import.meta.url)("net","connect",process.debugPort));
+,compose(note,swap("debug port unavailable for "+prompt.name),note.bind(1)))(resolve.call(import.meta.url,"net","connect",process.debugPort));
  let interfaces=[{input,output}/*,socket&&{input:socket,output:socket}||[]*/].flat().map(createInterface);
  let entries=context.flat().flatMap(term=>compound(term)?Object.entries(term):[[term]]);
  entries=await entries.reduce(record(([field,term])=>
@@ -224,26 +196,25 @@ export var feature=agent=>agent&&prune.call
  let command=!loading||!internal;
  let target=internal?decodeURI(new URL(internal).pathname):address;
  let relation=target.replace(/\/[^/]*$/,"");
- let absolute=await whether
-([match(/^file:/),match(/^[\/\.]/)]
-,resolve.bind(import.meta.url,"url","fileURLToPath"),agent.node
-?resolve.bind(import.meta.url,"path","resolve",relation)
-:infer("replace",/^[\/\.]+/,relation+"/")
-,infer("replace",/^node:/,"")
-)(source);
+ let url=compose(collect,slip(URL),Reflect.construct);
+ let {protocol,host,pathname:absolute}=/^[\/\.]/.test(source)?agent.node
+?await resolve.call(import.meta.url,"url","pathToFileURL",source)
+:new URL("file://"+source.replace(/^[\/\.]+/,relation+"/"))
+:either(url,compose(/^/,"node:","replace",url))(source);
+ let relative=agent.node&&"file:"===protocol?"/"+await resolve.call(import.meta.url,"path","relative",location,absolute):absolute;
  let type=source.endsWith(".json")?"json":undefined;
  let recover=compose(recovery,infer("call",scope,absolute,target),infer(resolve.bind(internal),context,next));
  if(command&&!string(this))
  console.warn("Resolution invoked without peer module's reference in scope for \""+source+"\".\nWill default to \""+location+"/\" (no scope).");
  if(!command)
  return compose(either(precedent,compose
-(buffer(next,buffer(recover,either(compose(swap(source),request),exit)))
-,shortcircuit,{imports:new Set()},merge,[absolute],record
-,slip(scope),0,merge,[absolute,"resolution"],tether(search)
-,pass(compose(swap(colors.yellow+"import:"+colors.cyan+absolute+colors.steady),console.log))
+(drop(1,0,absolute),buffer(next,buffer(recover,either(compose(swap(source),request),exit)))
+,shortcircuit,{imports:new Set()},merge,[relative],record
+,slip(scope),0,merge,[relative,"resolution"],tether(search)
+,pass(compose(swap(colors.yellow+"import:"+colors.cyan+relative+colors.steady),console.log))
 )),target===location+"/"?undefined:pass(compose
-(swap(scope),{[target]:{imports:new Set([absolute])}},0,merge
-)))(absolute,context);
+(swap(scope),{[target.replace(location,"")]:{imports:new Set([relative])}},0,merge
+)))(relative,context);
  let module=import(source,(compound(loader)||type)&&prune.call(
  {[!agent.Linux&&feature(agent).attributes?"with":"assert"]:{type,peer:compound(loader)?this||"file://"+location+"/":undefined}
  },({1:value})=>value));
@@ -451,13 +422,14 @@ export var feature=agent=>agent&&prune.call
 {// access source as module specifier, ie. 
  // compose(source,true,access,interpret,format,sanitize,serialize,modularize). 
  //let version=process.versions.node.split(".")[0];
- let parse=compose(collect,slip(URL),Reflect.construct);
+ let url=compose(collect,slip(URL),Reflect.construct);
  let {protocol,host,pathname:absolute}=/^[\/\.]/.test(source)
 ?await resolve.call(import.meta.url,"url","pathToFileURL",source)
-:either(parse,compose(/^/,"node:","replace",parse))(source);
+:either(url,compose(/^/,"node:","replace",url))(source);
+ let relative="file:"===protocol?"/"+await resolve.call(import.meta.url,"path","relative",location,absolute):absolute;
  let loading=next?.name==="nextLoad";
  // let absolute=/^file:/.test(source)?await resolve.call(import.meta.url,"url","fileURLToPath",source):source.replace(/^node:/,"");
- let precedent=loading&&scope[absolute]?.module;
+ let precedent=loading&&scope[relative]?.module;
  if(precedent)
  return precedent.source?.length===0
  // buffer is mysteriously cleared sometimes, eg. in reimport for tests without a vm flag below. 
@@ -473,7 +445,7 @@ export var feature=agent=>agent&&prune.call
  attributes=assertion||attributes||{};
  let syntax=attributes?.type||mime(source)?.replace(/.*\//,"");
  // persist shortCircuit on scope to support loading from source while bundling. 
- var shortcircuit=compose({shortCircuit:true},merge,[absolute,"module"],record,slip(scope),0,merge,absolute,"module");
+ var shortcircuit=compose({shortCircuit:true},merge,[relative,"module"],record,slip(scope),0,merge,relative,"module");
  if(!format&&/^https*/.test(source))
  return compose.call(source,fetch,"text",source=>({source,format:/\.json$/.test(source)?"json":"module"}),shortcircuit);
  if(syntax==="json"&&format!==syntax)
@@ -495,7 +467,6 @@ export var feature=agent=>agent&&prune.call
  let native=["json","module","wasm","builtin","commonjs",undefined].includes(format);
  if(native&&next)
  return compose(next,whether(match({format:"addon"}),infer(merge,{source:null})),shortcircuit,skip(check))(source,context);
- let relative=await resolve.bind(import.meta.url)("path","relative",location,absolute);
  let [index,sparse]=relative.split("/").reduce((folder,entry,index,relative)=>
  [entry,relative.splice(2).join("/")]);
  let {comment,...definition}=
@@ -532,7 +503,7 @@ export var feature=agent=>agent&&prune.call
 {// uses --experimental-vm-modules 
  if(modular(source))
  return source;
- let {attributes}=specifier;
+ let {attributes,target}=specifier;
  if(simple(specifier))null
 ,{specifier}=specifier;
  let {SourceTextModule,SyntheticModule,createContext,isContext}=await import("vm");
@@ -540,6 +511,8 @@ export var feature=agent=>agent&&prune.call
  let {protocol,host,port,pathname:identifier,href:url}=/^[\/\.]/.test(specifier)
 ?await resolve.call(import.meta.url,"url","pathToFileURL",specifier)
 :either(parse,compose(/^/,"node:","replace",parse))(specifier);
+ if(target)
+ merge(scope[target],{imports:new Set([identifier])},0);
  let precedent=context.imports?.[identifier];
  if(precedent)
  return precedent;
@@ -551,7 +524,7 @@ export var feature=agent=>agent&&prune.call
 ,compose(crop(1),slip("awaiting bundle to "+modularise.name),note,undefine)
 ,note
 )),3000)(url,{importAttributes:attributes});
- if(attributes?.type==="json")
+ if(attributes?.type==="json"||specifier?.endsWith(".json"))
  source="export default "+source;
  if(!isContext(context))
  context=createContext(
@@ -570,8 +543,8 @@ export var feature=agent=>agent&&prune.call
 (combine(whether(match(/^[\/\.]/),compose
 (specifier=>resolve.call(import.meta.url,"path","resolve",identifier,"..",specifier)
 ,identifier=>protocol+"//"+host+identifier
-)),drop(2)),(specifier,attributes)=>
- modularise(null,{specifier,attributes},context,depth+1)
+),crop(1)),drop(2)),(specifier,attributes,depth)=>
+ modularise(null,{specifier,attributes,target:identifier},context,depth)
 );
  let cachedData=await scope[identifier]?.virtual;
  let module=builtin
@@ -582,21 +555,21 @@ export var feature=agent=>agent&&prune.call
 },{identifier,context}))
 :new SourceTextModule(source||""
 ,{identifier,context,cachedData
- ,importModuleDynamically:compose(link,"namespace")
+ ,importModuleDynamically:compose(crop(3),stash(0),link,"namespace")
  ,initializeImportMeta:infer(merge,{url})
  });
  merge(context.imports,module,[identifier]);
  let links=await module.moduleRequests?.reduce(record(compose
-(drop(1),combine("specifier",swap(module),"attributes"),link
+(drop(1),combine("specifier",swap(module),"attributes"),stash(depth+1),link
 )),[]);
  module.linkRequests
 ?await module.linkRequests?.(links)
-:await module.link(link).catch(undefine);
- module.instantiate?.();
+:await module.link(compose(crop(3),stash(depth+1),link))?.catch(undefine);
  // if(!builtin)
  // merge(scope,module.createCachedData(),[identifier,"virtual"]);
- //if(!depth)
- await module.evaluate().catch(compose({[identifier]:module},note,exit));
+ if(!depth)
+ module.instantiate?.()
+,await module.evaluate().catch(compose({[identifier]:module},note,exit));
  return module;
 };
 
@@ -818,10 +791,11 @@ export var feature=agent=>agent&&prune.call
 };
 
  export var worker=
- {imports:{"./Blik_2023_inference.js":["","compose","combine","drop","collect","infer","buffer","is","note","exit","slip","differ"]}
+ {imports:{"/Blik_2023_inference.js":["","compose","combine","drop","collect","infer","buffer","is","note","exit","slip","differ","observe"]}
  ,procedures:[function()
 {var address=new URL(import.meta.url).pathname;
- observe.call(this
+ var worker=this||self;
+ observe.call(worker
 ,{message({data:[id,term,...context]})
 {compose(buffer(compose(...compound(term)
 ?[swap(term),resolve.bind(import.meta.url)]
@@ -832,9 +806,8 @@ export var feature=agent=>agent&&prune.call
 ,compose(collect,tether(search,compose(drop(1),1,either(is(ArrayBuffer)))),Object.values)
 )
 ,this.postMessage.bind(this))(import(address));
-},error:compose(drop(1),this.postMessage.bind(this))
- });
- this.postMessage("Worker ready: "+address);
+},error:infer("postMessage")
+ }).postMessage("Worker ready: "+address);
 }]
  };
 
@@ -864,22 +837,48 @@ export var feature=agent=>agent&&prune.call
 {merge(this,{[[window.location.origin,field].join("/")]:value});
 },0,0)),serialize,collect,{type:"text/javascript"},collect,slip(Blob),Reflect.construct,URL.createObjectURL
 );
- let module=await compose.call
-(new Worker(address,{type:"module"})
-,revert((message,error,module)=>
+ let module=new Worker(address,{type:"module"});
+ await compose.call
+(module,revert((message,error,module)=>
  observe.call(module,{message,error},{once:true}))
-,"data",note.bind(2),swap(module)
+,"data",note.bind(2)
 );
  URL.revokeObjectURL(address);
  return ephemeral?delegate.bind(module,term.name,...context):module;
 };
 
+ export async function socket(address,onmessage)
+{var {protocol,host,pathname}=new URL(address);
+ let WebSocket=globalThis.WebSocket||
+ await import("./einaros_2011_ws.js").then(({default:WebSocket})=>WebSocket);
+ let socket=is(WebSocket)(this)?this:new WebSocket(protocol.replace(/^http/,"ws")+"//"+host+pathname);
+ return revert((resolve,reject,socket,onmessage)=>Object.assign(socket
+,{async onopen({target})
+{console.warn("Websocket open: ",target);
+ let {author:name}=cookies(globalThis.window?.document?.cookie||"");
+ if(name)
+ this.send(JSON.stringify({action:"sign",name}));
+ resolve(this);
+},onerror({target}){console.warn("Websocket not available at "+target.url);reject(target);}
+ ,onclose({target}){console.warn("Websocket closed: ",target);}
+ ,onmessage
+ }))(socket,onmessage);
+};
+
+ export function listen(action,message)
+{// revert message events on bound socket with resume/reject hooks to terminate listening. 
+ return control(new AbortController(),revert
+((resume,reject,{signal},events,message,call)=>
+ call(observe.call(events,{message(response)
+{action.call(this,JSON.parse(response.data),message,resume,reject);
+}},{signal}))
+),this,message,message?infer("send",JSON.stringify(message)):infer());
+};
+
  export async function infrastructure()
-{let {relative}=await import("path");
- let relate=module=>/^\//.test(module)?relative(location,module):module;
- return Object.entries(scope).reduce(record
-(({1:{imports=[]}})=>Array.from(imports).map(relate)
-,([field])=>relate(field)
+{return Object.entries(scope).reduce(record
+(({1:{imports=[]}})=>Array.from(imports)
+,([field])=>field
 ),{});
 };
 
@@ -1067,6 +1066,34 @@ export var feature=agent=>agent&&prune.call
 ]):[]
 ].forEach(([stream,actions])=>
  observe.call(stream,actions)))(process,[]);
+};
+
+ export function clientwidth(){return process.stdout.columns;};
+
+ export function inspector(port,host)
+{return compose(fetch,"json",0,"devtoolsFrontendUrl")("http://"+host+":"+port+"/json");
+};
+
+ export function feature(agent)
+{return agent&&prune.call
+({attributes:{node:21,Chrome:123}
+ ,assertions:{node:16.14,Chrome:91,Firefox:Infinity}
+ ,json:{Chrome:125,Firefox:Infinity}
+ },([feature,condition])=>
+[true,Object.keys(condition).find(name=>agent[name])
+].filter(Boolean).reduce((value,name)=>
+ condition[name]<=agent[name])
+);
+};
+
+ export function version(navigator)
+{let agent=either("user-agent","userAgent",swap(undefined))(navigator);
+ let device=/\((.*?)\)/.exec(agent)?.[1]?.split(";").reduce(function(platform)
+{return {[platform]:arguments[3].splice(1).join(";")};
+})||{};
+ let entries=agent?.match(/[\w\.]+\/(\.{0,1}\d+){1,2}/g)?.map(agent=>agent.split("/"))||
+ [[agent]];
+ return entries.map(([name,version])=>({[name]:Number(version)})).reduce(merge,device);
 };
 
  export var tests=

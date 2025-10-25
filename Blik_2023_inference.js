@@ -468,12 +468,11 @@
  register=true;
  //let propagate=register>1;
  let binary=
- {hover:['mouseover','mouseout']
+ {focus:['focusin','focusout']
  ,mouse:['mouseover','mouseout']
- ,focus:['focusin','focusout']
- ,touch:['pointerover','pointerout']
- ,pinch:['touchstart',"touchmove",'touchend']
- ,draw:['pointerdown','pointerup']
+ ,touch:['touchstart','touchend']
+ ,point:['pointerdown','pointerup']
+ ,hover:['pointerover','pointerout']
  };
  let entries=[action].flat().flatMap(action=>
  simple(action)?Object.entries(action):[[action?.name,action]]).flatMap(([name,action])=>
@@ -554,9 +553,9 @@
  // observe an abort signal, optionally composing it with a context for explicit abortion. 
  return revert((resolve,reject,controller,...context)=>
  context.reduce((signal,term,index,context)=>
- compose(buffer(term),slip(controller),"abort")({signal},...context.splice(1))
+ compose(buffer(term),collect,slip(controller),"abort")({signal},...context.splice(1))
 ,observe.call(controller.signal,{abort({target:{reason}})
-{(reason instanceof Error?reject:resolve)(reason);
+{(is(Error)(reason[0])?reject:resolve)(provide(reason));
 }},{once:true})))(...arguments);
 };
 

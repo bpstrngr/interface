@@ -917,5 +917,10 @@
   "Shiranuit_2021_segfault.node":{
     "https://github.com/Shiranuit/node-segfault-handler":{"v1.4.2":["binding.gyp",{"syntax":"gyp","edit":{"'nan'":"'../1/include_dirs.js'"}}]},
     "https://github.com/nodejs/nan":{"v2.23.0":[]}
-  }
+  },
+  "Cardaci_2013_devtools_interface.js":{"https://github.com/cyrus-and/chrome-remote-interface":{"v0.33.3":["lib/chrome.js",{
+    "syntax":"commonjs",
+    "alias":{"ws":"./Cardaci_2013_devtools_interface/0/lib/websocket-wrapper.js"},
+    "detach":["http","https","dns"]
+  }]}}
 }

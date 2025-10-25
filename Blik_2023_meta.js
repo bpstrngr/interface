@@ -574,23 +574,24 @@
 [[target,node]
 ,[source,sources.find(source=>label(source).name===label(node).name&&twin(source,node))]
 ,label(node)
-]).filter(({1:{1:term}})=>term).map(([[target,node],[source,term],{name}],index)=>
+]).filter(({1:{1:term}})=>term).map(([[target,node],[source,term],{name}])=>
  // https://tc39.es/ecma426/#sec-names-for-generated-javascript-code
- [label,mirror].flat().map((part,index,{length})=>
+ // clip function declaration for method counterparts. 
+ [node.method!==term.method?whether(not(infer("method")),mirror):[],label,mirror].flat().map((part,index,{length})=>
 [[[source,term],[target,node]].map(([source,node])=>
- coordinates(source,part(node)[index?"end":"start"]))
- //length===3&&index<2?index?label:node.method?infer():mirror:mirror
+ coordinates(source,part(node)[length-index-1?"start":"end"]))
 ,name
-].flat())).flatMap(([start,end],index,locations)=>
+].flat())).flatMap(([start,...end],index,locations)=>
  // cut source between segments with reference to previous segment end. 
-[[locations[index-1]?.[1]||[[0,0]],start].reduce(([source],[cut,target,name])=>
+[[locations[index-1]?.at(-1)||[[0,0]],start].reduce(([source],[cut,target,name])=>
  [source,target,name])
-,start
-,...Array(end[1][0]-start[1][0]).fill(0).map((line,index)=>
+,start,...end.slice(0,-1)
+,...Array(end.at(-1)[1][0]-start[1][0]).fill(0).flatMap((line,index)=>
  // map identical lines of procedure. 
+ Array(index?1:2).fill(index+1).map((line,index)=>
  prune.call(start,([field,offset])=>
- numeric(offset)?[offset+index+1,0][field]:offset))
-,end
+ numeric(offset)?[offset+line,index][field]:offset)))
+,end.at(-1)
 ]);
  locations.push([coordinates(source,source.length),locations.at(-1)[1]]);
  let quantifiers=
@@ -779,13 +780,13 @@
  let noncondition=either(
  not(defined),simple,is([array,infer("some",({condition})=>condition)]));
  let fails=await [tests].reduce(function test(module,tests,depth,path)
-{let {tether,scope,context=[],route=[],terms=[],condition}=tests;
+{let {scope,context=[],route=[],terms=[],condition}=tests;
  return noncondition(condition)
 ?compose(Object.entries,infer("reduce",record(([term,tests])=>
  test(module[term]??module,tests,depth+1,[depth?path:[],term].flat())),[]),"flat")(tests)
 :buffer(compose
 (...[route].flat()
-,buffer(module.bind(scope||tether))
+,buffer(scope?tether(module):module)
 ,...[terms].flat(),assert[condition]||condition,swap({})
 ),({stack})=>({[path.join("/")]:stack}))(...context);
 },namespace);

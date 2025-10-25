@@ -1,5 +1,5 @@
  import {note,compose,buffer,when,collect,infer,combine,wait,drop,slip,differ,crop,each,swap,pass,not,compound,functor,native,exit,tether,either,whether,describe,string,pattern,major,match,has,is,are,ascend,defined,flip,heritage} from "./Blik_2023_inference.js";
- import {access,persist,purge,resolve,list,modularise,cookies,cookie,query,fetch,path,loader,delegate,location,window} from "./Blik_2023_interface.js";
+ import {access,persist,purge,resolve,list,modularise,cookies,cookie,query,fetch,path,loader,delegate,location,window,listen,infrastructure} from "./Blik_2023_interface.js";
  import {document,hypertext,css,throttle,error,capture,defer} from "./Blik_2023_fragment.js";
  import {serialize,mime,proceduralize,sourcemap} from "./Blik_2023_meta.js";
  import {search,merge,prune,random,extract,record,remember} from "./Blik_2023_search.js";
@@ -54,13 +54,13 @@
 ,combine
 (compose(path,slip("path","resolve","./"),resolve.bind(import.meta.url),pass(permit,classified))
 ,compose(drop(1),buffer(JSON.parse,compose(drop(1,2),"base64",Buffer.from,"toString")))
-,compose("url",query,buffer(differ("override"),swap(undefined)),is("true"))
-),note
+,compose("url",query,buffer(differ("override"),swap(undefined)),is(true))
+)
 ,combine
 (crop(1)
 ,compose(combine(buffer(compose(crop(1),infer(access,true),buffer(JSON.parse,drop(1))),swap({})),drop(1)),merge)
 )
-,true,note,access,true,combine
+,true,access,true,combine
 (compose(access,buffer(JSON.parse,drop(1)))
 ,compose(crop(1),slip("path","relative","./"),resolve.bind(import.meta.url),"/","split")
 ),record
@@ -93,14 +93,15 @@
 (simple(this)?serialize:"toString",term?compose
 (origin+"/"+file,buffer(modularise
 ,compose(drop(2),origin,location,"replace",resolve.bind(import.meta.url))),either("namespace",crop(1))
-):compose(["body"],record
+):compose("//# sourceMappingURL=./sourcemap",collect,"\n","join",["body"],record
 ,{type:mime("js"),headers:["X-",""].map(field=>(
  {[field+"SourceMap"]:"./sourcemap"})).reduce(merge)
  },merge)
 )(this);
 },sourcemap
- ,scope(){return delegate.call(loader,"infrastructure");}
- };
+ ,sources(){return infrastructure();}
+ ,infrastructure(){return delegate.call(loader,"infrastructure");}
+};
 
  export function persistence(resource)
 {classify(resource);
@@ -145,7 +146,7 @@
 }});
 };
 
- async function authorize({headers:{cookie}},authority)
+ export async function authorize({headers:{cookie}},authority)
 {when(defined)(authority);
  let {author:name}=cookies(cookie||"");
  if(!name)exit(Error("unauthorized"));
