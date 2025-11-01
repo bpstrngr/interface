@@ -1,5 +1,5 @@
  import {locate,resolve,modularise,agent,virtual,window,jsdom,fetch,digest,query,cookies} from "./Blik_2023_interface.js";
- import {note,colors,wait,observe,provide,collect,slip,infer,either,each,pass,tether,buffer,differ,compose,flip,skip,stash,revert,iterate,combine,whether,swap,compound,something,string,basic,minor,functor,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdflike,when,debug,expect,generator,clock,type,heritage,ascend as prototypes} from "./Blik_2023_inference.js";
+ import {note,colors,wait,observe,provide,collect,slip,infer,either,each,pass,tether,buffer,differ,compose,flip,skip,stash,revert,iterate,combine,whether,swap,compound,something,string,basic,minor,functor,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdflike,when,debug,expect,generator,plural,clock,type,heritage,ascend as prototypes} from "./Blik_2023_inference.js";
  import {search,merge,prune,extract,unfold,record,route,fields} from "./Blik_2023_search.js";
  import {serialize,proceduralize,mime,data} from "./Blik_2023_meta.js";
  import * as layout from "./Blik_2023_layout.js";
@@ -23,26 +23,32 @@
  };
 
  export function document(source,namespace,language)
-{if(is(window.EventTarget)(source))
- return source;
- let scope=is(window.EventTarget)(this)&&this;
- let fragment=scope||Reflect.construct(window.DocumentFragment,[]);
- let special=["#text","dataset","class","style"].map(name=>match([name]));
+{if(plural(source))
+ return provide(collect(each.call(source,source=>
+ document.call(this,source,namespace,language))));
+ let scope=is(window.EventTarget)(this)?this:Reflect.construct(window.DocumentFragment,[]);
  return compose
-(whether(simple,Object.entries,compose(collect,"flat")),provide,each(whether
-([...special,array,is(window.NodeList),something]
-,infer(text,language,fragment)
-,compose(provide,drop(1),metamarkup,infer(document.bind(fragment),namespace,language))
-,([field,value])=>render([value].flat().join(" "),field,namespace,language,fragment)
-,([field,value])=>render([value].flat().map(value=>simple(value)&&!value["#text"]?{"#text":css(value)}:value),field,namespace,language,fragment)
-,compose(provide,flip,stash(namespace,language,fragment),render)
-,Array.from,crop(1),drop()
-))
-,slip(fragment),append
+(whether(simple,Object.entries,compose(collect,"flat")),provide,each(whether(
+[string,...["#text","class","style","dataset","data-actions"].map(name=>match([name]))
+,array,is(window.NodeList),something
+]
+,infer(text,language,scope)
+,compose(search(1),infer(text,language,scope))
+,([field,value])=>node([value].flat().join(" "),field,namespace,language,scope)
+,([field,value])=>node([value].flat().map(value=>
+ simple(value)&&!value["#text"]?{"#text":css(value)}:value),field,namespace,language,scope)
+,compose(provide,drop(1),metamarkup,infer(document.bind(scope),namespace,language))
+,compose(search(1),buffer(JSON.parse),capture.bind(scope))
+,compose(provide,flip,stash(namespace,language,scope),node)
+,Array.from,crop(1),drop()))
+,slip(scope),append
 )(source);
 };
 
- export var node=whether
+ var node=buffer
+(compose(combine
+(compose(crop(1),collect,"flat")
+,compose(drop(1,0,whether
 ([is(window?.NodeList),is(window?.EventTarget),simple,something,is(null)]
 ,Array.from,crop(1)
 ,element
@@ -52,28 +58,10 @@
 ,compose(drop(4,2),drop(1,3),flip,0,tether(descend),infer("forEach",destroy),drop())
 ,drop())
 ,drop()
-);
- var render=buffer
-(compose(combine(compose(crop(1),collect,"flat"),compose(drop(1,0,node),infer)),"flatMap",provide)
+)),infer)
+),"flatMap",provide)
 ,compose(stash(null,infer("stack")),drop(-3),flip,write)
 );
- function text({1:text},language,fragment)
-{text=translate(text,language);
- if(!something(text))
- return provide([]);
- return provide([text].flat().map((text,index)=>write(text,index,fragment)));
-};
- function translate(text,language){return simple(text)?text[language]||Object.values(text)[0]:text;};
- function write(text,index,fragment)
-{let precedent=texts(fragment)[index];
- if(precedent)
- return overwrite(precedent,text);
- return fragment.ownerDocument.createTextNode(text);
-};
- function texts(fragment)
-{return Array.from(fragment.childNodes||[]).filter(({nodeType:type})=>type===3);
-};
- function overwrite(precedent,text){return Object.assign(precedent,{textContent:text});}
 
  function element(value,name,namespace,language,fragment,index)
 {value=merge(value,{a:{target:"_blank"}
@@ -87,72 +75,6 @@
  node=create("Element",name,value.xmlns||namespaces[name]||namespaces[namespace]||namespace);
  return document.call(node,value,node.namespaceURI,language);
 };
-
-//  export function document(source,namespace,language)
-// {let scope=is(window.EventTarget)(this)&&this;
-//  if(is(window.EventTarget)(source))
-//  return source;
-//  let fragment=scope||Reflect.construct(window.DocumentFragment,[]);
-//  let texts=compose(swap(fragment),"childNodes",Array.from,infer("filter",compose("nodeType",is(3))));
-//  let erase=compose(texts,infer("forEach",node=>node.remove()));
-//  let overwrite=compose(drop(2,1)//,whether
-// //(search(["parentNode","sheet"])
-// //,pass(compose(each([search(["parentNode","sheet"]),crop(1)]),"replaceSync",note))
-// ,compose(stash("textContent"),merge))
-// //),crop(1));
-//  let write=each(either
-// (compose(stash(compose(drop(1),stash(texts),flip,tether(search))),flip,whether(defined,overwrite,crop(1)))
-// ,compose(crop(1),slip(scope.ownerDocument),"createTextNode")
-// ));
-//  let translate=whether(simple,either(language,compose(Object.values,0)));
-//  let text=compose(search(1),translate,whether(not(something),drop()),collect,"flat",provide,write);
-//  let render=buffer(infer(node.bind(fragment),namespace,language),compose("stack",write));
-//  let metadata=compose(search(1),metamarkup,Object.entries,infer("map",render),provide);
-//  let classlist=compose(provide,each([crop(1),compose(crop(1),whether(array,infer("join"," ")))]),collect,render);
-//  let layout=compose(provide,each([crop(1),compose(crop(1),collect,"flat",infer("map",whether(is([simple,not(has("#text"))]),compose(crop(1),css,["#text"],record),crop(1))))]),collect,render);
-//  return compose
-// (whether(simple,Object.entries,compose(collect,"flat")),provide,each(whether(
-// [...["#text","dataset","class","style"].map(name=>match([name]))
-// ,array,is(window.NodeList),something
-// ],text,metadata,classlist,layout
-// ,render,Array.from,crop(1),drop()))
-// ,slip(fragment),append
-// )(source);
-// };
-
-//  export function node([name,value],namespace,language)
-// {let base=
-//  {a:{target:"_blank"}
-//  ,svg:{viewBox:"0 0 1 1",xmlns:namespaces.svg,"xmlns:xlink":namespaces.xlink}
-//  }[name]||{};
-//  return provide([value].flat().flatMap(whether
-// ([is(window.NodeList),is(window.EventTarget),simple,something,is(null)]
-// ,Array.from,crop(1)
-// ,(value,index)=>compose
-// (crop(1),base,0,merge,stash(either
-// (is(window.EventTarget)(this)&&either
-// (simple(value)&&value.match?.bind(this)
-// ,buffer(compose
-// (qualify,slip(name),"concat",slip(this),0,tether(descend)
-// ,whether(compose("length",major(1)),search(index),search(0))
-// ))
-// )
-// ,compose
-// (either("xmlns",compose(swap(namespaces),either(name,namespace,swap(namespace))))
-// ,stash(name),"Element",flip,create
-// )
-// )),flip,stash(infer("namespaceURI")),language,tether(document)
-// )(value)
-// ,value=>compose
-// (crop(1),["value"],record,stash(compose
-// (swap(namespaces),either(name.split(":")[0],namespace,swap(namespace))
-// ,stash(name),"Attribute",flip,create
-// )),flip,merge
-// )(value)
-// ,is(window.EventTarget)(this)?compose(swap(this,name,0),tether(descend),infer("forEach",infer("remove")),drop()):drop()
-// ,drop()
-// )));
-// };
 
  export var create=compose
 (when(either(is("Element"),is("Attribute")),string)
@@ -178,6 +100,20 @@
 ,search(["firstChild"])
 ,crop(1)
 ));
+
+ function text(text,language,fragment)
+{text=simple(text)?text[language]||Object.values(text)[0]:text;
+ if(!something(text))
+ return provide([]);
+ return provide([text].flat().map((text,index)=>write(text,index,fragment)));
+};
+
+ function write(text,index,fragment)
+{let precedent=Array.from(fragment.childNodes||[]).filter(({nodeType:type})=>type===3)[index];
+ if(precedent)
+ return Object.assign(precedent,{textContent:text});
+ return fragment.ownerDocument.createTextNode(text);
+};
 
  export function markup(object,indentation)
 {let xml="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
@@ -377,7 +313,7 @@
  if(!module)return this;
  let fragment=this?.constructor?.name==="Object";
  let actions=fragment?[]:JSON.parse(this.dataset.actions||"[]");
- if(fragment||!globalThis.window)
+ if(fragment||globalThis!==globalThis.window)
  // Re-invoke on client to capture events. 
  return fragment
 ?prune.call(this,({1:value})=>merge(value,{dataset:{actions:[module]}}),0,0)
@@ -717,13 +653,13 @@
 {let {naturalWidth:width,naturalHeight:height}=image;
  let canvas=document({canvas:
  {role:"img","aria-label":image.getAttribute("alt")
- ,"data-source":image.getAttribute("src")
  ,width,height
  }});
  let frame=canvas.getContext("2d");
  if(!frame)
  document.call(canvas
 ,{style:"background:repeating-linear-gradient(135deg,black,black 2px,transparent 2px,transparent 4px"
+ ,dataset:{source:image.getAttribute("src")}
  });
  else frame.drawImage(image,0,0);
  return canvas;
@@ -1109,6 +1045,30 @@
  return author;
 };
 
+ export async function article(item,index)
+{return document(
+ {style:index?undefined:
+ {"#text":await css({".article":
+ {color:"#b71c1c",display:"block","white-space":"pre-wrap"
+ ,cursor:"pointer",padding:"0.5em",position:"relative","z-index":2
+ ,"&>canvas":{"border-radius":"50%",height:"1em",width:"1em","vertical-align":"bottom"}
+ ,"&>span":{color:"var(--text)",display:"block"}
+ ,"&:hover>span":layout.text.glow
+ ,"&+span":{"text-align":"left","&>img":{"max-width":"100%",height:"auto"},"&>audio":layout.audio}
+ }})
+ }
+ ,span:
+ {span:
+ {class:"article",id:item.source,source:item.source,platform:item.platform,index:String(index)
+ ,...metamarkup(item.common)
+ ,canvas:await compose(image,canvas)(item.avatar,item.author)
+ ,"#text":" "+(item.post?clock(item.post,"date"):item.name.substring(5,13))
+ ,span:{"#text":item.title+"\n"}
+ }
+ }
+ });
+};
+
  async function comment({put,name,comment},index,comments)
 {return compose
 (fetch,buffer("json",swap({name})),{comment},merge
@@ -1213,30 +1173,6 @@
  ,href:source
  ,src:source,controls:"on",target
  ,"#text":title||source
- }
- });
-};
-
- export async function article(item,index)
-{return document(
- {style:index?undefined:
- {"#text":await css({".article":
- {color:"#b71c1c",display:"block","white-space":"pre-wrap"
- ,cursor:"pointer",padding:"0.5em",position:"relative","z-index":2
- ,"&>canvas":{"border-radius":"50%",height:"1em",width:"1em","vertical-align":"bottom"}
- ,"&>span":{color:"var(--text)",display:"block"}
- ,"&:hover>span":layout.text.glow
- ,"&+span":{"text-align":"left","&>img":{"max-width":"100%",height:"auto"},"&>audio":layout.audio}
- }})
- }
- ,span:
- {span:
- {class:"article",id:item.source,source:item.source,platform:item.platform,index:String(index)
- ,...metamarkup(item.common)
- ,canvas:await compose(image,canvas)(item.avatar,item.author)
- ,"#text":" "+(item.post?clock(item.post,"date"):item.name.substring(5,13))
- ,span:{"#text":item.title+"\n"}
- }
  }
  });
 };

@@ -1,4 +1,4 @@
- import {note,something,provide,has,compose,combine,buffer,slip,drop,stream,infer,either,swap,crop,not,whether,pass,promise,collect,simple,functor,defined,string,compound,tether,is,numeric,array,basic,iterable,construct} from "./Blik_2023_inference.js";
+ import {note,something,provide,has,compose,combine,buffer,slip,drop,stream,infer,either,swap,crop,not,whether,pass,promise,collect,simple,functor,defined,string,compound,tether,is,numeric,array,basic,iterable,construct,describe} from "./Blik_2023_inference.js";
 
  export var stringify=scope=>
  scope&&iterable(Object(scope))?String(scope):JSON.stringify(scope);
@@ -276,7 +276,8 @@ export function calendar(timestamps)
  if(array(field))
  return field.filter(something).reverse().reduce((range,field)=>({[field]:range}),range);
  let path=compose(tether(field),collect,"flat");
- return compose.call(this,combine(crop(1),tether(range),path),merge);
+ let combination=describe(compose(combine(crop(1),tether(range),path),merge),record,...arguments);
+ return defined(this)?combination(this):combination;
 };
 
  export function remember(term,distinction="0")
@@ -308,10 +309,10 @@ export function calendar(timestamps)
 ,buffer(tether(scope[term]),store)
 ,fail
 ),...context,path.slice(0,index)));
- let composition=compose(...terms,whether
+ let composition=describe(compose(...terms,whether
  // invoke method if not done already. 
 (branched,infer(),buffer(compose(infer(method,...context),crop(1)),crop(1))
-));
+)),route,...arguments);
  return scope?composition(scope):composition;
 };
 

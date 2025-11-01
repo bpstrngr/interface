@@ -99,7 +99,7 @@
  export var iterable=buffer(term=>Symbol.iterator in term,swap(false));
  export var plural=term=>generator(term)||asyncgenerator(term);
  export var nothing=not(something);
- export var promise=term=>term instanceof Promise;
+ export var promise=term=>term?.constructor?.name==="Promise"&&functor(term.then);
  export var pattern=is(RegExp);
  export function not(term){return compose.call(this,term,is(false));};
  export function is(...terms)
@@ -189,7 +189,7 @@
 [promise,context=>Promise.all(context)
 ,generator,context=>context.flatMap(term=>generator(term)?[...term]:[term])
 ,asyncgenerator,context=>context.reduce(function resolve(context,term)
-{return context instanceof Promise
+{return promise(context)
 ?context.then(context=>resolve(context,term))
 :asyncgenerator(term)
 ?term.next().then(({value,done})=>!done?resolve(context,term).then(next=>
@@ -204,14 +204,14 @@
  export function collect(...context)
 {// cumulate context (whether singular, plural and/or asynchronous) in an array. 
  if(defined(this))context.unshift(this);
- return expand.reduce((context,expand)=>
- context instanceof Promise?context.then(expand):expand(context)
+ return expand.reduce((context,expand,index)=>
+ promise(context)?context.then(expand):expand(context)
 ,context);
 };
 
  export function provide(context,agnostic)
 {// express plurality with Generator (singularity ignored if agnostic). 
- if(context instanceof Promise)
+ if(promise(context))
  return context.then(context=>provide(context,agnostic));
  return agnostic||(array(context)&&(context.length!==1))
 ?function* provide(context)
@@ -228,13 +228,13 @@
  if(defined(scope))
  context.unshift(scope);
  context=collect(...context);
- if(context instanceof Promise)
+ if(promise(context))
  return context.then(context=>infer(term,...pretext)(...context));
  scope=provide(context.length?[context.shift()]:[],true);
  return infer.call(scope,term,...pretext,...context);
 },infer,term,...pretext);
  let context=collect(this,...pretext);
- if(context instanceof Promise)
+ if(promise(context))
  return context.then(context=>
  infer.call(provide(context,true),term));
  if(!defined(term))
@@ -591,7 +591,7 @@
 
  export var apply=(context,term)=>
  // apply or append term to context (respecting plurality and asynchronicity).
- [context,term].some(context=>context instanceof Promise)
+ [context,term].some(context=>promise(context))
 ?Promise.all([context,term]).then(([context,term])=>apply(context,term))
 :functor(term)
 ?term(...collect(context))

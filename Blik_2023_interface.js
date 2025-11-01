@@ -211,7 +211,7 @@
 (drop(1,0,absolute),buffer(next,buffer(recover,either(compose(swap(source),request),exit)))
 ,shortcircuit,{imports:new Set()},merge,[relative],record
 ,slip(scope),0,merge,[relative,"resolution"],tether(search)
-,pass(compose(swap(colors.yellow+"import:"+colors.cyan+relative+colors.steady),console.log))
+,pass(compose(swap(colors.yellow+"import:"+colors.cyan+relative+" ("+internal+")"+colors.steady),console.log))
 )),target===location+"/"?undefined:pass(compose
 (swap(scope),{[target.replace(location,"")]:{imports:new Set([relative])}},0,merge
 )))(relative,context);
