@@ -559,6 +559,15 @@
 }},{once:true})))(...arguments);
 };
 
+ export var trickle=infer("reduce",(queue,next,index,heap)=>
+[queue
+,Promise.resolve(queue.at(-1)).then(past=>
+ Promise.any(heap.map((slot,index)=>
+ Promise.race([slot,false]).then(next=>
+ next?past===next?Promise.reject(heap.splice(index,1)):next:slot)
+ )))
+].flat(),[]);
+
  export function exit(fail){throw is(Error)(fail)?fail:Error(fail,{reason:fail});}
 
  export function clock(mark,precision="time")
