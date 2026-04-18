@@ -1,19 +1,18 @@
- import {note,debug,colors,when,stash,flip,functor,string,not,pattern,revert,each,describe,clock,observe,is,has,same,minor,slip,something,compound,infer,tether,whether,collect,provide,buffer,differ,compose,combine,either,drop,crop,swap,wait,exit,pass,binary,simple,array,expect} from "./Blik_2023_inference.js";
- import {loader,resolve,access,locate,prompt,list,window,jsdom,fetch,digest,persist,version,compress,stage,cookies,cookie,feature} from "./Blik_2023_interface.js";
- import {search,merge,sum,prune,extract,encrypt,record,remember,route} from "./Blik_2023_search.js";
+ import {note,debug,sum,colors,search,merge,prune,record,remember,route,when,stash,flip,are,functor,string,not,pattern,revert,each,describe,clock,observe,is,has,same,minor,slip,something,compound,infer,tether,whether,collect,rank,buffer,differ,compose,combine,either,drop,crop,swap,wait,exit,pass,binary,simple,array,expect} from "./Blik_2023_inference.js";
+ import {delegate,loader,resolve,access,locate,prompt,list,window,jsdom,fetch,digest,persist,version,compress,stage,cookies,cookie,feature} from "./Blik_2023_interface.js";
+ import {extract,encrypt} from "./Blik_2023_search.js";
  import {mime,bytes} from "./Blik_2023_meta.js";
  import {document} from "./Blik_2023_fragment.js";
  import {animal} from "./Blik_2024_svg.js";
- var {memory}=Object.assign(globalThis,{memory:{}});
 
- export async function expose(source,protocol,suspend=true)
-{({source,protocol}=await prompt({source,protocol}));
+ export async function expose(model,protocol,suspend=true)
+{({model,protocol}=await prompt({model,protocol}));
  let [module,...fields]=string(protocol)?await locate(protocol.split("/")):[protocol];
  let [{default:routes,relay,syndication,encryption,classify,classified,published,permit},{default:credentials}]=
- await [source,module].reduce(record(module=>
- string(module)?resolve.bind(import.meta.url)(module):{default:module}),[]);
- let {network,port,certification={},distinguishedname,cache}=note(search.call(credentials,fields));
- let agent=await resolve.bind(import.meta.url)(network);
+ await [model,module].reduce(record(module=>
+ string(module)?resolve.call(import.meta.url,module):{default:module}),[]);
+ let {network,port,certification={},distinguishedname,cache}=search.call(credentials,fields);
+ let agent=await resolve.call(import.meta.url,network);
  let [[domain,[signature,certificate]=[]]=[]]=Object.entries(certification);
  let [encrypted,syndicated]=await [encryption,syndication].reduce(record(required=> 
  required?prompt(extract.call(credentials,Object.keys(required))):{}),[]);
@@ -23,7 +22,7 @@
  merge(certification,required&&{[domain]:[signature,certificate]});
  merge(encryption,prune.call(encrypted,([field,value])=>encrypt(value)));
  merge(globalThis,{cache,published,classified,classify});
- let certificates=Object.values(certification).flat().map(compose(crop(1),slip("path","resolve"),resolve.bind(import.meta.url)));
+ let certificates=await Promise.all(Object.values(certification).flat().map(compose(crop(1),slip("path","resolve"),resolve.bind(import.meta.url))));
  await classify?.(module,...certificates);
  // send jsdom composition to loader thread too so it can fetch modules from this interface during eg. server-side rendering.
  let origin=agent.globalAgent.protocol+"//localhost"+":"+port;
@@ -31,34 +30,35 @@
  jsdom(origin);
  let certifications=prune.call(certification,([domain,certificates])=>
  certify(certificates,distinguishedname,[domain]),0,0);
- // if(await resolve.bind(import.meta.url)("cluster","isMaster"))return fork();
  var router=compose(combine(whether
-(compose("url",/^http/,"match"),fetch
-,compose(combine(path,infer()),buffer(route.bind(routes),either(tether(routes.error),crop(1))))
-),infer()),stage);
- var immutable=compose
+(match({url:/^http/}),fetch
+,compose(combine(path,unit),lift,buffer(route.bind(routes),either(tether(routes.error),crop(1))))
+),unit),lift,stage);
+ var dynamic=compose
 ("url",slip("."),"concat"
-,combine(...[classified,published].map(list=>compose(list,permit)))
+,combine(...[classified,published].map(list=>
+ infer(permit,list))),lift
 );
  var distinction=({url,headers})=>[url,new URLSearchParams(feature(version(headers)))].join("");
  var respond=compose
-(revert(decode,new TextDecoder("utf-8")),provide,combine(whether
-(cache&&buffer(combine(compose("method",/get/i,"match"),immutable),swap(false))
+(revert(decode,new TextDecoder("utf-8")),rank,combine(whether
+(cache&&buffer(compose(combine(compose("method",/get/i,"match"),dynamic),lift),swap(false))
 ,remember.call(cache,compose(drop(1),router),distinction)
 ,router
-),infer()),cache&&pass(bust),tether(submit)
+),unit),lift,cache&&pass(bust),tether(submit)
 );
- function bust({status},request){if(status===500)delete cache[distinction(request)];}
+ function bust({status},request){if(status===500)delete cache[distinction(request)];};
  return compose
 ("createServer",port
 ,revert((listen,cancel,host,port)=>host.listen(port,infer(listen)))
 ,...Object.entries(certifications).map(([domain,certification])=>
  // for self-signed certificates, assign them to the NODE_EXTRA_CA_CERTS option. 
- pass(compose(domain,certification,"addContext")))
+ pass(compose(domain,certification,lift,"addContext")))
 ,pass(host=>note.call(2,[host._connectionKey||port," open"].join("")))
-,pass(compose(relay,broadcast,resolve.bind(import.meta.url)))
+,pass(compose(relay,broadcast))
 ,revert((close,error,channel)=>observe.call(channel,{close,error})&&suspend||close(channel))
-)(agent,Object.values(certifications)[0],buffer(respond,compose(note,exit)));
+,cede()
+)(agent,await Object.values(certifications)[0],buffer(respond,compose(note,exit)));
 };
 
  function decode(end,error,decoder,agent,request,response,body=[])
@@ -89,7 +89,7 @@
  let gzip=this.headers.get("Content-Encoding")==="gzip";
  let stream=functor(this.body);
  body=stream?this.body:await buffer(type===mime("json")&&!gzip?"text"
-:is(Buffer)(this.body)?"body":compose("arrayBuffer",bytes))(this);
+:is(Buffer)(this.body)?"body":compose("arrayBuffer",bytes),"stack")(this);
  if(is(Error)(body))
  body=note.call(1,body).message,status=500,type=mime("txt");
  let header=compose.call
@@ -107,21 +107,6 @@
  console.log([color,clock(),"@",request.connection?.remoteAddress||"",request.url," ",type,colors.steady].join(""));
  let target=response||request;
  return stream?body(target):target.end(body);
-};
-
- async function fork()
-{// https://github.com/nodejs/node/issues/35158
- //if(!process.argv[1])process.argv[1]=import.meta.url;
- await resolve.bind(import.meta.url)("cluster","on","exit",(worker,code,signal)=>note.call(code,worker.process.id+" exited with status "+code));
- let os=await import("os");
- let cpus=note(os.cpus());
- if(!cpus.length)
- cpus=[{model:os.platform()}];
- return cpus.reduce(record((cpu,index,cpus)=>
- compose.call("cluster","fork",resolve.bind(import.meta.url),pass(compose
-("id",cpus.length+" "+cpu.model+(!cpus[index+1]?"":"\nnext fork in a second..."),collect,"/","join",note.bind(1)
-)),wait(index*1000)))
-,[]);
 };
 
  function persistence()
@@ -277,8 +262,10 @@
  });
 },note.bind(1));
  let {default:{WebSocketServer}}=await import("./einaros_2011_ws.js");
- return compose([{server}],Reflect.construct,{rooms:{}},Object.assign
-,{connection},tether(observe))(WebSocketServer);
+ return compose
+([{server}],Reflect.construct,{rooms:{}},Object.assign
+,{connection},tether(observe)
+)(WebSocketServer);
 };
 
  var anonymous=Object.entries(animal).map(([name,svg])=>

@@ -1,13 +1,10 @@
- import {locate,resolve,modularise,agent,virtual,window,jsdom,fetch,digest,query,cookies} from "./Blik_2023_interface.js";
- import {note,colors,wait,observe,provide,collect,slip,infer,either,each,pass,tether,buffer,differ,compose,flip,skip,stash,revert,iterate,combine,whether,swap,compound,something,string,basic,minor,functor,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdflike,when,debug,expect,generator,plural,clock,type,heritage,ascend as prototypes} from "./Blik_2023_inference.js";
- import {search,merge,prune,extract,unfold,record,route,fields} from "./Blik_2023_search.js";
+ import {locate,resolve,agent,window,jsdom,fetch,digest,query,cookies} from "./Blik_2023_interface.js";
+ import {note,describe,colors,wait,search,merge,prune,record,route,observe,rank,constant,spread,rotate,deduce,lift,fold,collect,slip,spill,push,infer,either,each,pass,tether,surge,flush,buffer,differ,compose,some,flip,skip,stash,revert,combine,whether,swap,compound,something,string,basic,minor,functor,promise,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdf,when,debug,expect,generator,plural,native,clock,type,complex,heritage,prototype,expressions,cede} from "./Blik_2023_inference.js";
+ import {extract,unfold,fields} from "./Blik_2023_search.js";
  import {serialize,proceduralize,mime,data} from "./Blik_2023_meta.js";
  import * as layout from "./Blik_2023_layout.js";
  import {color} from "./Blik_2023_layout.js";
- // var [jss,...plugins]=await resolve(["","nested","extend","global"].map(plugin=>
- // ["./Isonen_2014_jss",plugin].filter(Boolean).join("_")+".js")).then(modules=>
- // modules.map(module=>module.default||module));
- if(!window&&!virtual)
+ if(!window&&!agent.virtual)
  // tests require a browser ready. warning: virtual modules may be used. 
  await jsdom("http://localhost:80/");
  var address=new URL(import.meta.url).pathname;
@@ -22,98 +19,124 @@
  ,viewBox:"http://www.w3.org/2000/svg"
  };
 
- export function document(source,namespace,language)
-{if(plural(source))
- return provide(collect(each.call(source,source=>
- document.call(this,source,namespace,language))));
- let scope=is(window.EventTarget)(this)?this:Reflect.construct(window.DocumentFragment,[]);
- return compose
-(whether(simple,Object.entries,compose(collect,"flat")),provide,each(whether(
-[string,...["#text","class","style","dataset","data-actions"].map(name=>match([name]))
-,array,is(window.NodeList),something
-]
-,infer(text,language,scope)
-,compose(search(1),infer(text,language,scope))
-,([field,value])=>node([value].flat().join(" "),field,namespace,language,scope)
-,([field,value])=>node([value].flat().map(value=>
- simple(value)&&!value["#text"]?{"#text":css(value)}:value),field,namespace,language,scope)
-,compose(provide,drop(1),metamarkup,infer(document.bind(scope),namespace,language))
-,compose(search(1),buffer(JSON.parse),capture.bind(scope))
-,compose(provide,flip,stash(namespace,language,scope),node)
-,Array.from,crop(1),drop()))
-,slip(scope),append
-)(source);
-};
+ export var create=describe(compose
+(when(either(is("Element"),is("Attribute")),string)
+,whether(compose(drop(2),string),infer(),crop(2))
+,stash(compose(combine(swap("create"),crop(1),compose(drop(2),whether(string,swap("NS"),drop()))),lift,"concat"))
+,drop(1),flip,slip(window?.document),tether(infer)
+),"create");
 
- var node=buffer
-(compose(combine
-(compose(crop(1),collect,"flat")
-,compose(drop(1,0,whether
-([is(window?.NodeList),is(window?.EventTarget),simple,something,is(null)]
-,Array.from,crop(1)
-,element
-,(value,name,namespace)=>
- Object.assign(create("Attribute",name,namespaces[name.split(":")[0]]||namespaces[namespace]||namespace),{value})
-,whether(compose(drop(4),is(window?.EventTarget))
-,compose(drop(4,2),drop(1,3),flip,0,tether(descend),infer("forEach",destroy),drop())
-,drop())
-,drop()
-)),infer)
-),"flatMap",provide)
-,compose(stash(null,infer("stack")),drop(-3),flip,write)
-);
-
- function element(value,name,namespace,language,fragment,index)
-{value=merge(value,{a:{target:"_blank"}
+ function element({drop,sort,update=true,...value},name,index,namespace,language)
+{if(is(window.EventTarget)(arguments[0]))
+ return arguments[0];
+ value=merge(value
+,{a:{target:"_blank"}
  ,svg:{viewBox:"0 0 1 1",xmlns:namespaces.svg,"xmlns:xlink":namespaces.xlink}
  }[name],0);
- let node=is(window.EventTarget)(fragment)&&(
- value.match?.bind(fragment)||
- [buffer(descend.bind(fragment),swap([]))(name+qualify(value),0),index].reduce((nodes,index)=>
- nodes[index]||nodes[0]));
+ let node=is(window.EventTarget)(this)&&update&&infer.call
+(qualify({[name]:value}),
+(selector,index,specified=selector.length-name.length
+,nodes=buffer(descend.bind(this),constant([]))(selector,0)
+)=>(update==="last"||specified)?nodes.at(-1):nodes[index]||
+ specified&&descend.call(this,name,0).find(node=>
+ match({},demarkup(node,["id","class"])))
+,index
+);
+ if(update==="last"&&node?.nextSibling)
+ node=undefined;
  if(!node)
  node=create("Element",name,value.xmlns||namespaces[name]||namespaces[namespace]||namespace);
+ if(drop)
+ return node.remove(),rank([]);
+ if(sort===0)
+ this.prepend(node);
+ //if(value.canvas)debugger
  return document.call(node,value,node.namespaceURI,language);
 };
 
- export var create=compose
-(when(either(is("Element"),is("Attribute")),string)
-,whether(compose(drop(2),string),infer(),crop(2))
-,stash(compose(combine(swap("create"),crop(1),compose(drop(2),whether(string,swap("NS"),drop()))),"concat"))
-,drop(1),flip,slip(window?.document),tether(infer)
-);
+ function attribute(value,name,namespace)
+{namespace=namespaces[name.split(":")[0]]||namespaces[namespace]||namespace;
+ return Object.assign(create("Attribute",name,namespace),{value});
+};
 
- export var append=compose(when(is(window?.EventTarget))
-,collect,infer("reduce",compose(pass(whether
-(compose(drop(1),"nodeType",is(2)),whether
+ function text(content,index)
+{let precedent=Array.from(this.childNodes||[]).filter(({nodeType:type})=>type===3)[index];
+ if(precedent)
+ return Object.assign(precedent,{textContent:content});
+ return this.ownerDocument.createTextNode(content);
+};
+
+ export function* document(fragment,namespace,language)
+{// yield document nodes and suspended generators of their descendants from a fragment declaration. 
+ let bound=is(window.Element)(this);
+ if(bound)
+ yield this;
+ let scope=bound?this:Reflect.construct(window.DocumentFragment,[]);
+ let loop=infer(document.bind(scope),namespace,language);
+ yield each.call(fragment||{},whether
+([simple,string,array,promise,plural,is(window.NodeList),something]
+,compose(Object.entries,rank,each(compose(crop(1),each([rank]),lift,drop(2,0,flip),push(namespace,language,scope),populate)),lift)
+,compose(slip(scope),tether(text),append.bind(scope))
+,compose(rank,loop),deduce(loop),loop
+,compose(rank,each(append.bind(scope)))
+,append.bind(scope)
+,drop()
+));
+};
+
+ export function stagger(...context)
+{if(agent.node)
+ return spread(context);
+ return revert.call(context,(resolve,reject,context)=>
+ window.requestAnimationFrame(time=>
+ resolve(spread(context))));
+};
+
+ export var append=describe(compose
+(when(is(window?.EventTarget))
+,collect,pass(infer("reduce",compose(whether
+(compose(drop(1),"nodeType",is(2))
+,whether
 (compose(drop(1),infer("specified"))
-// not used in document cuz createAttributeNS out of context is crazy, couldn't get eg. viewBox or id to be valid on svg in any create/set namespace combinated. 
+// not used cuz createAttributeNS out of context is crazy, couldn't get eg. viewBox or id to be valid on svg in any create/set namespace combination. 
 // stash(compose(drop(1),whether(compose("namespaceURI",string),swap("NS"),drop()),"setAttributeNode",flip,"concat"))
 ,compose
 (each([crop(1),combine("name","value")])
-,skip(whether(compose(crop(1),is("data-actions")),compose(drop(2,1),tether(capture))))
-,"setAttribute"
-),compose(each([crop(1),"name"]),"removeAttribute")
-),whether(not("contains"),"appendChild",crop(1))
-)),crop(1))),whether
-(is([is(window?.DocumentFragment),compose("children","length",minor(2))])
-,search(["firstChild"])
-,crop(1)
-));
+//,skip(whether(compose(crop(1),is("data-actions")),compose(drop(2,1),tether(capture))))
+,lift,pass("setAttribute")
+)
+,compose(each([crop(1),"name"]),pass("removeAttribute"))
+)
+,pass(whether(not("contains"),"appendChild",drop(1)))
+),crop(1)))),rank,drop(1)
+),"append");
 
- function text(text,language,fragment)
-{text=simple(text)?text[language]||Object.values(text)[0]:text;
- if(!something(text))
- return provide([]);
- return provide([text].flat().map((text,index)=>write(text,index,fragment)));
-};
-
- function write(text,index,fragment)
-{let precedent=Array.from(fragment.childNodes||[]).filter(({nodeType:type})=>type===3)[index];
- if(precedent)
- return Object.assign(precedent,{textContent:text});
- return fragment.ownerDocument.createTextNode(text);
-};
+ var populate=buffer(whether
+([is(array,"class"),is(simple,"dataset"),is(string,"data-actions")
+ ,is(something,"#text")
+ ,is(compound)
+ ,is(either(string,numeric,binary))
+ ,is(null)
+ ,is(promise)
+ ]
+,compose(each([infer("join"," "),compose(crop(1),collect)]),lift,drop(2,0,record),rotate(1),tether(document),drop(1))
+,compose(each([metamarkup]),lift,drop(-3,1),rotate(1),tether(document),drop(1),lift,lift)
+,compose(each([buffer(JSON.parse,drop(1,2))]),lift,drop(-1,1),flip,tether(capture),infer("getAttributeNode","data-actions"))
+,compose(drop(-2,1),combine(whether(simple,either(Reflect.get,compose(Object.values,search(0))),crop(1)),drop(-1)),lift,flip,combine(crop(1),tether(text)),lift,append)
+,compose
+((node,name,...context)=>[node].flat().filter(something).map((node,index)=>[node,name,index,...context]),rank
+,each(compose
+(crop(-1),each([rank]),lift
+,whether(is([simple,not(has("#text"))],"style"),each([compose(crop(1),css,["#text"],record)])),lift
+,rotate(1),combine(crop(1),tether(element))
+,lift,drop(2,0,append)
+)),lift
+)
+,compose(rotate(1),combine(crop(1),tether(attribute)),lift,append)
+,compose(drop(1),rotate(1),0,tether(descend),infer("forEach",destroy),drop())
+,debug
+,drop()
+),compose(each(["stack"]),rotate(1),drop(4,3),combine(crop(1),tether(text)),lift,append));
 
  export function markup(object,indentation)
 {let xml="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
@@ -150,7 +173,7 @@
 {fields=[fields].flat().filter(Boolean);
  if(fields.length)
  return Object.fromEntries(fields.map(field=>
- [field,whether(numeric,Number,crop(1))(node.getAttribute(field))]));
+ [field,cede(whether(numeric,Number,crop(1)))(node.getAttribute(field))]));
  node.normalize();
  if(node.documentElement)
  return demarkup(node.documentElement);
@@ -185,16 +208,26 @@
 {// extract css selectors from node/fragment, or vice versa. 
  when(defined)(node);
  if(simple(node))
- return compose.call(node,({id,class:group,classed})=>
- ["",id||[group,classed].flat().flatMap(group=>group?.split(" ")||[])].flat().filter(string).join(id?"#":"."));
+ return compose.call
+(node
+,whether(compose(Object.values,either(compose("length",is(0)),infer("some",simple))),Object.entries,compose("",flip,index,index))
+,([[name,{id,class:group,classed}={}]=[]])=>
+[name,string(id)?"#"+id:""
+,[group,classed].flat().filter(string).filter(Boolean).flatMap(group=>
+ "."+group.split(" ").join(".")||[])
+].flat().join("")
+);
  if(string(node))
  return record(
-[node.match(/[#\.][^#\.\[\]]+/g)?.reduce((node,selector)=>
- merge(node,{[["id","class"]["#.".indexOf(selector[0])]]:[selector.slice(1)]})
+[node.match(/^[^\[]*([#\.][^#\.\[\]]+)*/g)?.flatMap(selector=>
+ selector.replace(/^[^#.]*/,"").split(".")).reduce((node,selector)=>merge(node
+,{[["id","class"][selector[0]==="#"?0:1]]:
+ [detext(selector.replace(/^#/,"").replace(/^'+|'+$/g,""))][selector[0]==="#"?"join":"concat"]()
+ })
 ,{})||{}
 ,node.match(/\[[^=]+?=?.*?\]/g)?.reduce((node,selector)=>
  merge(node,Object.assign(Array(2).fill(undefined),selector.slice(1,-1).split("=")).reduce((attribute,value)=>(
- {[attribute]:value})))
+ {[attribute]:value.replace(/^'+|'+$/g,"")})))
 ,{})||{}
 ].reduce(merge)
 ,node.match(/^[^#\.\[\]]+/)||[]);
@@ -224,13 +257,12 @@
  ,"/Blik_2023_inference.js":["","infer","buffer","compose","undefine"]
  ,"/Blik_2023_interface.js":["","resolve","path","query","socket"]
  }
- ,exports:{default:{body:
+ ,exports:{default:
+ {body:
  {load(event)
 {if(this!==event.target.body)
  // ignore propagated load events. 
  return;
- this.querySelectorAll("canvas[role=img]").forEach(canvas=>
- canvas.dispatchEvent(new canvas.ownerDocument.defaultView.Event("contextrestored",{bubbles:true})));
  this.querySelectorAll("[data-actions]").forEach(scope=>capture.call(scope)&&
  scope.dispatchEvent(new scope.ownerDocument.defaultView.Event("contextrestored")));
  Promise.all(["interface","inference","search","fragment","meta"].map(module=>
@@ -255,11 +287,7 @@
 },afterprint(event)
 {console.log(this.querySelector("#composer"),this.querySelector("#frame"));
 }}
- ,"canvas[role=img]":
- {contextrestored(event)
-{let [src,alt]=["data-source","aria-label"].map(this.getAttribute.bind(this));
- compose(image,canvas,infer(insert,"over",this))(src,alt);
-}}}}
+ }}
  ,procedures:async function()
 {var actions=await buffer(resolve.bind(import.meta.url),undefine)("/relay/module","default");
  function listen(event)
@@ -270,7 +298,7 @@
 }
 }};
  let activation=
- {exports:{capture,heritage,delegate,defer,ascend:prototypes}
+ {exports:{capture,heritage,delegate,defer,prototype,something,defined}
  ,procedures:function()
 {capture.call(window.document.body);
  let workers=["worker","serviceworker"];
@@ -282,7 +310,7 @@
 }};
  let script=[activation,scripts].flat().flatMap(src=>
 [{type:"module",defer:true}
-,/^\./.test(src)?{src}:{"#text":string(src)?src:functor(src)?proceduralize(src):serialize(src)}
+,/^\./.test(src)?{src}:{"#text":string(src)?src:functor(src)?proceduralize(src):serialize(src,"module")}
 ].reduce(merge));
  let [link,style]=[styles].flat().reduce((nodes,style,index)=>merge(nodes
 ,{[index=+/{|}/.test(style)]:
@@ -308,9 +336,10 @@
  return {html:{lang:"en",head,body}};
 };
 
- export function capture(module=this.dataset.actions)
+ export function capture(module=this?.dataset.actions)
 {// register events to be routed to actions scoped by selector (eg. {#form:{submit(){}}}). 
- if(!module)return this;
+ if(!module)
+ return console.warn("No actions defined to capture on:",this),this;
  let fragment=this?.constructor?.name==="Object";
  let actions=fragment?[]:JSON.parse(this.dataset.actions||"[]");
  if(fragment||globalThis!==globalThis.window)
@@ -320,7 +349,7 @@
 :this.dataset.actions=JSON.stringify(Array.from(new Set([actions,module].flat())))
 ,this;
  if(this)
- try{module=JSON.parse(module)}catch(fail){}
+ try{module=JSON.parse(module)}catch(fail){};
  actions=Promise.all([module].flat().map(module=>
  import(module).then(({default:module})=>module))).then(modules=>
  modules.reduce((past,next)=>Object.assign(past,next),{}));
@@ -382,19 +411,23 @@
 ?compose(infer("map",([field,value],index)=>(
  {span:{"#text":field==index&&string(value)?value:field}
  ,[ordered?"ol":"ul"]:value&&(compound(value)||field!=index)?{li:[value]}:undefined
- })),provide)(compound(value)?Object.entries(value):[[field,value]])
+ })),rank)(compound(value)?Object.entries(value):[[field,value]])
 :value);
+};
+
+ export function split(text)
+{return compose.call({div:{li:list(text.split("\n"))}},document,spill,lift,crop(1));
 };
 
  export var annotate=(fields,labels)=>labels
 ?prune.call(fields,([field,value])=>defined(labels[field])?{label:labels[field],value}:value,0,0)
-:exit("no labels provided to"+annotate.name+" fields.");
+:exit("no labels rankd to"+annotate.name+" fields.");
 
  export function form(fields={})
-{let group=Object.entries(fields).reduce((group,[field,value],index)=>
+{let method=Object.entries(fields).reduce((method,[field,value],index)=>
  simple(value)&&!array(value)&&!index&&field,false);
- if(group)
- fields=fields[group];
+ if(method)
+ fields=fields[method];
  let span=Object.entries(fields).flatMap(function([id,entry])
 {let {label,value}=defined(entry?.label)?entry:{label:id,value:entry};
  if(!defined(value))
@@ -406,9 +439,9 @@
  ,time:["datetime",clock]
  ,textbox:[whether(is(defined),infer(),swap(""))]
  }).map(([type,text])=>compose(...text,type)))(value);
- return {id,title:id,class:group,span:
+ return {id,title:id,class:method,span:
 [{"#text":label},defined(value)
-?{name:id,role:type,"aria-checked":{checkbox:value}[type]
+?{class:id,name:id,role:type,"aria-checked":{checkbox:value}[type]
  ,tabindex:"0",contenteditable:type!=="checkbox","#text":text
  }:undefined
 ],ul:type==="time"?clockwork(value):compound(value)?{li:list(value)}:null
@@ -448,7 +481,7 @@
  ,"&[focused=true]":{"&>ul,&>span[role=list]":{display:"block"}}
  }
  }}}];
- return {role:"form",style,span};
+ return {role:"form",style,method,span};
 };
 
  export function fill(fields)
@@ -469,7 +502,7 @@
  return resource;
  if(is(ArrayBuffer)(resource))
  resource=new Uint8Array(resource);
- if(pdflike(resource))
+ if(pdf(resource))
  return print(resource);
  if(is(Uint8Array)(resource)||resource.constructor.name==="Buffer")
  resource=new TextDecoder("utf-8").decode(resource);
@@ -494,27 +527,29 @@
 };
 
  export function insert(fragment,place,target)
-{if(!fragment)return target;
+{// deprecated in favor of document.call(target,{fragment}) - place inferred from fragment signature. 
+ if(!fragment)return target;
  let {over,before,after,under}={[place]:true};
  if(fragment instanceof Promise)
  return infer(insert)(...arguments);
  //:compose(document,infer(insert,place,target),drop(0,0,fragment,"over"),insert)(wheel);
  console.info(globalThis.window?{fragment,[place]:target}:{fragment:fragment.nodeName,[place]:target.nodeName});
- if(generator(fragment))
- return collect(each.call(fragment,fragment=>
- insert(fragment,...Array.from(arguments).slice(1))));
+ if(plural(fragment))
+ return surge(each.call(fragment,function drill(fragment)
+{return plural(fragment)?flush(fragment):insert(fragment,place,target);
+}));
  let orphan=fragment instanceof window.DocumentFragment;
  let fragments=[orphan?Array.from(fragment.childNodes):fragment].flat();
  if(under)
  return Array.from(target.childNodes).map(child=>destroy(child))
-,provide(fragments.map(fragment=>target.appendChild(fragment)));
+,rank(fragments.map(fragment=>target.appendChild(fragment)));
  let [sibling,edge]=before?["previous","prepend"]:["next","appendChild"];
  let method=target[sibling+"Sibling"]?"insertBefore":edge;
  if(target.parentNode)
  target.parentNode[method](fragment.documentElement||fragment,before?target:target.nextSibling);
  if(over&&fragment!==target)
  destroy(target);
- return provide(fragments);
+ return rank(fragments);
 };
 
  export function throttle(fragment,progress=0)
@@ -589,16 +624,16 @@
  let viewer=new PDFViewer(
  {linkService:new PDFLinkService(),renderer:"svg"
  ,textLayerMode:0,disableRange:true,forceRendering:true
- ,container:document({div:
+ ,container:compose.call({div:
  {class:"pdfjs",style:"margin:auto;height:100%;overflow:scroll;"
  ,div:{id:"viewer"}
- }})
+ }},document,spill,lift,crop(1),cede())
  });
  viewer.linkService.setViewer(viewer);
  pdf.getDocument(file).promise.then(combine
 (viewer.setDocument.bind(viewer)
 ,compose(1,"getPage",1,"getViewport",combine("width","height")
-,(width,height)=>viewer.container.append(document({style:{"@scope":{":scope":
+,(width,height)=>({style:{"@scope":{":scope":
  {"&>div#viewer":
  {width:"100%",height:"100%"
  ,"&>div.page":
@@ -617,7 +652,8 @@
  }
  }
  }
- }}}})))
+ }}}
+ }),slip(viewer.container),note,tether(document),spill,lift)
 )).catch(note);
  return viewer.container;
 });
@@ -632,35 +668,50 @@
  ,"50%":{opacity:0.25},"100%":{transform:"translate(0,100%)",opacity:0}
  }}}}};
 
- export function image(source,alt,sync)
+ export function image(source,alt,defer)
 {if(/image/i.test(source?.nodeName))return source;
  let src=is(Blob)(source)?URL.createObjectURL(source):source;
- let img=document({img:{}});//crossOrigin:"anonymous"}})
- if(sync)
- return document.call(img,{src,alt});
- return revert((resolve,reject,img,src,alt)=>compose.call
+ let [img]=compose(document,spill,lift)({img:{}});//crossOrigin:"anonymous"}})
+ if(defer)
+ return cede(spill)(document.call(img,{src,alt})).next().value;
+ return cede(revert((resolve,reject,img,src,alt)=>compose.call
 (img
 ,{onload(){if(/^blob:/.test(this.src))URL.revokeObjectURL(this.src);resolve(this,...arguments);}
  ,onerror(){if(/^blob:/.test(this.src))URL.revokeObjectURL(this.src);reject(this,...arguments);}
  ,src,alt
  },Object.assign
 ,globalThis.window?undefined:infer("dispatchEvent",new window.Event("load"))
-))(img,src,alt);
+)))(img,src,alt);
  //if(!colors[color])svg.select("circle#"+id).attr("fill",["rgb(",...new Vibrant(this).swatches()["Vibrant"].rgb].reduce((hex,hue,index)=>hex+hue+(index<2?",":")")));
 };
 
  export function canvas(image)
-{let {naturalWidth:width,naturalHeight:height}=image;
- let canvas=document({canvas:
+{if(this)
+ return {imports:
+ {"/Blik_2023_inference.js":["","compose","infer"]
+ ,"/Blik_2023_fragment.js":["","image","canvas","insert"]
+ }
+ ,exports:{default:
+ {"canvas[role=img]":
+ {contextrestored(event)
+{let [src,alt]=["data-source","aria-label"].map(this.getAttribute.bind(this));
+ compose(image,canvas,infer(insert,"over",this))(src,alt);
+}}
+ }}};
+ let {naturalWidth:width,naturalHeight:height}=image;
+ let [canvas]=compose(document,spill,lift)({canvas:
  {role:"img","aria-label":image.getAttribute("alt")
  ,width,height
  }});
  let frame=canvas.getContext("2d");
  if(!frame)
- document.call(canvas
+ spill(document.call(canvas
 ,{style:"background:repeating-linear-gradient(135deg,black,black 2px,transparent 2px,transparent 4px"
- ,dataset:{source:image.getAttribute("src")}
- });
+ ,dataset:
+ {source:image.getAttribute("src")
+ ,actions:["",file,"module","canvas","module"].join("/")
+ }
+ }));
  else frame.drawImage(image,0,0);
  return canvas;
 };
@@ -740,6 +791,24 @@
  this.style[index%2?"top":"left"]=Number(this.style[index%2?"top":"left"].match(/\d+/)?.[0])+overflow*(index<2||-1)+"px",infer()));
 };
 
+ export var drag=observe({point({x,y,isTrusted:click})
+{merge(this
+,{drag:click&&{x,y}
+ ,style:click?{transition:"transform",transform:"translate(0px,0px)"}:{transition:"",transform:""}
+ ,control:click?new AbortController():this.control.abort()
+ });
+ if(click)
+ observe.call(this
+,{touchmove(event){if(event.cancelable)event.preventDefault();}
+ ,pointermove(event)
+{let {clientX:x,clientY:y}=event;
+ let [dx,dy]=[this.drag,this.drag={x,y}].reduce(({x:x0,y:y0},{x,y})=>[x-x0,y-y0]);
+ [x,y]=[transform(this.style),/\d+/].reduce(({x,y},digits)=>[x,y].map((side,index)=>
+ Math[index?"min":"max"](0,side+[dx,dy][index]).toFixed(1)+"px"));
+ merge(this.style,{transform:"translate("+[x,y]+")"});
+}},{signal:this.control.signal});
+}});
+
  export function drillresize({width,height})
 {// use in svg resizeobserver until SVG resize becomes observable: 
  // https://stackoverflow.com/questions/65565149/how-to-apply-resizeobserver-to-svg-element
@@ -783,22 +852,22 @@
 {when(is(Error))(this);
  // if(!request.headers?.referer?.endsWith(request.url))
  // return this;
+ console.error(this)
  if(!request.headers?.accept?.split(",").includes("text/html"))
  return {body:this.stack,status:500};
  let style=await css({body:{background:"black",color:color.red}});
- let report=compose.call({div:{id:"frame",style:"white-space:pre-wrap","#text":this.stack}},"Error","/svg/animal/worm/document",[],[style],hypertext,document);
+ let [report]=compose.call({div:{id:"frame",style:"white-space:pre-wrap","#text":this.stack}},"Error","/svg/animal/worm/document",[],[style],hypertext,document,surge);
  let body=report.outerHTML;
- report.innerHTML="";
+ destroy(report);
  return {body,status:500,type:mime("html")};
 };
 
  export function link(address,title=address,redirect)
 {if(this)
  return {imports:
- {"/Blik_2023_inference.js":["","compose","each","pass","infer"]
+ {"/Blik_2023_inference.js":["","compose","each","pass","infer","record","merge"]
  ,"/Blik_2023_interface.js":["","fetch","digest"]
  ,"/Blik_2023_fragment.js":["","document","demarkup","insert","destroy"]
- ,"/Blik_2023_search.js":["","record","merge"]
  }
  ,exports:
  {default:
@@ -831,8 +900,8 @@
  {href:address
  ,style:{"@scope":{":scope":
  {position:"absolute"
- ,left:"100%",bottom:"1em",transform:"rotate(-90deg) translateY(0.5em)"
- ,"transform-origin":"left",width:"460px"
+ ,left:"100%",bottom:"0",transform:"rotate(-90deg) translateY(0.5em)"
+ ,"transform-origin":"left",width:"450px"
  ,overflow:"scroll","white-space":"nowrap"
  }}}
  ,"#text":address
@@ -840,7 +909,8 @@
 :compose(fetch,digest,{source:address},media,["span"],record);
  return compose
 (buffer
-(compose(fragment,["span"],record,style,merge,document,infer(insert,"after",this)),drop()
+(compose(fragment,["span"],record,style,merge,document,spill,lift,crop(1),infer(insert,"after",this))
+,drop()
 ),pass(compose(swap(this),{style:{pointerEvents:null,animation:null}},merge))
 )(address);
 }}
@@ -853,19 +923,19 @@
  {audio:["mp3"],video:["mp4","webm"]
  ,img:["png","jpg","jpeg","svg","gif","webp"]
  },value=>value.includes(extension))||[];
- let style={"@scope":
+ if(format)
+ return format==="img"?image(address,title,true):{[format]:{src:address,alt:title}};
+ return capture.call
+({span:
+ {role:"link",class:fields({redirect})
+ ,style:{"@scope":
  {":scope":{color:"#0097a7",cursor:"pointer","&:hover":{"text-shadow":"0 0 8px var(--text)"}}
  ,"@keyframes glow":
  {"0%":{"text-shadow":"0 0 0 var(--text)"}
  ,"50%":{"text-shadow":"0 0 8px var(--text)"}
  ,"100%":{"text-shadow":"0 0 0 var(--text)"}
  }
- }};
- if(format)
- return format==="img"?image(address,title,true):{[format]:{src:address,alt:title}};
- return capture.call
-({span:
- {role:"link",class:fields({redirect}),style
+ }}
  ,"data-address":address
  ,"#text":title
  }
@@ -951,20 +1021,20 @@
 });
  return merge(tree,{},[path.slice(0,depth),node.textContent].flat());
 },{});
- return target.parentNode.insertBefore(document(
+ return compose.call(
  {ol:
  {li:prune.call(list(tree),([field,value])=>
  field!=="span"||!value?.["#text"]?value
 :{a:
  {"#text":value["#text"]
- ,"href":"#"+encodeURIComponent(value["#text"])
+ ,"href":"#"+detext(value["#text"])
  ,target:null
  ,style:"display:block;white-space:pre;font-weight:bold;"
  }
  })
- ,style:{"#text":css({["#"+id+"+ol ul"]:{"list-style-type":"disc"}})}
+ ,style:{"@scope":{":scope":{"list-style-type":"none",["& ul"]:{"list-style-type":"none"}}}}
  }
- }),target.nextSibling);
+ },document,spill,lift,crop(1),infer(insert,"after",target));
  // target.parentNode.insertBefore(document(
  // {a:chapters.map(node=>(
  // {"#text":" ".repeat(node.nodeName.at(-1))+node.textContent
@@ -975,47 +1045,11 @@
  // }),target.nextSibling);
 };
 
- export async function featurefacebook()
-{let module=await import("//connect.facebook.net/en_US/sdk.js");
- let {default:svg}=await resolve.bind(import.meta.url)("/Blik_2020_svg.json");
- let {default:awesome}=await resolve.bind(import.meta.url)("/blessochampion_2019_awesomesvgs.json");
- return new Promise(resolve=>
- window.fbAsyncInit=function()
-{FB.init({appId:"281250585888156",autoLogAppEvents:true,status:false,xfbml:true,version:"v4.0"});
- FB.AppEvents.logPageView();
- FB.getLoginStatus(function(response)
-{window.document.csss[0].addRule("#facebook","position:absolute;bottom:20px;right:15vw;font-size:30px;color:#757575;font-weight:900;transform:rotate(-10deg);line-height:0.8em;cursor:pointer;white-space:pre;");
- window.document.styleSheets[0].addRule("#facebook svg","fill:#757575;position:absolute;right:-35px;top:0;bottom:0;margin-top:auto;margin-bottom:auto;width:30px;transform:none;")
- let facebook=document(
- {"div":
- {"id":"facebook","title":"authorize access to featured facebook posts"
- ,"svg":{...svg.arrow_curved.svg,"style":"position:absolute;width:48px;bottom:-66px;right:-20px;fill:#757575;transform:rotate(6deg)"}}
- ,"#text":"Feature \nfacebook?"+awesome["fab fa-facebook-square"].replace("<svg ","<svg width='10px' ")
- });
- facebook.connected=response.status==="connected";
- !function connectfacebook(click)
-{facebook.onclick=null;
- let facebooklogo=facebook.removeChild(facebook.lastChild);
- insert(null,facebook.lastChild,true);
- let settle=function(response)
-{facebook.connected=response.status==="connected";
- facebook.replaceChild(window.document.createTextNode(facebook.connected?"Forget \nfacebook":"Feature \nfacebook?"),facebook.childNodes[1]);
- facebook.onclick=connectfacebook;
- facebook.replaceChild(facebooklogo,facebook.lastChild);//spin();
-}
- if(click.srcElement)(facebook.connected?FB.logout:FB.login)(settle,{scope:'user_posts'})
- else settle(click);
-}(response);
- resolve.bind(import.meta.url)(facebook)
-})
-}).then(facebook=>facebook)
-};
-
  export async function charge(actions,syntax)
 {return compose
 ({exports:{actions}
  ,procedures:[proceduralize(dispose)]
- },merge,serialize,text=>({type:"module","#text":text})
+ },merge,"module",serialize,text=>({type:"module","#text":text})
 )(syntax);
 };
 
@@ -1107,8 +1141,8 @@
  exit(Error("recursion argument of "+spell.name+" passed externally: "+typeof recursion));
  if(!block.ownerDocument.contains(block)||["style","script"].includes(block.nodeName.toLowerCase()))
  return block;
- let spelling=!recursion&&await expect((past,{textContent:{length:next}})=>
- past<next,300,2)(block.textContent.length,block);
+ let spelling=!recursion&&
+ await expect((past,{textContent:{length:next}})=>past<next,300,2)(block.textContent.length,block);
  if(spelling)
  return block.skip=2,block;
  let nodes=Array.from(block.childNodes).filter(node=>node.nodeName?.toLowerCase()!=="style");
@@ -1126,7 +1160,8 @@
 ?element.style.setProperty("display",display)
 :Object.entries({textContent:style/*,cssText:rule*/}).forEach(([field,node])=>
  node[field]=node[field].replace(/display:[^;]+/,"display: "+display));
- await either(expect((block,condition)=>
+ await either
+(expect((block,condition)=>
  // internal scoped style tags may not obey being no browser standard. 
  condition(is("none"))(block.ownerDocument.defaultView.getComputedStyle(block).display)
 ,500,20)
@@ -1137,7 +1172,7 @@
  block.onclick=function(){if("skip" in this)this.skip+=1;};
 };
  let origin=recursion||element;
- await collect(each.call(provide(nodes),async (node,index)=>
+ await spill(each.call(rank(nodes),async (node,index)=>
  !origin.parentNode||origin.ownerDocument.defaultView.getComputedStyle(origin).display==="none"
 ?undefined
 :node.nodeName!=="#text"
@@ -1218,41 +1253,36 @@
 }}
  };
 
- export function parse(text,semiotics)
+ export function detext(text){return text.replace(/\W/g,"_");};
+
+ export async function* parse(source,semiotics=semiotics)
 {if(!semiotics)
- exit("no semiotics provided for parsing "+type(text));
- return each.call(provide(Array.from(text)),async function* interpret(text,index,length,syntax)
-{let end=index+1===length;
- let trail=syntax.splice(0,2).filter(Boolean);
- let fragments=await semiotics[text]?.(...trail)||semiotics.text(text,...trail);
- syntax.unshift(...fragments.flat());
- let previous=syntax.findIndex(fragment=>trail.includes(fragment));
- if(!previous&&!end)return;
- let next=syntax.slice(0,previous<0?undefined:previous).filter(fragment=>!simple(fragment)).reverse();
- if(!next.length)
- if(end)
- next=[document({span:{"#text":syntax[0].text}})];
- else return;
- let block=syntax.find(fragment=>fragment?.classList?.contains("inline"));
- // block style rules can't be applied to inline elements, hence the back-population of a div. 
- if(block&&!next.includes(block))
- return block.append(...next);
- yield* next;
-},text.length,[]);
+ exit("no semiotics provided for parsing "+type(source));
+ let [index,{length},syntax]=[-1,source,[{}]];
+ for(let text of source)
+{let [next,fragment]=[await semiotics[text]?.(syntax)||semiotics.text(text,syntax)].flat();
+ ++index,[next,fragment].forEach((term,index)=>
+ term&&syntax.splice(index,1,term));
+ if(!index)
+ yield {style:{"@scope":{":scope>.block":{display:"block"}}}}
+ let block={"data-range":index,class:"block",update:"last"};
+ if(fragment)
+ yield stagger({span:{...block,...simple(fragment)?fragment:{fragment}}});
+ if(index+1===length&&next.text)
+ yield {span:{...block,span:{update:"last","#text":next.text}}};
+};
 };
 
  export var semiotics=
- // pririty determines field to populate. 
- {text(text,last={},...syntax)
+ // return [last,past] pair to parse and yield or false to skip.
+ // pririty determines field to populate on last. 
+ {text(text,[last={}])
 {let field=Object.values(semiotics).map(({name})=>name).find(field=>defined(last[field]))||semiotics.text.name;
- let start=!simple(last);
- //let style=[last,...syntax].find(fragment=>simple(fragment)&&fragment.style)?.style;
- if(last.tag?.length===0&&!/[\w\d]/.test(text))
- return [{text:last.title+"#"+text},...syntax];
- if(start)
- return [{text},last,...syntax];
+ let start=!field;
+ if(last.tag?.length===0&&!/[\w\d]/.test(text))// untag
+ field="text",text=last.title+"#"+text,merge(last,{tag:undefined,title:undefined});
  last[field]=[last[field]||"",text].join("");
- return [last,...syntax];
+ return last;
 },phrase(last)
 {if(!last?.text)
  return last;
@@ -1265,73 +1295,77 @@
  return [phrase,text.slice(0,text.length-phrase.length-parenthesized*2)];
 },annotate(fragment,label)
 {return label?.split(".").reduce((fragment,id,index)=>
- index?(fragment.classList.add(id),fragment):document.call(fragment,{id})
+ simple(fragment)
+?prune.call(fragment,([field,value])=>
+ length?merge(value,{[index?"class":"id"]:id}):value,0,0)
+:flush(...document.call(fragment,{[index?"class":"id"]:id}))
 ,fragment);
-}," ":function terminate(last,past,...syntax)
-{let parenthesized=last?.action||string(last?.style);
+}," ":function terminate([last,past])
+{let parenthesized=last?.context||string(last?.style);
  if(last?.text||parenthesized)
- return false;
+ return;
  let [tag,address]="#@".split("").map(field=>last?.[semiotics[field].name]);
- let noise=!/[a-zA-Z]/.test([tag, address].find(Boolean));
- if(noise||!tag&&! address)
+ let noise=!/[a-zA-Z]/.test([tag,address].find(Boolean));
+ if(noise||!tag&&!address)
  return defined(tag??address)?
-[merge([past,{}].find(simple)
-,{text:[past.text||"",last.title,defined(tag)?"#":"@"," "].join("")
- ,style:past.style
- }),syntax
+[merge(last
+,{text:[last.text||last.title||"",defined(tag)?"#":"@"," "].join("")
+ ,style:last.style
+ })
 ]:false;
+ if(tag==="span")
+ console.log;
  let [text]=[tag,address].map(phrase=>phrase?.match(/[\.,\)\?:;]+$/)).find(Boolean)||[""];
  if(text)
  [tag,address]=[tag,address].map(phrase=>phrase?.slice(0,-text.length));
  let next=address
-?compose(link,document,tether(capture))(address,last.title)
-:Object.entries(qualify(tag)).flat().reduce((tag,qualifiers)=>document({[tag]:
- {"#text":last.title
- ,id:/h\d/.test(tag)?last.title:undefined
+?merge(link(address,last.title),{span:{id:detext(last.title),update:false}})
+:Object.entries(qualify(tag)).flat().reduce((tag,qualifiers)=>({[tag]:
+ {id:/h\d/.test(tag)?detext(last.title):undefined
+ ,update:false
+ ,"#text":last.title
  ,...qualifiers
  }}));
- //let style=[past,...syntax].find(fragment=>simple(fragment)&&fragment.style)?.style;
- if(simple(past))
- past=document({span:{"#text":past.text}});
- return [{text:text+" "},next,past||[],...syntax];
-},"\n":function terminate(last,...syntax)
-{let past=this[" "](...arguments).slice?.(1);
- if(!past&&string(last?.text)||string(last?.action)||last?.compound||string(last?.style))
- return false;
- //let style=[last,...syntax].find(fragment=>simple(fragment)&&fragment.style)?.style;
- let next={text:[last?.text||"",""].join("\n")};
- return [next,past||(last?.text?[]:last||[]),...syntax];
-},"#":function tag(last,...syntax)
-{if(last.style||string(last?.link)||last?.action||last?.compound||/^{|:$/.test(last?.style)||last?.text?.endsWith(" "))
+ return [{text:text+" "},next];
+},"\n":function terminate([last,past])
+{let next=this[" "](...arguments)?.[1];
+ if(!next&&string(last?.text)||string(last?.context)||last?.compound||string(last?.style))
+ return;
+ let block=past?.class==="block"&&match({},last);
+ return [{text:[last?.text||"",block?"":"\n"].join("")},next];
+},"#":function tag([last])
+{if(last.style||string(last?.link)||last?.context||last?.compound||/^{|:$/.test(last?.style)||last?.text?.endsWith(" "))
  return false;
  return this.phrase(last).reduce?.((title,text)=>
- title&&[{title,tag:""},text?document({span:{"#text":text}}):[],syntax])||
- [merge(last,{tag:""}),...syntax];
-},"@":function link(last,...syntax)
-{if(last.style||last.action||last.compound)
- return false;
+ title&&[{title,tag:""},text&&{span:{update:false,"#text":text}}])||
+ [merge(last,{tag:""})];
+},"@":function link([last])
+{if(last.style||last.context||last.compound)
+ return;
  return this.phrase(last)?.reduce((title,text)=>
- [{title,link:""},text?document({span:{"#text":text}}):[],syntax]);
-},"(":function action(last,...syntax)
+ [{title,link:""},text&&{span:{update:false,"#text":text}}]);
+},"(":function context([last])
 {if(!last?.tag||last?.compound||last?.style)
  return false;
- return [{action:"",layout:last.tag,title:last.title},syntax];
-},")":async function action(last,...syntax)
-{if(!last.layout||last?.compound||string(last.style))
+ return {context:"",action:last.tag,title:last.title};
+},")":async function context([last])
+{if(last?.compound||string(last.style??last.text)||match({},last))
  return false;
  let open="()".split("").map(parenthesis=>
- Array.from(last.action?.matchAll("\\"+parenthesis)||[]).length).reduce((open,close)=>
+ Array.from(last.context?.matchAll("\\"+parenthesis)||[]).length).reduce((open,close)=>
  close<open);
- if(open)
+ let a=last?. context?. includes("13:282-304. \n")
+ if(open&&!a)
  return false;
- let [module,feature]=await locate.call(import.meta.url,last.layout);
- let jsons=[...last.action.matchAll(new RegExp(/[{\[]{1}(?:[,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]|".*?")+[}\]]{1}/,"mg"))].map(([json])=>json);
+ if(string(last?.link||last?.tag))
+ return merge(this[" "](...arguments),{0:{text:")"}});
+ let jsons=[...last.context?.matchAll(expressions.json)||[]].map(([json])=>json);
  let context=jsons.reduce((context,json)=>
 [context,context.pop().split(json).reduce((before,after)=>
  "\"'`".split("").some(quote=>Array.from(before.matchAll(quote)).length%2)
 ?[before,json,after].join("")
 :[before,...JSON.parse("["+json+"]"),after].filter(Boolean))
-].flat(),[last.action]).flatMap(term=>string(term)
+].flat(),[last.context]).flatMap(term=>string(term)
 ?Array.from(term.replace(/(^(\n|,| +)|( +|,|\n)$)/g,"")).reduce(([last,...context],symbol,index,{length})=>
 [!last.length&&/ |,/.test(symbol)?last:last[0]===symbol
 ?[...index+1<length?[""]:[],last.substring(1)]
@@ -1339,169 +1373,215 @@
 ,context
 ].flat()
 ,[""]).reverse():[term]);
- let fragment=await compose(buffer
-(infer(resolve.bind(import.meta.url))
-,fail=>document({span:{"#text":fail?.stack}})
-),each(infer(this.annotate,last.title)),infer())(module,feature,...context);
- return [fragment,syntax];
-},"{":function style(last,...syntax)
+ let evaluate=compose(locate.bind(import.meta.url),rank,push(...context),resolve.bind(import.meta.url));
+ let fragment=await compose
+(buffer(evaluate,fail=>({span:{update:false,"#text":fail?.stack}}))
+,each(infer(this.annotate,last.title)),cede()
+)(last.action);
+ return [{},fragment];
+},"{":function style([last,past])
 {if(!last||string(last?.text)||last?.compound||string(last?.style))
- return !last||last.text?.at(-1)==="\n"?[{style:"",block:true},document({span:{"#text":last?.text.slice(0,-1)||""}}),syntax]:false;
+ return !last||last.text?.at(-1)==="\n"?
+[{style:"",block:true},{span:{update:false,"#text":last?.text||""}}
+]:false;
  let next=this[" "](...arguments);
- if(next||last.nodeName)
- return [{style:""},next?next.slice(1):[last,...syntax]].flat();
-},"}":function style(last,past,...syntax)
-{//when({style:either(none,string)})(...arguments);
- if(!string(last.style)||string(last.text))
- return false;
+ if(next||past.nodeName)
+ return [{style:""},next?next.slice(1):[]].flat();
+},"}":function style([last,past])
+{if(!string(last.style)||string(last.text))
+ return;
  let open="{}".split("").map(parenthesis=>
  Array.from(last.style?.matchAll("\\"+parenthesis)||[]).length).reduce((open,close)=>
  close<open);
  if(open)
- return false;
- if(!past?.nodeName)
- return [merge(last,{text:""}),simple(past)?document({span:{"#text":past.text}}):past||[],syntax];
+ return;
  if(!last.style)
- return [{text:""},past,syntax];
+ return {};
+ let next=last.block?{class:"block",update:false}:qualify(qualify(past));
  let {style,...fragment}=buffer
 (compose(fragment=>"{"+fragment+"}",JSON.parse)
 ,compose(drop(1),["style"],record)
 )(last.style);
- let next=last.block?document({div:{class:"inline"}}):past;
- let selector=qualify(fragment)||qualify(next);
+ let stylesheet=!style&&Object.keys(fragment).length;
+ if(stylesheet)
+ [style,fragment]=[fragment,{}];
  fragment.style=string(style)
-?[last.block?"position:relative;":"",style].join("")
-:simple(style)?document({style:
- {[selector]:merge(prune.call(style,([field,style])=>
+?[last.block?"display:block;position:relative;":"",style].join("")
+:simple(style)
+?{[qualify(fragment)||qualify(next)]:
+ merge(prune.call(style,([field,style])=>
  /^&/.test(field)||!simple(style)?style:undefined,0,0)
-,last.block&&{position:"relative"},0)
+,last.block&&{display:"block",position:"relative"},0)
  ,...prune.call(style,([field,style])=>
  simple(style)&&!/^&/.test(field)?style:undefined,0,0)
- }}):{};
- document.call(next,fragment);
- return last.block?[next,past,syntax]:[{text:""},next,syntax];
-},"[":function compound(last,...syntax)
-{if(!string(last.tag)||last.compound)
- return false;
- return [{compound:"[",title:last.title},syntax];
-},"]":async function compound(last,...syntax)
+ }
+:{};
+ return [{},last.block?merge(next,fragment):prune.call(next,({1:next})=>
+ simple(next)?[next,fragment,{update:"last"}].reduce(merge):next,0,0)];
+},"[":function compound([last])
+{if(!string(last.tag)||string(last.context)||last.compound)
+ return;
+ return {compound:"[",title:last.title};
+},"]":async function compound([last,past])
 {if(!last?.compound)
- return false;
+ return;
  let compound=[last.compound,"]"].join("");
  let open="[]".split("").map(parenthesis=>
  Array.from(compound.matchAll("\\"+parenthesis)||[]).length).reduce((open,close)=>
  close<open);
  if(open)
- return false;
- let context=JSON.parse(compound);
+ return;
+ let context=JSON.parse(compound.replace(/`([\s\S]*)`/,(multiline,string)=>
+ // normalize multiline string quotations. 
+ "\""+string.replace(/\n/g,"\\n").replace(/"/g,"\\\"")+"\""));
  if(context[0]==="this")
- context.splice(0,1,syntax[0]);
- let fragment=await buffer(compose(resolve.bind(import.meta.url),collect),compose(crop(1),"stack",["span","#text"],record,document,collect))(context);
- fragment.forEach(compose(crop(1),last.title,this.annotate));
- return [...fragment,syntax];
-}//,"<":function(last,...syntax){if(last.style||last.action)return;return this.text("&lt;",...arguments);}
- //,">":function(last,...syntax){if(last.style||last.action)return;return this.text("&gt;",...arguments);}
+ context.splice(0,1,arguments[0].find(is(window.EventTarget)));
+ let fragment=await cede(buffer
+(resolve.bind(import.meta.url)
+,compose(crop(1),"stack",["span","#text"],record,{span:{update:false}},merge)
+))(context);
+ collect(each.call(fragment,infer(this.annotate,last.title)));
+ return [{},fragment];
+}//,"<":function(last,...syntax){if(last.style||last.context)return;return this.text("&lt;",...arguments);}
+ //,">":function(last,...syntax){if(last.style||last.context)return;return this.text("&gt;",...arguments);}
  };
 
  export var tests=
  {document:
  {node:
-[{context:[{span:{id:"node","#text":"node"}}]
- ,condition:compose(combine("id","textContent"),when(are("node")))
+[{extend:{scope:true,context:[{div:{}}],route:[document,surge,crop(1),{span:{id:"span"}}],terms:[is(window?.HTMLDivElement,plural)],condition:"ok"}
+ ,suspend:{context:[{div:{id:"div"},span:{id:"span"}}],terms:[lift,lift,lift,is(window?.HTMLDivElement,plural,window?.HTMLSpanElement,plural)],condition:"ok"}
+ ,descend:{context:[{div:{id:"div"},span:{id:"span"}}],terms:[lift,lift,lift,lift,is(window?.HTMLDivElement,window?.Attr,window?.HTMLSpanElement,window?.Attr)],condition:"ok"}
+ ,disjunct:{context:rank([{span:{id:"span",a:1}},{span:{id:"span",b:2}}]),terms:[spill,lift,"outerHTML"],condition:when(is("<span id=\"span\" a=\"1\" b=\"2\"></span>"))}
+ }
+,{context:[{span:{id:"node","#text":"node"}}]
+ ,condition:compose(surge,combine("id","textContent"),when(are("node")))
  }
 ,{context:[{span:{empty:undefined}}]
- ,condition:compose("outerHTML",when(is("<span></span>")))
+ ,condition:compose(surge,"outerHTML",when(is("<span></span>")))
  }
 ,{context:[{span:{empty:null}}]
- ,condition:compose("outerHTML",when(is("<span></span>")))
+ ,condition:compose(surge,"outerHTML",when(is("<span></span>")))
  }
 ],multiple:
-[{context:[{span:[{},{}]}],condition:compose("childNodes",Array.from,provide,when(are(compose("nodeName","toLowerCase",("span")))))}
-,{context:[{span:{},div:{}}],condition:compose("childNodes",Array.from,provide,when(...["span","div"].map(node=>compose("nodeName","toLowerCase",is(node)))))}
+[{context:[{span:{},div:{}}],condition:compose(surge,when(...["span","div"].map(node=>compose("nodeName","toLowerCase",is(node)))))}
+,{context:[{span:[{},{}]}],terms:[surge,each(compose("nodeName","toLowerCase"))],condition:when(is("span","span"))}
+,{context:[{style:[{"@scope":{}},{"@scope":{}}]}],terms:[lift,lift,flush,each(compose("nodeName","toLowerCase"))],condition:when(is("style","style"))}
 ],attribute:
- {scope:true
+[{scope:true
  ,context:[{span:{}}]
- ,route:[document,{id:"node"}]
- ,condition:compose("id",when(is("node")))
+ ,route:[document,surge,{id:"node"}]
+ ,condition:compose(surge,"id",when(is("node")))
  }
- ,children:
+,{context:[{script:{defer:true}}]
+ ,condition:compose(surge,"outerHTML",when(is("<script defer=\"true\"></script>")))
+ }
+],children:
  {scope:true
  ,context:[{div:{}}]
- ,route:[document,{id:"node",span:{}}]
- ,condition:compose("outerHTML",when(is("<div id=\"node\"><span></span></div>")))
+ ,route:[document,surge,{id:"node",span:{}}]
+ ,condition:compose(surge,"outerHTML",when(is("<div id=\"node\"><span></span></div>")))
  }
- ,none:{context:[undefined],condition:when(is(null))}
+ ,extend:
+ {scope:true
+ ,context:[{div:{span:{id:"a",class:"span"}}}]
+ ,route:[document,surge,crop(1),{span:{class:"span","#text":"text"}}]
+ ,condition:compose(surge,"outerHTML",when(is("<div><span id=\"a\" class=\"span\">text</span></div>")))
+ }
+ ,none:{context:[undefined],terms:[surge,note],condition:when(is(undefined))}
  ,language:
  {context:[{span:{"#text":{en:"node"}}},0,"en"]
- ,condition:compose("outerHTML",when(is("<span>node</span>")))
+ ,condition:compose(surge,"outerHTML",when(is("<span>node</span>")))
  }
  ,styled:
 [{context:[{span:{style:"display:block"}}]
- ,condition:compose("outerHTML",when(is("<span style=\"display:block\"></span>")))
+ ,condition:compose(surge,"outerHTML",when(is("<span style=\"display:block\"></span>")))
  }
 ,{context:[{span:{style:{".span":{"display":"block"}}}}]
- ,condition:compose("outerHTML",when(is("<span><style>.span{display:block}</style></span>")))
+ ,terms:[surge,"outerHTML"]
+ ,condition:when(is("<span><style>.span{display:block}</style></span>"))
  }
 ],classed:
 [{context:[{span:{class:"node"}}]
- ,condition:compose("outerHTML",when(is("<span class=\"node\"></span>")))
+ ,condition:compose(surge,"outerHTML",when(is("<span class=\"node\"></span>")))
  }
 ,{context:[{span:{class:["node","span"]}}]
- ,condition:compose("outerHTML",when(is("<span class=\"node span\"></span>")))
+ ,terms:[spill,lift,"outerHTML"]
+ ,condition:when(is("<span class=\"node span\"></span>"))
  }
 ],namespaced:
  {context:[{svg:{viewBox:"0 0 1 1"}}]
- ,condition:compose(infer("getAttributeNode","viewBox"),"name",when(is("viewBox")))
+ ,condition:compose(surge,infer("getAttributeNode","viewBox"),"name",when(is("viewBox")))
  }
  ,redundant:
  {scope:true
  ,context:[{span:{id:"node",span:[{class:"first"},{class:"second"}]}}]
- ,route:[document,{id:"node",span:[{"#text":"first"},{"#text":"second"}]}]
- ,condition:compose("childNodes",iterate,each(combine("className","textContent")),collect,combine(0.5,-0.5),collect,"flat",when(infer("every",(values,index)=>values.every(is(["first","second"][index])))))
+ ,route:[document,surge,crop(1),{id:"node",span:[{"#text":"first"},{"#text":"second"}]}]
+ ,condition:compose(surge,"childNodes",rank,each(combine("className","textContent")),collect,combine(0.5,-0.5),collect,"flat",when(infer("every",(values,index)=>values.every(is(["first","second"][index])))))
  }
  ,html:
- {context:[{html:{lang:"en",head:
+ {context:
+[{html:
+ {lang:"en",head:
  {title:{"#text":"Error"}
- ,meta:
-[{"charset":"utf-8"}
-,{"http-equiv":"content-language",content:"en-us"}
-,{"http-equiv":"Content-Type",content:"text/html;charset=UTF-8"}
-,{name:"theme-color",content:"#000000"}
-,{name:"description",content:"Error"}
-,{name:"viewport",content:"width=device-width, initial-scale=1"}
-],link:[{rel:"icon",type:"image/svg+xml",href:"/svg/animal/worm/document"}]
+ ,meta:[{"charset":"utf-8"}]
+ ,link:[{rel:"icon",type:"image/svg+xml",href:"/svg/animal/worm/document"}]
  ,style:[{"#text":"body{background:black;color:#c62828}"}]
  ,script:[]
  }
- ,body:{center:{"#text":""}}}}]
- ,condition:compose("nodeName",when(is("HTML")))
+ ,body:{center:{"#text":""}}
+ }
+ }
+],condition:compose(surge,"nodeName",when(is("HTML")))
+ }
+ ,drop:
+ {scope:true
+ ,context:[{span:{span:{id:"a"}}}]
+ ,route:[document,surge,crop(1),{span:{id:"a",drop:true}}]
+ ,terms:[surge,"childNodes",rank,collect,"length",0]
+ ,condition:"equal"
+ }
+ ,async:
+ {context:[{span:Promise.resolve({id:"a"})}]
+ ,terms:[surge,crop(1),infer("getAttribute","id"),"a"]
+ ,condition:"equal"
+ }
+ ,actions:
+ {context:[{span:{dataset:{actions:"/module"}}}]
+ ,terms:[spill,lift,crop(1),"outerHTML"]
+ ,condition:when(is("<span data-actions=\"[&quot;/module&quot;]\"></span>"))
  }
  }
  ,list:
-[{context:[{a:{b:"c",d:["e","f"]}}],terms:
-[[
- {span:{"#text":"a"},ul:
+[{context:[{a:{b:"c",d:["e","f"]}}],terms:[
+[{span:{"#text":"a"},ul:
  {li:
 [{span:{"#text":"b"},ul:{li:[{span:{"#text":"c"}}]}}
 ,{span:{"#text":"d"},ul:{li:[{span:{"#text":"e"}},{span:{"#text":"f"}}]}}
 ]}
- }]
-],condition:"deepEqual"
+ }
+]]
+ ,condition:"deepEqual"
  }
 ],parse:
- {tag:{context:["Figure 1: Author_YEAR#h1 ",semiotics],terms:[collect,1,"nodeName","H1"],condition:"equal"}
- ,link:{context:["Figure 1: Author_YEAR@reference.pdf ",semiotics],terms:[collect,1,infer("getAttribute","role"),stash("link")],condition:"equal"}
- ,image:{context:["Figure 1: Author_YEAR@image.png ",semiotics],terms:[collect,1,"nodeName","IMG"],condition:"equal"}
- ,action:{context:["Figure 1: title#chart/plot([1,2]) ",semiotics],terms:[collect,1,"nodeName","svg"],condition:"equal"}
- ,composition:{context:['Figure 1: title#[[[1,2]],"chart/plot"] ',semiotics],terms:[collect,1,"nodeName","svg"],condition:"equal"}
- ,reflow:{context:["abc\n{text-align:left}\ndef",semiotics],terms:[collect,1,"nodeName","DIV"],condition:"equal"}
- ,style:["@reference.pdf","@image.png","#span"].map(fragment=>(
- {context:["Figure 1: Author_YEAR"+fragment+"{width:0px;filter:invert(1)} ",semiotics],terms:[collect,1,"style","width","0px"],condition:"equal"
+ {tag:{context:["abc A#h1 ",semiotics],terms:[lift],condition:when(...
+[{span:{style:"display:block;",span:{"#text":"abc "}}}
+,{span:{style:"display:block;",h1:{id:"A","#text":"A"}}}
+,{span:{style:"display:block;",span:{"#text":" "}}}
+].map(fragment=>match(fragment)))}
+ ,link:{context:["abc Author_YEAR@reference.pdf ",semiotics],terms:[collect,1,"span","span","role",push("link")],condition:"equal"}
+ ,image:{context:["abc Author_YEAR@image.png ",semiotics],terms:[collect,1,"span","fragment","nodeName"],condition:when(match(/img/i))}
+ ,action:{context:["abc title#chart/plot([1,2]) ",semiotics],terms:[collect,1,"span","fragment","nodeName"],condition:when(match(/svg/i))}
+ ,composition:{context:['abc title#[[[1,2]],"chart/plot"] ',semiotics],terms:[collect,1,"span","fragment","nodeName",/svg/i],condition:when(match)}
+ ,reflow:{context:["abc\n{text-align:left}\ndef",semiotics],terms:[collect,1,"span","style","display:block;position:relative;text-align:left"],condition:"equal"}
+ ,style:["@reference.pdf","#span"].map(fragment=>(
+ {context:["abc A"+fragment+"{width:0px;filter:invert(1)} ",semiotics]
+ ,terms:[collect,2,"span","span","style","width:0px;filter:invert(1)"]
+ ,condition:"equal"
  }))
- ,stylerule:{context:["Author_YEAR@image.png{width:100%} ",semiotics],terms:[collect,0],condition:when(is([compose("style","width",is("100%")),compose("nodeName",is("IMG"))]))}
- ,stylesheet:{context:['Author_YEAR@image.png{"style":{"@scope":{":scope":{"width":"100%"}},"h2":{"margin":0}}}',semiotics],terms:[collect,0],condition:when(compose("textContent",infer("split","\n"),provide,when(compose(infer("endsWith","{width:100%}")),compose(infer("endsWith","{margin:0}")))))}
- ,mixed:{context:["abc\nAuthor_YEAR@reference.pdf\ndef\n{text-align:left}\nghi",semiotics],terms:[collect,3,"nodeName","DIV"],condition:"equal"}
- ,noise:{context:["abc\n{text-align:left}\ndef\ng={h:1};",semiotics],terms:[collect,1,"nodeName","DIV"],condition:"equal"}
+ ,stylerule:{context:["A@image.png{width:100%} ",semiotics],terms:[collect,1,"span","img","style",string],condition:"ok"}
+ ,stylesheet:{context:['A@image.png{"style":{"@scope":{":scope":{"width":"100%"}},"h2":{"margin":0}}}',semiotics],terms:[collect,1,search(["span","img","style","@scope"]),simple],condition:"ok"}
+ ,mixed:{context:["abc\nA@reference.pdf\ndef\n{text-align:left}\nghi",semiotics],terms:[collect,"length",5],condition:"equal"}
+ ,noise:{context:["abc\n{text-align:left}\ndef\ng={h:1};",semiotics],terms:[collect,2,"span","span","span","#text","\ndef\ng={h:1};"],condition:"equal"}
  }
  };
-

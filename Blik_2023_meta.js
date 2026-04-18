@@ -1,11 +1,11 @@
- import {note,when,wait,pass,drop,swap,match,infer,either,buffer,observe,compose,combine,revert,collect,stream,provide,compound,tether,bind,slip,string,numeric,functor,is,not,native,basic,simple,iterable,array,lambda,imperative,defined,composed,odd,exit,expect,ascend,colors,stash,expressions} from "./Blik_2023_inference.js";
- import {search,merge,prune,route,random,relevant,sum,record} from "./Blik_2023_search.js";
- import {location,modularise} from "./Blik_2023_interface.js";
+ import {note,when,wait,sum,pass,drop,swap,match,infer,either,buffer,observe,compose,combine,revert,collect,stream,rank,compound,tether,bind,slip,string,numeric,functor,is,not,native,basic,simple,iterable,array,lambda,imperative,defined,composed,odd,exit,expect,prototype,colors,stash,expressions,search,merge,prune,route,record,functional} from "./Blik_2023_inference.js";
+ import {random,relevant} from "./Blik_2023_search.js";
+ import {location,load} from "./Blik_2023_interface.js";
  let address=new URL(import.meta.url).pathname;
 
  export var inheritance=compose
 (infer("map",value=>record({[String(value)||JSON.stringify(value)]:{}}
-,ascend(value).map(type=>type.constructor.name||String(type))))
+,prototype(value).map(type=>type.constructor.name||String(type))))
 ,infer("reduce",merge,{})
 );
 
@@ -26,6 +26,7 @@
  if(source.constructor?.name==="Buffer")
  source=source.toString();
  if(syntax==="json")return JSON.parse(source);
+ if(syntax==="lisp")return interpret(source,"lisp");
  let url=options.source?options.source.startsWith("file:/")
 ?new URL(options.source)
 :await import("url").then(({pathToFileURL:url})=>url(options.source))
@@ -108,7 +109,7 @@
  if(/^Export/.test(boundary))
  statements.push({type:"ExportNamedDeclaration",specifiers:value.specifiers?.map(specifier=>({...specifier,local:specifier.exported}))||
  [{type:"ExportSpecifier",local,exported:local}]});
- return provide(statements);
+ return rank(statements);
 });
  if(/\.d\.ts$/.test(pathname))
  grammar=prune.call(grammar,function initialized({1:value})
@@ -169,7 +170,6 @@
  return grammar;
 };
 
- var functional=term=>"FunctionDeclaration/FunctionExpression/ArrowFunctionExpression".split("/").includes(term?.type);
  var synchronous=({1:term})=>functional(term)&&term.async?undefined:term;
  var requirecall=term=>term?.type==="CallExpression"&&term.callee?.name==="require";
  var linear=(scope,field,index,path)=>scope[field].type==="TryStatement"?!path.splice(index):scope[field];
@@ -252,7 +252,7 @@
  ,specifiers:
 [{type:"ImportDefaultSpecifier",local:values[index],imported:values[index]}
 ]}).filter(Boolean);
- return provide([...imports,expression]);
+ return rank([...imports,expression]);
 }}
   // module.exports exportdefaultdeclaration prepended to scope instead. 
 //  ,export:
@@ -458,7 +458,7 @@
  if(functor(term))
  return composed(term)?recompose(term.name):exit(term.name+" isn't composed.");
  let composition=[];
- collect(each.call(provide(Array.from(term)),(symbol,index,composition,path)=>(
+ collect(each.call(rank(Array.from(term)),(symbol,index,composition,path)=>(
  {"(":(terms,path)=>terms.at(-1)?simple(terms.at(-1))
 ?path.splice(-1,1,(path.at(-1)||1)-1,0)&&terms.splice(-1,0,[])
 :path.push(terms.pop(),0)&&merge(terms,record([],[path.at(-2)]),[path.at(-3)]):true
@@ -480,33 +480,38 @@
 [/\r/g,/[ \t]*\/\/.*\n/g,/[ \t]*\/\*[\s\S]*?\*\//g].reduce((p1,expression)=>
  p1.replace(expression,""),p1.trim()).replace(/\n{2,}/g,"\n"));
 });
- return provide([js.toString(),js.generateMap()]);
+ return rank([js.toString(),js.generateMap()]);
 }};
 
  export function serialize(namespace,format="astring",options)
 {// convert abstract syntax tree or runtime namespace to javascript;
+ let parser={astring:["./davidbonnet_2015_astring.js","generate"]}[format];
+ if(namespace?.type==="Program"&&parser)
+ return resolve.bind(import.meta.url)(...parser,namespace,options);
  if(string(namespace))
  return namespace.startsWith("data:text/javascript;")?namespace.replace(/^data:text\/javascript;/,""):JSON.stringify(namespace);
  if(functor(namespace))
  // functions may be serialized as "name(){}", "function(){}", or with a name different from the object field. 
  return signature(namespace,format);
- if(namespace[Symbol.toStringTag]==="Module"||format==="module")
- return Object.values(prune.call(namespace,([field,term],path)=>
- functor(term)?!path.length
-?[term.name!==field?" export var "+field+"=":"",serialize(term,field)].join("")
-:String(term):term)).join("\n\n");
- let parser={astring:["./davidbonnet_2015_astring.js","generate"]}[format];
- if(parser&&namespace.type==="Program")
- return resolve.bind(import.meta.url)(...parser,namespace,options);
- let {exports,imports,procedures}=namespace;
- if(format==="json"||![exports,imports,procedures].some(Boolean))
- return Object.entries(prune.call(namespace,([field,value])=>
+ if(namespace[Symbol.toStringTag]==="Module")
+ return modularize({exports:namespace});
+ if(format==="module")
+ return modularize(namespace);
+ let [start,end]=array(namespace)?["\n[","\n]"]:["\n {","\n }"];
+ let declaration=Object.entries(prune.call(namespace,([field,value])=>
  functor(value)?"data:text/javascript;"+serialize(value,field):value)).reduce(infer((literal,array,[field,value],index)=>[literal,
 [array?"":/[^\w]/.test(field)?JSON.stringify(field):field
 ,serialize(value,null)
 ].join(array?"":":")].join(index?",":"")
 ,array(namespace))
-,"{")+"}";
+,start);
+ let short=declaration.length<100;
+ return [short?declaration.replace(/^\n *(.)/,"$1").replace(/^\[\n {/,"[{"):declaration,declaration.endsWith("\n]")?end.replace("\n }","}"):end].join("");
+};
+
+ export function modularize({exports,imports,procedures})
+{if(![exports,imports,procedures].some(Boolean))
+ exit("module format requires {imports,exports,procedures} structure.");
  imports=Object.entries(imports||{}).map(([module,names])=>
  [module,[names].flat()]).flatMap(([module,names],index)=>
 [(index=names.findIndex(name=>name.startsWith("*")))>-1?[module,names.splice(index,1)]:[]
@@ -516,17 +521,16 @@
 ," import ")+(names.length>1?"}":"")
 +" from \""+module+"\""+(/\.json$/.test(module)?" with {type:\"json\"}":"")+";"
 :(" var {default:"+names[0]+"}=await resolve.bind(import.meta.url)(\""+module+"\");")).join("\n");
- exports=!exports?""
-:[Object.entries(exports||{}).map(([field,term])=>
-["export "+({default:field+" "}[field]||!functor(term)&&"var "+field+"="||"")
-,functor(term)?serialize(term,{[field]:field,default:term.name}[field]):serialize(term,null)
+ exports=[Object.entries(exports||{}).map(([field,term])=>
+[" export "+({default:field+" "}[field]||(!functional(term)||model(serialize(term,field)).name!==field)&&"var "+field+"="||"")
+,functional(term)?serialize(term,{[field]:field,default:term.name}[field]):serialize(term,null)
 ].join("")).join("\n\n")
 ,""].join("\n");
  procedures=proceduralize(...[procedures].flat().filter(Boolean));
  return compose(collect,infer("filter",Boolean),"\n\n","join")(imports,exports,procedures);
 };
 
- function signature(functor,label)
+ export function signature(functor,label)
 {return composed(functor)
 ?functor.name
 :[String(functor),/^async /].reduce((source,prefix)=>
@@ -536,7 +540,13 @@
 ,[declaration,name].find(name=>!/function\**/.test(name))?.replace(/^(.)/," $1")
 ].join(""):
 [prefix.test(source)?"async ":"","function",space||label&&" ",name||label].join("")));
-}
+};
+
+ export function model(term)
+{return ["signature","arguments"].map(expression=>
+ expressions[expression].exec(term)[0]).reduce((name,context)=>(
+ {name:name.replace(/^(async )*function /,""),context}));
+};
 
  export function proceduralize(term,...terms)
 {if(terms.length)
@@ -563,25 +573,31 @@
  let mirror=term=>[term,term?.value,term?.init].find(functional);
  let label=term=>[term?.id,term?.value?.id,term?.key,term?.init?.id].find(Boolean);
  let targets=Object.values(search.call(grammar[1],({1:term})=>mirror(term),0));
- let twin=(term,node)=>match(...[term,node].map(mirror).map(({start,end},index)=>
- proceduralize([source,target][index].slice(start,end))));
+ let clip=({start,end},source)=>source.slice(start,end);
+ let procedure=(node,index)=>proceduralize(clip(mirror(node),[source,target][index]));
  let names=targets.map(label).map(id=>id.name);
  let sources=Object.values(search.call(grammar[0]
-,({1:term})=>mirror(term)&&
- names.includes(label(term)?.name)&&
- twin(term,targets[names.indexOf(label(term).name)]),1));
- let locations=targets.map(node=>
+,({1:node})=>mirror(node)&&targets.filter(term=>
+ match(...[node,term].map(node=>label(node)?.name))).some(term=>
+ match(...[node,term].map(procedure))),1));
+ let locations=compose
+(infer("map",node=>
 [[target,node]
-,[source,sources.find(source=>label(source).name===label(node).name&&twin(source,node))]
+,[source,sources.find(source=>label(source).name===label(node).name&&match(...[source,node].map(procedure)))]
 ,label(node)
-]).filter(({1:{1:term}})=>term).map(([[target,node],[source,term],{name}])=>
+])
+,infer("filter",({1:{1:term}})=>term)
+,infer("map",([[target,node],[source,term],{name}])=>
  // https://tc39.es/ecma426/#sec-names-for-generated-javascript-code
  // clip function declaration for method counterparts. 
- [node.method!==term.method?whether(not(infer("method")),mirror):[],label,mirror].flat().map((part,index,{length})=>
+[node.method!==term.method?cede(whether(not(infer("method")),mirror)):[]
+,label,label,mirror
+].flat().map((part,index,{length})=>
 [[[source,term],[target,node]].map(([source,node])=>
- coordinates(source,part(node)[length-index-1?"start":"end"]))
+ coordinates(source,part(node)[length-index>2?"start":"end"]))
 ,name
-].flat())).flatMap(([start,...end],index,locations)=>
+].flat()))
+,infer("flatMap",([start,...end],index,locations)=>
  // cut source between segments with reference to previous segment end. 
 [[locations[index-1]?.at(-1)||[[0,0]],start].reduce(([source],[cut,target,name])=>
  [source,target,name])
@@ -592,8 +608,10 @@
  prune.call(start,([field,offset])=>
  numeric(offset)?[offset+line,index][field]:offset)))
 ,end.at(-1)
-]);
- locations.push([coordinates(source,source.length),locations.at(-1)[1]]);
+])
+)(targets);
+ [locations.at(-1)[1],coordinates(target,target.length)].forEach(target=>
+ locations.push([coordinates(source,source.length),target]));
  let quantifiers=
  locations.map((location,index,locations)=>(
  {[location[1][0]]:
@@ -620,10 +638,10 @@
 ?clamp([...stack,(shifted&31)|32],shifted>>>5)
 :[...stack,shifted&31];
 },[]).map(quantifier=>vlq[quantifier]).join("")).join("")).join(",")).join(";");
- let report=locations.map(([origin,target,name])=>({[name]:[
+ let report=locations.map(([origin,target,name])=>[name,[
 [[address,origin.map(index=>index+1)].flat().join(":")
 ,[file,target.map(index=>index+1)].flat().join(":")
-].join(" -> ")]})).reduce((past,next)=>merge(past,next,0));
+].join(" -> ")]]);
  return {version:3,file,sources:[address],names,mappings,report,quantifiers};
 };
 
@@ -743,6 +761,103 @@
 )(text);
 };
 
+ export async function interpret(source,syntax="lisp",file)
+{// interpret language syntax. 
+ if(!semiotics[syntax])
+ exit("no semiotics provided to interpret "+type(source));
+ if(file)
+ source=await import("fs").then(({promises:{readFile}})=>readFile(source));
+ if(source?.constructor?.name==="Buffer")
+ source=source.toString();
+ if(!string(source))
+ exit("can't parse "+type(source));
+ return collect(...each.call(rank(Array.from(source))
+,function* interpret(text,index,length,grammar)
+{if(!index)
+ yield grammar[1];
+ let [last,past]=[semiotics[syntax][text]?.(grammar)||
+ semiotics[syntax].text(text,grammar)].flat();
+ if(last)
+ grammar.splice(0,1,last);
+ if(past)
+ yield grammar.splice(1,1,past)&&past;
+ if(index+1===length)
+ yield* [semiotics[syntax].end?.(grammar)||[]].flat();
+},source.length,[{depth:0},{body:[],namespace:syntax}])).reduce(merge);
+};
+
+ export async function compute(syntax,namespaces)
+{// reduce procedure to its value. 
+ return syntax.body.reduce(function curry(context,term,index,{length})
+{if(array(term))
+ term=term.reduce(curry,[]);
+ let namespace=namespace[syntax.namespace];
+ return index===length-1
+?namespace[context.shift()](...context,term)
+:context.push(term)&&context;
+},[]);
+};
+
+ export var run=compose(parse,namespaces,compute);
+
+ var semiotics=
+ {lisp:
+ {text(text,[{text:last=""}])
+{return merge(arguments[1][0],{text:last+text});
+}," ":function adjunct([last,past])
+{let {text,depth,string}=last;
+ if(string)return;
+ if(!text)return [last,past];
+ let next=prune.call(past,([index,value],{length})=>length===depth-1&&compound(value)
+?{[array(value)?value.length:+Object.keys(value).pop()+1]:
+ isNaN(text)?text:Number(text)
+ }
+:value,0);
+ return [merge(last,{text:""}),next];
+},"(":function open([last,past])
+{let {depth}=last;
+ let open=([index,value],{length})=>length===depth-1&&compound(value)
+?{[array(value)?value.length:+Object.keys(value).pop()+1]:[]}
+:value;
+ return this[" "](...arguments)?.reduce(({depth},past)=>
+ [merge(last,{depth:depth+1}),merge(past,prune.call(past,open))])||
+ [merge(last,{text:"",depth:depth+1}),prune.call(past,open)];
+},")":function close([last,past])
+{return this[" "](...arguments)?.reduce(({depth},next)=>
+ [merge(last,{depth:depth-1}),next])||
+ [merge(last,{text:"",depth:last.depth-1})];
+},"\"":function string([last]){return merge(this.text("\"",[last]),{string:last.string?undefined:true});}
+ ,"\n":function(){return this[" "](...arguments)||{text:""};}
+ ,"":function([last]){return merge(last,{});}
+ ,end(){this[" "](...arguments);}
+ }
+ ,javascript:
+ {text(text,[{text:last=""}])
+{return merge(arguments[1][0],{text:last+text});
+},"\"":function string([last]){return merge(this.text("\"",[last]),{string:last.string?undefined:true});}
+ ,"(":function open([last,past])
+{let {depth}=last;
+ let open=([index,value],{length})=>length===depth-1&&compound(value)
+?{[array(value)?value.length:+Object.keys(value).pop()+1]:[]}
+:value;
+ return this[" "](...arguments)?.reduce(({depth},past)=>
+ [merge(last,{depth:depth+1}),merge(past,prune.call(past,open))])||
+ [merge(last,{text:"",depth:depth+1}),prune.call(past,open)];
+},")":function close([last,past])
+{return this[" "](...arguments)?.reduce(({depth},next)=>
+ [merge(last,{depth:depth-1}),next])||
+ [merge(last,{text:"",depth:last.depth-1})];
+},"":function()
+{return merge(last,{});
+}}
+ };
+
+ var namespaces=
+ {lisp:
+ {defun(name,...context){this[name]=proceduralize(context);}
+ }
+ };
+
  export var mime=compose
 (infer("match",/[^\.]*$/),either("0",infer())
 ,{text:{plain:["txt"],javascript:["js","cjs","mjs"],typescript:["ts"],"":["html","css","csv"]}
@@ -771,53 +886,22 @@
  return next;
 };
 
- export async function test(namespace,tests,target=namespace)
-{// compose tests defined in namespace. 
- if(string(namespace))
- namespace=await import(namespace);
- tests=tests||namespace.tests||{};
- let assert=await import("assert");
- let noncondition=either(
- not(defined),simple,is([array,infer("some",({condition})=>condition)]));
- let fails=await [tests].reduce(function test(module,tests,depth,path)
-{let {scope,context=[],route=[],terms=[],condition}=tests;
- return noncondition(condition)
-?compose(Object.entries,infer("reduce",record(([term,tests])=>
- test(module[term]??module,tests,depth+1,[depth?path:[],term].flat())),[]),"flat")(tests)
-:buffer(compose
-(...[route].flat()
-,buffer(scope?tether(module):module)
-,...[terms].flat(),assert[condition]||condition,swap({})
-),({stack})=>({[path.join("/")]:stack}))(...context);
-},namespace);
- fails=fails.reduce(merge,{});
- let format=compose((item,order,items)=>
- [item,order,Math.max(...items.map(({length})=>length))]
-,([item,order,length])=>
- item+(order%Math.floor(process.stdout.columns/length)
-? " ".repeat(length-item.length):"\n"));
- let report=[fails,tests,namespace].map((subject,index)=>
-["\x1b["+["31mFAIL:","32mPASS:","34mSKIP:"][index]
-,...Object.keys(subject).map(index?field=>field:field=>field.match(/(.*?)(\/|$)/)[1])
-]).map((subject,index,subjects)=>
- subject.filter(test=>
- !subjects.slice(0,index).flat().includes(test)).slice(0,15).concat(subject.length<16
-?(!subject.length?"-":[])
-:"...").map(format).join("")).filter(subject=>subject.length>11).join("\n")+"\x1b[0m\n";
- let {length}=Object.keys(fails);
- console.groupCollapsed(colors[length?"red":"green"]+"Tested "+target+colors.steady);
- console.log(report);
- Object.entries(fails).forEach(([field,value])=>(
- console.groupCollapsed(field),console.log(value),console.groupEnd()));
- console.groupEnd();
- return length?exit("Tests failed on "+target):report;
-};
-
  export const tests=
  {parse:
- {empty:{context:[""],terms:["type","Program"],condition:"equal"}
+[{empty:{context:[""],terms:["type","Program"],condition:"equal"}
  }
- ,sanitize:
+,{lisp:
+[{context:["(first (list 1 (+ 2 3) 9))","lisp"],condition:when(match({body:["first",["list",1,["+",2,3],9]]}))}
+,{context:["(first(list 1(+ 2 3)9))","lisp"],condition:when(match({body:["first",["list",1,["+",2,3],9]]}))}
+,{context:[`(defun fib (n)
+  \"Return the nth Fibonacci number.\"
+    (if (< n 2)
+      n
+        (+ (fib (- n 1))
+          (fib (- n 2)))))`,"lisp"],condition:when(match({body:["defun","fib",["n"],"\"Return the nth Fibonacci number.\"",["if",["<","n",2],"n",["+",["fib",["-","n",1],"fib",["-","n",2]],["fib",["-","n",2]]]]]}))}
+]
+ }
+],sanitize:
  {dynamicrequire:
  {block:{route:["var a=!async function(){a=require('')}()",parse,{syntax:"commonjs"}],terms:[serialize,"let exports = {}, module = {\n  exports\n};\nvar a = !(async function () {\n  a = await import('').then(({default: module}) => module);\n})();\nexport default module.exports;\n"],condition:"equal"}
  ,lambda:{route:["setTimeout(async time=>a=require(''),3000)",parse,{syntax:"commonjs"}],terms:[serialize,"let exports = {}, module = {\n  exports\n};\nsetTimeout(async time => a = await import('').then(({default: module}) => module), 3000);\nexport default module.exports;\n"],condition:"equal"}
@@ -854,7 +938,24 @@
 ]}
  }
  }
+ ,interpret:
+ {lisp:
+[{context:["(first (list 1 (+ 2 3) 9))","lisp"],condition:when(match({body:["first",["list",1,["+",2,3],9]]}))}
+,{context:["(first(list 1(+ 2 3)9))","lisp"],condition:when(match({body:["first",["list",1,["+",2,3],9]]}))}
+,{context:["(())","lisp"],condition:when(match({body:[[]]}))}
+,{context:[`(defun fib (n)
+  \"Return the nth Fibonacci number.\"  
+    (if (< n 2)
+      n
+        (+ (fib (- n 1))
+          (fib (- n 2)))))`,"lisp"],condition:when(match({body:["defun","fib",["n"],"\"Return the nth Fibonacci number.\"",["if",["<","n",2],"n",["+",["fib",["-","n",1],"fib",["-","n",2]],["fib",["-","n",2]]]]]}))}
+]}
+ ,serialize:
+ {module:
+[{context:[{sum:"data:text/javascript;function sum(a,b){return a+b;}"},"module"],condition:when(match("export function sum(a,b){return a+b;}"))}
+,{context:[{exports:{sum(a,b){return a+b;}}}],condition:when(match("export function sum(a,b){return a+b;}\n"))}
+]}
  ,domain:
-[{context:[function(){when(string)}],condition:when(infer(Object.is,string))}
+[{context:[function(){when(string)}],terms:note,condition:when(infer(Object.is,string))}
 ,{context:[compose(when(string),drop())],condition:when(infer(Object.is,string))}
 ]};

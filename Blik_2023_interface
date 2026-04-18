@@ -2,7 +2,7 @@ Interface#[[{"svg":
  {"viewBox":"0 0 1000 1000","width":"1000pt","height":"1000pt"
  ,"id":"Interface"
  ,"dataset":{"actions":"/actions/module"}
- ,"preserveAspectRatio":"xMinYMin slice"
+ ,"preserveAspectRatio":"xMidYMid slice"
  ,"defs":
  {"linearGradient":{"id":"fade","x1":"0.5","y1":"0","x2":0.5,"y2":1,"stop":[{"offset":"0","stop-color":"#010101"},{"offset":1,"stop-color":"#010101"}]}
  ,"filter":
@@ -27,9 +27,9 @@ Interface#[[{"svg":
 ,{"style":"pointer-events:none;transform-origin:center;","d":" M 406.575 498.806 C 406.575 447.886 447.916 406.55 498.831 406.55 C 549.75 406.55 591.086 447.886 591.086 498.806 C 591.086 549.725 549.75 591.062 498.831 591.062 C 447.916 591.062 406.575 549.725 406.575 498.806 Z  M 549.924 438.853 Q 562.52 446.935 570.988 465.264 Q 579.457 483.598 577.826 493.727 C 576.91 499.41 572.881 502.943 568.828 501.61 L 568.828 501.61 C 564.779 500.277 564.894 493.576 563.631 487.962 Q 561.676 478.869 559.799 474.204 C 556.13 465.081 551.999 458.479 544.14 451.274 C 539.898 447.384 534.528 441.266 536.882 438.407 L 536.882 438.407 C 539.235 435.543 545.077 435.746 549.924 438.853 Z  M 504.152 421.356 C 505.753 417.516 511.471 416.242 516.917 418.512 C 522.363 420.786 525.485 425.746 523.884 429.587 C 522.284 433.427 516.56 434.7 511.115 432.431 C 505.669 430.156 502.552 425.196 504.152 421.356 Z  M 481.307 554.536 C 482.289 554.043 483.699 553.07 484.44 552.372 C 485.181 551.675 486.131 550.437 486.552 549.621 C 486.972 548.805 487.705 546.722 488.179 544.992 C 488.969 542.113 489.024 541.162 488.829 533.765 C 488.681 528.129 488.361 524.278 487.773 521.042 C 487.309 518.49 486.018 512.588 484.904 507.928 C 483.79 503.267 482.236 496.548 481.452 492.997 C 480.667 489.447 479.763 484.816 479.443 482.708 C 479.123 480.599 478.862 477.149 478.863 475.041 C 478.865 472.742 479.113 470.4 479.485 469.19 C 479.826 468.08 480.118 466.523 480.133 465.729 C 480.148 464.935 479.875 463.734 479.526 463.06 C 479.177 462.385 478.223 461.516 477.406 461.128 C 476.452 460.675 475.382 460.495 474.417 460.624 C 473.591 460.735 472.465 461.121 471.915 461.482 C 471.361 461.844 469.956 463.986 468.774 466.269 C 467.597 468.541 464.64 474.032 462.204 478.471 C 459.767 482.909 456.603 488.667 455.173 491.265 C 453.195 494.858 452.52 496.505 452.35 498.147 C 452.174 499.854 452.306 500.654 452.979 501.975 C 453.447 502.893 454.476 504.136 455.264 504.737 C 456.23 505.474 457.358 505.894 458.729 506.025 C 459.875 506.136 461.459 505.99 462.364 505.691 C 463.246 505.4 464.482 504.576 465.111 503.86 C 465.74 503.144 466.32 502.375 466.402 502.15 C 466.499 501.881 468.271 501.949 471.593 502.348 C 474.367 502.682 476.798 503.108 476.995 503.297 C 477.191 503.485 478.147 506.692 479.119 510.424 C 480.09 514.156 481.251 519.388 481.698 522.051 C 482.145 524.714 482.623 529.262 482.76 532.156 C 482.976 536.742 482.914 537.626 482.272 539.016 C 481.866 539.894 480.986 541.339 480.315 542.227 C 479.645 543.115 478.197 544.896 477.099 546.186 C 475.136 548.491 475.073 548.527 473.448 548.269 C 472.539 548.125 470.47 547.361 468.85 546.573 C 467.23 545.784 464.688 544.239 463.201 543.139 C 461.713 542.04 459.196 539.863 457.608 538.301 C 455.952 536.673 454.427 534.752 454.036 533.8 C 453.66 532.886 453.217 531.867 453.051 531.534 C 452.885 531.201 452.301 530.673 451.753 530.362 C 451.157 530.023 450.332 529.902 449.702 530.06 C 449.123 530.205 448.364 530.609 448.016 530.957 C 447.668 531.305 447.267 532.054 447.124 532.62 C 446.958 533.284 447.155 534.244 447.679 535.316 C 448.126 536.232 449.363 538.138 450.428 539.551 C 451.493 540.965 453.74 543.297 455.422 544.734 C 457.103 546.171 459.931 548.312 461.707 549.492 C 463.482 550.671 466.206 552.289 467.76 553.085 C 469.313 553.882 471.583 554.805 472.804 555.137 C 474.034 555.471 476.025 555.671 477.272 555.585 C 478.508 555.5 480.324 555.028 481.307 554.536 L 481.307 554.536 Z  M 478.086 546.022 C 479.313 544.601 480.91 542.62 481.635 541.622 L 482.952 539.806 L 482.661 541.823 C 482.5 542.933 482.058 544.57 481.677 545.461 C 481.296 546.352 480.687 547.327 480.324 547.629 C 479.96 547.93 478.806 548.274 477.758 548.392 L 475.854 548.607 L 478.086 546.022 Z  M 471.795 501.612 C 469.575 501.173 467.619 500.676 467.448 500.508 C 467.276 500.339 467.414 499.536 467.754 498.723 L 468.372 497.244 L 470.89 498.196 C 472.276 498.72 474.09 499.435 474.922 499.785 C 475.754 500.135 476.435 500.597 476.435 500.813 C 476.435 501.028 476.546 501.491 476.68 501.842 C 476.832 502.237 476.716 502.467 476.378 502.446 C 476.076 502.427 474.014 502.052 471.795 501.612 L 471.795 501.612 Z  M 472.09 497.564 C 469.038 495.972 468.878 495.822 469.279 494.941 C 469.513 494.427 469.828 494.006 469.979 494.006 C 470.13 494.006 471.341 494.55 472.671 495.214 C 474.664 496.21 475.164 496.67 475.522 497.837 C 475.761 498.615 475.814 499.252 475.641 499.252 C 475.468 499.252 473.87 498.492 472.09 497.564 L 472.09 497.564 Z  M 472.804 494.143 C 472.027 493.599 471.153 493.014 470.862 492.844 C 470.433 492.593 470.464 492.194 471.023 490.748 C 471.403 489.766 471.843 488.815 472.001 488.635 C 472.158 488.456 472.758 489.811 473.332 491.648 C 473.907 493.485 474.341 495.021 474.297 495.06 C 474.252 495.1 473.58 494.687 472.804 494.143 L 472.804 494.143 Z  M 528.288 552.029 C 529.397 551.79 531.223 551.192 532.344 550.701 C 533.466 550.209 535.043 549.228 535.848 548.521 C 536.653 547.814 537.687 546.46 538.146 545.512 C 538.663 544.444 538.981 542.986 538.981 541.683 C 538.981 540.525 538.7 538.903 538.357 538.078 C 538.013 537.253 536.969 535.784 536.036 534.815 C 535.104 533.845 532.615 531.683 530.507 530.01 C 528.399 528.337 526.519 526.833 526.33 526.668 C 526.14 526.502 526.46 525.669 527.04 524.815 C 527.62 523.962 527.911 523.203 527.688 523.129 C 527.465 523.055 526.811 523.553 526.236 524.237 C 525.66 524.921 525.069 525.475 524.923 525.468 C 524.776 525.461 524.318 525.199 523.905 524.887 C 523.177 524.335 523.18 524.282 524.006 523.122 C 524.475 522.464 524.858 521.818 524.858 521.686 C 524.858 521.554 524.667 521.446 524.435 521.446 C 524.202 521.446 523.578 521.945 523.048 522.555 C 522.128 523.614 522.051 523.632 521.366 522.959 C 520.689 522.292 520.687 522.187 521.33 521.098 C 521.705 520.464 521.893 519.826 521.748 519.681 C 521.603 519.536 521.01 519.871 520.431 520.425 L 519.379 521.433 L 515.158 517.918 C 512.836 515.985 508.838 512.311 506.274 509.753 C 503.709 507.196 500.512 503.741 499.168 502.077 C 497.824 500.412 495.723 497.507 494.499 495.62 C 493.275 493.734 491.862 491.375 491.359 490.379 C 490.49 488.66 490.457 488.266 490.699 482.712 C 490.84 479.492 491.21 475.471 491.522 473.778 C 491.833 472.085 492.38 470.085 492.737 469.333 C 493.093 468.582 494.38 467.19 495.596 466.241 C 496.811 465.291 499.024 463.944 500.514 463.247 C 502.035 462.535 504.135 461.904 505.306 461.807 C 506.507 461.708 507.778 461.842 508.305 462.124 C 509.112 462.556 509.19 462.823 508.972 464.413 C 508.837 465.403 508.017 468.017 507.152 470.222 C 506.286 472.426 503.674 477.817 501.345 482.201 C 499.017 486.586 496.888 491.137 496.614 492.315 C 496.222 494.001 496.22 494.829 496.606 496.207 C 496.899 497.254 497.697 498.544 498.592 499.417 C 499.414 500.221 500.711 501.057 501.474 501.275 C 502.237 501.494 503.459 501.673 504.191 501.673 C 504.922 501.673 506.195 501.328 507.018 500.905 C 507.842 500.483 508.934 499.689 509.446 499.14 C 509.958 498.591 510.814 496.85 511.348 495.271 C 511.883 493.692 512.765 491.264 513.309 489.874 C 513.852 488.485 515.049 485.28 515.968 482.751 C 516.886 480.223 518.186 476.047 518.857 473.47 C 519.757 470.011 520.081 467.837 520.097 465.155 C 520.115 462.331 519.919 461 519.219 459.17 C 518.724 457.875 517.755 456.174 517.066 455.389 C 516.377 454.604 515.169 453.557 514.383 453.062 C 513.597 452.568 511.994 451.917 510.821 451.618 C 509.096 451.177 508.059 451.165 505.403 451.552 C 503.438 451.838 501.057 452.527 499.475 453.268 C 498.02 453.948 495.828 455.166 494.603 455.974 C 493.377 456.782 491.306 458.543 490.001 459.887 C 488.695 461.231 486.94 463.38 486.099 464.662 C 485.259 465.945 483.97 468.396 483.236 470.11 C 481.994 473.008 481.901 473.534 481.903 477.664 C 481.905 481.053 482.122 482.865 482.821 485.331 C 483.324 487.106 484.528 490.193 485.497 492.19 C 486.465 494.188 488.261 497.326 489.486 499.163 C 490.711 501.001 492.494 503.452 493.447 504.611 C 494.4 505.769 496.274 507.971 497.611 509.503 C 498.948 511.034 502.526 514.593 505.562 517.41 C 508.599 520.227 514.954 525.51 519.685 529.15 C 524.417 532.79 529.241 536.694 530.406 537.826 C 531.666 539.051 532.525 540.236 532.525 540.752 C 532.525 541.229 531.888 542.324 531.109 543.186 C 530.33 544.048 528.754 545.157 527.606 545.651 C 526.032 546.328 524.71 546.553 522.235 546.565 C 520.43 546.573 517.966 546.348 516.76 546.064 C 515.555 545.781 513.4 545.025 511.973 544.385 C 510.546 543.744 508.803 542.781 508.1 542.245 C 507.086 541.472 506.725 540.791 506.357 538.957 C 506.101 537.685 505.892 536.034 505.892 535.287 C 505.892 534.54 506.265 532.824 506.72 531.474 C 507.174 530.123 507.439 528.91 507.306 528.778 C 507.174 528.646 506.727 528.75 506.312 529.009 C 505.723 529.377 505.459 529.361 505.106 528.936 C 504.858 528.637 504.149 528.183 503.53 527.927 C 502.586 527.535 502.434 527.27 502.581 526.268 C 502.682 525.579 502.483 524.659 502.108 524.087 C 501.715 523.486 500.903 522.993 500.043 522.832 C 499.06 522.647 498.328 522.761 497.654 523.202 C 497.12 523.552 496.502 524.435 496.28 525.164 C 496.058 525.893 495.767 527.541 495.633 528.825 C 495.5 530.11 495.579 532.379 495.809 533.869 C 496.04 535.359 496.758 537.667 497.405 538.999 C 498.051 540.33 499.252 542.204 500.073 543.163 C 500.894 544.122 502.525 545.616 503.699 546.483 C 504.872 547.35 507.072 548.662 508.587 549.4 C 510.101 550.137 512.521 551.076 513.963 551.487 C 515.405 551.898 517.675 552.359 519.007 552.513 C 520.338 552.667 522.517 552.718 523.849 552.628 C 525.181 552.537 527.178 552.267 528.288 552.029 L 528.288 552.029 Z  M 505.32 540.062 C 505.147 539.78 505.113 539.441 505.247 539.308 C 505.38 539.175 505.598 539.176 505.733 539.31 C 505.867 539.444 505.9 539.783 505.806 540.063 C 505.67 540.473 505.575 540.473 505.32 540.062 Z  M 503.129 536.955 C 502.672 535.951 502.696 535.924 503.972 536.047 C 504.981 536.145 505.317 536.386 505.416 537.082 C 505.519 537.808 505.35 537.99 504.573 537.99 C 503.921 537.99 503.445 537.649 503.129 536.955 Z  M 503.471 534.562 C 502.552 534.232 502.014 533.756 501.93 533.198 C 501.859 532.726 501.968 532.341 502.172 532.341 C 502.377 532.341 503.116 532.54 503.814 532.784 C 504.764 533.115 505.085 533.472 505.085 534.196 C 505.085 534.729 505.04 535.144 504.984 535.117 C 504.929 535.091 504.248 534.841 503.471 534.562 L 503.471 534.562 Z  M 503.37 531.247 C 502.215 530.784 501.857 530.413 501.857 529.68 L 501.857 528.719 L 503.673 529.602 C 504.672 530.087 505.489 530.709 505.489 530.985 C 505.489 531.261 505.353 531.569 505.186 531.67 C 505.02 531.771 504.203 531.58 503.37 531.247 Z  M 488.776 483.579 C 488.27 481.564 488.098 479.808 488.236 478.081 C 488.382 476.267 488.816 474.839 489.761 473.066 C 490.488 471.703 491.143 470.648 491.217 470.722 C 491.291 470.796 491.164 471.935 490.935 473.252 C 490.706 474.569 490.294 478.098 490.019 481.094 L 489.519 486.541 L 488.776 483.579 Z ","fill-rule":"evenodd"}
 ]}
  }
- }],"fragment/document"]{"style":
- {"@scope":{":scope":{"position":"relative","vertical-align":"top","width":"100%","height":"auto"
- ,"transform":"translateY(40%)","margin-top":"-60%","overflow":"visible"
+ }],"fragment/document","inference/spill","inference/lift",{"inference/crop":[1]}]{"style":{"@scope":{":scope":
+ {"position":"relative","vertical-align":"top","width":"100%","height":"300px"
+ ,"overflow":"visible"
  ,"transition":"all 0.1s"
  ,"& g>path:last-of-type":{}
  ,"& circle":{"transition":"all 0.1s","&:hover":
@@ -38,9 +38,7 @@ Interface#[[{"svg":
  }}
  }}}}
 {text-align:center;}
-style#["layout/overflow",[["style",".snippet"]],"search/record","fragment/document"]
-
-
+style#["layout/overflow",[["style",".snippet"]],"search/record","fragment/document","inference/spill","inference/lift",{"inference/crop":[1]}]
 
 Interface#h1
 
@@ -48,144 +46,116 @@ Ecmascript module loader for commands and procedures.
 
 2024
 
-{text-align:left;margin-left:10%;}
-  The web has become humanly unmaintainable. 
 
-  For an explanation why, see my notes on Form@/Blik_2024_form/?controls=false. 
+{text-align:justify;margin:0 10%;}
+  Websites have become humanly unmaintainable. 
 
-  In summary: 
+  No wonder artificial boilerplate is sweeping the industry. 
 
-{text-align:justify;margin:0px 10%;}
-  The javascript platform has been increasingly convoluted by non-standard syntactic variations in its ecosystem (commonjs, typescript, flow, jsx &c.), requiring growing amounts of configuration to know and maintain (manifest, webpack/babel, eslint, tsconfig &c.). 
+  The javascript platform has been increasingly convoluted by non-standard syntactic variations in its ecosystem (commonjs, flow, typescript, purescript, jsx, templates &c.), requiring growing amounts of configuration to know and maintain (package manifest, transpiler, bundler, linter &c.). Even when these have merit (static analysis, optimization), they are at the expense of javascript's flexibility, which could provide these advantages natively. To make matters worse, package managers (npm, yarn, deno) have long obscured configurations of external modules, contributing to overengineering on the web, rendering unreadable a language that could be distributed in source format (so to servers as to browsers). 
 
-  Even when they have merit (static type integrity, templating), it is at the expense of javascript's flexibility, which could support simple, native alternatives to these features. 
+  Does javascript really have to be this complicated? 
 
-  As insult to injury, package managers (npm, yarn, jsr &c.) have long obscured these configurations of external libraries, contributing to overengineering and growing complexity on the web by concealing implementation details in a language that is ultimately still distributed in source format (so to browsers as to servers). 
-
-  This module paves a way out.
 
 {text-align:center;}
-(Programmming should make us creative, not complacent.)#b 
-{text-align:left;}
+(Simplicity is the courage to express what we think.)#b 
+{text-align:justify;line-height:1.2em}
 
- With the arrival of a loader interface in the (Ecmascript specification)@https://whatwg.github.io/loader/{"style":{"&+.media":{"filter":"invert(0.8)"}}} and its (Node.js implementation)@https://nodejs.org/api/module.html#customization-hooks, volatile dialects can finally be standardized dynamically, without a need for external configurations or a new platform trying to contain this heterogeneity (UMD 🕇@https://jameshfisher.com/2020/10/04/what-are-umd-modules/, Deno@https://www.youtube.com/embed/M3BM9TB-8yA, Bun@https://bun.sh/docs). 
 
-(Loading modules)#b takes 3 steps: 
+ With the arrival of loader commands in the (Ecmascript specification)@https://whatwg.github.io/loader/{"style":{"&+.media":{"filter":"invert(0.8)"}}} and their implementation in Node.js ((version 16)@https://nodejs.org/api/module.html#customization-hooks), volatile dialects can finally be standardized dynamically, without a need for external configurations or a new platform trying to contain this heterogeneity ((UMD)@https://jameshfisher.com/2020/10/04/what-are-umd-modules/, Deno@https://www.youtube.com/embed/M3BM9TB-8yA, Bun@https://bun.sh/docs). 
 
- (1. locate)#b (download, bundle and delete source if not found despite source definition specified, or just redirect to source entry. exposed by nodejs as "resolve"), 
- (2. access)#b (parse and re-serialize if foreign dialect specified or detected. exposed by nodejs as "load"), 
- (3. modularise)#b (not exposed by nodejs; splitting "load" into access + modularise with an implementation using the "vm" module is planned@https://github.com/bpstrngr/interface/issues/26. 
+ Modules consist of imported#b, exported#b and local#b declarations. Procedural statements are allowed due to javascript's lack of an interface to access declarations. Interface#b corrects this with a single procedure that accesses declarations and infers#i arguments when provided. Take a simple module with a function to cumulate numbers: 
 
- Although javascript allows polluting its modules with procedures, it is advised to keep them modular and generic.  
- To invoke their functions with specific arguments, this module extends the 3 steps with an inference of arguments if provided by the client (command/procedure/request): 
+sum#[["/Blik_2023_inference.js/module/namespace/sum"],"interface/fetch","interface/digest",[["exports","sum"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2023_inference.js/module/namespace/sum","fold":5}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em;border:2px dashed #616161}
 
- (4. test)#b, if the namespace exposes cases for itself, 
- (5. infer arguments)#b if provided. 
-
- Take a simple module with a function to cumulate numbers: 
- sum#[["/Blik_2023_search.js/module/namespace/sum"],"interface/fetch",["text"],"meta/serialize",[" // Blik_2023_search.js\n export default "],"inference/collect",["reverse","","join"],[{"source":"/Blik_2023_search.js/module/namespace/sum"}],"script"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
- To invoke it, you shouldn't need to spell out a new procedure for every specific use case. 
-Having Interface merged with your files, it will dynamically infer function names and arguments provided from a command line:
+ To invoke it, you shouldn't need to spell out a new procedure for every specific use case. Merging Interface among your files, it will dynamically access a declaration with arguments provided on a (command line)#b: 
 
 ( git init;
- git remote add interface https://github.com/bpstrngr/interface; 
+ git remote add interface https://github.com/jsinterface/interface;
  git checkout interface/stable .;
- node ./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3;)#span{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161} 
-or peer module: 
+ 
+ node ./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3;)#span{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
 
-inference#script/highlight(
-' import("./Blik_2023_interface.js").then(({resolve})=>
- resolve("./Blik_2023_search.js","sum",1,2,3));'
-){background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161;font-family:monospace;}
- When no inference is provided, the loader functions will be exposed to the command line:
+ When not provided, it will expose its commands for procedural use: 
 
-( node ./Blik_2023_interface.js;
- > resolve("./Blik_2023_search.js","sum",1,2,3);
- < 6
-)#span{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
- To ensure your modules work properly, an exposed "tests" object will get traversed after modularization. Tests map a module's namespace to composition declarations from an input scope to terms and conditions on its output ((testcomposition)#script/highlight(`compose(subject,...terms,condition)(...scope)`){display:inline;work-break:break-all}): 
+( node ./Blik_2023_interface.js;)#span{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}inference#[[
+` > locate("inference/sum");
+ > access("./Blik_2023_inference.js","string");
+ > interpret("...","./Blik_2023_inference.js");
+ > resolve("./Blik_2023_inference.js");
+ > load("./Blik_2023_inference.js");
 
-tests#script/highlight(` export var tests=
- {sum:
- {"type coercion":{scope:["1",2],terms:[3],condition:["equal"]}
- ,"NaN":
-[{scope:["a",2],terms:[NaN],condition:["equal"]}
-,{scope:[{},2],terms:[NaN],condition:["equal"]}
-]}
- };`){background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
-To test manually, invoke the function directly with the module name: 
+["./Blik_2023_inference.js","sum"]
+"..."
+SourceTextModule
+Module
+"..."
 
-( node ./Blik_2023_interface.js ./Blik_2023_meta.js test "./Blik_2023_search.js";)#span{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
- By default, node.js rejects module (or npm package) specifiers that aren't available, requiring separate package management notoriously leading to complicated version conflicts. Interface recovers from location failures if a respective entry for the specifier is declared in source definitions (sources.json), loading them as specified there. (Source definitions)#b map relative file specifiers to local/remote entry points (file, tarball or sparse git branch), along with parsing/bundling specifications (dialect, alias, edit (source), replace (bundle)) or patches: 
+`],"script/highlight",["resolve(\"./Blik_2023_inference.js\",\"sum\",1,2,3);"],"script/commandline"]{background:transparent;max-width:90%;max-height:17em;margin:auto;border-radius:.5em; border:2px dashed #616161;font-family:monospace;caret-shape:block;}
+
+(Module loading)#b takes 3 steps: 
+
+ (1. locate:)#b test availability of module, if not found use source definition to redirect, download, access and delete source. Imported by Node as "resolve"#b. 
+
+ (2. access:)#b syntactic evaluation. Includes denotation if foreign dialect detected or specified by source definition. Imported by Node as "load"#b. 
+
+ (3. interpret:)#b semantic evaluation. Not imported by nodejs; used in the load step to run tests, or directly for (manual loading)@https://github.com/jsinterface/interface/issues/26. 
+
+ By default, Node rejects module specifiers that aren't found, necessitating separate package management. Interface thus expands location#i to remote entry points (file, archive or sparse git branch) if declared for the given relative specifier in a (source definition)#b (sources.json), along with its parsing/bundling specification (dialect, alias, edit, replace, patch): 
 
 definitions#script/highlight(
 ` {"module.js":"path/index.js"
- ,"module.js":["path/index.js",{dialect:"commonjs",edit:{"regexp":""},alias:{specifier:""},replace:{string:""}}]
+ ,"module.js":["path/index.js",{dialect:"commonjs",alias:{specifier:""},edit:{regexp:"source"},replace:{string:"bundle"}}]
  ,"module.js":{"protocol://domain/author/module":["index.js","entry2.js"]}
  ,"module.js":{"protocol://domain/author/module":{"branch":["path/index.js","../../module.patch"]}}
  ,"module.js":{"protocol://domain/author/module/tarball/branch":["path/index.js"]}
  ,"module.js":{"protocol://domain/author/module/sparse/checkout/path sparse/checkout/path":{"branch or tag":["path/index.js"]}}
  };
-`){background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
- Let's see source definitions for the external syntax parser, bundler and serializer Interface uses to standardize dialects ((acorn)@https://github.com/bpstrngr/interface/issues/4) and rollup@https://github.com/bpstrngr/interface/issues/5 are under deprecation in favor of generic parsing and bundling due to their obsolete complexity): 
- sources#[["/Blik_2023_sources.json"],"interface/fetch",["json",["haverbeke_2012_acorn.js","Harris_2015_rollup.js","davidbonnet_2015_astring.js"]],"inference/collect",["reverse"],"inference/iterate","search/extract","meta/aphorize",[{"source":"Blik_2023_sources.json","fold":4}],"script"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
+`){background:transparent;max-width:90%;margin:auto;overflow:scroll;border-radius:.5em; border:2px dashed #616161}
 
- When importing these the first time, they will perform parsing and bundling of their own source by being loaded from right there, before replacing their arbitrarily structured sources with an idempotent bundle. 
+ For example, Interface itself imports external modules for a general parser (acorn) and serializer/bundler (astring and rollup) to standardize dialects (though bound for replacement by the Meta#b module's own parse#b and denote#b functions; see (issue 4)@https://github.com/bpstrngr/interface/issues/4 and 5@https://github.com/bpstrngr/interface/issues/5): 
 
- To access the sum function above, we imported Interface directly, which only applied it to load the entry module, but these external ones are imported on-demand when parsing, bundling and serialization take place. They will also be required for any missing module with a source definition you may import first. 
+sources#[["/Blik_2023_sources.json"],"interface/fetch","interface/digest",[["haverbeke_2012_acorn.js","davidbonnet_2015_astring.js","Harris_2015_rollup.js"]],"inference/flip","search/extract","meta/aphorize",[{"source":"/Blik_2023_sources.json","fold":4}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
 
- Therefore to take advantage of Interface implicitly for all recursive imports of peer modules, specify it as node.js's loader module (available from version 16):
+ When importing these for the first time, parsing and denotation of their own source is performed by them being loaded from right there, before the idempotent bundles they produce replace the arbitrarily structured sources. Using Interface directly as we did to access the sum#i function, this logic would apply only to the one module specified, but as in the case of parsing and denotation, modules may in turn import others that don't exist yet either. Getting to specify Interface as a loader module for Node will have it use the resolve#b and load#b commands for all imports: 
 
-( # version 16
-node --loader=./Blik_2023_interface.js ./haverbeke_2012_astring.js sum 1 2 3;
+loader#script/highlight(` node16 --loader=./Blik_2023_interface.js ./haverbeke_2012_acorn.js;
+ node20.2 --import 'data:text/javascript;import("module").then(({register})=>register("./Blik_2023_interface.js",{parentURL:pathToFileURL("./")}));' ./haverbeke_2012_acorn.js;
+ node20.7 --import=./Blik_2023_interface.js ./haverbeke_2012_acorn.js;
+ node21.1 --import=./Blik_2023_interface.js --experimental-detect-module ./haverbeke_2012_acorn.js;
+  # module detection introduced and unflagged in 21.1 and 22.7 
+  # fails to detect modules with eg. export statements far in the file, 
+  # so a classic package.json entry has been needed to ensure module syntax: 
+ cat package.json 2>/dev/null || echo {} | jq '.type="module"' > package.json;
+`){display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
 
- # version 20.2 may have broken access to command line arguments from a worker thread used by both --loader and its new --import flag. 
+ With the "import" flag, module loading happens on a secondary thread where Interface needs to explicitly register#b itself from the primary one. The command line context is also lost there, hence resolve#i suppresses primary imports to let Interface infer#i it directly after registration. A local context identifies the client agent#b ((agent)#script/highlight(`{node,browser,virtual}`){display:inline;word-break:break-all;font-family:inherit}), corresponding language features#b ((features)#script/highlight(`{assertions,attributes,json}`){display:inline;word-break:break-all;font-family:inherit}), thread#b rank, command line flags ((flags)#script/highlight(`[loader,legacy,inspected]`){display:inline;word-break:break-all;font-family:inherit}), locates and loads source definitions ((sources)#b, sourcemap#b), and declares an idempotent peer#b, window#b and scope#b identity for remote fetch#b{}ing and precedent tracking. A non-virtual Node client agency#b then is the condition for the registration procedure, which in turn determines the loader#b thread for the inference command#b to observe#b and delegate#b to (latter can also start threads if supplied a function or module declaration like worker#b). Prompt#b is available for procedures to re-open the command line in case of further context missing. 
 
- # version 20.7.0
-node --import 'data:text/javascript;import("module").then(({register})=>register("./Blik_2023_interface.js",{parentURL:pathToFileURL("./")}));' ./haverbeke_2012_astring.js sum 1 2 3;
+registration#[["/Blik_2023_interface.js"],"interface/resolve",[["register","command","worker","delegate","prompt"]],"inference/flip","search/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2023_interface.js","fold":0}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
 
- # version 20.7.0, with a package.json determining module defaults (echo '{"type":"module"}'>package.json)
-node --import=./Blik_2023_interface.js ./haverbeke_2012_astring.js sum 1 2 3;
+ On the loader thread, initialize#b, resolve#b and load#b take over on registration and import calls to extend location#b and access#b. For rudimentary verification, load#i also performs module interpretation#b to traverse "tests" declarations mapping their interface to compositions of scope, route, context, terms and conditions. 
+ 
+commands#[["/Blik_2023_interface.js"],"interface/resolve",[["initialize","resolve","load","locate","access","interpret","test","tests"]],"inference/flip","search/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"Blik_2023_interface.js","fold":0}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
 
- # module detection fails to detect eg. modules with export statements far in the file, so package.json still recommended after version 20.7. 
-node --import=./Blik_2023_interface.js --experimental-detect-module ./haverbeke_2012_astring.js sum 1 2 3; # node.js 21.1.0
-
- # version 22.7.0 enabled module detection by default. 
-node --import=./Blik_2023_interface.js ./haverbeke_2012_astring.js sum 1 2 3;)#span{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
-
- Node.js will then look for the "resolve" and "load" functions exposed by Interface, and invoke them during every import procedure. 
-
- Since version 20.7, an explicit loader thread registration is required on the primary process, where the generic "--import" flags get executed. Since the client context is lost on secondary threads, Interface will then suppress the primary import and invoke resolution directly. 
-
- All these conditions (invocation context, location, dialects &c.) make the registration, resolution and loading procedures a bit lengthy, but you can expand them here to take a look: 
- sources#[["/Blik_2023_interface.js"],"interface/resolve",[["resolve","load"]],"inference/collect",["reverse"],"inference/iterate","search/extract",["module"],"meta/serialize",[{"source":"Blik_2023_interface.js","fold":0}],"script"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
-
- Due to lack of loader, git or vm modules, browser clients can't perform modularization, only location, access and testing: 
-
-clientside#script/highlight(
-` compose
-(fetch,"text",definition,parse,definition,standardize,serialize
-,nody=>fetch(module,{body,method:"put"}),"text",resolve,pass(test)
-)(module);`){background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161} 
- Since requests to a server act as the loader module for them, you can prevent failed responses by invoking Interface in a server's router function. 
+ The whole Interface module looks like this: 
+ 
+namespace#[["/Blik_2023_interface.js/module/namespace"],"interface/fetch","interface/digest",[["/Blik_2023_interface.js"]],"inference/record",[{"spread":"right"}],{"inference/slip":[0]},"network"]{height:500px}
 
 
 {text-align:center;}
-(Take control of your digital property.)#h2
+(Claim your own property on the Web.)#h2
 {text-align:left;}
 
 
- Now we can consider something potentially more useful than cumulating numbers, like (opening a port)#b to route requests from clients. 
+ Since requests to a server act as the module loader for browser clients, we can further extend Interface by (opening a port)#b to listen to them. Such a function will need two things: a declaration of the model#b you want to expose, and of the protocol#b you want to use. From a command line, we can supply these as modules specifiers, like "./static.js" and "./protocol.json/host/local". After loading these, the expose#b function uses prompt#b to supply missing contexts (port, certification, encryption keys), then composes them into a server routing requests to responses. 
 
- Such a function will need two things: a namespace for the routes you want to expose, and one for the protocol you want to use (both sufficient as module specifiers, eg. "./routes.js" and "./protocol.json/https"). Some of the content of these namespaces can be required, so interactively "prompting" for missing ones (port, certification, encryption keys) can ensure integrity. There's only so many ways to compose these variables into a running server, variations may only differ in style, so here's the exact procedure hosting this document, before we look at examples for routes and protocols: 
+server#[["/Blik_2023_host.js"],"interface/resolve",[["expose","broadcast"]],"inference/flip","search/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"Blik_2023_host.js","fold":0}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
 
-server#[["/Blik_2023_host.js"],"interface/resolve",[["expose","broadcast"]],"inference/flip","search/extract",["module"],"meta/serialize",[{"source":"Blik_2023_host.js","fold":0}],"script"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
+ For more on the generic expressions used to reduce redundancy and cognitive load, check out the Inference@https://jsinterface.org/Blik_2023_inference/?controls=false module. Our main goal with the route#b function is to take the request path and traverse the specified route hierarchy along matching fields. Functional values are invoked with the original request, its body and the current route scope route#script/highlight(`value.call(this,request,body)`){display:inline;white-space:normal;word-break:break-all}, and traversal can continue on their returned values. A "folder" path with a trailing slash can be appended a default route (/: /interface, for html representation). HTTP requests have a "method" field (GET or PUT) that can be considered a secondary path when the traversal would lead to a dead end (/file: route#script/highlight(`get.call(this,request,body)`){display:inline;white-space:normal;word-break:break-all}). To associate certain routes with multiple scopes, a third fallback can be considered to rebind them to origin routes (/author/name/interface -> route#script/highlight(`routes.interface.call(author,request,body)`){display:inline;white-space:normal;word-break:break-all}. Here is how such a router can look: 
 
- For more on the generic expressions used to reduce redundancy and cognitive load, check out the Inference@https://jsinterface.org/Blik_2023_inference/?controls=false module. Our main goal with the route#b function is to take the request path and traverse the specified route hierarchy along matching fields. Functional values are invoked with the original request, its body and the current route scope route#script/highlight(`value.call(this,request,body)`){display:inline;white-space:normal;word-break:break-all}, and traversal can continue on their returned values. A "folder" path with a trailing slash can be appended a default route (/: /interface, for html representation). HTTP requests have a "method" field (GET or PUT) that can be considered a secondary path when the traversal would lead to a dead end (/file: route#script/highlight(`get.call(this,request,body)`){display:inline;white-space:normal;word-break:break-all}). To associate certain routes with multiple scopes, a third fallback can be considered to rebind them to origin routes (/author/name/interface -> route#script/highlight(`routes.interface.call(author,request,body)`){display:inline;white-space:normal;word-break:break-all}. Here is how such a router can look:
+server#[["/Blik_2023_search.js"],"interface/resolve",[["route"]],"inference/flip","search/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"Blik_2023_inference.js","fold":0}],"script"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
 
-server#[["/Blik_2023_search.js"],"interface/resolve",[["route"]],"inference/flip","search/extract",["module"],"meta/serialize",[{"source":"Blik_2023_inference.js","fold":0}],"script"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
-
- After resolving#b the input modules and agent#b specifier, the expose function scans these module namespaces for required variables. The sensitive protocol and certification files are classified#b to be denied access on vulnerable routes. Routes can be of two types: the "default" passive http routes#b, and active websocket "actions"#b to broadcast. In addition, they may expose empty "syndication"#b (API) and "encryption"#b keys it requires from the protocol module. If a certification#b is not found for the https protocol, the distinguishedname#b is used to generate a self-signed one (signing them with a certificate authority over ACME protocol coming later). Lastly a function composition binds the specified port#b to a router#b function receiving incoming requests and routing them to values on the specified cache#b, routes#b or websocket actions#b. The values are then staged#b with appropriate headers and submitted#b as response. If more certificates are provided, they are assigned to the host context#b to recognize each origin (domain name)#b in requests (with a little change, they could also be served different routes). 
+ After resolving#b the input modules and agent#b specifier, the expose function scans these module namespaces for required variables. The sensitive protocol and certification files are classified#b to be denied access on vulnerable routes. Routes can be of two types: the "default" passive http routes#b, and active websocket "actions"#b to broadcast. In addition, they may expose empty "syndication"#b (API) and "encryption"#b keys it requires from the protocol module. If a certification#b is not found for the https protocol, the distinguishedname#b is used to send a certificate signing request to Letsencrypt over ACME protocol, or generate a self-signed one. Lastly a function composition binds the specified port#b to a router#b function receiving incoming requests and routing them to values on the specified cache#b, routes#b or websocket actions#b. The values are then staged#b with appropriate headers and submitted#b as response. If more certificates are provided, they are assigned to the host context#b to recognize each origin (domain name)#b in requests (with a little change, they could also be served different routes). 
 
  Here's an example of complete protocol and route namespaces you can use to host static files and a simple dynamic web interface over http or cached https, with a set of (password) encryption and (google) api keys (not utilized for this simple example). For more advanced routes and interfaces along with demystification of the web, see the Form@https://jsinterface.org/Blik_2024_form/?controls=false module. 
 

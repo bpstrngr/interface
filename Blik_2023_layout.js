@@ -1,4 +1,4 @@
- import {merge} from "./Blik_2023_search.js";
+ import {merge} from "./Blik_2023_inference.js";
  import {scaleLinear} from './Bostock_2011_d3.js';
 
  export var color=

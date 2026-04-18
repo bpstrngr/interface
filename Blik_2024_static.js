@@ -1,21 +1,21 @@
- import {note,compose,buffer,when,collect,infer,combine,wait,drop,slip,differ,crop,each,swap,pass,not,compound,functor,native,exit,tether,either,whether,describe,string,pattern,major,match,has,is,are,ascend,defined,flip,heritage} from "./Blik_2023_inference.js";
- import {access,persist,purge,resolve,list,modularise,cookies,cookie,query,fetch,path,loader,delegate,location,window,listen,infrastructure} from "./Blik_2023_interface.js";
+ import {note,search,merge,prune,record,remember,compose,spill,buffer,when,collect,infer,combine,wait,drop,slip,lift,differ,crop,each,swap,pass,not,compound,functor,native,exit,tether,either,whether,describe,string,pattern,major,match,has,is,are,defined,flip,heritage} from "./Blik_2023_inference.js";
+ import {access,persist,purge,resolve,list,interpret,cookies,cookie,query,fetch,path,loader,delegate,location,window,listen,infrastructure} from "./Blik_2023_interface.js";
  import {document,hypertext,css,throttle,error,capture,defer} from "./Blik_2023_fragment.js";
  import {serialize,mime,proceduralize,sourcemap} from "./Blik_2023_meta.js";
- import {search,merge,prune,random,extract,record,remember} from "./Blik_2023_search.js";
+ import {random,extract} from "./Blik_2023_search.js";
 
  export var encryption={code:undefined};
  export var classified=[/.*\.git.*/];
  export var classify=compose
 (when(are(either(string,pattern)))
 ,each(whether(string,compose(crop(1),slip("path","resolve"),resolve.bind(import.meta.url)),crop(1)))
-,classified.push.bind(classified)
+,spill,classified.push.bind(classified)
 );
  export var published=[];
  export var publish=compose
 (when(are(either(string,pattern)))
 ,each(whether(string,compose(crop(1),slip("path","resolve"),resolve.bind(import.meta.url)),crop(1)))
-,published.push.bind(published)
+,spill,published.push.bind(published)
 );
  export async function permit(name,list,inclusive)
 {let path=[await resolve.bind(import.meta.url)("path","resolve",name),name.endsWith("/")?"/":""].join("");
@@ -30,7 +30,7 @@
 (compose(swap("path","resolve",".",path.slice(index,path.at(-1)==="files"?-1:undefined).reverse().join("/")),resolve.bind(import.meta.url)
 ,pass(permit,classified),access)
 ,compose(drop(1),"url",query,either("format",swap("binary")))
-),whether(infer("isDirectory")
+),lift,whether(infer("isDirectory")
 ,index?swap(route):compose("path",true,classified,list)
 ,access))
  }),{})
@@ -45,7 +45,9 @@
 );
 
  export default
- {get:compose(combine(filesystem,routes),merge)
+ {infrastructure(){return delegate.call(loader,"infrastructure");}
+ ,sources(){return infrastructure();}
+ ,get:compose(combine(filesystem,routes),merge)
  ,put:compose
 (drop(1),pass(buffer(combine
 (compose(path,slip("path","resolve","./"),resolve.bind(import.meta.url),published,true,permit)
@@ -64,17 +66,16 @@
 (compose(access,buffer(JSON.parse,drop(1)))
 ,compose(crop(1),slip("path","relative","./"),resolve.bind(import.meta.url),"/","split")
 ),record
-),error
- ,interface:compose
+),interface:compose
 (crop(1),"get",routes=>(
  {pre:{"#text":JSON.stringify(routes,null,2)}
  ,style:{body:{background:"black",color:"white"}}
- }),"interface","svg",[],"./style",hypertext,document
+ }),"interface","svg",[],"./style",hypertext,document,spill,lift,crop(1)
 ),style:compose
 (drop(),{"@font-face":{"font-family":"averia",src:"url(/Sayers_2011_averia.ttf)"}}
 ,css,["body"],record,{type:"css"},merge
 ),feed()
-{let body=serialize({imports:{"./Blik_2023_search.js":["","merge"]},exports:{default:{}}});
+{let body=serialize({imports:{"./Blik_2023_search.js":["","merge"]},exports:{default:{}}},"module");
  return {body,type:mime("js")};
 },svg:compose
 (drop(),{svg:{viewBox:"0 0 1 1",width:"10px",height:"10px",circle:{cx:"0.5",cy:"0.5",r:"0.3"}}},document
@@ -90,8 +91,8 @@
  let term=path(request).replace(file+"/module","");
  let {origin}=new URL("http"+(request.client.encrypted?"s":"")+"://"+request.headers.host);
  return compose
-(simple(this)?serialize:"toString",term?compose
-(origin+"/"+file,buffer(modularise
+(...simple(this)?["module",serialize]:["toString"],term?compose
+(origin+"/"+file,buffer(interpret
 ,compose(drop(2),origin,location,"replace",resolve.bind(import.meta.url))),either("namespace",crop(1))
 ):compose("//# sourceMappingURL=./sourcemap",collect,"\n","join",["body"],record
 ,{type:mime("js"),headers:["X-",""].map(field=>(
@@ -99,9 +100,8 @@
  },merge)
 )(this);
 },sourcemap
- ,sources(){return infrastructure();}
- ,infrastructure(){return delegate.call(loader,"infrastructure");}
-};
+ ,error
+ };
 
  export function persistence(resource)
 {classify(resource);

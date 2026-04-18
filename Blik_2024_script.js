@@ -1,6 +1,6 @@
- import {merge,prune,unfold,record,extract} from "./Blik_2023_search.js";
+ import {unfold,extract} from "./Blik_2023_search.js";
  import {aphorize,serialize} from "./Blik_2023_meta.js";
- import {infer,compose,buffer,whether,wait,string,note,basic,defined,drop,modular,observe} from "./Blik_2023_inference.js";
+ import {merge,prune,record,infer,compose,cede,buffer,whether,wait,string,note,basic,defined,drop,modular,observe} from "./Blik_2023_inference.js";
  import {window,fetch,digest,path,agent} from "./Blik_2023_interface.js";
  import {document,css,capture,metamarkup,destroy,keyboard} from "./Blik_2023_fragment.js";
  import {EditorState,Compartment} from './haverbeke_2022_codemirror_state.js';
@@ -24,17 +24,16 @@
  [compose.call
 (highlights,Object.entries,infer("map",([field,value])=>({tag:tags[field],...value}))
 ,HighlightStyle.define,syntaxHighlighting
-),lineNumbers(),history(),drawSelection()
+),history(),drawSelection()
 ,foldGutter(),codeFolding(),javascript()
 ,keymap.of([defaultKeymap,historyKeymap,foldKeymap].flat())
  ];
 
- export default async function(source,settings={})
+ export default async function script(source,settings={})
 {if(this&&!modular(this)||source.constructor.name==="IncomingMessage")
  return {imports:
- {"/Blik_2023_search.js":["","merge","record"]
- ,"/Blik_2023_interface.js":["","resolve","fetch"]
- ,"/Blik_2023_inference.js":["","note","slip","compose","collect","combine"]
+ {"/Blik_2023_interface.js":["","resolve","fetch"]
+ ,"/Blik_2023_inference.js":["","note","slip","compose","collect","combine","merge","record"]
  ,"/Blik_2023_fragment.js":["","metamarkup as dataset","destroy","size"]
  ,[file]:["script","fold","resize"]
  }
@@ -97,7 +96,10 @@
  resize.call(this,Math.max(1,Math.round(past*scale)));
 }}
  }}};
- let parent=settings.parent||document({div:{class:"codemirror",...metamarkup(settings)}});
+ let parent=settings.parent||compose.call
+({div:{class:"codemirror",...metamarkup(settings)}}
+,document,spill,lift,crop(1),cede()
+);
  //let language=(new Compartment).of(js());
  let indentation=new Compartment().of(EditorState.tabSize.of(1));
  let doc=string(source)?settings.source?source:await compose(fetch,digest,infer(serialize,"json"),buffer(compose(JSON.parse,aphorize),drop(1)))(source):JSON.stringify(source);
@@ -118,14 +120,15 @@
  }
  ,".cm-foldPlaceholder":{background:"transparent",border:"none"}
  },{dark:true}));
- let state=EditorState.create({doc,extensions:[basetheme,foldtheme,theme,extensions].flat()});
+ let {gutter=true}=settings;
+ let state=EditorState.create({doc,extensions:[basetheme,foldtheme,theme,extensions,gutter&&lineNumbers()].flat()});
  let view=new EditorView({parent,state},window);
  if(settings.fold!==false&&globalThis.window)
  fold.call(parent,settings.fold||0);
  //let style=view.styleModules.flatMap(({rules})=>rules).reverse().join("\n");
  let style=parent.ownerDocument.querySelector("head").querySelector("style");
  if(!globalThis.window)
- parent.prepend(document({style:{"#text":style.textContent}})),style.remove()
+ parent.prepend(compose.call({style:{"#text":style.textContent}},document,spill,lift,crop(1),cede())),style.remove()
 ,parent=parent.cloneNode(true),doc.split("\n").forEach((line,index)=>
  [".cm-line",".cm-lineNumbers>.cm-gutterElement"].map(name=>
  Array.from(parent.querySelectorAll(name))).forEach((lines,gutter)=>
@@ -156,6 +159,7 @@
 {let {view}=this.querySelector(".cm-content").cmView;
  let {state}=view.viewState;
  let effects=[];
+ forceParsing(view,state.doc.length,10000);
  ensureSyntaxTree(state,state.doc.length,10000).iterate(
  {enter({stack:{length},from,to})
 {let effect=depth<=length?foldable(state,from,to):undefined;
@@ -165,16 +169,69 @@
  view.dispatch({effects});
 };
 
+ export function index(editor)
+{if(this&&!modular(this)||editor.constructor.name==="IncomingMessage")
+ return {imports:
+ {"/Blik_2023_interface.js":["","fetch","digest"]
+ ,"/Blik_2023_inference.js":["","note","spill","lift","crop","compose"]
+ ,[file]:["script"]
+ },exports:{default:
+ {".codemirror":
+ {click({target})
+{if(!target.classList.contains("index"))
+ return;
+ let source=target.textContent;
+ let parent=target.closest(".codemirror");
+ compose(fetch,digest,{source,parent},script)(reference);
+}}
+ }}};
+ return compose.call(editor
+,{span:
+ {class:"index",style:{"@scope":{":scope":
+ {display:"block","text-align":"right",overflow:"scroll"
+ ,"&>span":{display:"inline-block","white-space":"nowrap",color:"var(--note)"}
+ }}}
+ ,span:[{"#text":editor.dataset.source}]
+ }
+ },tether(document),spill,lift,crop(1),file+"/module/index/module",tether(capture));
+};
+
+ export function commandline(history,prompt)
+{if(this&&!modular(this)||history.constructor.name==="IncomingMessage")
+ return {imports:
+ {"/Blik_2023_fragment.js":["","keyboard"]
+ ,[file]:["script","highlight"]
+ },exports:{default:
+ {".command":
+ {async keydown({target,keyCode})
+{let {enter,ctrl}=keyboard(keyCode);
+ if(!enter)return;
+ if(ctrl)return;
+ let command=target.firstChild.nodeValue;
+ let event=await eval(command);
+ let [history]=highlight("\n > "+[command.split("\n").join("\n > "),JSON.stringify(event)].join("\n"));
+ target.parentNode.append(...history.childNodes,target);
+ target.firstChild.nodeValue="";
+ destroy(history);
+}}
+ }}};
+ return compose.call(history,{span:
+ {class:"command",contenteditable:true,"#text":prompt,style:{"@scope":{":scope":
+ {display:"block",outline:"none","&:before":{content:'" > "',color:"var(--note)"}
+ }}}
+ }},tether(document),spill,lift,crop(1),file+"/module/commandline/module",tether(capture));
+};
+
  export function highlight(source)
 {let span=[];
  let emit=record((text,classes)=>({"#text":text,class:classes||null})).bind(span);
  let line=span.push.bind(span,{"#text":"\n"});
  highlightCode(source,lezer.parse(source),classHighlighter,emit,line);
- return document({pre:{class:"snippet",span,style:{"#text":compose.call
+ return compose.call({pre:{class:"snippet",span,style:{"#text":compose.call
 (highlights,Object.entries
 ,infer("map",([field,value])=>[".snippet>.tok-"+field,value])
 ,Object.fromEntries,{".snippet":{width:"100%",margin:0}},merge,css
-)}}});
+)}}},document,spill,lift,crop(1));
 };
 
  var basetheme=EditorView.baseTheme(compose.call

@@ -1,4 +1,4 @@
- import {note,something,provide,has,compose,combine,buffer,slip,drop,stream,infer,either,swap,crop,not,whether,pass,promise,collect,simple,functor,defined,string,compound,tether,is,numeric,array,basic,iterable,construct,describe} from "./Blik_2023_inference.js";
+ import {note,something,sum,rank,cede,lift,has,compose,combine,buffer,slip,drop,stream,infer,either,swap,crop,not,whether,pass,promise,collect,simple,functor,defined,string,compound,tether,is,numeric,array,basic,iterable,construct,describe} from "./Blik_2023_inference.js";
 
  export var stringify=scope=>
  scope&&iterable(Object(scope))?String(scope):JSON.stringify(scope);
@@ -29,15 +29,6 @@
  [value, ...groups.slice(0,-2)].reduce((value, group, index) =>
  value.replaceAll("$"+index, group)))
 ,source);
-};
-
- export function sum(...context)
-{// cumulate context values. 
- return context.flat().map(term=>Number(term)||0).reduce((sum,value)=>sum+value,0);
-};
-
- export function extreme(series)
-{return ["min","max"].map(key=>Math[key](...[series].flat()));
 };
 
 export function calendar(timestamps)
@@ -126,224 +117,6 @@ export function calendar(timestamps)
  center[axis]+(width/(axis?ratio:1)/2)*unit));
 };
 
- export function search(term,recursive=false,path=[])
-{// traverse scope for entries satisfying a term (condition or singular path).
- // recursive search includes ranges in recursion domain.
- if(!defined(this))
- return tether(search,...arguments);
- let scope=this;
- if(typeof scope!=='object'||scope===null)
- return [];
- let condition=functor(term);
- if(!condition)
- return !compound(term)?scope[term]:array(term)
-?[term].flat().reduce((scope,field)=>scope?.[field],scope)
-:Object.entries(term).flatMap(([field,term])=>
- [term].flat().flatMap(term=>scope[field]&&search.call(scope[field],term)));
- let [domain,range]=[[],[]];
- for(let field in this)
- [domain,range][term.call(this,[field,this[field]],path)?1:0].push([field,this[field]]);
- if(recursive)
- domain=[domain,range].flat();
- let subrange=domain.flatMap(([field,value])=>Object.entries
-(search.call(value,term,recursive,path.concat(field))
-).map(([path,value])=>[[field,path].join('/'),value]));
- return Object.fromEntries([range,subrange].flat());
-};
-
- export function prune(term,collapse,limit=[],path=[],trace=[])
-{// map entries recursively.
- let scope=this;
- if(!compound(scope))return scope;
- let entries=Object.entries(scope);
- if(!entries.length)
- for(let field in scope)
- entries.push([field,scope[field]]);
- entries=entries.flatMap(function([field,source],index,entries)
-{let terminal=numeric(limit)?path.length===limit:[limit].flat().some(limit=>
-[[limit],[array(limit)?path:[],field]
-].map(compose("flat","/","join")).reduce(Object.is))
- let value=term.call(scope,[field,source],path,trace);
- let pluck=!defined(value);
- if(pluck&&(!collapse||terminal))
- return [];
- if(terminal)
- return [[field,value]];
- let graft=pluck&&collapse;
- let range=[...collect(graft?source:value)].map(value=>
- prune.call(value,term,collapse,limit,path.concat(field),trace.concat([scope])));
- return range.flatMap(scope=>graft
-?Object.entries(compound(scope)?scope:{})
-:[[field,scope]]);
-});
- let iterable=//!entries.length||
- (entries.length||array(scope))&&!entries.some(([field],index,entries)=>
- isNaN(field)||[entries[index-1]?.[0],field].map(Number).reduce((past,next)=>next<past));
- if(iterable)
- entries.forEach(function([field],index,entries)
-{if(!index)
- // snap first index. 
- return field!=0&&entries.forEach(entry=>entry[0]=Number(entry[0])-entries[0][0]);
- let leap=1-field+Number(entries[index-1]?.[0]);
- if(leap)
- // spread plural indexes. 
- entries.slice(index).forEach((entry)=>entry[0]=Number(entry[0])+leap);
-});
- scope=Object.fromEntries(entries);
- return iterable?Object.assign(Array(0),scope):scope;
- // composition for async terms, makes some optimization overdue. 
- return compose.call(entries,infer("reduce",record(function([field,source],index,entries)
-{let terminal=numeric(limit)?path.length===limit:[limit].flat().some(limit=>
-[[limit],[array(limit)?path:[],field]
-].map(compose("flat","/","join")).reduce(Object.is));
- let dispensible=!collapse||terminal;
- return compose(tether(term),either
-(whether(dispensible&&not(defined),swap([]))
-,whether(terminal,value=>[[field,value]])
-,either(whether(collapse&&not(defined),swap(true,source)),slip(false))
-),collect,([graft,...scope])=>[graft,scope.map(scope=>
- prune.call(scope,term,collapse,limit,path.concat(field)))]
-,"flat",provide,collect,([graft,...range])=>range.flatMap(scope=>graft
-?Object.entries(compound(scope)?scope:{})
-:[[field,scope]]))(scope,[field,source],path);
-}),[]),"flat",scope,index);
-};
-
- var index=whether
-((entries,scope)=>(entries.length||array(scope))&&!entries.some(([field],index,entries)=>
- isNaN(field)||[entries[index-1]?.[0],field].map(Number).reduce((past,next)=>
- next<past))
-,compose(pass(infer("forEach",function([field],index,entries)
-{if(!index)
- // snap first index. 
- return field!=0&&entries.forEach(entry=>entry[0]=Number(entry[0])-entries[0][0]);
- let leap=1-field+Number(entries[index-1]?.[0]);
- if(leap)
- // spread plural indexes. 
- entries.slice(index).forEach((entry)=>entry[0]=Number(entry[0])+leap);
-})),Object.fromEntries,slip(Array(0)),Object.assign)
-,Object.fromEntries
-);
-
-//  export function route(scope,term,path)
-// {// insert/invoke term in scope on given path.
-//  if(!scope)return;
-//  let paths=[path(scope,term)].flat().filter(something);
-//  if(!paths.length)return;
-//  let descended=paths.find(field=>route(scope[field],term,path));
-//  if(descended)return descended;
-//  let entries=paths.map(path=>[path,functor(term)?term([path,scope[path]]):term]);
-//  return entries.reduce(record(([path,term])=>infer(term,term=>
-//  array(scope)?scope.splice(path,0,term):Object.assign(scope,{[path]:term})))
-// ,[]);
-// };
-
- export function merge(target,source,override=1)
-{// unite scopes (assign if path specified to override).
- let assign=array(override)||string(override);
- if(assign)
- return [target,...[override].flat(),source].reduce((scope,field,index,route)=>
- route.length-index-1
-?scope[field]=route.length-index>2?scope[field]||{}:route[index+1]
-:route[0]);
- let Group=[Set,Map].find(group=>target instanceof group);
- if(Group)
- return override?source:new Group([source,target].flatMap(part=>Array.from(part)));
- let extensible=[target,source].every(array);
- if(extensible&&!override)
- return target.concat(source);
- // to merge array domains, pass the source as plain object. 
- let disjunct=[target,source].some((term,index,terms)=>
- construct(term)&&!simple(terms[(index+1)%2]));
- let opaque=disjunct||[target,source].some(term=>!compound(term));
- if(opaque)
- return [target,source][Number(Boolean(override))];
- return Object.entries(source).reduce(function(target,[field,next])
-{const past=target[field];
- const value=defined(past)?merge(past,next,override):next;
- if(past===value)
- return target;
- // mutation warning - reduce on an empty target to copy.
- if(defined(value))
- return buffer(Object.assign,drop(1,2))(target,{[field]:value});
- delete target[field];
- return array(target)?[target].flat():target;
-},target);
-};
-
- export function record(range,field="length")
-{// assign range to field of dynamic scope.
- if(array(field))
- return field.filter(something).reverse().reduce((range,field)=>({[field]:range}),range);
- let path=compose(tether(field),collect,"flat");
- let combination=describe(compose(combine(crop(1),tether(range),path),merge),record,...arguments);
- return defined(this)?combination(this):combination;
-};
-
- export function remember(term,distinction="0")
-{// record on an implicit scope. 
- let scope=this||[];
- return either
-(compose(slip(scope),tether(distinction),slip(scope),Reflect.get)
-,compose(slip(scope),combine(record(term,distinction),tether(distinction)),Reflect.get)
-);
-};
-
- export function route(term,...context)
-{// compose with static context, methodic and scope-rebound alternatives. 
- if(functor(context[1]))
- throw Error("Route variant to merge dynamic values on dynamic paths is deprecated. Use search.merge to support it.");
- if(!this)return tether(route,...arguments);
- let scope=this;
- let path=[term].flat();
- let method=context[0]?.method?.toLowerCase();
- let methodic=combine(method,drop(1));
- // record for methodic route taken. 
- let branch=[];
- let branched=compose(swap(branch),"length",major(0));
- let store=pass(record(drop(1,2)).bind(branch));
- let fail=compose(swap(branch),Error("not found: "+path.join("/")),"concat",infer("find",is(Error)),exit);
- let terms=path.map((term,index,path)=>infer(either
-(buffer(term,store)
-,whether(has(method),buffer(compose(methodic,differ(term),store),compose(store,swap(undefined))),infer())
-,buffer(tether(scope[term]),store)
-,fail
-),...context,path.slice(0,index)));
- let composition=describe(compose(...terms,whether
- // invoke method if not done already. 
-(branched,infer(),buffer(compose(infer(method,...context),crop(1)),crop(1))
-)),route,...arguments);
- return scope?composition(scope):composition;
-};
-
- function set(options,namespace)
-{return Object.entries(namespace).reduce((defaults,[field,kinds])=>
- Object.assign(defaults
-,{[field]:options[field]
-?Object.entries(kinds).find(([kind])=>
- [kind,options[field]].map((kind)=>kind.toLowerCase()).reduce(Object.is))?.pop()||
- Error([String(options[field]),'not in "'+field+'" options',Object.keys(kinds),].join(" "))
-:defaults[field],
- }),this);
-};
-
- export function flatten(factor,path=[])
-{// expose factors in scope. 
- let scope=this;
- return [scope].flat().flatMap(scope=>
- [scope,...flatten.call(scope[factor],factor)]);
-};
-
- export function trace(term,path=[])
-{// trace term in scope or stack.
- let scope=this;
- if(scope===term||!scope)return path;
- return Object.entries(scope).reduce((hit,[track,scope])=>hit||
- [term===scope,path.concat(track)].reduce((hit,path)=>
- hit?path:compound(scope)?trace.call(scope,term,path):undefined)
-,undefined);
-};
-
  export function parse(records,separator="\",\"")
 {if(records instanceof ArrayBuffer||records.constructor?.name==="Buffer")
  records=new TextDecoder('utf-8').decode(records);
@@ -391,11 +164,13 @@ export function calendar(timestamps)
  return record(search.call(this,path),path);
 };
 
- export function extract(fields,source)
-{if(!this)return source?extract.call(source,fields):tether(extract,fields);
- if(source)
- return prune.call(this,([field,value])=>fields.includes(field)?undefined:value,0,0);
- return [fields].flat().reduce((term,field)=>
+ export function extract(fields,exclusive)
+{if(!this)return exclusive?extract.call(exclusive,fields):tether(extract,fields);
+ fields=string(fields)?[fields]:fields;
+ if(exclusive)
+ return prune.call(this,([field,value])=>
+ fields.includes(field)?undefined:value,0,0);
+ return fields.reduce((term,field)=>
  merge(term,{[field]:this[field]}),{});
 };
 
