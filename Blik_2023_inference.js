@@ -314,7 +314,7 @@
  return context.push(plural(term)?compose.call(each.call(term,(term,context)=>
  // synchronize promises. 
  spill.call(controller,promise(context.at(-1))?context.at(-1).then(past=>term):term)),lift,cede()):term)&&
- context;
+  context;
 },[]));
 };
 
@@ -760,6 +760,14 @@
  if(!defined(this))
  return pivot(wait,time);
  return new Promise(resolve=>setTimeout(resolve,time)).then(infer.bind(this));
+};
+
+ export function stagger(...context)
+{if(globalThis.process)
+ return spread(context);
+ return revert.call(context,(resolve,reject,context)=>
+ window.requestAnimationFrame(time=>
+ resolve(spread(context))));
 };
 
  export function expect(condition=something,interval=0,limit=Infinity)

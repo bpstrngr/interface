@@ -1,5 +1,5 @@
  import {locate,resolve,agent,window,jsdom,fetch,digest,query,cookies} from "./Blik_2023_interface.js";
- import {note,describe,colors,wait,search,merge,prune,record,route,observe,rank,constant,spread,rotate,deduce,lift,fold,collect,slip,spill,push,infer,either,each,pass,tether,surge,flush,buffer,differ,compose,some,flip,skip,stash,revert,combine,whether,swap,compound,something,string,basic,minor,functor,promise,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdf,when,debug,expect,generator,plural,native,clock,type,complex,heritage,prototype,expressions,cede} from "./Blik_2023_inference.js";
+ import {note,describe,colors,wait,stagger,search,merge,prune,record,route,observe,rank,constant,spread,rotate,deduce,lift,fold,collect,slip,spill,push,infer,either,each,pass,tether,surge,flush,buffer,differ,compose,some,flip,skip,stash,revert,combine,whether,swap,compound,something,string,basic,minor,functor,promise,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdf,when,debug,expect,generator,plural,native,clock,type,complex,heritage,prototype,expressions,cede} from "./Blik_2023_inference.js";
  import {extract,unfold,fields} from "./Blik_2023_search.js";
  import {serialize,proceduralize,mime,data} from "./Blik_2023_meta.js";
  import * as layout from "./Blik_2023_layout.js";
@@ -82,14 +82,6 @@
 ,append.bind(scope)
 ,drop()
 ));
-};
-
- export function stagger(...context)
-{if(agent.node)
- return spread(context);
- return revert.call(context,(resolve,reject,context)=>
- window.requestAnimationFrame(time=>
- resolve(spread(context))));
 };
 
  export var append=describe(compose

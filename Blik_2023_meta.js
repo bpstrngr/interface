@@ -506,7 +506,7 @@
 ,array(namespace))
 ,start);
  let short=declaration.length<100;
- return [short?declaration.replace(/^\n *(.)/,"$1").replace(/^\[\n {/,"[{"):declaration,declaration.endsWith("\n]")?end.replace("\n }","}"):end].join("");
+ return [short?declaration.replace(/^\n *(.)/,"$1").replace(/^\n\[\n {/,"[{"):declaration,declaration.endsWith("\n]")?end.replace("\n }","}"):end].join("");
 };
 
  export function modularize({exports,imports,procedures})
