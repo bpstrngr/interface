@@ -1,6 +1,6 @@
  import {locate,resolve,agent,window,jsdom,fetch,digest,query,cookies} from "./Blik_2023_interface.js";
- import {note,describe,colors,wait,stagger,search,merge,prune,record,route,observe,rank,constant,spread,rotate,deduce,lift,fold,collect,slip,spill,push,infer,either,each,pass,tether,surge,flush,buffer,differ,compose,some,flip,skip,stash,revert,combine,whether,swap,compound,something,string,basic,minor,functor,promise,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdf,when,debug,expect,generator,plural,native,clock,type,complex,heritage,prototype,expressions,cede} from "./Blik_2023_inference.js";
- import {extract,unfold,fields} from "./Blik_2023_search.js";
+ import {note,describe,colors,wait,stagger,search,merge,prune,record,route,observe,rank,constant,spread,rotate,deduce,lift,fold,collect,slip,spill,push,infer,either,each,pass,tether,surge,flush,buffer,differ,compose,some,flip,skip,stash,revert,combine,whether,swap,compound,something,string,basic,minor,functor,promise,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdf,when,debug,expect,generator,plural,native,clock,type,complex,heritage,prototype,expressions,cede,extract,fields} from "./Blik_2023_inference.js";
+ import {unfold} from "./Blik_2023_search.js";
  import {serialize,proceduralize,mime,data} from "./Blik_2023_meta.js";
  import * as layout from "./Blik_2023_layout.js";
  import {color} from "./Blik_2023_layout.js";
@@ -73,13 +73,14 @@
  yield this;
  let scope=bound?this:Reflect.construct(window.DocumentFragment,[]);
  let loop=infer(document.bind(scope),namespace,language);
+ let insert=append.bind(scope);
  yield each.call(fragment||{},whether
 ([simple,string,array,promise,plural,is(window.NodeList),something]
 ,compose(Object.entries,rank,each(compose(crop(1),each([rank]),lift,drop(2,0,flip),push(namespace,language,scope),populate)),lift)
-,compose(slip(scope),tether(text),append.bind(scope))
+,compose(slip(scope),tether(text),insert)
 ,compose(rank,loop),deduce(loop),loop
-,compose(rank,each(append.bind(scope)))
-,append.bind(scope)
+,compose(rank,each(insert))
+,insert
 ,drop()
 ));
 };
@@ -226,7 +227,7 @@
  let name=node.nodeName?.toLowerCase()||"";
  let selectors=name?{id:"#",classList:"."}:{id:'#',class:'.',classed:'.'};
  let attributes=Array.from(node.attributes||[]).filter(({name})=>
- !["id","class","style"].includes(name.toLowerCase())&&!name.startsWith("on")).map(({name,value})=>
+ !["id","class","style"].includes(name.toLowerCase())&&!name.startsWith("on")&&!name.includes(":")).map(({name,value})=>
  "["+[name,value].join("='")+"']").join("");
  return name+Object.entries(selectors).flatMap(([attribute,selector])=>
 [attribute==="classList"?Array.from(node[attribute]):["class","className"].includes(attribute)
@@ -838,7 +839,7 @@
  ,width,height
  });
 
- export var deselect=compose(when(string),/[^\w]/g,"_","replace");
+ export var deselect=compose(when(string),/[^\w+-]/g,"_","replace");
 
  export async function error(path,request)
 {when(is(Error))(this);
@@ -1107,11 +1108,27 @@
 )(node.ownerDocument.defaultView.getSelection(),node.ownerDocument.createRange());
 };
 
- export function transform({transform})
-{if(string(transform))
- transform={baseVal:[{matrix:new DOMMatrixReadOnly(transform)}]};
- let [x,y]=search.call(transform,{baseVal:{0:{matrix:["e","f"]}}});
- return {x,y};
+//  export function transform({transform})
+// {if(string(transform))
+//  transform={baseVal:[{matrix:new DOMMatrixReadOnly(transform)}]};
+//  let [x,y]=search.call(transform,{baseVal:{0:{matrix:["e","f"]}}});
+//  return {x,y};
+// };
+
+ export function transform(node)
+{const value=node.transform.baseVal.consolidate();
+ if(!value)return {x:0,y:0,k:1};
+ let {matrix:{a,b,c,d,e:x,f:y},}=value;
+ // from private method in d3-interpolate/transform/decompose.js.
+ let scaleX=Math.sqrt(a*a+b*b);
+ if(scaleX)(a/=scaleX),(b/=scaleX);
+ let skewX=a*c+b*d;
+ if(skewX)
+ c-=a*skewX,d-=b*skewX;
+ const scaleY=Math.sqrt(c*c+d*d);
+ if(scaleY)(c/=scaleY),(d/=scaleY),(skewX/=scaleY);
+ if(a*d<b*c)[a,b,skewX,scaleX]=[-a,-b,-skewX,-scaleX];
+ return {x,y,k:Math.max(scaleX,scaleY),rotate:(Math.atan2(b,a)*180)/Math.PI,skewX:(Math.atan(skewX)*180)/Math.PI,scaleX:scaleX,scaleY:scaleY}
 };
 
  export function transition(node,style,seconds)
@@ -1325,12 +1342,12 @@
  return;
  let block=past?.class==="block"&&match({},last);
  return [{text:[last?.text||"",block?"":"\n"].join("")},next];
-},"#":function tag([last])
+},"#":function tag([last,past])
 {if(last.style||string(last?.link)||last?.context||last?.compound||/^{|:$/.test(last?.style)||last?.text?.endsWith(" "))
  return false;
  return this.phrase(last).reduce?.((title,text)=>
  title&&[{title,tag:""},text&&{span:{update:false,"#text":text}}])||
- [merge(last,{tag:""})];
+ [merge(last,{compose:true,tag:""})];
 },"@":function link([last])
 {if(last.style||last.context||last.compound)
  return;
@@ -1413,7 +1430,7 @@
 },"[":function compound([last])
 {if(!string(last.tag)||string(last.context)||last.compound)
  return;
- return {compound:"[",title:last.title};
+ return {compound:"[",title:last.title,compose:last.compose};
 },"]":async function compound([last,past])
 {if(!last?.compound)
  return;
@@ -1426,8 +1443,8 @@
  let context=JSON.parse(compound.replace(/`([\s\S]*)`/,(multiline,string)=>
  // normalize multiline string quotations. 
  "\""+string.replace(/\n/g,"\\n").replace(/"/g,"\\\"")+"\""));
- if(context[0]==="this")
- context.splice(0,1,arguments[0].find(is(window.EventTarget)));
+ if(context[0]==="this"||last.compose)
+ context.splice(0,last.compose?0:1,window.document.querySelector(qualify(past)));
  let fragment=await cede(buffer
 (resolve.bind(import.meta.url)
 ,compose(crop(1),"stack",["span","#text"],record,{span:{update:false}},merge)
@@ -1480,7 +1497,7 @@
  ,route:[document,surge,crop(1),{span:{class:"span","#text":"text"}}]
  ,condition:compose(surge,"outerHTML",when(is("<div><span id=\"a\" class=\"span\">text</span></div>")))
  }
- ,none:{context:[undefined],terms:[surge,note],condition:when(is(undefined))}
+ ,none:{context:[undefined],terms:[surge],condition:when(is(undefined))}
  ,language:
  {context:[{span:{"#text":{en:"node"}}},0,"en"]
  ,condition:compose(surge,"outerHTML",when(is("<span>node</span>")))

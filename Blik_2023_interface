@@ -58,27 +58,27 @@ Ecmascript module loader for commands and procedures.
 
 
 {text-align:center;}
-(Simplicity is the courage to express what we think.)#b 
+(Formal languages are artifacts of intelligence, not automation.)#b 
 {text-align:justify;line-height:1.2em}
 
 
- With the arrival of loader commands in the (Ecmascript specification)@https://whatwg.github.io/loader/{"style":{"&+.media":{"filter":"invert(0.8)"}}} and their implementation in Node.js ((version 16)@https://nodejs.org/api/module.html#customization-hooks), volatile dialects can finally be standardized dynamically, without a need for external configurations or a new platform trying to contain this heterogeneity ((UMD)@https://jameshfisher.com/2020/10/04/what-are-umd-modules/, Deno@https://www.youtube.com/embed/M3BM9TB-8yA, Bun@https://bun.sh/docs). 
+ Since the arrival of loader commands in the (Ecmascript specification)@https://whatwg.github.io/loader/{"style":{"&+.media":{"filter":"invert(0.8)"}}} and their implementation in Node.js ((version 16)@https://nodejs.org/api/module.html#customization-hooks), volatile dialects can be standardized dynamically, without a need for external configurations or a new platform trying to contain this heterogeneity ((UMD)@https://jameshfisher.com/2020/10/04/what-are-umd-modules/, Deno@https://www.youtube.com/embed/M3BM9TB-8yA, Bun@https://bun.sh/docs). 
 
- Modules consist of imported#b, exported#b and local#b declarations. Procedural statements are allowed due to javascript's lack of an interface to access declarations. Interface#b corrects this with a single procedure that accesses declarations and infers#i arguments when provided. Take a simple module with a function to cumulate numbers: 
+ Modules consist of imported#b, exported#b and local#b declarations. Procedural statements are allowed due to javascript's lack of an interface to access declarations. Interface#b corrects this with a single procedure that accesses declarations and infers#i arguments when provided. Before seeing that, take a simple module with a function to cumulate numbers: 
 
-sum#[["/Blik_2023_inference.js/module/namespace/sum"],"interface/fetch","interface/digest",[["exports","sum"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2023_inference.js/module/namespace/sum","fold":5}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em;border:2px dashed #616161}
+sum#[["/Blik_2023_inference.js/module/namespace/sum"],"interface/fetch","interface/digest",[["exports","sum"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2023_inference.js/module/namespace/sum","scale":0.8,"gutter":213}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em;border:2px dashed #616161}
 
- To invoke it, you shouldn't need to spell out a new procedure for every specific use case. Merging Interface among your files, it will dynamically access a declaration with arguments provided on a (command line)#b: 
+ To invoke it, you wouldn't want to spell out a new procedure for every specific use case. Merging Interface among your files, it will dynamically access a declaration with arguments provided on a (command line)#b: 
 
-( git init;
+commandline#script/highlight(` git init;
  git remote add interface https://github.com/jsinterface/interface;
  git checkout interface/stable .;
- 
- node ./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3;)#span{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
+
+ node ./Blik_2023_interface.js ./Blik_2023_search.js sum 1 2 3;`){display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161;font-size:.8em}
 
  When not provided, it will expose its commands for procedural use: 
 
-( node ./Blik_2023_interface.js;)#span{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}inference#[[
+procedural#script/highlight(` node ./Blik_2023_interface.js;`){display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;font-size:.8em;color:#616161}inference#[[
 ` > locate("inference/sum");
  > access("./Blik_2023_inference.js","string");
  > interpret("...","./Blik_2023_inference.js");
@@ -91,17 +91,17 @@ SourceTextModule
 Module
 "..."
 
-`],"script/highlight",["resolve(\"./Blik_2023_inference.js\",\"sum\",1,2,3);"],"script/commandline"]{background:transparent;max-width:90%;max-height:17em;margin:auto;border-radius:.5em; border:2px dashed #616161;font-family:monospace;caret-shape:block;}
+`],"script/highlight",["resolve(\"./Blik_2023_inference.js\",\"sum\",1,2,3);"],"script/commandline"]{background:transparent;max-width:90%;max-height:17em;margin:auto;border-radius:0 0 .5em .5em;margin-top:-1px;padding-top:1px;border:2px dashed #616161;border-top:none;font-family:monospace;font-size:.8em;caret-shape:block;}
 
 (Module loading)#b takes 3 steps: 
 
- (1. locate:)#b test availability of module, if not found use source definition to redirect, download, access and delete source. Imported by Node as "resolve"#b. 
+ (1. locate)#b (imported by Node as "resolve"#b): test availability of module. 
 
- (2. access:)#b syntactic evaluation. Includes denotation if foreign dialect detected or specified by source definition. Imported by Node as "load"#b. 
+ (2. access)#b (imported by Node as "load"#b): syntactic evaluation. 
 
  (3. interpret:)#b semantic evaluation. Not imported by nodejs; used in the load step to run tests, or directly for (manual loading)@https://github.com/jsinterface/interface/issues/26. 
 
- By default, Node rejects module specifiers that aren't found, necessitating separate package management. Interface thus expands location#i to remote entry points (file, archive or sparse git branch) if declared for the given relative specifier in a (source definition)#b (sources.json), along with its parsing/bundling specification (dialect, alias, edit, replace, patch): 
+ By default, Node rejects module specifiers that aren't found, necessitating separate package management. Interface thus expands location#i to remote entry points (file, archive or sparse git branch), redirecting or downloading their source before access#i and deleting them after load#i if declared for the given relative specifier in a (source definition)#b (sources.json), along with its syntax specification (dialect, alias, edit, replace, patch): 
 
 definitions#script/highlight(
 ` {"module.js":"path/index.js"
@@ -111,49 +111,45 @@ definitions#script/highlight(
  ,"module.js":{"protocol://domain/author/module/tarball/branch":["path/index.js"]}
  ,"module.js":{"protocol://domain/author/module/sparse/checkout/path sparse/checkout/path":{"branch or tag":["path/index.js"]}}
  };
-`){background:transparent;max-width:90%;margin:auto;overflow:scroll;border-radius:.5em; border:2px dashed #616161}
+`){background:transparent;max-width:90%;margin:auto;overflow:scroll;border-radius:.5em; border:2px dashed #616161;font-size:.8em}
 
- For example, Interface itself imports external modules for a general parser (acorn) and serializer/bundler (astring and rollup) to standardize dialects (though bound for replacement by the Meta#b module's own parse#b and denote#b functions; see (issue 4)@https://github.com/bpstrngr/interface/issues/4 and 5@https://github.com/bpstrngr/interface/issues/5): 
+ For example, Interface itself imports external modules for a general parser (acorn) and serializer/bundler (astring and rollup) to standardize#b dialects in the "load" stage when needed (though all bound for replacement by the Meta#b module's own parse#b and serialize#b functions, and re-serialization is only needed for Node's interpretation stage; see (issue 4)@https://github.com/bpstrngr/interface/issues/4 and 5@https://github.com/bpstrngr/interface/issues/5): 
 
-sources#[["/Blik_2023_sources.json"],"interface/fetch","interface/digest",[["haverbeke_2012_acorn.js","davidbonnet_2015_astring.js","Harris_2015_rollup.js"]],"inference/flip","search/extract","meta/aphorize",[{"source":"/Blik_2023_sources.json","fold":4}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
+sources#[["/Blik_2023_sources.json"],"interface/fetch","interface/digest",[["haverbeke_2012_acorn.js","davidbonnet_2015_astring.js","Harris_2015_rollup.js"]],"inference/flip","inference/extract","meta/aphorize",[{"source":"/Blik_2023_sources.json","scale":0.8}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[4],{"inference/tether":["script/fold"]}]
 
- When importing these for the first time, parsing and denotation of their own source is performed by them being loaded from right there, before the idempotent bundles they produce replace the arbitrarily structured sources. Using Interface directly as we did to access the sum#i function, this logic would apply only to the one module specified, but as in the case of parsing and denotation, modules may in turn import others that don't exist yet either. Getting to specify Interface as a loader module for Node will have it use the resolve#b and load#b commands for all imports: 
+ When importing these for the first time, standardization of their own source is performed by them being accessed from right there, before the idempotent bundles they produce replace the arbitrarily structured sources. Using Interface directly as we did to access the sum#i function, this logic would apply only to the one module specified, but as in the case of standardization, modules may in turn import others that don't exist yet either. Getting to specify Interface as a loader module for Node will have it use the resolve#b and load#b commands for all imports: 
 
 loader#script/highlight(` node16 --loader=./Blik_2023_interface.js ./haverbeke_2012_acorn.js;
  node20.2 --import 'data:text/javascript;import("module").then(({register})=>register("./Blik_2023_interface.js",{parentURL:pathToFileURL("./")}));' ./haverbeke_2012_acorn.js;
  node20.7 --import=./Blik_2023_interface.js ./haverbeke_2012_acorn.js;
  node21.1 --import=./Blik_2023_interface.js --experimental-detect-module ./haverbeke_2012_acorn.js;
-  # module detection introduced and unflagged in 21.1 and 22.7 
-  # fails to detect modules with eg. export statements far in the file, 
-  # so a classic package.json entry has been needed to ensure module syntax: 
- cat package.json 2>/dev/null || echo {} | jq '.type="module"' > package.json;
-`){display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
+`){display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161;font-size:.8em}
+(Module detection introduced and unflagged in 21.1 and 22.7 fails to detect modules with eg. export statements far in the file, so a classic package.json entry may be been needed to ensure module syntax: 
 
- With the "import" flag, module loading happens on a secondary thread where Interface needs to explicitly register#b itself from the primary one. The command line context is also lost there, hence resolve#i suppresses primary imports to let Interface infer#i it directly after registration. A local context identifies the client agent#b ((agent)#script/highlight(`{node,browser,virtual}`){display:inline;word-break:break-all;font-family:inherit}), corresponding language features#b ((features)#script/highlight(`{assertions,attributes,json}`){display:inline;word-break:break-all;font-family:inherit}), thread#b rank, command line flags ((flags)#script/highlight(`[loader,legacy,inspected]`){display:inline;word-break:break-all;font-family:inherit}), locates and loads source definitions ((sources)#b, sourcemap#b), and declares an idempotent peer#b, window#b and scope#b identity for remote fetch#b{}ing and precedent tracking. A non-virtual Node client agency#b then is the condition for the registration procedure, which in turn determines the loader#b thread for the inference command#b to observe#b and delegate#b to (latter can also start threads if supplied a function or module declaration like worker#b). Prompt#b is available for procedures to re-open the command line in case of further context missing. 
+ cat package.json 2>/dev/null || echo {} | jq '.type="module"' > package.json;)#span{display:block;padding:0 5%;color:var(--note);}
 
-registration#[["/Blik_2023_interface.js"],"interface/resolve",[["register","command","worker","delegate","prompt"]],"inference/flip","search/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2023_interface.js","fold":0}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
+ With the "import" specification, module loading happens on a secondary thread where Interface needs to register#b itself procedurally from the primary one. The command line context is also lost there, hence resolve#i re-delegates primary imports to the primary thread for command#b to infer it. A local context identifies the client agent#b ((agent)#script/highlight(`{node,browser,virtual}`){display:inline;word-break:break-all;font-family:inherit}), corresponding language features#b ((features)#script/highlight(`{assertions,attributes,json}`){display:inline;word-break:break-all;font-family:inherit}), thread#b rank, command line flags ((flags)#script/highlight(`[loader,legacy,inspected]`){display:inline;word-break:break-all;font-family:inherit}), locates and loads source definitions ((sources)#b, sourcemap#b), and declares an idempotent scope#b, peer#b, worker#b, browser#b and window#b identity for precedent tracking, remote interfaces (fetch#b or delegate#b) and rendering. A local Node client agency#b then is the condition for the registration procedure, which in turn determines the loader#b thread for the inference command#b to observe#b and delegate#b to (latter can also start threads if supplied a module declaration like worker#b or an ephemeral function). Since initialize#i will also call it on the loader thread, inspect#i then re-binds an open Inspector to the primary thread. Prompt#b is available for procedures to re-open the command line in case of further context missing. 
 
- On the loader thread, initialize#b, resolve#b and load#b take over on registration and import calls to extend location#b and access#b. For rudimentary verification, load#i also performs module interpretation#b to traverse "tests" declarations mapping their interface to compositions of scope, route, context, terms and conditions. 
+registration#[["/Blik_2023_interface.js"],"interface/fetch","interface/digest",["\n","split"],{"inference/infer":[["slice",9,172]]},["\n","join",{"source":"/Blik_2023_interface.js","scale":0.8,"gutter":10}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[0],{"inference/tether":["script/fold"]}]
 
-commands#[["/Blik_2023_interface.js"],"interface/resolve",[["initialize","resolve","load","locate","access","interpret","test","tests"]],"inference/flip","search/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2023_interface.js","fold":0}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
+ On the loader thread, resolve#b and load#b take on import calls to extend location#b and access#b, while initialize#b confirms this to the primary thread when mutually exposing it for command observance and delegation. For rudimentary verification, load#i also performs module interpretation#b to traverse "tests" declarations mapping their interface to compositions of scope, route, context, terms and conditions. 
 
- The whole Interface module looks like this: 
- 
-namespace#[["/Blik_2023_interface.js/module/namespace"],"interface/fetch","interface/digest",[["/Blik_2023_interface.js"]],"inference/record",[{"spread":"right"}],{"inference/slip":[0]},"network"]{height:1000px}
+commands#[["/Blik_2023_interface.js"],"interface/resolve",[["initialize","resolve","load","locate","access","interpret","test","tests"]],"inference/flip","inference/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2023_interface.js","scale":0.8,"gutter":176}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[0],{"inference/tether":["script/fold"]}]
 
+ The rest of Interface contains facilities to scan locations, channels and messages. Notable is the infrastructure function that sorts the scope of loaded modules into their import hierarchy for rendering as a network. 
 
-{text-align:center;}
-(Claim your own property on the Web.)#h2
-{text-align:left;}
+namespace#[["/Blik_2023_interface.js/module/namespace"],"interface/fetch","interface/digest",[["Blik_2023_interface.js"]],"inference/record",[{"spread":"right"}],{"inference/slip":[0]},"network"]{height:1000px}#[["g#Blik_2023_interface_js-sourcemap","g#Blik_2023_interface_js-tests","g#Blik_2023_interface_js-agent","g#Blik_2023_interface_js-features","g#Blik_2023_interface_js-worker","g#Blik_2023_interface_js-browser","g#Blik_2023_interface_js-scope"],{"inference/tether":["network/collapse"]},[1],{"inference/tether":["network/zoom"]}]
+Infrastructure#network("/infrastructure",{"spread":"force","linear":false}){width:100vw;height:500px;z-index:1}
 
+ We can see that interface was commanded to run the expose function of the Host module, with Form and Parameters as the arguments. 
 
- Since requests to a server act as the module loader for browser clients, we can further extend Interface by (opening a port)#b to listen to them. Such a function will need two things: a declaration of the model#b you want to expose, and of the protocol#b you want to use. From a command line, we can supply these as modules specifiers, like "./static.js" and "./protocol.json/host/local". After loading these, the expose#b function uses prompt#b to supply missing contexts (port, certification, encryption keys), then composes them into a server routing requests to responses. 
+ Since requests to a server act as the module loader for browser clients, we can further extend Interface by (opening a port)#b to listen to them. Such a function will need two things: a declaration of the model#b you want to expose, and of the protocol#b you want to use. From a command line, we can supply these as module specifiers, like "./static.js" and "./protocol.json/host/local". After loading them, the expose#b function uses prompt#b to supply missing contexts (port, certification, encryption keys), classifies#b the protocol and certificate files to reject requests to them, reassigns the window origin on the primary and loader threads to fetch dynamic modules. Finally it composes a server routing requests to responses. 
 
-server#[["/Blik_2023_host.js"],"interface/resolve",[["expose","broadcast"]],"inference/flip","search/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2023_host.js","fold":0}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
+server#[["/Blik_2023_host.js"],"interface/resolve",[["expose","broadcast"]],"inference/flip","inference/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2023_host.js","scale":0.8}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[0],{"inference/tether":["script/fold"]}]
 
  For more on the generic expressions used to reduce redundancy and cognitive load, check out the Inference@https://jsinterface.org/Blik_2023_inference/?controls=false module. Our main goal with the route#b function is to take the request path and traverse the specified route hierarchy along matching fields. Functional values are invoked with the original request, its body and the current route scope route#script/highlight(`value.call(this,request,body)`){display:inline;white-space:normal;word-break:break-all}, and traversal can continue on their returned values. A "folder" path with a trailing slash can be appended a default route (/: /interface, for html representation). HTTP requests have a "method" field (GET or PUT) that can be considered a secondary path when the traversal would lead to a dead end (/file: route#script/highlight(`get.call(this,request,body)`){display:inline;white-space:normal;word-break:break-all}). To associate certain routes with multiple scopes, a third fallback can be considered to rebind them to origin routes (/author/name/interface -> route#script/highlight(`routes.interface.call(author,request,body)`){display:inline;white-space:normal;word-break:break-all}. Here is how such a router can look: 
 
-server#[["/Blik_2023_search.js"],"interface/resolve",[["route"]],"inference/flip","search/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2023_inference.js","fold":0}],"script"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
+server#[["/Blik_2023_inference.js"],"interface/resolve",[["route"]],"inference/flip","inference/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2023_inference.js","scale":0.8}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[0],{"inference/tether":["script/fold"]}]
 
  After resolving#b the input modules and agent#b specifier, the expose function scans these module namespaces for required variables. The sensitive protocol and certification files are classified#b to be denied access on vulnerable routes. Routes can be of two types: the "default" passive http routes#b, and active websocket "actions"#b to broadcast. In addition, they may expose empty "syndication"#b (API) and "encryption"#b keys it requires from the protocol module. If a certification#b is not found for the https protocol, the distinguishedname#b is used to send a certificate signing request to Letsencrypt over ACME protocol, or generate a self-signed one. Lastly a function composition binds the specified port#b to a router#b function receiving incoming requests and routing them to values on the specified cache#b, routes#b or websocket actions#b. The values are then staged#b with appropriate headers and submitted#b as response. If more certificates are provided, they are assigned to the host context#b to recognize each origin (domain name)#b in requests (with a little change, they could also be served different routes). 
 
@@ -171,7 +167,7 @@ definitions#script/highlight(
  ,"google":"key"
  ,"password":"key"
  }
-`){background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
+`){background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161;overflow:scroll}
 
  host#script/highlight(
 ` export var classified=[/.*\.git*.*/];
@@ -222,11 +218,11 @@ definitions#script/highlight(
 
  export var syndication={google:undefined};
  export var encryption={password:undefined};
-`){background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
+`){background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161;overflow:scroll}
 
  These routes are also distributed with Interface, so you only need the protocol module to start this server immediately: 
 
-( node --import=./Blik_2023_interface.js ./Blik_2023_host.js expose ./Blik_2024_static.js ./protocol.json/http)#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
+expose#script/highlight(` node --import=./Blik_2023_interface.js ./Blik_2023_host.js expose ./Blik_2024_static.js ./protocol.json/http`){display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
 
 {text-align:center;}
 (Composition over convention)#h2 

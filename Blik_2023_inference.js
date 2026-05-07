@@ -1,7 +1,10 @@
+ import * as namespace from "./Blik_2023_inference.js";
  export * from "./Blik_2026_type.js";
  export const {pathname:address,origin}=new URL(import.meta.url);
  export const location=address.replace(/\/[^/]*$/,"");
  var browser=globalThis.window||(globalThis.constructor.name==="DedicatedWorkerGlobalScope");
+ // skip dynamic inference for combinators in ./infer. 
+ var freeterms=new Set([...Object.values(namespace).filter(functor),Array,Object.assign,Object.values,Object.entries,Object.fromEntries,RegExp].map(term=>term.name));
  const {log}=console;
 
  import {colors,describe,cast,construct,type,defined,something,functor,simple,compound,string,numeric,iterable,array,heritage,asynchronous,promise,generator,asyncgenerator,plural,pattern,basic} from "./Blik_2026_type.js";
@@ -60,7 +63,7 @@
 };
 
  export function deduce(conclusion)
-{// synchronous monadic inference (paramorphism). 
+{// lift asynchronicity. 
  return describe(function(term)
 {return promise(term)?term.then(conclusion):conclusion(term);
 },deduce,conclusion);
@@ -259,11 +262,11 @@
  let [scope]=context;
  let map=functor(term);
  let bound=map&&term.name.startsWith("bound ");
- let free=map&&(!term.name||term.name.includes("(")||term.name===infer.name||term.name===when.name||term.name===not.name||term.name===cede.name||term===Object.assign);
+ let free=map&&(!term.name||term.name.includes("(")||freeterms.has(term.name));
  let detach=string(term)&&term.startsWith("tether ")&&term.substring(7);
  let attend=something(scope)&&!array(term)&&!bound&&!free
 ?[Object(scope),detach||term].reduce((domain,term)=>map
-?(domain[term.name]===term||heritage(domain?.buffer instanceof ArrayBuffer?Object.getPrototypeOf(domain):domain).find(field=>
+?(domain[term.name]===term||heritage(domain?.buffer instanceof ArrayBuffer?Object.getPrototypeOf(domain):domain).find((field,index,fields)=>
 {try{return Object.is(Reflect.get(domain,field),term);}catch(fail){};
 }))&&term
 :Reflect.get(domain,term?.toString?term:null))
@@ -306,16 +309,18 @@
 {// depth-first recursive lift. 
  let controller=this;
  let controlled=is(AbortController)(controller);
- return rank(context.reduce(function next(context,term)
+ let loop=next.apply.bind(next,null);
+ return rank(context.reduce(next,[]));
+ function next(context,term)
 {if(controlled&&controller.signal.aborted)
  return exit(controller.signal.reason);
  if(promise(context)||promise(term))
- return Promise.all([context,term]).then(next.apply.bind(next,null));
+ return Promise.all([context,term]).then(stagger).then(loop);
  return context.push(plural(term)?compose.call(each.call(term,(term,context)=>
  // synchronize promises. 
- spill.call(controller,promise(context.at(-1))?context.at(-1).then(past=>term):term)),lift,cede()):term)&&
-  context;
-},[]));
+ spill.call(controller,promise(context.at(-1))?context.at(-1).then(stagger).then(past=>term):term)),lift,cede()):term)&&
+ context;
+};
 };
 
  export function model(...context)
@@ -419,6 +424,7 @@
  export function each(term,...stack)
 {if(!defined(this))
  return pivot(each,...arguments);
+ let yank=fold(deduce(search("value")));
  let context=plural(this)?this:rank([this]);
  let synchronous=generator(context)&&!asynchronous(term);
  return describe(synchronous
@@ -428,7 +434,7 @@
  function next(context,past){return infer.call(past[past.push(context.next())-1],"done");};
  function resolve(past,context,term,stack)
 {let next=array(term)?term[past.length-1]:term;
- return context[context.length]=compose(fold(deduce(search("value"))),next&&whether(tally(1),infer(next,context,...stack)))(past.at(-1));
+ return context[context.length]=compose(yank,next&&whether(tally(1),infer(next,context,...stack)))(past.at(-1));
 };
 };
 
@@ -638,6 +644,48 @@
  let scope=this;
  return [scope].flat().flatMap(scope=>
  [scope,...flatten.call(scope[factor],factor)]);
+};
+
+ export function cooccurrence(records,{field="phrases"}={})
+{return records.reduce((clusters,record)=>
+ record[field]?.map(phrase=>
+ phrase.toLowerCase()).reduce((clusters,phrase,index,phrases)=>
+ phrases.filter((phrase,coindex)=>coindex!==index).reduce((clusters,cophrase)=>
+ [phrase,cophrase][clusters[phrase]?"slice":"reverse"]().reduce((phrase,cophrase)=>
+ merge(clusters,sum(clusters[phrase]?.[cophrase],1),[phrase,cophrase]))
+,clusters)
+,clusters)
+ ||clusters
+,{});
+};
+
+ export function clone(scope)
+{return merge(JSON.parse(JSON.stringify(scope)),scope);
+};
+
+ export function isolate(path)
+{// prune scope to specified path.
+ return record(search.call(this,path),path);
+};
+
+ export function extract(fields,exclusive)
+{if(!this)return exclusive?extract.call(exclusive,fields):tether(extract,fields);
+ fields=string(fields)?[fields]:fields;
+ if(exclusive)
+ return prune.call(this,([field,value])=>
+ fields.includes(field)?undefined:value,0,0);
+ return fields.reduce((term,field)=>
+ merge(term,{[field]:this[field]}),{});
+};
+
+ export var fields=(record,term=something)=>
+ Object.keys(record).filter(field=>
+ term(record[field]));
+
+ export function relevant(scope,term)
+{return Object.fromEntries(Object.entries(scope).flatMap(([field,value])=>!string(value)
+?["ends","starts"].some(side=>term[side+"With"](field))?Object.entries(value):[]
+:[[field,value]]));
 };
 
  export function debug(...context){debugger;return rank(context);};

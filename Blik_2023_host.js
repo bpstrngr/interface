@@ -1,6 +1,6 @@
- import {note,debug,sum,colors,search,merge,prune,record,remember,route,when,stash,flip,are,functor,string,not,pattern,revert,each,describe,clock,observe,is,has,same,minor,slip,something,compound,infer,tether,whether,collect,rank,buffer,differ,compose,combine,either,drop,crop,swap,wait,exit,pass,binary,simple,array,expect} from "./Blik_2023_inference.js";
- import {delegate,loader,resolve,access,locate,prompt,list,window,jsdom,fetch,digest,persist,version,compress,stage,cookies,cookie,feature} from "./Blik_2023_interface.js";
- import {extract,encrypt} from "./Blik_2023_search.js";
+ import {note,debug,sum,colors,search,merge,prune,record,remember,route,when,stash,flip,are,functor,string,not,pattern,revert,each,describe,clock,observe,is,has,same,minor,slip,something,compound,infer,tether,whether,collect,rank,buffer,differ,compose,combine,either,drop,crop,swap,wait,exit,pass,binary,simple,array,expect,extract} from "./Blik_2023_inference.js";
+ import {browser,delegate,loader,resolve,access,locate,prompt,list,window,jsdom,fetch,digest,persist,version,compress,stage,cookies,cookie,feature} from "./Blik_2023_interface.js";
+ import {encrypt} from "./Blik_2023_search.js";
  import {mime,bytes} from "./Blik_2023_meta.js";
  import {document} from "./Blik_2023_fragment.js";
  import {animal} from "./Blik_2024_svg.js";
@@ -14,7 +14,7 @@
  let {network,port,certification={},distinguishedname,cache}=search.call(credentials,fields);
  let agent=await resolve.call(import.meta.url,network);
  let [[domain,[signature,certificate]=[]]=[]]=Object.entries(certification);
- let [encrypted,syndicated]=await [encryption,syndication].reduce(record(required=> 
+ let [encrypted,syndicated]=await [encryption,syndication].reduce(record(required=>
  required?prompt(extract.call(credentials,Object.keys(required))):{}),[]);
  let required={"https:":{domain,signature,certificate}}[agent.globalAgent.protocol];
  ({port,domain,signature,certificate}=await prompt({port,...required}));
@@ -24,12 +24,13 @@
  merge(globalThis,{cache,published,classified,classify});
  let certificates=await Promise.all(Object.values(certification).flat().map(compose(crop(1),slip("path","resolve"),resolve.bind(import.meta.url))));
  await classify?.(module,...certificates);
- // send jsdom composition to loader thread too so it can fetch modules from this interface during eg. server-side rendering.
- let origin=agent.globalAgent.protocol+"//localhost"+":"+port;
- delegate.call(loader,[[origin],"interface/jsdom"]);
- jsdom(origin);
  let certifications=prune.call(certification,([domain,certificates])=>
  certify(certificates,distinguishedname,[domain]),0,0);
+ // send jsdom composition to loader thread too so it can fetch modules from this interface during eg. server-side rendering.
+ let origin=agent.globalAgent.protocol+"//localhost"+":"+port;
+ //delegate.call(loader,[[origin],"interface/jsdom"]);
+ delegate.call(browser,"configure",origin);
+ jsdom(origin);
  var router=compose(combine(whether
 (match({url:/^http/}),fetch
 ,compose(combine(path,unit),lift,buffer(route.bind(routes),either(tether(routes.error),crop(1))))

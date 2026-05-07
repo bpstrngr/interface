@@ -1,6 +1,6 @@
- import {unfold,extract} from "./Blik_2023_search.js";
+ import {unfold} from "./Blik_2023_search.js";
  import {aphorize,serialize} from "./Blik_2023_meta.js";
- import {merge,prune,record,infer,compose,cede,buffer,whether,wait,string,note,basic,defined,drop,modular,observe} from "./Blik_2023_inference.js";
+ import {merge,prune,record,stagger,infer,compose,cede,buffer,whether,wait,string,note,basic,defined,drop,modular,observe,extract} from "./Blik_2023_inference.js";
  import {window,fetch,digest,path,agent} from "./Blik_2023_interface.js";
  import {document,css,capture,metamarkup,destroy,keyboard} from "./Blik_2023_fragment.js";
  import {EditorState,Compartment} from './haverbeke_2022_codemirror_state.js';
@@ -100,12 +100,11 @@
 ({div:{class:"codemirror",...metamarkup(settings)}}
 ,document,spill,lift,crop(1),cede()
 );
- //let language=(new Compartment).of(js());
  let indentation=new Compartment().of(EditorState.tabSize.of(1));
  let doc=string(source)?settings.source?source:await compose(fetch,digest,infer(serialize,"json"),buffer(compose(JSON.parse,aphorize),drop(1)))(source):JSON.stringify(source);
  let author=cookie("author");
  let {font}=author?await compose(fetch,digest)("/author/"+author):{};
- let size=font?font.size+"px":"1em";
+ let size=font?font.size+"px":(settings.scale||1)+"em";
  let theme=new Compartment().of(EditorView.theme(
  {".cm-content":{"text-align":"left","font-family":settings.font,"font-size":size}
  ,".cm-gutters":{background:"transparent","font-size":size}
@@ -121,10 +120,11 @@
  ,".cm-foldPlaceholder":{background:"transparent",border:"none"}
  },{dark:true}));
  let {gutter=true}=settings;
- let state=EditorState.create({doc,extensions:[basetheme,foldtheme,theme,extensions,gutter&&lineNumbers()].flat()});
+ let state=EditorState.create({doc,extensions:
+[basetheme,foldtheme,theme,extensions
+,gutter&&lineNumbers({formatNumber(line){return gutter-1+line;}})
+].flat()});
  let view=new EditorView({parent,state},window);
- if(settings.fold!==false&&globalThis.window)
- fold.call(parent,settings.fold||0);
  //let style=view.styleModules.flatMap(({rules})=>rules).reverse().join("\n");
  let style=parent.ownerDocument.querySelector("head").querySelector("style");
  if(!globalThis.window)
@@ -155,7 +155,7 @@
 ),note)(text);
 };
 
- export function fold(depth=0)
+ export async function fold(depth=0)
 {let {view}=this.querySelector(".cm-content").cmView;
  let {state}=view.viewState;
  let effects=[];
@@ -167,6 +167,7 @@
 },from:0,to:state.doc.length
  });
  view.dispatch({effects});
+ return this;
 };
 
  export function index(editor)
@@ -209,17 +210,21 @@
  if(ctrl)return;
  let command=target.firstChild.nodeValue;
  let event=await eval(command);
- let [history]=highlight("\n > "+[command.split("\n").join("\n > "),JSON.stringify(event)].join("\n"));
+ let [history]=highlight(" > "+[command.split("\n").join("\n > "),JSON.stringify(event)].join("\n"));
  target.parentNode.append(...history.childNodes,target);
  target.firstChild.nodeValue="";
  destroy(history);
+ target.ownerDocument.defaultView.scrollTo(0,target.scrollHeight);
 }}
  }}};
- return compose.call(history,{span:
+ return compose.call(history
+,{style:{"@scope":{":scope":{overflow:"scroll"}}}
+ ,span:
  {class:"command",contenteditable:true,"#text":prompt,style:{"@scope":{":scope":
  {display:"block",outline:"none","&:before":{content:'" > "',color:"var(--note)"}
  }}}
- }},tether(document),spill,lift,crop(1),file+"/module/commandline/module",tether(capture));
+ }
+ },tether(document),spill,lift,crop(1),file+"/module/commandline/module",tether(capture));
 };
 
  export function highlight(source)

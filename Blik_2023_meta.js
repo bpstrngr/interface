@@ -1,6 +1,6 @@
- import {note,when,wait,sum,pass,drop,swap,match,infer,either,buffer,observe,compose,combine,revert,collect,stream,rank,compound,tether,bind,slip,string,numeric,functor,is,not,native,basic,simple,iterable,array,lambda,imperative,defined,composed,odd,exit,expect,prototype,colors,stash,expressions,search,merge,prune,route,record,functional} from "./Blik_2023_inference.js";
- import {random,relevant} from "./Blik_2023_search.js";
+ import {note,when,extract,relevant,wait,sum,pass,drop,swap,match,infer,either,buffer,observe,compose,combine,revert,collect,stream,rank,compound,tether,bind,slip,string,numeric,functor,is,not,native,basic,simple,iterable,array,lambda,imperative,defined,composed,odd,exit,expect,prototype,colors,stash,expressions,search,merge,prune,route,record,functional} from "./Blik_2023_inference.js";
  import {location,load} from "./Blik_2023_interface.js";
+ import {random} from "./Blik_2023_search.js";
  let address=new URL(import.meta.url).pathname;
 
  export var inheritance=compose
@@ -485,6 +485,7 @@
 
  export function serialize(namespace,format="astring",options)
 {// convert abstract syntax tree or runtime namespace to javascript;
+ if(!namespace)return "";
  let parser={astring:["./davidbonnet_2015_astring.js","generate"]}[format];
  if(namespace?.type==="Program"&&parser)
  return resolve.bind(import.meta.url)(...parser,namespace,options);
@@ -492,12 +493,12 @@
  return namespace.startsWith("data:text/javascript;")?namespace.replace(/^data:text\/javascript;/,""):JSON.stringify(namespace);
  if(functor(namespace))
  // functions may be serialized as "name(){}", "function(){}", or with a name different from the object field. 
- return signature(namespace,format);
+ return compose.call(model(namespace,format),({signature,body})=>signature+body);
  if(namespace[Symbol.toStringTag]==="Module")
  return modularize({exports:namespace});
  if(format==="module")
  return modularize(namespace);
- let [start,end]=array(namespace)?["\n[","\n]"]:["\n {","\n }"];
+ let [start,end]=array(namespace)?"[]":"{}";
  let declaration=Object.entries(prune.call(namespace,([field,value])=>
  functor(value)?"data:text/javascript;"+serialize(value,field):value)).reduce(infer((literal,array,[field,value],index)=>[literal,
 [array?"":/[^\w]/.test(field)?JSON.stringify(field):field
@@ -506,7 +507,9 @@
 ,array(namespace))
 ,start);
  let short=declaration.length<100;
- return [short?declaration.replace(/^\n *(.)/,"$1").replace(/^\n\[\n {/,"[{"):declaration,declaration.endsWith("\n]")?end.replace("\n }","}"):end].join("");
+ let suited=declaration.endsWith("\n]");
+ let wrap=[short||suited?"":"\n",array(namespace)||suited?"":" "].join("");
+ return [wrap,declaration.replace(/^\[\n {/,"[{"),wrap,end].join("");
 };
 
  export function modularize({exports,imports,procedures})
@@ -522,30 +525,28 @@
 +" from \""+module+"\""+(/\.json$/.test(module)?" with {type:\"json\"}":"")+";"
 :(" var {default:"+names[0]+"}=await resolve.bind(import.meta.url)(\""+module+"\");")).join("\n");
  exports=[Object.entries(exports||{}).map(([field,term])=>
-[" export "+({default:field+" "}[field]||(!functional(term)||model(serialize(term,field)).name!==field)&&"var "+field+"="||"")
+[" export "+({default:field+" "}[field]||(!functional(term)||model(term,field).name!==field)&&"var "+field+"="||"")
 ,functional(term)?serialize(term,{[field]:field,default:term.name}[field]):serialize(term,null)
 ].join("")).join("\n\n")
 ,""].join("\n");
- procedures=proceduralize(...[procedures].flat().filter(Boolean));
+ procedures=proceduralize(...Object.values(compound(procedures)?procedures:{procedures}).filter(Boolean));
  return compose(collect,infer("filter",Boolean),"\n\n","join")(imports,exports,procedures);
 };
 
- export function signature(functor,label)
-{return composed(functor)
-?functor.name
-:[String(functor),/^async /].reduce((source,prefix)=>
- source.replace(prefix,"").replace(/^([a-zA-Z\*]+)( *)([a-zA-Z]*)|^\(/
-,(match,declaration,space,name)=>label&&![name,declaration].includes(label)?
-[declaration?"function":match
-,[declaration,name].find(name=>!/function\**/.test(name))?.replace(/^(.)/," $1")
-].join(""):
-[prefix.test(source)?"async ":"","function",space||label&&" ",name||label].join("")));
-};
-
  export function model(term)
-{return ["signature","arguments"].map(expression=>
- expressions[expression].exec(term)[0]).reduce((name,context)=>(
- {name:name.replace(/^(async )*function /,""),context}));
+{if(functor(term))
+ term=String(term);
+ let {signature,lambda}=prune.call
+(extract.call(expressions,["signature","lambda"])
+,([field,expression])=>[expression.exec(term)].flat()[0]
+);
+ let [async,generator]=["async ","*"].map(sign=>signature?.includes(sign)?sign:"");
+ let context=lambda?.slice(0,-2)||signature.slice(signature.indexOf("("));
+ lambda=lambda?.slice(-2);
+ let name=lambda?"":signature?.slice(0,signature.indexOf("(")).replace(/^(async ){0,1}(function){0,1}\*{0,1} */,"")||"";
+ signature=[async,lambda?context:"function",generator,name&&(" "+name),lambda||context].join("");
+ let body=term.slice(term.indexOf(lambda||context)+(lambda||context).length);
+ return {generator,async,name,context,lambda,signature,body};
 };
 
  export function proceduralize(term,...terms)
@@ -557,13 +558,13 @@
  let source=String(term||"");
  return source.replace(new RegExp("^"
 +(imperative(source)?expressions.signature.source:"")
-+expressions.arguments.source+"\\{|\\}[ \\n]*$","g"),"");
++"\\{|\\}[ \\n]*$","g"),"");
 };
 
  export async function sourcemap(request,body,response,route)
 {let target=this;
  if(simple(target))
- target=serialize(target);
+ target=modularize(target);
  let {origin}=new URL("http"+(request.client.encrypted?"s":"")+"://"+request.headers.host);
  let [address,file]=[route[0],route.join("/")+"/module"].map(address=>
  origin+"/"+address);
@@ -574,8 +575,9 @@
  let label=term=>[term?.id,term?.value?.id,term?.key,term?.init?.id].find(Boolean);
  let targets=Object.values(search.call(grammar[1],({1:term})=>mirror(term),0));
  let clip=({start,end},source)=>source.slice(start,end);
- let procedure=(node,index)=>proceduralize(clip(mirror(node),[source,target][index]));
- let names=targets.map(label).map(id=>id.name);
+ let procedure=(node,index)=>proceduralize(
+ clip(mirror(node),[source,target][index]));
+ let names=targets.map(label).map(id=>id?.name);
  let sources=Object.values(search.call(grammar[0]
 ,({1:node})=>mirror(node)&&targets.filter(term=>
  match(...[node,term].map(node=>label(node)?.name))).some(term=>
@@ -583,10 +585,10 @@
  let locations=compose
 (infer("map",node=>
 [[target,node]
-,[source,sources.find(source=>label(source).name===label(node).name&&match(...[source,node].map(procedure)))]
+,[source,sources.find(source=>label(source)?.name===label(node)?.name&&match(...[source,node].map(procedure)))]
 ,label(node)
 ])
-,infer("filter",({1:{1:term}})=>term)
+,infer("filter",({1:{1:term},2:node})=>term&&node)
 ,infer("map",([[target,node],[source,term],{name}])=>
  // https://tc39.es/ecma426/#sec-names-for-generated-javascript-code
  // clip function declaration for method counterparts. 
@@ -944,11 +946,17 @@
 ,{context:["(first(list 1(+ 2 3)9))","lisp"],condition:when(match({body:["first",["list",1,["+",2,3],9]]}))}
 ,{context:["(())","lisp"],condition:when(match({body:[[]]}))}
 ,{context:[`(defun fib (n)
-  \"Return the nth Fibonacci number.\"  
+  "Return the nth Fibonacci number."  
     (if (< n 2)
       n
         (+ (fib (- n 1))
           (fib (- n 2)))))`,"lisp"],condition:when(match({body:["defun","fib",["n"],"\"Return the nth Fibonacci number.\"",["if",["<","n",2],"n",["+",["fib",["-","n",1],"fib",["-","n",2]],["fib",["-","n",2]]]]]}))}
+],javascript:
+[{context:["abc","javascript"],condition:when(match({text:"abc"}))}
+,{context:["abc(def)","javascript"],condition:when(match({name:"abc",arguments:[{name:"def",arguments:[]}]}))}
+,{context:["a(b,c)","javascript"],condition:when(match({name:"a",arguments:["b","c"]}))}
+,{context:["a(b(c))","javascript"],condition:when(match({name:"a",arguments:[{name:"b",arguments:["c"]}]}))}
+,{context:["a(1,2,3)","javascript"],condition:when(match({name:"a",arguments:[1,2,3]}))}
 ]}
  ,serialize:
  {module:

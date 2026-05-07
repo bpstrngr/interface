@@ -1,8 +1,8 @@
- import {note,search,merge,prune,record,remember,compose,spill,buffer,when,collect,infer,combine,wait,drop,slip,lift,differ,crop,each,swap,pass,not,compound,functor,native,exit,tether,either,whether,describe,string,pattern,major,match,has,is,are,defined,flip,heritage} from "./Blik_2023_inference.js";
+ import {note,search,merge,prune,record,remember,compose,spill,buffer,when,collect,infer,combine,wait,drop,slip,lift,differ,crop,each,swap,pass,not,compound,functor,native,exit,tether,either,whether,describe,string,pattern,major,match,has,is,are,defined,flip,heritage,extract} from "./Blik_2023_inference.js";
  import {access,persist,purge,resolve,list,interpret,cookies,cookie,query,fetch,path,loader,delegate,location,window,listen,infrastructure} from "./Blik_2023_interface.js";
  import {document,hypertext,css,throttle,error,capture,defer} from "./Blik_2023_fragment.js";
  import {serialize,mime,proceduralize,sourcemap} from "./Blik_2023_meta.js";
- import {random,extract} from "./Blik_2023_search.js";
+ import {random} from "./Blik_2023_search.js";
 
  export var encryption={code:undefined};
  export var classified=[/.*\.git.*/];

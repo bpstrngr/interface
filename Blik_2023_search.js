@@ -134,54 +134,17 @@ export function calendar(timestamps)
 ,{});
 };
 
- export function cooccurrence(records,{field="phrases"}={})
-{return records.reduce((clusters,record)=>
- record[field]?.map(phrase=>
- phrase.toLowerCase()).reduce((clusters,phrase,index,phrases)=>
- phrases.filter((phrase,coindex)=>coindex!==index).reduce((clusters,cophrase)=>
- [phrase,cophrase][clusters[phrase]?"slice":"reverse"]().reduce((phrase,cophrase)=>
- merge(clusters,sum(clusters[phrase]?.[cophrase],1),[phrase,cophrase]))
-,clusters)
-,clusters)
- ||clusters
-,{});
-};
-
- export function unfold(field,ancestors=new Set())
-{if(!this||ancestors.has(this))
- return [];
- ancestors.add(this);
- let fold=[field].flat().flatMap(field=>functor(field)?field(this):this?.[field]||[]);
- return [this,fold.flatMap(scope=>unfold.call(scope,field,ancestors))].flat();
-};
-
- export function clone(scope)
-{return merge(JSON.parse(JSON.stringify(scope)),scope);
-};
-
- export function isolate(path)
-{// prune scope to specified path.
- return record(search.call(this,path),path);
-};
-
- export function extract(fields,exclusive)
-{if(!this)return exclusive?extract.call(exclusive,fields):tether(extract,fields);
- fields=string(fields)?[fields]:fields;
- if(exclusive)
- return prune.call(this,([field,value])=>
- fields.includes(field)?undefined:value,0,0);
- return fields.reduce((term,field)=>
- merge(term,{[field]:this[field]}),{});
-};
-
- export var fields=(record,term=something)=>
- Object.keys(record).filter(field=>
- term(record[field]));
-
- export function relevant(scope,term)
-{return Object.fromEntries(Object.entries(scope).flatMap(([field,value])=>!string(value)
-?["ends","starts"].some(side=>term[side+"With"](field))?Object.entries(value):[]
-:[[field,value]]));
+ export function unfold(field,limit=new Set())
+{if(!this||!limit)
+ return [this];
+ if(!numeric(limit))
+ if(!limit.has?.(this))
+ limit.add(this);
+ else return [];
+ let fold=[field].flat().flatMap(field=>
+ functor(field)?field(this):this?.[field]||[]);
+ return [this,limit?fold.flatMap(scope=>
+ unfold.call(scope,field,numeric(limit)?limit-1:limit)):fold].flat();
 };
 
  export const tests=
