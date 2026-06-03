@@ -85,17 +85,6 @@
  ,margin:"auto","box-sizing":"border-box"
  };
 
- export var overflow=
- {overflow:"scroll",background:`
- linear-gradient(90deg,var(--abyss) 20%,#ffffff00) center left
-,linear-gradient(90deg,#ffffff00,var(--abyss) 80%) center right
-,radial-gradient(farthest-side at 100% 50%,var(--text),#00000000 80%) center right
-,radial-gradient(farthest-side at 0% 50%,var(--text),#00000000 80%) center left`
- ,"background-size":"40px 100%,40px 100%,10px 120%,10px 120%"
- ,"background-repeat":"no-repeat"
- ,"background-attachment":"local,local,scroll,scroll"
- };
-
  export var link=
  {"a,span[role='link']":{"text-decoration":"none",position:"relative",color:"#0097a7"}
  };

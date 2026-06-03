@@ -1,5 +1,6 @@
  import {note,compose,buffer,when,collect,infer,combine,wait,drop,slip,differ,crop,each,swap,pass,not,compound,functor,native,exit,tether,either,whether,describe,string,pattern,major,match,has,is,are,defined,flip,heritage} from "./Blik_2023_inference.js";
- import {access,persist,purge,resolve,list,cookies,cookie,query,fetch,path,loader,delegate,location,window,listen,socket} from "./Blik_2023_interface.js";
+ import {access,persist,purge,resolve,list,query,fetch,path,swarm,delegate,location,listen,socket} from "./Blik_2023_interface.js";
+ import {cookies,cookie} from "./Blik_2023_fragment.js";
  import {authorize} from "./Blik_2024_static.js";
 
  var sessions={};

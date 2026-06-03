@@ -1,14 +1,11 @@
- import {locate,resolve,agent,window,jsdom,fetch,digest,query,cookies} from "./Blik_2023_interface.js";
- import {note,describe,colors,wait,stagger,search,merge,prune,record,route,observe,rank,constant,spread,rotate,deduce,lift,fold,collect,slip,spill,push,infer,either,each,pass,tether,surge,flush,buffer,differ,compose,some,flip,skip,stash,revert,combine,whether,swap,compound,something,string,basic,minor,functor,promise,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdf,when,debug,expect,generator,plural,native,clock,type,complex,heritage,prototype,expressions,cede,extract,fields} from "./Blik_2023_inference.js";
+ import {locate,command,recompose,delegate,agent,thread,fetch as freefetch,digest,query} from "./Blik_2023_interface.js";
+ import {note,describe,decide,colors,wait,stagger,search,merge,prune,record,route,observe,rank,constant,rotate,deduce,lift,fold,collect,slip,spill,push,infer,either,each,pass,tether,surge,flush,buffer,differ,compose,some,flip,skip,stash,revert,combine,whether,swap,compound,something,string,basic,minor,functor,promise,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdf,when,debug,expect,generator,plural,native,clock,type,complex,heritage,prototype,expressions,cede,extract,fields} from "./Blik_2023_inference.js";
  import {unfold} from "./Blik_2023_search.js";
- import {serialize,proceduralize,mime,data} from "./Blik_2023_meta.js";
+ import {serialize,proceduralize,mime,data,file} from "./Blik_2023_meta.js";
  import * as layout from "./Blik_2023_layout.js";
  import {color} from "./Blik_2023_layout.js";
- if(!window&&!agent.virtual)
- // tests require a browser ready. warning: virtual modules may be used. 
- await jsdom("http://localhost:80/");
  var address=new URL(import.meta.url).pathname;
- export const file=address.replace(/.*\//,"");
+ export const name=file(address);
 
  export var namespaces=
  {xml:"http://www.w3.org/XML/1998/namespace"
@@ -18,6 +15,58 @@
  ,svg:"http://www.w3.org/2000/svg"
  ,viewBox:"http://www.w3.org/2000/svg"
  };
+
+ export var browser=!globalThis.window
+?agent.node&&!thread&&!agent.virtual&&
+ await jsdom("http://localhost:80/")
+:globalThis;
+ export var {window}=browser||{};
+ export var {fetch}=window||{};
+
+ export var worker={imports:
+ {"/Domenic_2010_jsdom.js":["jsdom"]
+ ,"/Blik_2023_interface.js":["","inspect","interpret","access"]
+ }
+ ,exports:
+ {async configure(url)
+{let {JSDOM}=await jsdom;
+ if(!browser)
+ note.call(3,"loading browser client at "+url+"...")
+,browser=Reflect.construct(JSDOM,["",{url,referrer:url,contentType:"text/html",includeNodeLocations:true,storageQuota:10000000}]);
+ else browser.reconfigure({url});
+ window=browser.window;
+ fetch=window.fetch;
+ note.call(3,"navigated browser to "+url);
+},origin(){return browser?.window.location.origin;}
+ ,async fragments()
+{let module="./Blik_2023_fragment.js";
+ let fragments=await interpret(await access(module,"string"),module,{window});
+ console.log(fragments)
+}}
+ ,procedures:{async initialize()
+{var browser,window,fetch;
+ inspect(process.debugPort+2);
+}}};
+
+ export async function jsdom(url)
+{if(this)
+ return this.reconfigure({url}),{window}=this,{fetch}=window
+,note.call(3,"navigated browser to "+url);
+ return window=revert(async function(expose,reject,url)
+{note.call(3,"loading browser client at "+url+"...")
+ let {JSDOM}=await command.call(import.meta.url,"./Domenic_2010_jsdom.js","default");
+ let browser=Reflect.construct(JSDOM,["",{url,referrer:url,contentType:"text/html",includeNodeLocations:true,storageQuota:10000000}]);
+ jsdom=jsdom.bind(browser);
+ let {protocol,hostname,port}=new URL(url);
+ let name=["fetch",protocol.replace(":",""),hostname,port].join("_");
+ fetch=describe(freefetch.bind(browser.window),name);
+ note.call(3,"navigated browser to "+url);
+ expose(window=browser.window);
+})(url);
+};
+
+ export var cookie=cookie=>string(cookie)?cookies(window.document.cookie)[cookie]:Object.entries(cookie||{}).map(([field,value])=>field+"="+value).join(";");
+ export var cookies=buffer(compose(when(string),/ *; */,"split",rank,each(entry=>entry.split("=")),collect,Object.fromEntries),swap({}));
 
  export var create=describe(compose
 (when(either(is("Element"),is("Attribute")),string)
@@ -50,7 +99,6 @@
  return node.remove(),rank([]);
  if(sort===0)
  this.prepend(node);
- //if(value.canvas)debugger
  return document.call(node,value,node.namespaceURI,language);
 };
 
@@ -59,30 +107,11 @@
  return Object.assign(create("Attribute",name,namespace),{value});
 };
 
- function text(content,index)
-{let precedent=Array.from(this.childNodes||[]).filter(({nodeType:type})=>type===3)[index];
+ function text(content,context)
+{let precedent=Array.from(this.childNodes||[]).filter(({nodeType:type})=>type===3)[context?.length];
  if(precedent)
  return Object.assign(precedent,{textContent:content});
  return this.ownerDocument.createTextNode(content);
-};
-
- export function* document(fragment,namespace,language)
-{// yield document nodes and suspended generators of their descendants from a fragment declaration. 
- let bound=is(window.Element)(this);
- if(bound)
- yield this;
- let scope=bound?this:Reflect.construct(window.DocumentFragment,[]);
- let loop=infer(document.bind(scope),namespace,language);
- let insert=append.bind(scope);
- yield each.call(fragment||{},whether
-([simple,string,array,promise,plural,is(window.NodeList),something]
-,compose(Object.entries,rank,each(compose(crop(1),each([rank]),lift,drop(2,0,flip),push(namespace,language,scope),populate)),lift)
-,compose(slip(scope),tether(text),insert)
-,compose(rank,loop),deduce(loop),loop
-,compose(rank,each(insert))
-,insert
-,drop()
-));
 };
 
  export var append=describe(compose
@@ -104,20 +133,47 @@
 ),crop(1)))),rank,drop(1)
 ),"append");
 
- var populate=buffer(whether
-([is(array,"class"),is(simple,"dataset"),is(string,"data-actions")
- ,is(something,"#text")
- ,is(compound)
- ,is(either(string,numeric,binary))
- ,is(null)
- ,is(promise)
- ]
-,compose(each([infer("join"," "),compose(crop(1),collect)]),lift,drop(2,0,record),rotate(1),tether(document),drop(1))
-,compose(each([metamarkup]),lift,drop(-3,1),rotate(1),tether(document),drop(1),lift,lift)
-,compose(each([buffer(JSON.parse,drop(1,2))]),lift,drop(-1,1),flip,tether(capture),infer("getAttributeNode","data-actions"))
-,compose(drop(-2,1),combine(whether(simple,either(Reflect.get,compose(Object.values,search(0))),crop(1)),drop(-1)),lift,flip,combine(crop(1),tether(text)),lift,append)
+ export function* document(fragment,namespace,language)
+{// yield document nodes and suspended generators of their descendants from a fragment declaration. 
+ let bound=is(window.Element)(this);
+ if(bound)
+ yield this;
+ let scope=bound?this:Reflect.construct(window.DocumentFragment,[]);
+ let loop=infer(document.bind(scope),namespace,language);
+ let insert=append.bind(scope);
+ yield each.call(fragment||{},decide(
+ {node:[simple,compose(Object.entries,rank,each(compose(each([rank]),lift,drop(2,0,flip),crop(3),push(namespace,language,scope),populate)),lift)]
+ ,text:[string,compose(slip(scope),tether(text),insert)]
+ ,plural:[array,compose(rank,loop)]
+ ,promise:[promise,deduce(loop)]
+ ,generator:[plural,loop]
+ ,ready:[is(window.NodeList),compose(rank,each(insert))]
+ ,rest:[something,insert]
+ ,else:drop()
+ }))
+};
+
+ var populate=buffer(decide(
+ {text:
+[is(something,"#text"),function(content,field,context,namespace,language,scope)
+{return append(scope,text.call(scope,simple(content)?content[language]||Object.values(content)[0]:content,context))
+}
+//,compose(drop(-2,1),combine(whether(simple,either(Reflect.get,compose(Object.values,search(0))),crop(1)),drop(-1)),lift,flip,combine(crop(1),tether(text)),lift,append)
+],dataset:
+[is(simple,"dataset")
+,compose(drop(3,2),each([metamarkup]),lift,drop(-3,1),rotate(1),tether(document),drop(1),lift,lift)
+],actions:
+[is(string,"data-actions")
+,compose(drop(3,2),each([buffer(JSON.parse,drop(1,2))]),lift,drop(-1,1),flip,tether(capture),infer("getAttributeNode","data-actions"))
+],class:
+[is(array,"class"),function(content,field,context,namespace,language,scope)
+{
+}
+,compose(drop(3,2),each([infer("join"," "),compose(crop(1),collect)]),lift,drop(2,0,record),rotate(1),tether(document),drop(1))
+],plural:
+[compound
 ,compose
-((node,name,...context)=>[node].flat().filter(something).map((node,index)=>[node,name,index,...context]),rank
+((node,name,path,...context)=>[node].flat().filter(something).map((node,index)=>[node,name,index,...context]),rank
 ,each(compose
 (crop(-1),each([rank]),lift
 ,whether(is([simple,not(has("#text"))],"style"),each([compose(crop(1),css,["#text"],record)])),lift
@@ -125,11 +181,15 @@
 ,lift,drop(2,0,append)
 )),lift
 )
-,compose(rotate(1),combine(crop(1),tether(attribute)),lift,append)
-,compose(drop(1),rotate(1),0,tether(descend),infer("forEach",destroy),drop())
-,debug
-,drop()
-),compose(each(["stack"]),rotate(1),drop(4,3),combine(crop(1),tether(text)),lift,append));
+],attribute:
+[either(string,numeric,binary)
+,compose(drop(3,2),rotate(1),combine(crop(1),tether(attribute)),lift,append)
+],null:
+[is(null)
+,compose(drop(3,2),drop(1),rotate(1),0,tether(descend),infer("forEach",destroy),drop())
+],else:drop()
+ })
+,compose(each(["stack"]),rotate(1),drop(4,3),combine(crop(1),tether(text)),lift,append));
 
  export function markup(object,indentation)
 {let xml="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
@@ -166,7 +226,7 @@
 {fields=[fields].flat().filter(Boolean);
  if(fields.length)
  return Object.fromEntries(fields.map(field=>
- [field,cede(whether(numeric,Number,crop(1)))(node.getAttribute(field))]));
+ [field,cede(whether(numeric,Number,crop(1))(node.getAttribute(field)))]));
  node.normalize();
  if(node.documentElement)
  return demarkup(node.documentElement);
@@ -248,7 +308,7 @@
  return {imports:
  {"/Blik_2023_fragment.js":["","capture","image","canvas","insert"]
  ,"/Blik_2023_inference.js":["","infer","buffer","compose","undefine"]
- ,"/Blik_2023_interface.js":["","resolve","path","query","socket"]
+ ,"/Blik_2023_interface.js":["","command","path","query","socket"]
  }
  ,exports:{default:
  {body:
@@ -282,7 +342,7 @@
 }}
  }}
  ,procedures:async function()
-{var actions=await buffer(resolve.bind(import.meta.url),undefine)("/relay/module","default");
+{var actions=await buffer(command.bind(import.meta.url),undefine)("/relay/module","default");
  function listen(event)
 {let message=JSON.parse(event.data);
  if(message.action!=="check")
@@ -291,7 +351,7 @@
 }
 }};
  let activation=
- {exports:{capture,heritage,delegate,defer,prototype,something,defined}
+ {exports:{capture,heritage,dispatch,defer,prototype,something,defined}
  ,procedures:function()
 {capture.call(window.document.body);
  let workers=["worker","serviceworker"];
@@ -324,7 +384,7 @@
  //,"base":{"href":"/"}
 //,{"#text":"setInterval(done=>fetch('/authority',{method:'POST',headers:sessionStorage.getItem('authority')}).then(done=>console.log(done)),1000*60)"}
  };
- let actions=["",file,"module",hypertext.name,"module"].join("/");
+ let actions=["",name,"module",hypertext.name,"module"].join("/");
  capture.call({body},actions);
  return {html:{lang:"en",head,body}};
 };
@@ -335,14 +395,13 @@
  return console.warn("No actions defined to capture on:",this),this;
  let fragment=this?.constructor?.name==="Object";
  let actions=fragment?[]:JSON.parse(this.dataset.actions||"[]");
+ if(this)try{module=JSON.parse(module)}catch(fail){};
  if(fragment||globalThis!==globalThis.window)
  // Re-invoke on client to capture events. 
  return fragment
-?prune.call(this,({1:value})=>merge(value,{dataset:{actions:[module]}}),0,0)
+?prune.call(this,({1:value})=>merge(value,{dataset:{actions:[module].flat()}}),0,0)
 :this.dataset.actions=JSON.stringify(Array.from(new Set([actions,module].flat())))
 ,this;
- if(this)
- try{module=JSON.parse(module)}catch(fail){};
  actions=Promise.all([module].flat().map(module=>
  import(module).then(({default:module})=>module))).then(modules=>
  modules.reduce((past,next)=>Object.assign(past,next),{}));
@@ -353,12 +412,12 @@
  deferred=deferred.difference(new Set(
 [["motion","orientation","orientationabsolute"].map(sensor=>"device"+sensor)
 ,["start","run","end","cancel"].map(state=>"transition"+state)
-,"unhandledrejection"
+,"unhandledrejection","pagereveal","pageshow"
 ].flat().map(event=>"on"+event)));
  deferred.forEach(event=>scope.addEventListener(event.slice(2),refer,{passive:false}));
  actions.then(actions=>
  new Set(Object.values(actions).flatMap(Object.keys)).forEach(event=>
- scope.addEventListener(event,delegate.bind(actions),{passive:false}))||
+ scope.addEventListener(event,dispatch.bind(actions),{passive:false}))||
  console.groupCollapsed("\x1b[32mrouting all propagated events to actions from scope:\x1b[0m\n",{fragment:scope})||
  console.log({[this.ownerDocument.defaultView.location.origin+module]:actions})||
  console.groupEnd()).then(ready=>
@@ -366,7 +425,7 @@
  return this;
 };
 
- export function delegate(event)
+ export function dispatch(event)
 {let target=event.target.document?.body||event.target.body||event.target;
  if(target.nodeType===3)target=target.parentNode;
  let scopes=Object.entries(this).filter(([selector,actions])=>
@@ -382,7 +441,7 @@
  event.preventDefault();
  event=Object.fromEntries("type/target/keyCode/isTrusted/bubbles/srcElement".split("/").map(field=>
  [field,event[field]]));
- this.then(actions=>delegate.call(actions,event));
+ this.then(actions=>dispatch.call(actions,event));
  console.groupCollapsed({["captured "+event.type+" event from"]:event.target});
  console.warn(event);
  console.groupEnd();
@@ -508,16 +567,16 @@
 :parse(resource,semiotics);
 };
 
- export function dispatch(form)
-{return document(
- {"img":
- {onload:"!function expect(){setTimeout(tick=>(typeof dispatch=='undefined'?expect:dispatch).call(this,event),500)}.call(this)"
- ,src:"data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
- ,"data-subject":JSON.stringify(form)
- ,class:"defer"
- }
- });
-};
+ // export function dispatch(form)
+// {return document(
+//  {"img":
+//  {onload:"!function expect(){setTimeout(tick=>(typeof dispatch=='undefined'?expect:dispatch).call(this,event),500)}.call(this)"
+//  ,src:"data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+//  ,"data-subject":JSON.stringify(form)
+//  ,class:"defer"
+//  }
+//  });
+// };
 
  export function insert(fragment,place,target)
 {// deprecated in favor of document.call(target,{fragment}) - place inferred from fragment signature. 
@@ -608,7 +667,7 @@
 };
 
  export function print(file)
-{return resolve.bind(import.meta.url)(
+{return command.bind(import.meta.url)(
 ["/mozilla_2010_pdf_viewer_brightspace.js"
 ,"/mozilla_2010_pdf_link_service_brightspace.js"
 ,"/mozilla_2010_pdf_brightspace.js"
@@ -620,7 +679,7 @@
  ,container:compose.call({div:
  {class:"pdfjs",style:"margin:auto;height:100%;overflow:scroll;"
  ,div:{id:"viewer"}
- }},document,spill,lift,crop(1),cede())
+ }},document,spill,lift,crop(1),cede)
  });
  viewer.linkService.setViewer(viewer);
  pdf.getDocument(file).promise.then(combine
@@ -666,15 +725,15 @@
  let src=is(Blob)(source)?URL.createObjectURL(source):source;
  let [img]=compose(document,spill,lift)({img:{}});//crossOrigin:"anonymous"}})
  if(defer)
- return cede(spill)(document.call(img,{src,alt})).next().value;
- return cede(revert((resolve,reject,img,src,alt)=>compose.call
+ return cede(spill(document.call(img,{src,alt})));
+ return cede(revert((command,reject,img,src,alt)=>compose.call
 (img
-,{onload(){if(/^blob:/.test(this.src))URL.revokeObjectURL(this.src);resolve(this,...arguments);}
+,{onload(){if(/^blob:/.test(this.src))URL.revokeObjectURL(this.src);command(this,...arguments);}
  ,onerror(){if(/^blob:/.test(this.src))URL.revokeObjectURL(this.src);reject(this,...arguments);}
  ,src,alt
  },Object.assign
 ,globalThis.window?undefined:infer("dispatchEvent",new window.Event("load"))
-)))(img,src,alt);
+))(img,src,alt));
  //if(!colors[color])svg.select("circle#"+id).attr("fill",["rgb(",...new Vibrant(this).swatches()["Vibrant"].rgb].reduce((hex,hue,index)=>hex+hue+(index<2?",":")")));
 };
 
@@ -702,7 +761,7 @@
 ,{style:"background:repeating-linear-gradient(135deg,black,black 2px,transparent 2px,transparent 4px"
  ,dataset:
  {source:image.getAttribute("src")
- ,actions:["",file,"module","canvas","module"].join("/")
+ ,actions:["",name,"module","canvas","module"].join("/")
  }
  }));
  else frame.drawImage(image,0,0);
@@ -867,12 +926,13 @@
  {"[role=link]":
  {click()
 {let address=this.getAttribute("data-address");
- if(/^#/.test(address))
- return this.ownerDocument.defaultView.location=address;
+ let {pathname,hash}=new URL(address);
+ if(hash&&match(this.ownerDocument.defaultView.location,{pathname}))
+ return merge(this.ownerDocument.defaultView.location,{hash});
  let redirect=this.classList.contains("redirect")?"_blank":undefined;
  if(redirect)
  return this.ownerDocument.defaultView.open(address,redirect);
- let {1:extension}=new URL(address).pathname.match(/\.([^\/]+)$/)||[];
+ let {1:extension}=pathname.match(/\.([^\/]+)$/)||[];
  let [format]=extension&&fields(
  {audio:["mp3"],video:["mp4","webm"]
  ,img:["png","jpg","jpeg","svg","gif","webp"]
@@ -910,7 +970,7 @@
  }
  }
  };
- address=/^http/.test(address)?address:[window.location.origin,address.replace(/^\/*/,"")].join("/");
+ address=/^http/.test(address)?address:[window.location.origin,window.location.pathname,address.replace(/^[\/\.]*/,"")].join("");
  let {1:extension}=new URL(address).pathname.match(/\.([^\/]+)$/)||[];
  let [format]=extension&&fields(
  {audio:["mp3"],video:["mp4","webm"]
@@ -933,7 +993,7 @@
  ,"#text":title
  }
  }
-,["",file,"module",link.name,"module"].join("/")
+,["",name,"module",link.name,"module"].join("/")
 );
 };
 
@@ -1002,9 +1062,9 @@
  // let chapters=Array.from({length:7},(chapter,index)=>
  // Array.from(fragment.querySelectorAll("h"+index))).flat().filter(node=>
  // node!==target);
- let chapters=unfold.call(fragment,compose("childNodes",Array.from)).filter(node=>
+ let chapters=unfold.call(fragment,compose("childNodes",Array.from)).flatMap((node,index,nodes)=>
+ nodes.splice(0,Infinity,nodes.splice(0,nodes.indexOf(target)+1))).filter(node=>
  /h\d/.test(node.nodeName.toLowerCase()));
- chapters=chapters.slice(chapters.indexOf(target)+1);
  let top=Math.min(...chapters.map(node=>Number(node.nodeName.at(-1))));
  let tree=chapters.reduce(function fold(tree,node,index,chapters)
 {let depth=node.nodeName.at(-1)-top;
@@ -1267,24 +1327,24 @@
  export async function* parse(source,semiotics=semiotics)
 {if(!semiotics)
  exit("no semiotics provided for parsing "+type(source));
- let [index,{length},syntax]=[-1,source,[{}]];
+ let [index,{length},syntax,last]=[-1,source,[{}]];
  for(let text of source)
-{let [next,fragment]=[await semiotics[text]?.(syntax)||semiotics.text(text,syntax)].flat();
+{let [next,fragment]=[await semiotics[text]?.(syntax,last)||semiotics.text(text,syntax,last)].flat();
  ++index,[next,fragment].forEach((term,index)=>
  term&&syntax.splice(index,1,term));
  if(!index)
  yield {style:{"@scope":{":scope>.block":{display:"block"}}}}
  let block={"data-range":index,class:"block",update:"last"};
  if(fragment)
- yield stagger({span:{...block,...simple(fragment)?fragment:{fragment}}});
+ last=yield stagger({span:{...block,...simple(fragment)?fragment:{fragment}}});
  if(index+1===length&&next.text)
  yield {span:{...block,span:{update:"last","#text":next.text}}};
 };
 };
 
  export var semiotics=
- // return [last,past] pair to parse and yield or false to skip.
- // pririty determines field to populate on last. 
+ // return [last,past] pair to label and yield or false to skip.
+ // priority determines field to populate on last. 
  {text(text,[last={}])
 {let field=Object.values(semiotics).map(({name})=>name).find(field=>defined(last[field]))||semiotics.text.name;
  let start=!field;
@@ -1306,7 +1366,7 @@
 {return label?.split(".").reduce((fragment,id,index)=>
  simple(fragment)
 ?prune.call(fragment,([field,value])=>
- length?merge(value,{[index?"class":"id"]:id}):value,0,0)
+ merge(value,{[index?"class":"id"]:id}),0,0)
 :flush(...document.call(fragment,{[index?"class":"id"]:id}))
 ,fragment);
 }," ":function terminate([last,past])
@@ -1316,14 +1376,10 @@
  let [tag,address]="#@".split("").map(field=>last?.[semiotics[field].name]);
  let noise=!/[a-zA-Z]/.test([tag,address].find(Boolean));
  if(noise||!tag&&!address)
- return defined(tag??address)?
-[merge(last
+ return defined(tag??address)?[merge(last
 ,{text:[last.text||last.title||"",defined(tag)?"#":"@"," "].join("")
  ,style:last.style
- })
-]:false;
- if(tag==="span")
- console.log;
+ })]:false;
  let [text]=[tag,address].map(phrase=>phrase?.match(/[\.,\)\?:;]+$/)).find(Boolean)||[""];
  if(text)
  [tag,address]=[tag,address].map(phrase=>phrase?.slice(0,-text.length));
@@ -1363,29 +1419,28 @@
  let open="()".split("").map(parenthesis=>
  Array.from(last.context?.matchAll("\\"+parenthesis)||[]).length).reduce((open,close)=>
  close<open);
- let a=last?. context?. includes("13:282-304. \n")
- if(open&&!a)
- return false;
  if(string(last?.link||last?.tag))
  return merge(this[" "](...arguments),{0:{text:")"}});
  let jsons=[...last.context?.matchAll(expressions.json)||[]].map(([json])=>json);
- let context=jsons.reduce((context,json)=>
+ let terms=(context,json)=>
 [context,context.pop().split(json).reduce((before,after)=>
  "\"'`".split("").some(quote=>Array.from(before.matchAll(quote)).length%2)
 ?[before,json,after].join("")
 :[before,...JSON.parse("["+json+"]"),after].filter(Boolean))
-].flat(),[last.context]).flatMap(term=>string(term)
-?Array.from(term.replace(/(^(\n|,| +)|( +|,|\n)$)/g,"")).reduce(([last,...context],symbol,index,{length})=>
+].flat();
+ let split=([last,...context],symbol,index,{length})=>
 [!last.length&&/ |,/.test(symbol)?last:last[0]===symbol
 ?[...index+1<length?[""]:[],last.substring(1)]
 :[last+symbol]
 ,context
-].flat()
-,[""]).reverse():[term]);
- let evaluate=compose(locate.bind(import.meta.url),rank,push(...context),resolve.bind(import.meta.url));
+].flat();
+ let context=jsons.reduce(terms,[last.context]).flatMap(term=>string(term)
+?Array.from(term.replace(/(^(\n|,| +)|( +|,|\n)$)/g,"")).reduce(split,[""]).reverse()
+:[term]);
+ let evaluate=compose(locate.bind(import.meta.url),push(...context),command.bind(import.meta.url));
  let fragment=await compose
 (buffer(evaluate,fail=>({span:{update:false,"#text":fail?.stack}}))
-,each(infer(this.annotate,last.title)),cede()
+,each(infer(this.annotate,last.title)),cede
 )(last.action);
  return [{},fragment];
 },"{":function style([last,past])
@@ -1431,7 +1486,7 @@
 {if(!string(last.tag)||string(last.context)||last.compound)
  return;
  return {compound:"[",title:last.title,compose:last.compose};
-},"]":async function compound([last,past])
+},"]":async function compound([last,past],term)
 {if(!last?.compound)
  return;
  let compound=[last.compound,"]"].join("");
@@ -1442,13 +1497,13 @@
  return;
  let context=JSON.parse(compound.replace(/`([\s\S]*)`/,(multiline,string)=>
  // normalize multiline string quotations. 
- "\""+string.replace(/\n/g,"\\n").replace(/"/g,"\\\"")+"\""));
+ "\""+string.replace("\\","\\\\").replace(/\n/g,"\\n").replace(/"/g,"\\\"")+"\""));
  if(context[0]==="this"||last.compose)
- context.splice(0,last.compose?0:1,window.document.querySelector(qualify(past)));
+ context.splice(0,last.compose?0:1,term.querySelector(qualify(past)));
  let fragment=await cede(buffer
-(resolve.bind(import.meta.url)
+(compose(recompose,compose,"call")
 ,compose(crop(1),"stack",["span","#text"],record,{span:{update:false}},merge)
-))(context);
+)(context,import.meta.url));
  collect(each.call(fragment,infer(this.annotate,last.title)));
  return [{},fragment];
 }//,"<":function(last,...syntax){if(last.style||last.context)return;return this.text("&lt;",...arguments);}

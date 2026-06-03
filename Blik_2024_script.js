@@ -1,8 +1,8 @@
  import {unfold} from "./Blik_2023_search.js";
  import {aphorize,serialize} from "./Blik_2023_meta.js";
  import {merge,prune,record,stagger,infer,compose,cede,buffer,whether,wait,string,note,basic,defined,drop,modular,observe,extract} from "./Blik_2023_inference.js";
- import {window,fetch,digest,path,agent} from "./Blik_2023_interface.js";
- import {document,css,capture,metamarkup,destroy,keyboard} from "./Blik_2023_fragment.js";
+ import {fetch,digest,path,agent} from "./Blik_2023_interface.js";
+ import {window,document,css,cookie,capture,metamarkup,destroy,keyboard} from "./Blik_2023_fragment.js";
  import {EditorState,Compartment} from './haverbeke_2022_codemirror_state.js';
  import {EditorView,keymap,lineNumbers,drawSelection} from './haverbeke_2022_codemirror_view.js';
  import {history,defaultKeymap,historyKeymap} from './haverbeke_2022_codemirror_commands.js';
@@ -32,7 +32,7 @@
  export default async function script(source,settings={})
 {if(this&&!modular(this)||source.constructor.name==="IncomingMessage")
  return {imports:
- {"/Blik_2023_interface.js":["","resolve","fetch"]
+ {"/Blik_2023_interface.js":["","command","fetch"]
  ,"/Blik_2023_inference.js":["","note","slip","compose","collect","combine","merge","record"]
  ,"/Blik_2023_fragment.js":["","metamarkup as dataset","destroy","size"]
  ,[file]:["script","fold","resize"]
@@ -98,7 +98,7 @@
  }}};
  let parent=settings.parent||compose.call
 ({div:{class:"codemirror",...metamarkup(settings)}}
-,document,spill,lift,crop(1),cede()
+,document,spill,lift,crop(1),cede
 );
  let indentation=new Compartment().of(EditorState.tabSize.of(1));
  let doc=string(source)?settings.source?source:await compose(fetch,digest,infer(serialize,"json"),buffer(compose(JSON.parse,aphorize),drop(1)))(source):JSON.stringify(source);
@@ -128,12 +128,11 @@
  //let style=view.styleModules.flatMap(({rules})=>rules).reverse().join("\n");
  let style=parent.ownerDocument.querySelector("head").querySelector("style");
  if(!globalThis.window)
- parent.prepend(compose.call({style:{"#text":style.textContent}},document,spill,lift,crop(1),cede())),style.remove()
-,parent=parent.cloneNode(true),doc.split("\n").forEach((line,index)=>
+ parent.prepend(compose.call({style:{"#text":style.textContent}},document,spill,lift,crop(1),cede)),style.remove()
+,doc.split("\n").forEach((line,index)=>
  [".cm-line",".cm-lineNumbers>.cm-gutterElement"].map(name=>
  Array.from(parent.querySelectorAll(name))).forEach((lines,gutter)=>
- lines[index+gutter]||lines.at(-1).after(Object.assign(lines.at(-1).cloneNode(true)
-,{textContent:gutter?index+1:line}))));
+ lines[index+gutter]||Object.assign(lines.at(-1),{textContent:gutter?index+1:line})));
  return settings.parent?parent:capture.call(parent,file+"/module/default/module");
 };
 
@@ -209,8 +208,8 @@
  if(!enter)return;
  if(ctrl)return;
  let command=target.firstChild.nodeValue;
- let event=await eval(command);
- let [history]=highlight(" > "+[command.split("\n").join("\n > "),JSON.stringify(event)].join("\n"));
+ let event=await eval(command).catch(fail=>fail);
+ let [history]=highlight(" ❯ "+[command.split("\n").join("\n ❯ "),JSON.stringify(event)].join("\n"));
  target.parentNode.append(...history.childNodes,target);
  target.firstChild.nodeValue="";
  destroy(history);
@@ -221,7 +220,7 @@
 ,{style:{"@scope":{":scope":{overflow:"scroll"}}}
  ,span:
  {class:"command",contenteditable:true,"#text":prompt,style:{"@scope":{":scope":
- {display:"block",outline:"none","&:before":{content:'" > "',color:"var(--note)"}
+ {display:"block",outline:"none","&:before":{content:'" ❯ "',color:"var(--note)"}
  }}}
  }
  },tether(document),spill,lift,crop(1),file+"/module/commandline/module",tether(capture));
@@ -232,11 +231,20 @@
  let emit=record((text,classes)=>({"#text":text,class:classes||null})).bind(span);
  let line=span.push.bind(span,{"#text":"\n"});
  highlightCode(source,lezer.parse(source),classHighlighter,emit,line);
- return compose.call({pre:{class:"snippet",span,style:{"#text":compose.call
+ return compose.call({pre:{class:"snippet",span,style:compose.call
 (highlights,Object.entries
 ,infer("map",([field,value])=>[".snippet>.tok-"+field,value])
-,Object.fromEntries,{".snippet":{width:"100%",margin:0}},merge,css
-)}}},document,spill,lift,crop(1));
+,Object.fromEntries,{".snippet":
+ {width:"100%",margin:0,overflow:"scroll",background:`
+ linear-gradient(90deg,var(--abyss) 20%,#ffffff00) center left
+,linear-gradient(90deg,#ffffff00,var(--abyss) 80%) center right
+,radial-gradient(farthest-side at 100% 50%,var(--text),#00000000 80%) center right
+,radial-gradient(farthest-side at 0% 50%,var(--text),#00000000 80%) center left`
+ ,"background-size":"40px 100%,40px 100%,10px 120%,10px 120%"
+ ,"background-repeat":"no-repeat"
+ ,"background-attachment":"local,local,scroll,scroll"
+ }},merge
+)}},document,spill,lift,crop(1));
 };
 
  var basetheme=EditorView.baseTheme(compose.call

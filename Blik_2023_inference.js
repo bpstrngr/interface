@@ -5,7 +5,6 @@
  var browser=globalThis.window||(globalThis.constructor.name==="DedicatedWorkerGlobalScope");
  // skip dynamic inference for combinators in ./infer. 
  var freeterms=new Set([...Object.values(namespace).filter(functor),Array,Object.assign,Object.values,Object.entries,Object.fromEntries,RegExp].map(term=>term.name));
- const {log}=console;
 
  import {colors,describe,cast,construct,type,defined,something,functor,simple,compound,string,numeric,iterable,array,heritage,asynchronous,promise,generator,asyncgenerator,plural,pattern,basic} from "./Blik_2026_type.js";
 
@@ -13,9 +12,18 @@
 
  export function index(){return Array.from(arguments);};
 
- export function expand(context){return context.flatMap(term=>generator(term)?[...term]:[term]);};
+ export var trickle=describe(infer("reduce",(queue,next,index,heap)=>
+ // sort promises by speed. 
+[queue
+,Promise.resolve(queue.at(-1)).then(past=>
+ Promise.any(heap.map((slot,index)=>
+ Promise.race([slot,false]).then(next=>next?past===next
+?Promise.reject(heap.splice(index,1))
+:stagger(next):slot)
+ )))
+].flat(),[]),"trickle");
 
- export var settle=Object.values(
+ export var settle=describe(Object.values(
  // resolve async context in index. 
  {promise(context){return Promise.all(context);}
  ,asyncgenerator(context)
@@ -30,52 +38,19 @@
 }}).map(term=>(
  {type(index){return index.some({promise,asyncgenerator,generator}[term.name]);}
  ,term
- })).map(({type,term})=>cast(type,term)).reduce(induce,index);
+ })).map(({type,term})=>cast(type,term)).reduce(induce,index),"settle");
 
- export var collect=
- // expand async/plural context in index. 
- [settle,cast(index=>index.some(generator),expand)].reduce(induce);
+ export function expand(context){return context.flatMap(term=>generator(term)?[...term]:[term]);};
 
- export var trickle=describe(infer("reduce",(queue,next,index,heap)=>
- // sort promises by speed. 
-[queue
-,Promise.resolve(queue.at(-1)).then(past=>
- Promise.any(heap.map((slot,index)=>
- Promise.race([slot,false]).then(next=>next?past===next
-?Promise.reject(heap.splice(index,1))
-:next:slot)
- )))
-].flat(),[]),"trickle");
+ export var collect=describe(induce(settle,cast(index=>index.some(generator),expand)),"collect");
 
- export var rank=deduce(unit.apply.bind(unit,null));
+ export var rank=
+ // infer unit from index. 
+ describe(deduce(unit.apply.bind(unit,null)),"rank");
 
- export var spread=deduce(function spread(index)
-{// synchronous singular/plural unit. 
- return array(index)?index.length===1?index[0]:rank(index):index;
-});
-
- export function cede(term=unit)
-{// lift singularity. 
- return defined(this)?cede(this):cede;
- function cede(...context)
-{return spread(infer.call(term(...context),collect));
-};
-};
-
- export function deduce(conclusion)
-{// lift asynchronicity. 
- return describe(function(term)
-{return promise(term)?term.then(conclusion):conclusion(term);
-},deduce,conclusion);
-};
-
- export function induce(fold,unfold=cede())
-{// variadic inference with deductive conclusion (metamorphism). 
- let conclusion=deduce(unfold);
- return describe(function(...context)
-{if(defined(this))context.unshift(this);
- return conclusion(fold(...context));
-},induce,...arguments);
+ export function yank(index)
+{// rank plurality or yield singularity of index. 
+ return array(index)?index.length-1?rank(index):index[0]:index;
 };
 
  export function drop(stop=Infinity,start=0,...stack)
@@ -124,7 +99,47 @@
 
  export function undefine(){};
 
- export function constant(term){return function(){return term;};};
+ export function constant(term){return describe(function(){return term;},constant,term);};
+
+ export function add(...terms){return describe(function*(){yield* arguments;yield* terms;},add,...term);};
+
+ export function deduce(unfold)
+{// monadic inference. 
+ return describe(function(term)
+{return promise(term)?term.then(unfold):unfold(term);
+},deduce,unfold);
+};
+
+ export function induce(fold=unit,unfold=cede)
+{// variadic inference with monadic conclusion. 
+ let deduction=deduce(unfold);
+ let induction=describe(function(...context)
+{if(defined(this))
+ context.unshift(this);
+ return deduction(fold(...context));
+},induce,...arguments);
+ return defined(this)?induction(this):induction;
+};
+
+ export function reduce(fold)
+{// co-induction. 
+ return describe(induce(collect,fold.apply.bind(fold,null)),reduce,fold);
+};
+
+ export function conduce(term)
+{// co-reduction. 
+ let fold=functor(term)?reduce:add;
+ return fold(term);
+};
+
+ export function produce(...terms)
+{// co-conduction. 
+ return terms.map(conduce).reduce(induce);
+};
+
+ export var lift=induce(collect,rank);
+
+ export var cede=induce(collect,yank);
 
  export function not(term)
 {let functor=describe(compose(term,is(false)),not,term);
@@ -177,31 +192,28 @@
  export function match(next,past)
 {if(arguments.length<2)
  return describe(infer(match,next),match,...arguments);
- return past===next
-?true
-:pattern(past)
-?past.test(next)
-:functor(past)
-?past(next)
-:basic(past)
-?basic(next)&&Object.entries(past).every(([field,value])=>match(next?.[field],value))
+ return past===next?true
+:pattern(past)?past.test(next)
+:functor(past)?past(next)
+:basic(past)?compound(next)&&
+ Object.entries(past).every(([field,value])=>
+ match(next?.[field],value))
 :false;
 };
 
  export function clock(mark,precision="time")
-{let number=!isNaN(Number(mark));
- if(number)
- mark=new Date(string(mark)
+{mark=mark?is(Date)(mark)?mark:numeric(Number(mark))
+?new Date(string(mark)
 ?mark.split("").reduce((date,mark,index,{length})=>
  date+(index&&!(index%2)?index>2?index>7?index===8?" ":":":"/":"":"")+mark
 ,"")
-:mark);
- if(string(mark))
- mark=new Date(mark);
+:mark)
+:string(mark)
+?new Date(mark)
+:new Date()
+:new Date();
  //[new Date(mark),new Date(new Date(mark).getTime()+new Date(mark).getTimezoneOffset()*60*1000)].reduce((utc,date)=>
  //date.setHours(utc.getHours()-utc.getTimezoneOffset()/60)&&date);
- if(!is(Date)(mark))
- mark=new Date();
  let [date,time,minute]="date/time/minute".split("/").map(range=>precision.includes(range));
  return (
 [...Object.assign(Array(3),date&&[mark.getFullYear(),mark.getMonth()+1,mark.getDate()])
@@ -258,7 +270,7 @@
  context=context.reduce((context,stack)=>
  context.splice(1,0,...stack)&&context);
  if(!defined(term))
- return rank(context);
+ return yank(context);
  let [scope]=context;
  let map=functor(term);
  let bound=map&&term.name.startsWith("bound ");
@@ -283,11 +295,6 @@
  return function* fold(){yield term(...arguments);};
 };
 
- export function lift()
-{// rank collected context. 
- return rank(collect(...arguments));
-};
-
  export function surge(...context)
 {// recursive lift. 
  if(promise(this))
@@ -306,7 +313,7 @@
 };
 
  export function spill(...context)
-{// depth-first recursive lift. 
+{// depth-first surge. 
  let controller=this;
  let controlled=is(AbortController)(controller);
  let loop=next.apply.bind(next,null);
@@ -315,24 +322,26 @@
 {if(controlled&&controller.signal.aborted)
  return exit(controller.signal.reason);
  if(promise(context)||promise(term))
- return Promise.all([context,term]).then(stagger).then(loop);
- return context.push(plural(term)?compose.call(each.call(term,(term,context)=>
+ return Promise.all([context,term]).then(loop);
+ context.push(!plural(term)?term
+:compose.call(each.call(term,(next,past)=>spill.call(controller
  // synchronize promises. 
- spill.call(controller,promise(context.at(-1))?context.at(-1).then(stagger).then(past=>term):term)),lift,cede()):term)&&
- context;
+,promise(past.at(-1))?past.at(-1).then(past=>next):next)),lift,cede));
+ return context;
 };
 };
 
  export function model(...context)
-{return Object.fromEntries(Object.entries(context).map(([index,term])=>
+{// snapshot of context. 
+ return Object.fromEntries(Object.entries(context).map(([index,term])=>
  [index,plural(term)?model(...term):term]));
 };
 
  export function pass(term,...context)
-{// blocking side-effect inference. 
+{// synchronous side-effect inference. 
  return describe(compose
 (combine(unit,compose(infer(...arguments),drop()))
-,lift
+,cede
 ),pass,...arguments);
 };
 
@@ -417,48 +426,68 @@
  return defined(this)?infer.call(this,composition):composition;
 };
 
+ export function decide({else:otherwise,...cases})
+{return whether
+(Object.values(cases).map(({0:first,condition=first})=>condition)
+,...Object.values(cases).map(({1:second,term=second})=>term)
+,otherwise
+);
+};
+
  export function stash(...terms)
 {return describe(compose(combine(unit,...terms.map(term=>functor(term)?term:swap(term))),lift),stash,...arguments);
 };
 
+ export var zap=compose(each(
+ // lift context into index. (([1,2],3)=>(1,3),(2,3))
+[compose(crop(1),index,"flat")
+,compose(crop(1),swap,slip(1),crop)
+]),infer("map"),rank);
+
  export function each(term,...stack)
 {if(!defined(this))
  return pivot(each,...arguments);
- let yank=fold(deduce(search("value")));
+ let status=deduce(next=>next.done);
+ let value=fold(deduce(search("value")));
  let context=plural(this)?this:rank([this]);
  let synchronous=generator(context)&&!asynchronous(term);
  return describe(synchronous
-?      function*(past){while(!      next(this,past))yield       resolve(...arguments);}
-:async function*(past){while(!await next(this,past))yield await resolve(...arguments);}
+?      function*(){while(!      next(this,...arguments))yield       resolve(...arguments);}
+:async function*(){while(!await next(this,...arguments))yield await resolve(...arguments);}
 ,"unfold").call(context,[],[],term,stack);
- function next(context,past){return infer.call(past[past.push(context.next())-1],"done");};
- function resolve(past,context,term,stack)
+ function next(context,past,terms){return status(past[past.push(context.next(terms.at(-1)))-1]);};
+ function resolve(past,terms,term,stack)
 {let next=array(term)?term[past.length-1]:term;
- return context[context.length]=compose(yank,next&&whether(tally(1),infer(next,context,...stack)))(past.at(-1));
+ return compose
+(value,next?whether(tally(1),infer(next,terms,...stack)):unit
+,pass(term=>terms.push(term))
+)(past.at(-1));
 };
 };
 
- export function search(term,recursive=false,path=[])
-{// traverse scope for entries satisfying a term (condition or singular path).
+ export function search(term,recursive=false,limit=false,path=[])
+{// traverse scope for entries satisfying a term (condition or path).
  // recursive search includes ranges in recursion domain.
  if(!defined(this))
  return tether(search,...arguments);
  let scope=this;
- if(typeof scope!=='object'||scope===null)
+ if(!compound(scope))
+ return [];
+ if(limit&&[limit].flat().some(limit=>functor(limit)?limit(this):limit===this))
  return [];
  let condition=functor(term);
  if(!condition)
  return !compound(term)?scope[term]:array(term)
 ?[term].flat().reduce((scope,field)=>scope?.[field],scope)
 :Object.entries(term).flatMap(([field,term])=>
- [term].flat().flatMap(term=>scope[field]&&search.call(scope[field],term)));
+ [term].flat().flatMap(term=>scope[field]&&search.call(scope[field],term,recursive,limit,path)));
  let [domain,range]=[[],[]];
  for(let field in this)
  [domain,range][term.call(this,[field,this[field]],path)?1:0].push([field,this[field]]);
  if(recursive)
  domain=[domain,range].flat();
  let subrange=domain.flatMap(([field,value])=>Object.entries
-(search.call(value,term,recursive,path.concat(field))
+(search.call(value,term,recursive,limit,path.concat(field))
 ).map(([path,value])=>[[field,path].join('/'),value]));
  return Object.fromEntries([range,subrange].flat());
 };
@@ -595,10 +624,10 @@
  export function remember(term,distinction="0")
 {// record on an implicit scope. 
  let scope=this||[];
- return cede(either
+ return induce(either
 (compose(slip(scope),tether(distinction),slip(scope),Reflect.get)
 ,compose(slip(scope),combine(record(term,distinction),tether(distinction)),lift,Reflect.get)
-));
+),cede);
 };
 
  export function route(term,...context)
@@ -628,14 +657,14 @@
  return scope?composition(scope):composition;
 };
 
- function set(options,namespace)
+ export function set(options,namespace)
 {return Object.entries(namespace).reduce((defaults,[field,kinds])=>
  Object.assign(defaults
 ,{[field]:options[field]
 ?Object.entries(kinds).find(([kind])=>
- [kind,options[field]].map((kind)=>kind.toLowerCase()).reduce(Object.is))?.pop()||
+ [kind,options[field]].map(kind=>kind.toLowerCase()).reduce(Object.is))?.pop()||
  Error([String(options[field]),'not in "'+field+'" options',Object.keys(kinds),].join(" "))
-:defaults[field],
+:defaults[field]
  }),this);
 };
 
@@ -812,10 +841,10 @@
 
  export function stagger(...context)
 {if(globalThis.process)
- return spread(context);
+ return yank(context);
  return revert.call(context,(resolve,reject,context)=>
  window.requestAnimationFrame(time=>
- resolve(spread(context))));
+ resolve(yank(context))));
 };
 
  export function expect(condition=something,interval=0,limit=Infinity)
@@ -904,7 +933,7 @@
 ],access:{scope:true,context:[[],"length"],terms:[0],condition:["equal"]}
  ,invoke:{context:[isNaN],terms:[{},Function.call,true],condition:["equal"]}
  ,method:
-[{scope:true,context:[[1],"map",cede(crop(1))],terms:[[1]],condition:["deepEqual"]}
+[{scope:true,context:[[1],"map",induce(crop(1),cede)],terms:[[1]],condition:["deepEqual"]}
 ,{scope:true,context:[{a:a=>1},"a"],terms:[1],condition:["equal"]}
 ]}
  ,is:
@@ -928,11 +957,11 @@
 [{context:[1,2,3],condition:when(is(1,2,3))}
 ,{context:[rank([1])],condition:when(is(plural))}
 ],cede:
-[{context:[],terms:[1,2,3,infer,"call"],condition:when(is(1,2,3))}
-,{context:[],terms:[1,rank([2,3]),infer,"call"],condition:when(is(1,2,3))}
-,{context:[],terms:[1,2,Promise.resolve(3),infer,"call"],condition:when(is(1,2,3))}
-,{context:[],terms:[1,rank([rank([rank([2,3])])]),infer,"call",is(1,plural),true],condition:"equal"}
-,{context:[],terms:[1,2,rank([rank([Promise.resolve(3)])]),infer,"call",is(1,2,promise),true],condition:"equal"}
+[{context:[1,2,3],terms:[],condition:when(is(1,2,3))}
+,{context:[1,rank([2,3])],condition:when(is(1,2,3))}
+,{context:[1,2,Promise.resolve(3)],condition:when(is(1,2,3))}
+,{context:[1,rank([rank([2,3])])],terms:[is(1,plural),true],condition:"equal"}
+,{context:[1,2,rank([Promise.resolve(3)])],terms:[is(1,2,promise),true],condition:"equal"}
 ],collect:
 [{context:[1,2,3,4],terms:[[1,2,3,4]],condition:["deepEqual"]}
 ,{context:[1,Promise.resolve(2),3,4],terms:[[1,2,3,4]],condition:["deepEqual"]}

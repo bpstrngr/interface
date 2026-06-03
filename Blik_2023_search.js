@@ -24,10 +24,10 @@
 };
 
  export function edit(source,edits)
-{return Object.entries(edits||{}).reduce((source, [field,value]) =>
- source.replace(new RegExp(field,"g"),(match, ...groups) =>
- [value, ...groups.slice(0,-2)].reduce((value, group, index) =>
- value.replaceAll("$"+index, group)))
+{return Object.entries(edits||{}).reduce((source,[field,value])=>
+ source.replace(new RegExp(field,"g"),(match,...groups)=>
+ [value,...groups.slice(0,-2)].reduce((value,group,index)=>
+ value.replaceAll("$"+index,group)))
 ,source);
 };
 

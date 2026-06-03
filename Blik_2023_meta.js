@@ -1,5 +1,5 @@
- import {note,when,extract,relevant,wait,sum,pass,drop,swap,match,infer,either,buffer,observe,compose,combine,revert,collect,stream,rank,compound,tether,bind,slip,string,numeric,functor,is,not,native,basic,simple,iterable,array,lambda,imperative,defined,composed,odd,exit,expect,prototype,colors,stash,expressions,search,merge,prune,route,record,functional} from "./Blik_2023_inference.js";
- import {location,load} from "./Blik_2023_interface.js";
+ import {note,when,crop,debug,whether,extract,relevant,wait,sum,pass,drop,swap,match,infer,either,buffer,observe,compose,combine,revert,collect,stream,rank,compound,tether,bind,slip,string,numeric,functor,is,not,native,basic,simple,iterable,array,lambda,imperative,defined,composed,odd,exit,expect,prototype,colors,stash,expressions,search,merge,prune,route,record,functional} from "./Blik_2023_inference.js";
+ import {location,resolve,load} from "./Blik_2023_interface.js";
  import {random} from "./Blik_2023_search.js";
  let address=new URL(import.meta.url).pathname;
 
@@ -483,26 +483,27 @@
  return rank([js.toString(),js.generateMap()]);
 }};
 
- export function serialize(namespace,format="astring",options)
+ export function serialize(namespace,format="astring",trace=new Set())
 {// convert abstract syntax tree or runtime namespace to javascript;
  if(!namespace)return "";
  let parser={astring:["./davidbonnet_2015_astring.js","generate"]}[format];
  if(namespace?.type==="Program"&&parser)
- return resolve.bind(import.meta.url)(...parser,namespace,options);
+ return command.bind(import.meta.url)(...parser,namespace);
  if(string(namespace))
  return namespace.startsWith("data:text/javascript;")?namespace.replace(/^data:text\/javascript;/,""):JSON.stringify(namespace);
  if(functor(namespace))
- // functions may be serialized as "name(){}", "function(){}", or with a name different from the object field. 
  return compose.call(model(namespace,format),({signature,body})=>signature+body);
  if(namespace[Symbol.toStringTag]==="Module")
  return modularize({exports:namespace});
  if(format==="module")
  return modularize(namespace);
+ if(trace.has(namespace))
+ return "{}";
+ trace.add(namespace);
  let [start,end]=array(namespace)?"[]":"{}";
- let declaration=Object.entries(prune.call(namespace,([field,value])=>
- functor(value)?"data:text/javascript;"+serialize(value,field):value)).reduce(infer((literal,array,[field,value],index)=>[literal,
+ let declaration=Object.entries(namespace).reduce(infer((literal,array,[field,value],index)=>[literal,
 [array?"":/[^\w]/.test(field)?JSON.stringify(field):field
-,serialize(value,null)
+,serialize(value,field,trace)
 ].join(array?"":":")].join(index?",":"")
 ,array(namespace))
 ,start);
@@ -523,7 +524,7 @@
 ?names.reduce((imports,name,index,names)=>imports+(index&&names[index-1]?",":"")+(index===1?"{":"")+name
 ," import ")+(names.length>1?"}":"")
 +" from \""+module+"\""+(/\.json$/.test(module)?" with {type:\"json\"}":"")+";"
-:(" var {default:"+names[0]+"}=await resolve.bind(import.meta.url)(\""+module+"\");")).join("\n");
+:(" var {default:"+names[0]+"}=await command.bind(import.meta.url)(\""+module+"\");")).join("\n");
  exports=[Object.entries(exports||{}).map(([field,term])=>
 [" export "+({default:field+" "}[field]||(!functional(term)||model(term,field).name!==field)&&"var "+field+"="||"")
 ,functional(term)?serialize(term,{[field]:field,default:term.name}[field]):serialize(term,null)
@@ -534,7 +535,8 @@
 };
 
  export function model(term)
-{if(functor(term))
+{// methods may be serialized as "name(){}", "function(){}", or with a name different from the object field. 
+ if(functor(term))
  term=String(term);
  let {signature,lambda}=prune.call
 (extract.call(expressions,["signature","lambda"])
@@ -568,7 +570,7 @@
  let {origin}=new URL("http"+(request.client.encrypted?"s":"")+"://"+request.headers.host);
  let [address,file]=[route[0],route.join("/")+"/module"].map(address=>
  origin+"/"+address);
- let {source}=await load(address);
+ let {source}=await load(file);
  let grammar=await [source,target].reduce(record(source=>
  parse(source)),[]);
  let mirror=term=>[term,term?.value,term?.init].find(functional);
@@ -860,6 +862,24 @@
  }
  };
 
+ export function records(records,separator="\",\"")
+{if(records instanceof ArrayBuffer||records.constructor?.name==="Buffer")
+ records=new TextDecoder('utf-8').decode(records);
+ return records.split("\n").filter(({length})=>length).map(record=>
+ record.replace(/^"|"$/g,"").split(separator).map(field=>
+ field.includes(";")?field.split(/; */g):field)).reduce((fields,record,index,records)=>
+ records.splice(index).map(record=>
+ Object.fromEntries(fields.map((field,index)=>[field,record[index]]))));
+};
+
+ export function edit(source,edits)
+{return Object.entries(edits||{}).reduce((source,[field,value])=>
+ source.replace(new RegExp(field,"g"),(match,...groups)=>
+ [value,...groups.slice(0,-2)].reduce((value,group,index)=>
+ value.replaceAll("$"+index,group)))
+,source);
+};
+
  export var mime=compose
 (infer("match",/[^\.]*$/),either("0",infer())
 ,{text:{plain:["txt"],javascript:["js","cjs","mjs"],typescript:["ts"],"":["html","css","csv"]}
@@ -875,6 +895,26 @@
 ,mime)
 ,undefined)?.join("/")
 );
+
+ export function file(address){return address.replace(/.*\//,"");};
+ export function folder(address){return address.replace(/\/[^/]*$/,"");};
+ export function relate(address,relation=import.meta.url)
+{// extend relation with address path. 
+ let {protocol,host,pathname:path}=url(relation);
+ return protocol+"//"+host+address.split("/").reduce((path,field,index)=>
+ field!==path[index]&&field!=="."
+?path[field===".."?"pop":"push"](field)&&path
+:path
+,folder(path).split("/")).join("/");
+};
+ export var url=compose(whether
+([string,{constructor:{name:"IncomingMessage"}}]
+,whether([match(/^[\/\.]+/),not(match(expressions.protocol))],relate,infer("replace",/^/,"node:"))
+,({client:{encrypted},headers:{host},url})=>
+ "http"+(encrypted?"s":"")+"://"+host+url
+,exit
+)
+,collect,slip(URL),Reflect.construct);
 
  export var demarkup=text=>Array.from(text).map(symbol=>
  ({"<":"&lt;",">":"&gt;"}[symbol]||symbol)).join("");

@@ -37,7 +37,7 @@
   "timaschew_2014_is-module.js":{"https://github.com/component/is-module":{"1.0.0":["index.js",{"syntax":"commonjs"}]}},
   "Fisher_2012_deepmerge.js":{"https://github.com/TehShrike/deepmerge":{"v4.2.2":["index.js",{"syntax":"commonjs","alias":{"is-mergeable-object":"./TehStrike_2017_is-mergeable-object.js"}}]}},
   "TehStrike_2017_is-mergeable-object.js":{"https://github.com/TehShrike/is-mergeable-object":{"v1.1.0":["index.js",{"syntax":"commonjs"}]}},
-  "Harris_2015_rollup.js":{"https://github.com/rollup/rollup/src cli browser":{"v3.28.1":["src/node-entry.ts",{"alias":{
+  "Harris_2015_rollup.js":{"https://github.com/rollup/rollup/src cli browser":{"v3.28.1":["src/node-entry.ts",{"syntax":"typescript","alias":{
     "package.json":"./Harris_2015_rollup/0/package.json",
     "acorn":"./haverbeke_2012_acorn.js",
     "locate-character":"./Harris_2016_locate_character.js",

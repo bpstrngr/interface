@@ -2,6 +2,7 @@
 !.gitignore
 !Blik_2023_git_hook_pre-commit.sh
 !Blik_2023_git_hook_post-commit.sh
+!Blik_2026_type.js
 !Blik_2023_meta.js
 !Blik_2023_search.js
 !Blik_2023_inference.js
@@ -11,7 +12,7 @@
 !Blik_2023_sources.json
 !README.md
 
-!Blik_2023_host.js
+!Blik_2023_port.js
 !Blik_2023_layout.js
 !Blik_2023_fragment.js
 !Blik_2024_script.js
