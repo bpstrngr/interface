@@ -922,5 +922,6 @@
     "syntax":"commonjs",
     "alias":{"ws":"./Cardaci_2013_devtools_interface/0/lib/websocket-wrapper.js"},
     "detach":["http","https","dns"]
-  }]}}
+  }]}},
+  "Hilton_2017_isomorphic-git.js":{"https://github.com/isomorphic-git/isomorphic-git/src":{"v1.38.4":["src/index.js"]}}
 }

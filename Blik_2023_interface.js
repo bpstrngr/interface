@@ -1027,10 +1027,10 @@
  return new URL(address).pathname.replace(/^\/*|\/*$/g,"");
 };
 
- export async function spawn(command,...context)
+ export async function spawn(...context)
 {// bound scope defines output color: undefined=quiet, other=default
- note.call(3,command,...context,"...");
- let process=await command.bind(import.meta.url)("child_process","spawn",command,context);
+ note.call(3,...context,"...");
+ let process=await command.bind(import.meta.url)("child_process","spawn",context);
  return revert((resolve,reject,process,output)=>
 [[process,{exit:exit=>exit?reject(Error(exit)):resolve(output.join("\n"))}]
 ,...this?["out","err"].map((stream,index)=>

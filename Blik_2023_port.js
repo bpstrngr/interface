@@ -56,7 +56,7 @@
 ,pass(host=>note.call(2,[host._connectionKey||port," open"].join("")))
 ,pass(compose(relay,broadcast))
 ,revert((close,error,channel)=>observe.call(channel,{close,error})&&suspend||close(channel))
-,cede()
+,cede
 )(agent,await Object.values(certifications)[0],buffer(respond,compose(note,exit)));
 };
 
@@ -186,7 +186,7 @@
  let jwk=["e","n"].map(factor=>encryption.publicKey[factor]).map(factor=>
  base64url(factor.toByteArray().slice(factor.bitLength()===2048))).reduce((e,n)=>(
  {e,kty:"RSA",n}));
- let ACME="https://acme-"+(1?"staging-":"")+"v02.api.letsencrypt.org/acme";
+ let ACME="https://acme-"+(0?"staging-":"")+"v02.api.letsencrypt.org/acme";
  let acme=compose(stash(compose
 (stash(compose(swap(ACME+"/new-nonce"),{method:"HEAD"},fetch,"headers","replay-nonce"))
 ,(url,body,identity,nonce)=>[{alg:"RS256",url,nonce,...identity},body].map(base64url),combine
@@ -206,9 +206,9 @@
 ,{[challenge.type.match(/^[^-]+/)[0]]:[challenge]},0),{});
  let routes={".well-known":{"acme-challenge":http.map(({token})=>({[token]:[token,identity].join(".")})).reduce(merge)}};
  note({http,routes});
- let host=await expose(routes,{network:"http",port:8000},false);
+ let host=await expose(routes,{network:"http",port:80},false);
  await http.reduce(record(({url})=>combine(acme,either
-(expect(compose(fetch,digest,note,combine("status","error"),note,whether
+(expect(compose(fetch,digest,note,combine("status","error"),whether
 (is("invalid"),compose(drop(1),JSON.stringify,Error,exit),is("valid")
 )))
 ,compose(Error,exit)
