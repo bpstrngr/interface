@@ -395,7 +395,7 @@
  return console.warn("No actions defined to capture on:",this),this;
  let fragment=this?.constructor?.name==="Object";
  let actions=fragment?[]:JSON.parse(this.dataset.actions||"[]");
- if(this)try{module=JSON.parse(module)}catch(fail){};
+ if(this)try{module=JSON.parse(module);}catch(fail){};
  if(fragment||globalThis!==globalThis.window)
  // Re-invoke on client to capture events. 
  return fragment

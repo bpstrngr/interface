@@ -945,7 +945,7 @@
 ,whether(has("body"),infer(Reflect.get,"body"),infer())
 )(response));
  if(json&&!basic(body))
- body=JSON.parse(serialize(body.constructor?.name=="Buffer"?body.toString():body));
+ body=cede(buffer(JSON.parse,swap(""))(serialize(body.constructor?.name=="Buffer"?body.toString():body)));
  if(js&&importing&&!features.assertions)
  body=(string(body)?body:body.toString()).replace(/(import\([^,\)]+),(.*?\(.*?\))*[^\)]*/,"$1");
  if(json&&simple(body))

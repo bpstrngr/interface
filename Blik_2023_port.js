@@ -124,7 +124,7 @@
  let [path,url]=await command.bind(import.meta.url)(["path","url"]);
  let location=path.dirname(url.fileURLToPath(import.meta.url));
  let [key,cert]=await Promise.all(certification.map(certificate=>
- buffer(access,swap(null))(path.resolve(location,certificate),true)));
+ cede(buffer(access,swap(null))(path.resolve(location,certificate),true))));
  if([key,cert].every(Boolean))
  return {key,cert};
  note("creating "+certification+"...");
@@ -186,8 +186,8 @@
  let jwk=["e","n"].map(factor=>encryption.publicKey[factor]).map(factor=>
  base64url(factor.toByteArray().slice(factor.bitLength()===2048))).reduce((e,n)=>(
  {e,kty:"RSA",n}));
- let ACME="https://acme-"+(0?"staging-":"")+"v02.api.letsencrypt.org/acme";
- let acme=compose(note,stash(compose
+ let ACME="https://acme-"+(1?"staging-":"")+"v02.api.letsencrypt.org/acme";
+ let acme=compose(stash(compose
 (stash(compose(swap(ACME+"/new-nonce"),{method:"HEAD"},fetch,"headers","replay-nonce"))
 ,(url,body,identity,nonce)=>[{alg:"RS256",url,nonce,...identity},body].map(base64url),combine
 (compose(infer("join","."),hash,sign,base64url,["signature"],record)
@@ -199,9 +199,8 @@
  let account={termsOfServiceAgreed:true};
  let kid=await compose(acme,"headers","location")(ACME+"/new-acct",account,{jwk});
  let identifiers=[{type:"dns",value:distinguishedname.commonName}];
- let [order,{authorizations,finalize}]=await compose(acme,combine(compose("headers","location"),digest))(ACME+"/new-order",{identifiers},{kid});
+ let [order,{authorizations,finalize}]=await compose(acme,combine(search(["headers","location"]),digest),lift)(ACME+"/new-order",{identifiers},{kid});
  let challenges=await compose(infer("reduce",record(compose(drop(1,2),"",{kid},acme,digest,"challenges")),[]),"flat")(authorizations);
- note({challenges});
  let identity=await compose(JSON.stringify,hash,base64url)(jwk);
  let {http,dns,tls}=challenges.reduce((challenges,challenge)=>merge(challenges
 ,{[challenge.type.match(/^[^-]+/)[0]]:[challenge]},0),{});
