@@ -1241,7 +1241,7 @@
  block.onclick=function(){if("skip" in this)this.skip+=1;};
 };
  let origin=recursion||element;
- await spill(each.call(rank(nodes),async (node,index)=>
+ await lift(spill(each.call(rank(nodes),async (node,{length:index})=>
  !origin.parentNode||origin.ownerDocument.defaultView.getComputedStyle(origin).display==="none"
 ?undefined
 :node.nodeName!=="#text"
@@ -1250,7 +1250,7 @@
 ?compose.call(symbol,wait(origin.skip?0:".:".split("").includes(text[index-1])?1000
 :index%Math.floor(Math.random()*3)?index%Math.floor(Math.random()*6)?300:200:100),symbol=>node.textContent+=symbol)
 :node.textContent+=text.splice(index).join(""))
-,[])));
+,[]))));
  if(!recursion)
  delete block.skip;
  return block;

@@ -202,7 +202,7 @@
 };
 
  export function clock(mark,precision="time")
-{mark=mark?is(Date)(mark)?mark:numeric(Number(mark))
+{mark=mark?is(Date)(mark)?mark:Number(mark)
 ?new Date(string(mark)
 ?mark.split("").reduce((date,mark,index,{length})=>
  date+(index&&!(index%2)?index>2?index>7?index===8?" ":":":"/":"":"")+mark
@@ -210,8 +210,7 @@
 :mark)
 :string(mark)
 ?new Date(mark)
-:new Date()
-:new Date();
+:new Date():new Date();
  //[new Date(mark),new Date(new Date(mark).getTime()+new Date(mark).getTimezoneOffset()*60*1000)].reduce((utc,date)=>
  //date.setHours(utc.getHours()-utc.getTimezoneOffset()/60)&&date);
  let [date,time,minute]="date/time/minute".split("/").map(range=>precision.includes(range));
@@ -746,7 +745,7 @@
  stream(...browser&&context.every(string)?[context.join(" ")]:context);
  if(!browser)globalThis.process.stdout.write(steady);
  else context.shift(),context.pop();
- return rank(context);
+ return yank(context);
 };
 
  var stack=compose
