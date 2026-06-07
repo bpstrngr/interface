@@ -366,7 +366,7 @@
  record.push(note.call(1,record.length+1+"/5 attempt to checkout "+address+": "+stack)))
 ,combine(swap(depot),buffer(purge))
 ,exit
-)),0,5)(address,depot,branch,route).catch(note).then(done=>
+)),0,5)(address,depot,branch,route).catch(note.bind(1)).then(done=>
  access(depot,false).then(done=>note.call(2,"Downloaded source from",address,"to",depot)).catch(fail=>exit(done)));
  let relation=remote?depot:location;
  let entries=await [input].flat().reduce(record(input=>string(input)
@@ -538,7 +538,7 @@
 )),lift)]
  ,reduce:[string,compose(each([compose(crop(1),infer("split"," "))]),lift,zap,each(compose
 (crop(1),lift,flip,combine(crop(1),tether(locate)),lift,drop(2,0,tether(command)),crop(1,collect),tether(search)
-)),lift,tether(compose))]
+)),lift,flip,tether(compose))]
  ,context:[array,rank]
  ,else:crop(1)
  }
@@ -1081,7 +1081,7 @@
 };
 
  export function version(navigator)
-{let [agent]=either("user-agent","userAgent",swap(undefined))(navigator);
+{let agent=cede(either("user-agent","userAgent",swap(undefined))(navigator));
  let device=/\((.*?)\)/.exec(agent)?.[1]?.split(";").reduce(function(platform)
 {return {[platform]:arguments[3].splice(1).join(";")};
 })||{};

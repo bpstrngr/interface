@@ -1,7 +1,7 @@
  import {locate,command,recompose,delegate,agent,thread,fetch as freefetch,digest,query} from "./Blik_2023_interface.js";
  import {note,describe,decide,colors,wait,stagger,search,merge,prune,record,route,observe,rank,constant,rotate,deduce,lift,fold,collect,slip,spill,push,infer,either,each,pass,tether,surge,flush,buffer,differ,compose,some,flip,skip,stash,revert,combine,whether,swap,compound,something,string,basic,minor,functor,promise,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdf,when,debug,expect,generator,plural,native,clock,type,complex,heritage,prototype,expressions,cede,extract,fields} from "./Blik_2023_inference.js";
  import {unfold} from "./Blik_2023_search.js";
- import {serialize,proceduralize,mime,data,file} from "./Blik_2023_meta.js";
+ import {serialize,proceduralize,mime,data,file,relate} from "./Blik_2023_meta.js";
  import * as layout from "./Blik_2023_layout.js";
  import {color} from "./Blik_2023_layout.js";
  var address=new URL(import.meta.url).pathname;
@@ -970,7 +970,7 @@
  }
  }
  };
- address=/^http/.test(address)?address:[window.location.origin,window.location.pathname,address.replace(/^[\/\.]*/,"")].join("");
+ address=/^http/.test(address)?address:relate(address,window.location.origin);
  let {1:extension}=new URL(address).pathname.match(/\.([^\/]+)$/)||[];
  let [format]=extension&&fields(
  {audio:["mp3"],video:["mp4","webm"]
@@ -1384,7 +1384,7 @@
  if(text)
  [tag,address]=[tag,address].map(phrase=>phrase?.slice(0,-text.length));
  let next=address
-?merge(link(address,last.title),{span:{id:detext(last.title),update:false}})
+?compose(link,spill,lift,crop(1),{span:{id:detext(last.title),update:false}},merge)(address,last.title)
 :Object.entries(qualify(tag)).flat().reduce((tag,qualifiers)=>({[tag]:
  {id:/h\d/.test(tag)?detext(last.title):undefined
  ,update:false
