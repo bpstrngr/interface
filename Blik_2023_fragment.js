@@ -1419,6 +1419,8 @@
  let open="()".split("").map(parenthesis=>
  Array.from(last.context?.matchAll("\\"+parenthesis)||[]).length).reduce((open,close)=>
  close<open);
+ if(open)
+ return false;
  if(string(last?.link||last?.tag))
  return merge(this[" "](...arguments),{0:{text:")"}});
  let jsons=[...last.context?.matchAll(expressions.json)||[]].map(([json])=>json);
