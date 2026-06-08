@@ -277,9 +277,11 @@
  let detach=string(term)&&term.startsWith("tether ")&&term.substring(7);
  let attend=something(scope)&&!array(term)&&!bound&&!free
 ?[Object(scope),detach||term].reduce((domain,term)=>map
-?(domain[term.name]===term||heritage(domain?.buffer instanceof ArrayBuffer?Object.getPrototypeOf(domain):domain).find((field,index,fields)=>
-{try{return Object.is(Reflect.get(domain,field),term);}catch(fail){};
-}))&&term
+?(domain[term.name]===term||undefined
+//   ||heritage(domain?.buffer instanceof ArrayBuffer?Object.getPrototypeOf(domain):domain).find((field,index,fields)=>
+// {try{return Object.is(Reflect.get(domain,field),term);}catch(fail){};
+// })
+ )&&term
 :Reflect.get(domain,term?.toString?term:null))
 :undefined;
  if(detach)context.shift();

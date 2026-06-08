@@ -276,7 +276,7 @@
  [detext(selector.replace(/^#/,"").replace(/^'+|'+$/g,""))][selector[0]==="#"?"join":"concat"]()
  })
 ,{})||{}
-,node.match(/\[[^=]+?=?.*?\]/g)?.reduce((node,selector)=>
+,node.match(/\[[^=]+?=\'?.*?\'\]/g)?.reduce((node,selector)=>
  merge(node,Object.assign(Array(2).fill(undefined),selector.slice(1,-1).split("=")).reduce((attribute,value)=>(
  {[attribute]:value.replace(/^'+|'+$/g,"")})))
 ,{})||{}
@@ -1167,9 +1167,7 @@
 };
 
  export function transform(node)
-{const value=string(node)
-?{matrix:new DOMMatrixReadOnly(node)}
-:node.transform.baseVal.consolidate();
+{const value=string(node)?{matrix:new DOMMatrixReadOnly(node)}:node.transform.baseVal.consolidate();
  if(!value)return {x:0,y:0,k:1};
  let {matrix:{a,b,c,d,e:x,f:y}}=value;
  // from private method in d3-interpolate/transform/decompose.js.
