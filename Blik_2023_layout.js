@@ -57,7 +57,11 @@
  ,dotdot:{"@keyframes dotdot":{"0%":{width:"0em"},"33%":{width:".6em"},"66%":{width:"1em"},"100%":{width:"1.6em"}}}
  };
 
- export var material={"box-shadow":"black 0px 0px 10px","&:hover":{"box-shadow":"black 0px 0px 50px"},margin:"1em"};
+ export var pill={display:"inline-block","border-radius":"100vh",cursor:"pointer"}
+ export var material=
+ {margin:"1em","box-shadow":"black 0px 0px 10px"
+ ,"&:hover":{"box-shadow":"black 0px 0px 50px"}
+ };
  export var inset={"box-shadow":"black 0px 0px 10px inset","&:hover":{"box-shadow":"black 0px 0px 5px inset"}};
  export var glow={white:{filter:"url(#shadow_white)"},amber:{filter:"url(#shadow_amber)"}};
 
@@ -90,7 +94,7 @@
  };
 
  export var label=
- {position:"relative",display:"inline-block","white-space":"nowrap",height:"100%","vertical-align":"middle"
+ {position:"relative",display:"inline-block","white-space":"nowrap","vertical-align":"middle"
  ,"&:hover":
  {"&>svg":glow.white
  ,"&>input,&>span[role=textbox],&>span[role=menu]":text.glow
@@ -102,7 +106,7 @@
  };
 
  export var input=
- {display:"inline-block",margin:"0 .4em",height:"100%","text-shadow":"inherit","line-height":"1em"
+ {display:"inline-block",margin:"0 .4em","text-shadow":"inherit","line-height":"1em"
  ,outline:"none",transition:"all var(--transition)"
  ,"&[role=textbox],&[role=menu]":
  {"min-width":"20px","box-sizing":"border-box"
@@ -260,7 +264,6 @@
  ,"& rect":{transform:"rotate(0deg)","transform-origin":"center",transition:"all 0.5s"}
  }      };
 };
- export var pill={display:"inline-block","border-radius":"100vh",cursor:"pointer"}
  export var codemirror={"div.cm-gutters":{"background-color":"var(--abyss) !important"}}
  export var socialecologies=
  {".gallery-row":{"white-space":"nowrap",width:"100% !important"}

@@ -37,7 +37,7 @@
 );
 
  let routes=compose
-(combine(crop(1),compose(drop(1),path)),flip,whether(is("get")
+(combine(crop(1),compose(drop(1),path)),lift,flip,whether(is("get")
 ,compose(drop(1),tether(prune,([field,term])=>functor(term)
 ?/[()]/.test(term.name)?term.name:serialize(term,null)
 :!native(term)?String(term):term))
@@ -48,25 +48,25 @@
  {infrastructure(){return delegate.call(swarm[loader],"infrastructure");}
  ,history(){return delegate.call(swarm[loader],"infrastructure","time");}
  ,sources(){return infrastructure();}
- ,get:compose(combine(filesystem,routes),merge)
+ ,get:compose(combine(filesystem,routes),lift,merge)
  ,put:compose
 (drop(1),pass(buffer(combine
 (compose(path,slip("path","resolve","./"),command.bind(import.meta.url),published,true,permit)
-,compose(drop(1),wait(0),JSON.parse,Object.keys,"length",when(major(0)))
+,compose(drop(1),JSON.parse,Object.keys,"length",when(major(0)))
 ),compose(drop(1),infer(authorize,"ranger"))))
 ,combine
 (compose(path,slip("path","resolve","./"),command.bind(import.meta.url),pass(permit,classified))
 ,compose(drop(1),buffer(JSON.parse,compose(drop(1,2),"base64",Buffer.from,"toString")))
 ,compose(url,query,buffer(differ("override"),swap(undefined)),is(true))
-)
+),lift
 ,combine
 (crop(1)
-,compose(combine(buffer(compose(crop(1),infer(access,true),buffer(JSON.parse,drop(1))),swap({})),drop(1)),merge)
-)
+,compose(combine(buffer(compose(crop(1),infer(access,true),buffer(JSON.parse,drop(1))),swap({})),drop(1)),lift,merge)
+),lift
 ,true,access,true,combine
 (compose(access,buffer(JSON.parse,drop(1)))
 ,compose(crop(1),slip("path","relative","./"),command.bind(import.meta.url),"/","split")
-),record
+),lift,record
 ),interface:compose
 (crop(1),"get",routes=>(
  {pre:{"#text":JSON.stringify(routes,null,2)}
@@ -147,13 +147,14 @@
 }});
 };
 
- export async function authorize({headers:{cookie}},authority)
-{when(defined)(authority);
+ export async function authorize({headers:{cookie}},rank)
+{when(defined)(rank);
  let {author:name}=cookies(cookie||"");
  if(!name)exit(Error("unauthorized"));
- let author=await compose(fetch,wait(3000),"json")("/author/"+name,{method:"put",headers:{cookie}});
- if(author.rank!==authority)
- exit(Error("unauthorised"));
+ return either
+(compose(fetch,"json",match({rank}))
+,compose(swap("unauthorised"),Error,exit)
+)("/author/"+name,{method:"put",headers:{cookie}});
 };
 
  export var peer={};

@@ -164,11 +164,9 @@
 ,compose(drop(3,2),each([metamarkup]),lift,drop(-3,1),rotate(1),tether(document),drop(1),lift,lift)
 ],actions:
 [is(string,"data-actions")
-,compose(drop(3,2),each([buffer(JSON.parse,drop(1,2))]),lift,drop(-1,1),flip,tether(capture),infer("getAttributeNode","data-actions"))
+,compose(drop(-1,1),flip,tether(capture),infer("getAttributeNode","data-actions"))
 ],class:
-[is(array,"class"),function(content,field,context,namespace,language,scope)
-{
-}
+[is(array,"class")
 ,compose(drop(3,2),each([infer("join"," "),compose(crop(1),collect)]),lift,drop(2,0,record),rotate(1),tether(document),drop(1))
 ],plural:
 [compound
@@ -847,7 +845,7 @@
 {merge(this
 ,{drag:click&&{x,y}
  ,style:click?{transition:"transform",transform:"translate(0px,0px)"}:{transition:"",transform:""}
- ,control:click?new AbortController():this.control.abort()
+ ,control:!click||this.control?this.control?.abort():new AbortController()
  });
  if(click)
  observe.call(this
@@ -1019,7 +1017,7 @@
  Array.from(rules)).filter(({selectorText})=>selectorText?.includes(selector));
 };
 
- export async function message({icon,name,put,comment,message=comment},index)
+ export async function message({icon,name,put,comment,message=comment},{length:index})
 {return (
  {class:"message","data-index":String(index)
  ,style:{"@scope":{":scope":
@@ -1168,17 +1166,10 @@
 )(node.ownerDocument.defaultView.getSelection(),node.ownerDocument.createRange());
 };
 
-//  export function transform({transform})
-// {if(string(transform))
-//  transform={baseVal:[{matrix:new DOMMatrixReadOnly(transform)}]};
-//  let [x,y]=search.call(transform,{baseVal:{0:{matrix:["e","f"]}}});
-//  return {x,y};
-// };
-
- export function transform(node)
-{const value=node.transform.baseVal.consolidate();
+ export function transform({transform})
+{const value=string(transform)?{matrix:new DOMMatrixReadOnly(transform)}:transform.baseVal.consolidate();
  if(!value)return {x:0,y:0,k:1};
- let {matrix:{a,b,c,d,e:x,f:y},}=value;
+ let {matrix:{a,b,c,d,e:x,f:y}}=value;
  // from private method in d3-interpolate/transform/decompose.js.
  let scaleX=Math.sqrt(a*a+b*b);
  if(scaleX)(a/=scaleX),(b/=scaleX);
@@ -1516,7 +1507,7 @@
  {document:
  {node:
 [{extend:{scope:true,context:[{div:{}}],route:[document,surge,crop(1),{span:{id:"span"}}],terms:[is(window?.HTMLDivElement,plural)],condition:"ok"}
- ,suspend:{context:[{div:{id:"div"},span:{id:"span"}}],terms:[lift,lift,lift,is(window?.HTMLDivElement,plural,window?.HTMLSpanElement,plural)],condition:"ok"}
+ ,suspend:{context:[{div:{id:"div"},span:{id:"span"}}],terms:[lift,lift,is(window?.HTMLDivElement,plural,window?.HTMLSpanElement,plural)],condition:"ok"}
  ,descend:{context:[{div:{id:"div"},span:{id:"span"}}],terms:[lift,lift,lift,lift,is(window?.HTMLDivElement,window?.Attr,window?.HTMLSpanElement,window?.Attr)],condition:"ok"}
  ,disjunct:{context:rank([{span:{id:"span",a:1}},{span:{id:"span",b:2}}]),terms:[spill,lift,"outerHTML"],condition:when(is("<span id=\"span\" a=\"1\" b=\"2\"></span>"))}
  }
@@ -1631,23 +1622,24 @@
  }
 ],parse:
  {tag:{context:["abc A#h1 ",semiotics],terms:[lift],condition:when(...
-[{span:{style:"display:block;",span:{"#text":"abc "}}}
-,{span:{style:"display:block;",h1:{id:"A","#text":"A"}}}
-,{span:{style:"display:block;",span:{"#text":" "}}}
+[{style:{"@scope":{":scope>.block":{display:"block"}}}}
+,{span:{class:"block",update:"last",span:{update:false,"#text":"abc "}}}
+,{span:{class:"block",update:"last",h1:{update:false,id:"A","#text":"A"}}}
+,{span:{class:"block",update:"last",span:{update:"last","#text":" "}}}
 ].map(fragment=>match(fragment)))}
- ,link:{context:["abc Author_YEAR@reference.pdf ",semiotics],terms:[collect,1,"span","span","role",push("link")],condition:"equal"}
- ,image:{context:["abc Author_YEAR@image.png ",semiotics],terms:[collect,1,"span","fragment","nodeName"],condition:when(match(/img/i))}
- ,action:{context:["abc title#chart/plot([1,2]) ",semiotics],terms:[collect,1,"span","fragment","nodeName"],condition:when(match(/svg/i))}
- ,composition:{context:['abc title#[[[1,2]],"chart/plot"] ',semiotics],terms:[collect,1,"span","fragment","nodeName",/svg/i],condition:when(match)}
- ,reflow:{context:["abc\n{text-align:left}\ndef",semiotics],terms:[collect,1,"span","style","display:block;position:relative;text-align:left"],condition:"equal"}
+ ,link:{context:["abc Author_YEAR@reference.pdf ",semiotics],terms:[collect,2],condition:when(match({span:{span:{role:"link"}}}))}
+ ,image:{context:["abc Author_YEAR@image.png ",semiotics],terms:[collect,2,"span","fragment","nodeName"],condition:when(match(/img/i))}
+ ,action:{context:["abc title#chart/plot([1,2]) ",semiotics],terms:[collect,2,"span","fragment","nodeName"],condition:when(match(/svg/i))}
+ ,composition:{context:['abc title#[[[1,2]],"chart/plot"] ',semiotics],terms:[collect,2,"span","fragment","nodeName",/svg/i],condition:when(match)}
+ ,reflow:{context:["abc\n{text-align:left}\ndef",semiotics],terms:[collect,2,"span","style","display:block;position:relative;text-align:left"],condition:"equal"}
  ,style:["@reference.pdf","#span"].map(fragment=>(
  {context:["abc A"+fragment+"{width:0px;filter:invert(1)} ",semiotics]
- ,terms:[collect,2,"span","span","style","width:0px;filter:invert(1)"]
+ ,terms:[collect,3,"span","span","style","width:0px;filter:invert(1)"]
  ,condition:"equal"
  }))
- ,stylerule:{context:["A@image.png{width:100%} ",semiotics],terms:[collect,1,"span","img","style",string],condition:"ok"}
- ,stylesheet:{context:['A@image.png{"style":{"@scope":{":scope":{"width":"100%"}},"h2":{"margin":0}}}',semiotics],terms:[collect,1,search(["span","img","style","@scope"]),simple],condition:"ok"}
- ,mixed:{context:["abc\nA@reference.pdf\ndef\n{text-align:left}\nghi",semiotics],terms:[collect,"length",5],condition:"equal"}
- ,noise:{context:["abc\n{text-align:left}\ndef\ng={h:1};",semiotics],terms:[collect,2,"span","span","span","#text","\ndef\ng={h:1};"],condition:"equal"}
+ ,stylerule:{context:["A@image.png{width:100%} ",semiotics],terms:[collect,2,"span","img","style",string],condition:"ok"}
+ ,stylesheet:{context:['A@image.png{"style":{"@scope":{":scope":{"width":"100%"}},"h2":{"margin":0}}}',semiotics],terms:[collect,2,search(["span","img","style","@scope"]),simple],condition:"ok"}
+ ,mixed:{context:["abc\nA@reference.pdf\ndef\n{text-align:left}\nghi",semiotics],terms:[collect,"length",6],condition:"equal"}
+ ,noise:{context:["abc\n{text-align:left}\ndef\ng={h:1};",semiotics],terms:[collect,3,"span","span","span","#text","def\ng={h:1};"],condition:"equal"}
  }
  };
