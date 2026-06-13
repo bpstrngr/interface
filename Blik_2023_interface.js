@@ -1,7 +1,7 @@
- import {modular,construct,deduce,zap,induce,stash,decide,note,collect,search,merge,prune,route,record,remember,tally,cede,unit,lift,push,sum,same,are,has,promise,pass,slip,something,observe,functor,describe,expect,control,trace,array,compound,simple,apply,stream,revert,rank,tether,differ,whether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,numeric,binary,basic,match,wait,string,defined,minor,compose,combine,exit,clock,major,colors,skip,flip,debug,relevant,extract} from "./Blik_2023_inference.js";
+ import {modular,construct,deduce,zap,induce,stash,decide,note,collect,search,merge,prune,route,record,remember,tally,rotate,cede,unit,lift,push,sum,same,are,has,promise,pass,slip,something,observe,functor,describe,expect,control,trace,array,compound,simple,apply,stream,revert,rank,tether,differ,whether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,numeric,binary,basic,match,wait,string,defined,minor,compose,combine,exit,clock,major,colors,skip,flip,debug,relevant,extract} from "./Blik_2023_inference.js";
  import {file,folder,url,relate,parser,parse,sanitize,serialize,exports,reexport,mime,coordinates,records} from "./Blik_2023_meta.js";
 
- export var {pathname:address,protocol}=new URL(import.meta.url);
+ export var {pathname:address,protocol,host,origin}=new URL(import.meta.url);
  export var name=file(address);
  export var location=folder(address);
  export var remote=protocol==="http:";

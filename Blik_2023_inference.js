@@ -606,8 +606,9 @@
  if(past===value)
  return target;
  // mutation warning - reduce on an empty target to copy.
- if(defined(value))
- return buffer(Object.assign,drop(1,2))(target,{[field]:value});
+ if(defined(value))try
+{return Object.assign(target,{[field]:value});
+}catch(fail){return target;};
  delete target[field];
  return array(target)?[target].flat():target;
 },target);

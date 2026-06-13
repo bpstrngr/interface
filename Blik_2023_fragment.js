@@ -161,7 +161,7 @@
 //,compose(drop(-2,1),combine(whether(simple,either(Reflect.get,compose(Object.values,search(0))),crop(1)),drop(-1)),lift,flip,combine(crop(1),tether(text)),lift,append)
 ],dataset:
 [is(simple,"dataset")
-,compose(drop(3,2),each([metamarkup]),lift,drop(-3,1),rotate(1),tether(document),drop(1),lift,lift)
+,compose(drop(3,2),each([dataset]),lift,drop(-3,1),rotate(1),tether(document),drop(1),lift,lift)
 ],actions:
 [is(string,"data-actions")
 ,compose(drop(-1,1),flip,tether(capture),infer("getAttributeNode","data-actions"))
@@ -246,11 +246,11 @@
  return [attributes,...children].filter(Boolean).reduce(merge);
 };
 
- export function metamarkup(object)
+ export function dataset(object)
 {return object&&Object.fromEntries
 (object.nodeName
 ?Object.entries(object.dataset).map(([key,value])=>
- [key,whether(isNaN,buffer(JSON.parse,drop(1)),parseFloat)(value)])
+ [key,cede(whether(isNaN,buffer(JSON.parse,drop(1)),parseFloat)(value))])
 :Object.entries(object).map(([key,value])=>["data-"+key,compound(value)?JSON.stringify(value):String(value)])
 );
 };
@@ -349,7 +349,7 @@
 }
 }};
  let activation=
- {exports:{capture,heritage,dispatch,defer,prototype,something,defined}
+ {exports:{capture,merge,heritage,dispatch,defer,prototype,something,defined,simple,compound,array,string,construct}
  ,procedures:function()
 {capture.call(window.document.body);
  let workers=["worker","serviceworker"];
@@ -402,7 +402,7 @@
 ,this;
  actions=Promise.all([module].flat().map(module=>
  import(module).then(({default:module})=>module))).then(modules=>
- modules.reduce((past,next)=>Object.assign(past,next),{}));
+ modules.reduce((past,next)=>merge(past,next,0),{}));
  let refer=defer.bind(actions);
  let scope=this===this.ownerDocument.body?this.ownerDocument.defaultView:this;
  let deferred=new Set(heritage(scope).filter(event=>event.startsWith?.("on")));
@@ -426,11 +426,11 @@
  export function dispatch(event)
 {let target=event.target.document?.body||event.target.body||event.target;
  if(target.nodeType===3)target=target.parentNode;
- let scopes=Object.entries(this).filter(([selector,actions])=>
- actions[event.type]&&target.closest(selector));
- scopes.map(([selector,actions])=>
- [target.closest(selector),actions[event.type]]).forEach(([scope,action])=>
- event.isTrusted&&console.debug({[event.type]:scope})||
+ return Object.entries(this).flatMap(([selector,actions])=>
+ [selector,actions[event.type]].reduce((selector,action)=>
+ action&&[target.closest(selector),action].reduce((scope,action)=>
+ scope&&[[scope,action]]))||[]).map(([scope,action])=>
+ console.debug({[event.type+(event.isTrusted?" (trusted)":"")]:action,scope})||
  action.call(scope,event));
 };
 
@@ -798,6 +798,27 @@
  }
  }
 );
+};
+
+ export function rasterize(image,scale=2)
+{const svgData=new XMLSerializer().serializeToString(image);
+ const src="data:image/svg+xml;charset=utf-8;base64,"+btoa(unescape(encodeURIComponent(svgData)));
+ return Object.assign(observe.call(new Image(),{load()
+{let {naturalWidth:width,naturalHeight:height}=this;
+ const canvas=document.createElement('canvas');
+ [width,height]=[width,height].map(size=>size*scale);
+ canvas.setAttribute('width',width);
+ canvas.setAttribute('height',height);
+ const context=canvas.getContext('2d');
+ context.drawImage(this,0,0,width,height);
+ //image.after(Object.assign(new Image(),{src:canvas.toDataURL('image/png')}))
+ var link=document.createElement("a");
+ link.download=image.getAttribute("title");
+ link.href=canvas.toDataURL('image/png');
+ document.body.appendChild(link);
+ link.click();
+ document.body.removeChild(link);
+}},{once:true}),{src});
 };
 
  export var stringify=node=>node.innerHTML||
@@ -1396,7 +1417,7 @@
  title&&[{title,tag:""},text&&{span:{update:false,"#text":text}}])||
  [merge(last,{compose:true,tag:""})];
 },"@":function link([last])
-{if(last.style||last.context||last.compound)
+{if(last.style||last.context||last.compound||last.text?.endsWith(" "))
  return;
  return this.phrase(last)?.reduce((title,text)=>
  [{title,link:""},text&&{span:{update:false,"#text":text}}]);
@@ -1442,7 +1463,7 @@
 [{style:"",block:true},{span:{update:false,"#text":last?.text||""}}
 ]:false;
  let next=this[" "](...arguments);
- if(next||past.nodeName)
+ if(next||past?.nodeName)
  return [{style:""},next?next.slice(1):[]].flat();
 },"}":function style([last,past])
 {if(!string(last.style)||string(last.text))

@@ -58,7 +58,7 @@
  export function ascending(past,next){return (past<=next)-1;}
  export function plural(term){return generator(term)||asyncgenerator(term);}
  export function iterable(term){try{return Symbol.iterator in term}catch(fail){return false;};}
- export var array=Array.isArray
+ export function array(term){return Array.isArray(term);};
  export function nothing(term){return !something(term);}
  export function imperative(term)
 {if(functor(term))term=String(term);

@@ -1,10 +1,10 @@
  import {unfold} from "./Blik_2023_search.js";
  import {aphorize,serialize} from "./Blik_2023_meta.js";
- import {merge,prune,record,stagger,infer,compose,cede,buffer,whether,wait,string,note,basic,defined,drop,modular,observe,extract} from "./Blik_2023_inference.js";
+ import {debug,merge,prune,record,stagger,infer,compose,cede,buffer,whether,wait,string,note,basic,defined,drop,modular,observe,extract} from "./Blik_2023_inference.js";
  import {fetch,digest,path,agent} from "./Blik_2023_interface.js";
- import {window,document,css,cookie,capture,metamarkup,destroy,keyboard} from "./Blik_2023_fragment.js";
+ import {window,document,css,cookie,capture,dataset,destroy,keyboard} from "./Blik_2023_fragment.js";
  import {EditorState,Compartment} from './haverbeke_2022_codemirror_state.js';
- import {EditorView,keymap,lineNumbers,drawSelection} from './haverbeke_2022_codemirror_view.js';
+ import {EditorView,ViewPlugin,keymap,lineNumbers,drawSelection} from './haverbeke_2022_codemirror_view.js';
  import {history,defaultKeymap,historyKeymap} from './haverbeke_2022_codemirror_commands.js';
  import {foldGutter,foldKeymap,codeFolding,syntaxHighlighting,defaultHighlightStyle,HighlightStyle,syntaxTree,syntaxTreeAvailable,ensureSyntaxTree,forceParsing,foldable,foldEffect,unfoldAll,foldAll} from './haverbeke_2022_codemirror_language.js';
  import {javascript} from './haverbeke_2022_codemirror_js.js';
@@ -21,29 +21,28 @@
  ,keyword:{color:"#770088"}
  };
  var extensions=
- [compose.call
+[compose.call
 (highlights,Object.entries,infer("map",([field,value])=>({tag:tags[field],...value}))
 ,HighlightStyle.define,syntaxHighlighting
 ),history(),drawSelection()
 ,foldGutter(),codeFolding(),javascript()
 ,keymap.of([defaultKeymap,historyKeymap,foldKeymap].flat())
- ];
+];
 
  export default async function script(source,settings={})
 {if(this&&!modular(this)||source.constructor.name==="IncomingMessage")
  return {imports:
  {"/Blik_2023_interface.js":["","command","fetch"]
  ,"/Blik_2023_inference.js":["","note","slip","compose","collect","combine","merge","record"]
- ,"/Blik_2023_fragment.js":["","metamarkup as dataset","destroy","size"]
+ ,"/Blik_2023_fragment.js":["","dataset","destroy","size"]
  ,[file]:["script","fold","resize"]
  }
  ,exports:{default:
  {".codemirror":
  {contextrestored(event)
-{let lines=Array.from(this.querySelectorAll(".cm-line")).map(({textContent:line})=>line);
- let meta=[dataset(this),{parent:this}].reduce(merge,{});
+{let {source,...meta}=[dataset(this),{parent:this}].reduce(merge,{});
  Array.from(this.childNodes).forEach(destroy);
- script(lines.join("\n"),meta);
+ script(source,meta);
 },keydown({keyCode,ctrlKey:ctrl,altKey:alt})
 {let {s,w,f}=keyboard(keyCode);
  if(alt&&f)
@@ -96,17 +95,23 @@
  resize.call(this,Math.max(1,Math.round(past*scale)));
 }}
  }}};
- let parent=settings.parent||compose.call
-({div:{class:"codemirror",...metamarkup(settings)}}
-,document,spill,lift,crop(1),cede
-);
- let indentation=new Compartment().of(EditorState.tabSize.of(1));
- let doc=string(source)?settings.source?source:await compose(fetch,digest,infer(serialize,"json"),buffer(compose(JSON.parse,aphorize),drop(1)))(source):JSON.stringify(source);
  let author=cookie("author");
- let {font}=author?await compose(fetch,digest)("/author/"+author):{};
- let size=font?font.size+"px":(settings.scale||1)+"em";
+ let {gutter=true,range,scale
+ ,font=author?await compose(fetch,digest,"font")("/author/"+author):""
+ ,parent=compose.call
+({div:{class:"codemirror",...dataset(settings)}}
+,document,spill,lift,crop(1),cede
+)}=settings;
+ let indentation=new Compartment().of(EditorState.tabSize.of(1));
+ let doc=string(source)?settings.source?source:await compose(fetch,digest)(source):JSON.stringify(source);
+ if(!string(doc))
+ doc=compose(infer(serialize,"json"),buffer(compose(JSON.parse,aphorize),drop(1)))(doc);
+ if(range)
+ doc=range.reduce((start,end)=>
+ doc.split("\n").slice(start,end).join("\n"));
+ let size=font?font.size+"px":(scale||1)+"em";
  let theme=new Compartment().of(EditorView.theme(
- {".cm-content":{"text-align":"left","font-family":settings.font,"font-size":size}
+ {".cm-content":{"text-align":"left","font-family":font,"font-size":size}
  ,".cm-gutters":{background:"transparent","font-size":size}
  // gutter heights are calculated dynamically on client-side. 
  ,".cm-gutterElement":{height:"4px !important",color:"var(--note)"}
@@ -119,10 +124,16 @@
  }
  ,".cm-foldPlaceholder":{background:"transparent",border:"none"}
  },{dark:true}));
- let {gutter=true}=settings;
+ let folding=defined(settings.fold)&&new Compartment().of(ViewPlugin.fromClass(class {update(update)
+{if(!update.geometryChanged)return;
+ stagger(update.view.dom.parentNode).then(parent=>
+ update.view.dispatch({effects:folding.compartment.reconfigure([])})||
+ fold.call(parent,settings.fold));
+}}));
  let state=EditorState.create({doc,extensions:
 [basetheme,foldtheme,theme,extensions
-,gutter&&lineNumbers({formatNumber(line){return gutter-1+line;}})
+,folding
+,gutter&&lineNumbers({formatNumber(line){return (range?.[0]||gutter)-1+line;}})
 ].flat()});
  let view=new EditorView({parent,state},window);
  //let style=view.styleModules.flatMap(({rules})=>rules).reverse().join("\n");
@@ -133,7 +144,7 @@
  [".cm-line",".cm-lineNumbers>.cm-gutterElement"].map(name=>
  Array.from(parent.querySelectorAll(name))).forEach((lines,gutter)=>
  lines[index+gutter]||Object.assign(lines.at(-1),{textContent:gutter?index+1:line})));
- return settings.parent?parent:capture.call(parent,file+"/module/default/module");
+ return capture.call(parent,file+"/module/default/module");
 };
 
  export function resize(next)
@@ -158,7 +169,7 @@
 {let {view}=this.querySelector(".cm-content").cmView;
  let {state}=view.viewState;
  let effects=[];
- forceParsing(view,state.doc.length,10000);
+ //forceParsing(view,state.doc.length,10000);
  ensureSyntaxTree(state,state.doc.length,10000).iterate(
  {enter({stack:{length},from,to})
 {let effect=depth<=length?foldable(state,from,to):undefined;
@@ -166,6 +177,7 @@
 },from:0,to:state.doc.length
  });
  view.dispatch({effects});
+ this.dataset.fold=depth;
  return this;
 };
 

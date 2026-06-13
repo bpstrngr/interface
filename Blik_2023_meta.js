@@ -570,7 +570,7 @@
  let {origin}=new URL("http"+(request.client.encrypted?"s":"")+"://"+request.headers.host);
  let [address,file]=[route[0],route.join("/")+"/module"].map(address=>
  origin+"/"+address);
- let {source}=await load(file);
+ let {source}=await load(address);
  let grammar=await [source,target].reduce(record(source=>
  parse(source)),[]);
  let mirror=term=>[term,term?.value,term?.init].find(functional);
@@ -642,10 +642,13 @@
 ?clamp([...stack,(shifted&31)|32],shifted>>>5)
 :[...stack,shifted&31];
 },[]).map(quantifier=>vlq[quantifier]).join("")).join("")).join(",")).join(";");
- let report=locations.map(([origin,target,name])=>[name,[
+ let report=Object.entries(locations.map(([origin,target,name])=>[name,[
 [[address,origin.map(index=>index+1)].flat().join(":")
 ,[file,target.map(index=>index+1)].flat().join(":")
-].join(" -> ")]]);
+].join("\n")]]).map(([name,value])=>
+ Object.fromEntries([[value?name:"",value||[]]])).reduce((past,next)=>
+ merge(past,next,0))).map(([name,value])=>
+ " "+[name+":",...value||[]].join("\n"));
  return {version:3,file,sources:[address],names,mappings,report,quantifiers};
 };
 
