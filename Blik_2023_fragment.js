@@ -1,5 +1,5 @@
  import {locate,command,recompose,delegate,agent,thread,fetch as freefetch,digest,query} from "./Blik_2023_interface.js";
- import {note,describe,decide,colors,wait,stagger,search,merge,prune,record,route,observe,rank,constant,rotate,deduce,lift,fold,collect,slip,spill,push,infer,either,each,pass,tether,surge,flush,buffer,differ,compose,some,flip,skip,stash,revert,combine,whether,swap,compound,something,string,basic,minor,functor,promise,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdf,when,debug,expect,generator,plural,native,clock,type,complex,heritage,prototype,expressions,cede,extract,fields} from "./Blik_2023_inference.js";
+ import {note,index,describe,decide,colors,wait,stagger,search,merge,prune,record,route,observe,rank,constant,rotate,deduce,lift,fold,collect,slip,spill,push,infer,either,each,pass,tether,surge,flush,buffer,differ,compose,some,flip,skip,stash,revert,combine,whether,swap,compound,something,string,basic,minor,functor,promise,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdf,when,debug,expect,generator,plural,native,clock,type,complex,heritage,prototype,expressions,cede,extract,fields} from "./Blik_2023_inference.js";
  import {unfold} from "./Blik_2023_search.js";
  import {serialize,proceduralize,mime,data,file,relate} from "./Blik_2023_meta.js";
  import * as layout from "./Blik_2023_layout.js";
@@ -255,13 +255,13 @@
 );
 };
 
- export function qualify(node)
+ var entrify=whether(compose(Object.values,either(compose("length",is(0)),infer("some",simple))),Object.entries,compose("",flip,index,index));
+ export function qualify(node,full=true)
 {// extract css selectors from node/fragment, or vice versa. 
  when(defined)(node);
  if(simple(node))
  return compose.call
-(node
-,whether(compose(Object.values,either(compose("length",is(0)),infer("some",simple))),Object.entries,compose("",flip,index,index))
+(node,entrify
 ,([[name,{id,class:group,classed}={}]=[]])=>
 [name,string(id)?"#"+id:""
 ,[group,classed].flat().filter(string).filter(Boolean).flatMap(group=>
@@ -284,9 +284,9 @@
 ,node.match(/^[^#\.\[\]]+/)||[]);
  let name=node.nodeName?.toLowerCase()||"";
  let selectors=name?{id:"#",classList:"."}:{id:'#',class:'.',classed:'.'};
- let attributes=Array.from(node.attributes||[]).filter(({name})=>
+ let attributes=full?Array.from(node.attributes||[]).filter(({name})=>
  !["id","class","style"].includes(name.toLowerCase())&&!name.startsWith("on")&&!name.includes(":")).map(({name,value})=>
- "["+[name,value].join("='")+"']").join("");
+ "["+[name,value].join("='")+"']").join(""):"";
  return name+Object.entries(selectors).flatMap(([attribute,selector])=>
 [attribute==="classList"?Array.from(node[attribute]):["class","className"].includes(attribute)
 ?node[attribute]?.split?.(' ')||[]:node[attribute]
@@ -604,11 +604,8 @@
 
  export function throttle(fragment,progress=0)
 {if(!fragment?.simulation)return fragment;
- //if(!fragment.simulation||!fragment.simulation.nodes().length)return fragment;
  return new Promise(resolve=>setTimeout(time=>resolve(fragment),2000)).then(fragment=>
-{//let size=fragment.querySelectorAll("g.node").length;
- //if(size>progress||!size)
- for(let simulation of [fragment.simulation].flat())
+{for(let simulation of [fragment.simulation].flat())
  if(note(Math.floor((1-simulation.alpha())*100),"% throttling "+fragment.getAttribute("title")).next().value<10)
  return throttle(fragment);
  else fragment.simulation.stop();
@@ -874,7 +871,7 @@
  ,pointermove(event)
 {let {clientX:x,clientY:y}=event;
  let [dx,dy]=[this.drag,this.drag={x,y}].reduce(({x:x0,y:y0},{x,y})=>[x-x0,y-y0]);
- [x,y]=[transform(this.style),/\d+/].reduce(({x,y},digits)=>[x,y].map((side,index)=>
+ [x,y]=[transform(this.getAttribute("transform")),/\d+/].reduce(({x,y},digits)=>[x,y].map((side,index)=>
  Math[index?"min":"max"](0,side+[dx,dy][index]).toFixed(1)+"px"));
  merge(this.style,{transform:"translate("+[x,y]+")"});
 }},{signal:this.control.signal});
@@ -917,7 +914,7 @@
  ,width,height
  });
 
- export var deselect=compose(when(string),/[^\w+-]/g,"_","replace");
+ export function deselect(term){return term.replace(/[^\w+-]/g,"_");};
 
  export async function error(path,request)
 {when(is(Error))(this);
@@ -1188,7 +1185,8 @@
 };
 
  export function transform(node)
-{const value=string(node)?{matrix:new DOMMatrixReadOnly(node)}:node.transform.baseVal.consolidate();
+{if(!node)node="translate(0,0) scale(1)";
+ let value=string(node)?{matrix:new DOMMatrixReadOnly(node)}:node.transform.baseVal.consolidate();
  if(!value)return {x:0,y:0,k:1};
  let {matrix:{a,b,c,d,e:x,f:y}}=value;
  // from private method in d3-interpolate/transform/decompose.js.
@@ -1205,10 +1203,10 @@
 
  export function transition(node,style,seconds)
 {return !seconds?Object.assign(node.style,style)&&node:compose
-((transition,node)=>Object.assign(node.style,{transition})&&node
-)(wait((seconds+(Number(style["transition-delay"]?.replace(/[^0-9\.]/g,""))||0))*1000
-,node.style.transition
-,Object.assign(node.style,{transition:Object.keys(style).map(style=>style+" "+seconds+"s").join(","),...style})&&node));
+(wait((seconds+(Number(style["transition-delay"]?.replace(/[^0-9\.]/g,""))||0))*1000)
+,(transition,node)=>Object.assign(node.style,{transition})&&node
+)(node.style.transition
+,Object.assign(node.style,{transition:Object.keys(style).map(style=>style+" "+seconds+"s").join(","),...style})&&node);
 };
 
  export function expand(event)
@@ -1350,7 +1348,7 @@
  if(fragment)
  last=yield stagger({span:{...block,...simple(fragment)?fragment:{fragment}}});
  if(index+1===length&&next.text)
- yield {span:{...block,span:{update:"last","#text":next.text}}};
+ yield {span:{...block,span:{update:false,"#text":next.text}}};
 };
 };
 
@@ -1514,11 +1512,10 @@
  "\""+string.replace("\\","\\\\").replace(/\n/g,"\\n").replace(/"/g,"\\\"")+"\""));
  if(context[0]==="this"||last.compose)
  context.splice(0,last.compose?0:1,term.querySelector(qualify(past)));
- let fragment=await cede(buffer
+ let fragment=await compose(buffer
 (compose(recompose,compose,"call")
 ,compose(crop(1),"stack",["span","#text"],record,{span:{update:false}},merge)
-)(context,import.meta.url));
- collect(each.call(fragment,infer(this.annotate,last.title)));
+),each(infer(this.annotate,last.title)),cede)(context,import.meta.url);
  return [{},fragment];
 }//,"<":function(last,...syntax){if(last.style||last.context)return;return this.text("&lt;",...arguments);}
  //,">":function(last,...syntax){if(last.style||last.context)return;return this.text("&gt;",...arguments);}

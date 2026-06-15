@@ -138,8 +138,8 @@ interpretation#[["/Blik_2023_interface.js"],"interface/command",[["interpret"]],
 
  The rest of Interface contains facilities to scan locations, channels and messages. To see it all visually, the default function in the Network module can represent its semantics instead of its text. Notable is the infrastructure#i function that prunes modules#i for their imports and timestamp to be represented as a timeline network. We may see that Interface was commanded to run the expose function of the Port module, with the Form and Protocol modules as its arguments. 
 
-namespace#[["/Blik_2023_interface.js/module/namespace"],"interface/fetch","interface/digest",[["Blik_2023_interface.js"]],"inference/record",[{"spread":"right"}],{"inference/slip":[0]},"network"]{height:1000px}#[["g#Blik_2023_interface_js-importmap","g#Blik_2023_interface_js-tests","g#Blik_2023_interface_js-agent","g#Blik_2023_interface_js-features","g#Blik_2023_interface_js-worker","g#Blik_2023_interface_js-modules"],{"inference/tether":["network/collapse"]},[1],{"inference/tether":["network/zoom"]}]
-Infrastructure#network("/history",{"spread":"right","linear":false,"range":"time","relations":"imports","ratio":0.1}){height:500px}#[[50],{"inference/tether":["network/zoom"]}]
+namespace#[["/Blik_2023_interface.js/module/namespace"],"interface/fetch","interface/digest",[{"source":"/Blik_2023_interface.js/module/namespace","spread":"right","collapse":["g#_Blik_2023_interface_js_module_namespace-importmap","g#_Blik_2023_interface_js_module_namespace-tests","g#_Blik_2023_interface_js_module_namespace-agent","g#_Blik_2023_interface_js_module_namespace-features","g#_Blik_2023_interface_js_module_namespace-worker","g#_Blik_2023_interface_js_module_namespace-modules"]}],{"inference/slip":[0]},"network"]{height:1000px}
+Infrastructure#network("/history",{"spread":"right","linear":false,"range":"time","relations":"imports","ratio":0.1}){height:500px}#[[20],{"inference/tether":["network/zoom"]}]
 
  (Take Ownership)#h2
 

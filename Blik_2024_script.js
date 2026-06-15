@@ -132,7 +132,7 @@
 }}));
  let state=EditorState.create({doc,extensions:
 [basetheme,foldtheme,theme,extensions
-,folding
+,folding||[]
 ,gutter&&lineNumbers({formatNumber(line){return (range?.[0]||gutter)-1+line;}})
 ].flat()});
  let view=new EditorView({parent,state},window);

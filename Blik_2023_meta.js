@@ -1,5 +1,5 @@
  import {note,when,crop,debug,whether,extract,relevant,wait,sum,pass,drop,swap,match,infer,either,buffer,observe,compose,combine,revert,collect,stream,rank,compound,tether,bind,slip,string,numeric,functor,is,not,native,basic,simple,iterable,array,lambda,imperative,defined,composed,odd,exit,expect,prototype,colors,stash,expressions,search,merge,prune,route,record,functional} from "./Blik_2023_inference.js";
- import {location,resolve,load} from "./Blik_2023_interface.js";
+ import {location,load} from "./Blik_2023_interface.js";
  import {random} from "./Blik_2023_search.js";
  let address=new URL(import.meta.url).pathname;
 
@@ -758,7 +758,7 @@
 
  export async function prose(text)
 {let [{toString},{retext},{default:retextKeywords},{default:retextPos},{VFile}]=
- await resolve.bind(import.meta.url)(['./Wormer_2014_nlcst2string.js','./Wormer_2014_retext.js','./Wormer_2014_retext-keywords.js','./Wormer_2014_retext-pos.js','./Wormer_2015_vfile.js']);
+ await command.call(import.meta.url,['./Wormer_2014_nlcst2string.js','./Wormer_2014_retext.js','./Wormer_2014_retext-keywords.js','./Wormer_2014_retext-pos.js','./Wormer_2015_vfile.js']);
  let parser=retext().use(retextPos).use(retextKeywords);
  return compose
 (infer("reduce",record(({Title,Abstract})=>

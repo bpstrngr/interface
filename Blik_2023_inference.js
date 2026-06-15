@@ -678,15 +678,13 @@
 };
 
  export function cooccurrence(records,{field="phrases"}={})
-{return records.reduce((clusters,record)=>
- record[field]?.map(phrase=>
+{return records.reduce((clusters,record)=>record[field]?.map(phrase=>
  phrase.toLowerCase()).reduce((clusters,phrase,index,phrases)=>
  phrases.filter((phrase,coindex)=>coindex!==index).reduce((clusters,cophrase)=>
  [phrase,cophrase][clusters[phrase]?"slice":"reverse"]().reduce((phrase,cophrase)=>
  merge(clusters,sum(clusters[phrase]?.[cophrase],1),[phrase,cophrase]))
 ,clusters)
-,clusters)
- ||clusters
+,clusters)||clusters
 ,{});
 };
 
