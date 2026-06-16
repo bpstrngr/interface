@@ -1001,9 +1001,9 @@
  ,csv:compose("text",records),svg:compose("text",type,xml),xml:compose("text",type,xml)
  ,png:"blob",jpg:"blob",png:"blob"
  },Object.entries,infer("map",([field,value])=>[mime(field),value]),Object.fromEntries)[type]
-,(text,mime)=>mime==="text/html"
-?window.document.createRange().createContextualFragment(text)
-:new window.DOMParser().parseFromString(text,mime).documentElement
+,(text,mime)=>command.call(import.meta.url,"./Blik_2023_fragment.js","window").then(({document,DOMParser})=>mime==="text/html"
+?document.createRange().createContextualFragment(text)
+:new DOMParser().parseFromString(text,mime).documentElement)
 ))),lift
 ,(response,parser)=>infer.call(response,parser||"text")
 );
