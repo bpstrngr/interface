@@ -1378,7 +1378,7 @@
 ?prune.call(fragment,([field,value])=>
  merge(value,{[index?"class":"id"]:id}),0,0)
 :flush(...document.call(fragment,{[index?"class":"id"]:id}))
-,fragment);
+,fragment)||fragment;
 }," ":function terminate([last,past])
 {let parenthesized=last?.context||string(last?.style);
  if(last?.text||parenthesized)
@@ -1511,7 +1511,7 @@
  // normalize multiline string quotations. 
  "\""+string.replace("\\","\\\\").replace(/\n/g,"\\n").replace(/"/g,"\\\"")+"\""));
  if(context[0]==="this"||last.compose)
- context.splice(0,last.compose?0:1,term.querySelector(qualify(past)));
+ context.splice(0,last.compose?0:1,Array.from(term.querySelectorAll(qualify(past))).at(-1));
  let fragment=await compose(buffer
 (compose(recompose,compose,"call")
 ,compose(crop(1),"stack",["span","#text"],record,{span:{update:false}},merge)
