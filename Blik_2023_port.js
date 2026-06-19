@@ -1,7 +1,7 @@
  import {note,debug,sum,colors,search,merge,prune,record,remember,route,when,stash,flip,are,functor,string,not,pattern,revert,each,describe,clock,observe,is,has,same,minor,slip,something,compound,infer,tether,whether,collect,rank,buffer,differ,compose,combine,either,drop,crop,swap,wait,exit,pass,binary,simple,array,expect,extract} from "./Blik_2023_inference.js";
  import {name as loader,delegate,swarm,command,access,locate,prompt,list,fetch,digest,persist,version,compress,stage,feature} from "./Blik_2023_interface.js";
  import {encrypt} from "./Blik_2023_search.js";
- import {mime,bytes} from "./Blik_2023_meta.js";
+ import {mime,bytes,url} from "./Blik_2023_meta.js";
  import {browser,jsdom,cookies,cookie} from "./Blik_2023_fragment.js";
  import {animal} from "./Blik_2024_svg.js";
 
@@ -34,11 +34,12 @@
 ,compose(combine(path,unit),lift,buffer(route.bind(routes),either(tether(routes.error),crop(1))))
 ),unit),lift,stage);
  var dynamic=compose
-("url",slip("."),"concat"
+ // included in classified or published paths. 
+(url,"pathname",slip("."),"concat"
 ,combine(...[classified,published].map(list=>
  infer(permit,list))),lift
 );
- var distinction=({url,headers})=>[url,new URLSearchParams(feature(version(headers)))].join("");
+ var distinction=({url,headers})=>[url,...Object.values(feature(version(headers))).map(Boolean).map(Number)].join("");
  var respond=compose
 (revert(decode,new TextDecoder("utf-8")),rank,combine(whether
 (cache&&buffer(compose(combine(compose("method",/get/i,"match"),dynamic),lift),swap(false))

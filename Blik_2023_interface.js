@@ -328,7 +328,7 @@
 ,slip(entry)
 ,binding
 ?buffer
-(compose(make,absolute,slip(command.bind(import.meta.url)("fs","promises")),"rename",swap(absolute),pass(infer(note.bind(2),"bundle ready.")),clean)
+(compose(make,absolute,slip(command.call(import.meta.url,"fs","promises")),"rename",swap(absolute),pass(infer(note.bind(2),"bundle ready.")),clean)
 ,compose(clean,exit)
 )
  // not returning bundle promise after source assembly to unblock immediate resolution from source. 
@@ -1030,7 +1030,7 @@
  export async function spawn(...context)
 {// bound scope defines output color: undefined=quiet, other=default
  note.call(3,...context,"...");
- let process=await command.bind(import.meta.url)("child_process","spawn",context);
+ let process=await command.call(import.meta.url,"child_process","spawn",context.shift(),context);
  return revert((resolve,reject,process,output)=>
 [[process,{exit:exit=>exit?reject(Error(exit)):resolve(output.join("\n"))}]
 ,...this?["out","err"].map((stream,index)=>

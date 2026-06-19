@@ -307,6 +307,7 @@
  {"/Blik_2023_fragment.js":["","capture","image","canvas","insert"]
  ,"/Blik_2023_inference.js":["","infer","buffer","compose","undefine"]
  ,"/Blik_2023_interface.js":["","command","path","query","socket"]
+ ,"/Blik_2023_meta.js":["","url"]
  }
  ,exports:{default:
  {body:
@@ -327,12 +328,13 @@
 },async message(event)
 {let {data:message}=event;
  console.info("send",message);
- let address=this.ownerDocument.defaultView.location.href;
+ let window=this.ownerDocument.defaultView;
+ let address=window.location.href;
  if(!message.room)
- message.room=["",path(address),query(address).source].join("/");
- if(this.ownerDocument.defaultView.socket?.readyState===3)
+ message.room=["",path(address),query(url(address)).source].join("/");
+ if(window.socket?.readyState===3)
  window.socket=await socket(window.location.origin,listen);
- this.ownerDocument.defaultView.socket?.send(JSON.stringify(message));
+ window.socket.send(JSON.stringify(message));
 },beforeprint(event)
 {console.log(this.querySelector("#composer"),this.querySelector("#frame"));
 },afterprint(event)
@@ -495,6 +497,7 @@
  ,tabindex:"0",contenteditable:type!=="checkbox","#text":text
  }:undefined
 ],ul:type==="time"?clockwork(value):compound(value)?{li:list(value)}:null
+ ,drop:value===null
  };
 });
  let style=[{"@scope":{":scope":
@@ -502,9 +505,9 @@
  {...layout.label
  ,"&>span[name]":layout.input
  ,"&>span[role=list]":
- {position:"fixed",display:"none",padding:"0px","margin-bottom":"0px"
- ,"margin-left":"0.6em","max-height":"100%","max-width":"100%",overflow:"scroll"
- ,"&:hover":{display:"block"}
+ {position:"fixed",padding:"0px","bottom":"6em"
+ ,"max-height":"100%","max-width":"100%",overflow:"scroll"
+ ,"&>span":{margin:"0.25em 0em"}
  }
  ,"& ul":
  {position:"fixed",display:"none",padding:"0px","margin-bottom":"0px","margin-left":"0.6em","max-height":"100%","max-width":"100%"
@@ -543,7 +546,7 @@
  if(fields)
  Object.entries(fields||{}).map(([field,value])=>
  [!compound(value)&&this.querySelector("[name="+field+"]"),value]).forEach(([node,text])=>
- node&&document.call(node,{[node.role==="checkbox"?"aria-checked":"#text"]:text}));
+ node&&compose(tether(document),spill,lift)(node,{[node.role==="checkbox"?"aria-checked":"#text"]:text}));
  return fill.call(this,this.getAttribute("method"));
 };
 
@@ -1019,7 +1022,7 @@
  let tag=layout||extension&&Object.keys(elements).find(key=>
  elements[key].includes(extension))||"span";
  let target=/^#/.test(source)?"":undefined;
- return document(
+ return compose(document,spill,lift,crop(1))(
  {[tag]:
  {id:title.replace(" ","_"),role:"link"
  ,title:title&&source,alt:title||source
@@ -1035,11 +1038,11 @@
  Array.from(rules)).filter(({selectorText})=>selectorText?.includes(selector));
 };
 
- export async function message({icon,name,put,comment,message=comment},{length:index})
+ export async function message({icon,name,put,comment,message=comment},{length:index}={})
 {return (
  {class:"message","data-index":String(index)
  ,style:{"@scope":{":scope":
- {display:"table-row","text-align":"left"
+ {display:"block","text-align":"left"
  ,"&>span":
  {display:"table-cell","vertical-align":"top"
  ,"&:first-of-type":
