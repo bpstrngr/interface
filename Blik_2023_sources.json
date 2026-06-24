@@ -933,7 +933,7 @@
     "pako": "./Puzrin_2014_pako.js",
     "pify": "./sindresorhus_2015_pify.js",
     "readable-stream": "./isaacs_2012_readable-stream.js",
-    "sha.js": "./Tarr_2014_sha.js",
+    "sha.js/sha1.js": "./Tarr_2014_sha1.js",
     "simple-get": "./Feross_2014_simpleget.js"
   }}]}},
   "Feross_2014_simpleget.js": {
@@ -952,9 +952,9 @@
     "https://github.com/sindresorhus/mimic-response": { "v3.1.0": [{"syntax":"commonjs"}] },
     "https://github.com/npm/wrappy":{"v1.0.2":[{"syntax":"commonjs"}]}
   },
-  "Schouten_2015_async-lock.js":{"https://github.com/rogierschouten/async-lock/lib":{"v1.4.1":["lib/index.js"]}},
-  "White_2016_clean-gitref.js":{"https://github.com/elicwhite/clean-git-ref":{"v2.0.1":["src/index.js"]}},
-  "Sheets_2014_crc32.js":{"https://github.com/SheetJS/js-crc32":{"v1.2.0":["crc32.js"]}},
+  "Schouten_2015_async-lock.js":{"https://github.com/rogierschouten/async-lock/lib":{"v1.4.1":["lib/index.js",{"syntax":"commonjs"}]}},
+  "White_2016_clean-gitref.js":{"https://github.com/elicwhite/clean-git-ref":{"v2.0.1":["src/index.js",{"syntax":"commonjs"}]}},
+  "Sheets_2014_crc32.js":{"https://github.com/SheetJS/js-crc32":{"v1.2.0":["crc32.js",{"syntax":"commonjs"}]}},
   "Wanek_2016_diff3.js":{"https://github.com/axosoft/diff3":{"cd8d7618bb1505b65f70fea7d260344cc99ace38":["diff3.js",{"syntax":"commonjs"}]}},
   "Kael_2015_ignore.js":{"https://github.com/kaelzhang/node-ignore":{"7.0.5":["index.js",{"syntax":"commonjs"}]}},
   "Hinosawa_2015_minimisted.js":{
@@ -967,24 +967,22 @@
   "Puzrin_2014_pako.js":{"https://github.com/nodeca/pako":{"1.0.10":["index.js",{"syntax":"commonjs"}]}},
   "sindresorhus_2015_pify.js":{"https://github.com/sindresorhus/pify/tree/v6.1.0":{"v4.0.1":["index.js",{"syntax":"commonjs"}]}},
   "isaacs_2012_readable-stream.js":{
-    "https://github.com/nodejs/readable-stream":{"v4.0.0":["src/index.js",{"alias":{
+    "https://github.com/nodejs/readable-stream":{"v4.0.0":["src/index.js",{"syntax":"commonjs","alias":{
       "abort-controller":"./isaacs_2012_readable-stream/1/src/abort-controller.ts"
     }}]},
-    "https://github.com/mysticatea/abort-controller":{"v3.0.0":[{"alias":{"event-target-shim":"./Nagashima_2017_abortcontroller/2/src/event-target.mjs"}}]},
+    "https://github.com/mysticatea/abort-controller":{"v3.0.0":[{"alias":{"event-target-shim":"./isaacs_2012_readable-stream/2/src/event-target.mjs"}}]},
     "https://github.com/mysticatea/event-target-shim":{"v5.0.0":[]}
   },
-  "Tarr_2014_sha.js":{
-    "https://github.com/browserify/sha.js":{"v2.4.12":["index.js",{"alias":{
+  "Tarr_2014_sha1.js":{
+    "https://github.com/browserify/sha.js":{"v2.4.12":["sha1.js",{"syntax":"commonjs","alias":{
       "inherits": "./isaacs_2015_inherits.js",
-      "safe-buffer": "./Tarr_2014_sha/1/index.js",
-      "to-buffer": "./Tarr_2014_sha/2/index.js"
+      "safe-buffer": "./Tarr_2014_sha1/1/index.js",
+      "to-buffer": "./Tarr_2014_sha1/2/index.js"
     }}]},
-    "https://github.com/browserify/safe-buffer":{"v5.2.1":[{"alias":{
-      "safe-buffer":"./Tarr_2014_sha/1/index.js"
-    }}]},
-    "https://github.com/browserify/to-buffer":{"v1.2.0":[{"alias":{
-      "safe-buffer":"./Tarr_2014_sha/1/index.js",
-      "isarray":"./Tarr_2014_sha/3/index.js"
+    "https://github.com/feross/safe-buffer":{"v5.2.1":[{"syntax":"commonjs"}]},
+    "https://github.com/browserify/to-buffer":{"v1.2.0":[{"syntax":"commonjs","alias":{
+      "safe-buffer":"./Tarr_2014_sha1/1/index.js",
+      "isarray":"./Tarr_2014_sha1/3/index.js"
     }}]},
     "https://github.com/juliangruber/isarray":{"v2.0.5":[{"syntax":"commonjs"}]}
   }

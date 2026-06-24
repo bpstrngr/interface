@@ -1,4 +1,4 @@
- import {note,something,sum,rank,cede,lift,has,compose,combine,buffer,slip,drop,stream,infer,either,swap,crop,not,whether,pass,promise,collect,simple,functor,defined,string,compound,tether,is,numeric,array,basic,iterable,construct,describe} from "./Blik_2023_inference.js";
+ import {note,something,sum,rank,cede,lift,has,compose,combine,buffer,slip,drop,infer,either,swap,crop,not,whether,pass,promise,collect,simple,functor,defined,string,compound,tether,is,numeric,array,basic,iterable,construct,describe} from "./Blik_2023_inference.js";
 
  export var stringify=scope=>
  scope&&iterable(Object(scope))?String(scope):JSON.stringify(scope);

@@ -711,12 +711,6 @@
  Object.keys(record).filter(field=>
  term(record[field]));
 
- export function relevant(scope,term)
-{return Object.fromEntries(Object.entries(scope).flatMap(([field,value])=>!string(value)
-?["ends","starts"].some(side=>term[side+"With"](field))?Object.entries(value):[]
-:[[field,value]]));
-};
-
  export function debug(...context){debugger;return rank(context);};
 
  export function note(...context)
@@ -886,32 +880,17 @@
  return defined(this)?condition(this):condition;
 };
 
+ export var measure=function(label)
+{return function mark(...context)
+{if(!this.has(label))
+ this.set(label,performance.now());
+ else console.log({[label]:performance.now()-this.get(label)})
+,this.delete(label);
+ return yank(context);
+}.bind(this);
+}.bind(new Map());
+
  export function exit(fail){throw is(Error)(fail)?fail:Error(fail,{reason:fail});};
-
- // OBSOLETE (weak variations of infer, compose, tether) 
-
- export var apply=(context,term)=>
- // apply or append term to context (respecting plurality and asynchronicity).
- [context,term].some(context=>promise(context))
-?Promise.all([context,term]).then(([context,term])=>apply(context,term))
-:functor(term)
-?term(...collect(context))
-:lift(context,term);
-
- // consecutive application.
- export function stream(context,...terms){return terms.reduce(apply,context);}
-
- export function bind(factor,...pretext)
-{// bound inference. (univalence axiom) 
- let bound=functor(factor)
-?describe.call("tether ",function()
-{return factor.call(...arguments);
-},factor)
-:factor;
- // when monadic inference is ready. 
- //return infer.call(this,bound,...pretext);
- return bound;
-};
 
  export var tests=
  {deduce:{context:[sum],terms:[1,2,3,"call"],condition:when(is(2))}

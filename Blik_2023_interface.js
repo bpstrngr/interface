@@ -1,4 +1,4 @@
- import {modular,construct,deduce,zap,induce,stash,decide,note,collect,search,merge,prune,route,record,remember,tally,rotate,cede,unit,lift,push,sum,same,are,has,promise,pass,slip,something,observe,functor,describe,expect,control,trace,array,compound,simple,apply,stream,revert,rank,tether,differ,whether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,numeric,binary,basic,match,wait,string,defined,minor,compose,combine,exit,clock,major,colors,skip,flip,debug,relevant,extract} from "./Blik_2023_inference.js";
+ import {modular,construct,deduce,zap,induce,stash,decide,note,collect,search,merge,prune,route,record,remember,tally,rotate,cede,unit,lift,push,sum,same,are,has,promise,pass,slip,something,observe,functor,describe,expect,control,trace,array,compound,simple,revert,rank,tether,differ,whether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,numeric,binary,basic,match,wait,string,defined,minor,compose,combine,exit,clock,major,colors,skip,flip,debug,extract} from "./Blik_2023_inference.js";
  import {file,folder,url,relate,parser,parse,sanitize,serialize,exports,reexport,mime,coordinates,records} from "./Blik_2023_meta.js";
 
  export var {pathname:address,protocol,host,origin}=new URL(import.meta.url);
@@ -36,7 +36,7 @@
  return;
  let inference=infer(...string(term)
 ?[differ(command.bind(import.meta.url)),import.meta.url,term,...context]
-:[compose(recompose,compose,"call"),term,import.meta.url]);
+:[compose(recompose,compose,infer("call",...context)),term,import.meta.url]);
  compose
 (buffer(inference,crop(1))
 ,combine
@@ -61,7 +61,7 @@
  buffer
 (compose
 (/^([^\/])/,"./$1","replace",infer(url,address),"pathname",combine(folder,file),drop(1,1,prefix,"_"),"concat",pass(probe)
-),left?drop():compose("message",note.bind(1),exit)
+),left?drop():exit
 )));
  export var peer=remember
 (compose(drop(1,2),"Agent",{timeout:5*60*1000},command.bind(import.meta.url))
@@ -210,14 +210,13 @@
 ,Promise.reject());
 };
  var precedent=compose("resolution",collect,slip(modules),tether(search));
- var respecify=compose("url",url,"pathname",decodeURI);
  var modulepath=when(is([match(/^[\/\.]/),not(match(RegExp(sources+"$")))]));
  var format=compose
-(combine(unit,2,compose(swap(importmap),Object.keys)),lift,(source,sources)=>
+(combine(unit,compose(swap(importmap),Object.keys)),lift,(source,sources)=>
  sources.find(field=>source.startsWith([location,field.replace(/\.js$|\.node$/,"/")].join("/")))||"module",["format"],record
 );
  var shortcircuit=compose
-(combine(unit,either(buffer(compose(respecify,modulepath,format)),swap({}))),lift,merge
+(combine(unit,either(compose("url",url,"pathname",decodeURI,modulepath,format),swap({}))),lift,merge
 ,{shortCircuit:true},merge
 ,stash(compose(drop(),push(Date),[],Reflect.construct,"getTime",["time"],record)),merge
 ,["resolution"],record
@@ -237,37 +236,36 @@
  if(attributes?.peer)
  // clone immutable context without custom attributes ({peer} overrides parentURL for commands). 
  context=prune.call(context,([field,value])=>({peer:undefined}[field]||value));
- let relation=decodeURI(url(peer).href);
- let {protocol,host,pathname:absolute}=await url(specifier,relation);
+ let {pathname:relation}=url(peer);
+ let {pathname:absolute,protocol,host}=url(specifier,peer);
  let [relative,reverse]=await [absolute,relation].reduce(record(async relation=>agent.node&&
  "file:"===protocol?"/"+await command.call(import.meta.url,"path","relative",location,relation):relation),[]);
- if(relative==="file:///Blik_2023_interface.js")debugger
- return compose(either(precedent,compose
-(swap(absolute,context),buffer(next,buffer
-(compose(crop(2),stash(immediate),recover,modules,absolute,relation,"call",infer(command.bind(peer),context,next))
-,compose(swap(swarm),search([name]),[[peer,specifier],{"inference/tether":"interface/fetch"},["headers","status"]],tether(delegate),when(is("200")),swap(specifier),peer,relate,url=>({url}))
-)),shortcircuit,{imports:new Set()},merge,[relative],record
-,slip(modules),0,merge,[relative,"resolution"],tether(search)
+ let extend=!protocol.startsWith("http")
+?compose(crop(2),stash(immediate),recover,modules,absolute,peer,"call",peer,relate)
+:compose(swap(swarm),search([name]),[[peer,specifier],{"inference/tether":"interface/fetch"},["headers","status"]],tether(delegate),when(is("200")),swap(specifier),peer,relate);
+ let precedent=merge(modules,{[relative]:{}})[relative];
+ return precedent.resolution=precedent.resolution||compose
+(buffer(next,either(compose(extend,["url"],record),compose(crop(1),note.bind(1),exit))),shortcircuit
+,{imports:new Set()},merge,slip(modules),[relative],merge,[relative,"resolution"],tether(search)
 ,pass(compose(swap(colors.yellow+"export:"+colors.cyan+relative+colors.yellow+" to:"+colors.gray+reverse+colors.steady),console.log))
-)),relation.endsWith("/")?undefined:pass(compose
-(swap(modules),{[relation.replace(folder(import.meta.url),"")]:{imports:new Set([relative])}},0,merge
-)),cede)(relative);
+,peer.endsWith("/")?undefined:pass(compose
+(swap(modules),{[peer.replace(folder(import.meta.url),"")]:{imports:new Set([relative])}},0,merge
+)),cede)(absolute,context);
 };
 
  function immediate({message},source){return message.includes("'"+source+"'");};
 
  function recover(fail,source,immediate)
 {return {ERR_MODULE_NOT_FOUND:!immediate?alias
-        :buffer(compose(drop(1),when(not(match(/_/))),crop(1),prepend),compose(drop(1),tether(acquire)))
+        :buffer(compose(drop(1,2),when(not(match(/_/))),prepend),compose(drop(1),tether(acquire)))
         ,ERR_UNSUPPORTED_DIR_IMPORT:immediate&&extend
         }[fail.code]||exit(fail);
 };
 
  function extend(absolute)
-{return [".js","js","ts","d.ts","jsx","tsx"].map((extension,index)=>index
-?absolute+"/index."+extension
-:absolute+extension).reduce((first,second,index,all)=>
- [...all.splice(index),first]).reduce((file,source)=>
+{return ["","/index"].flatMap(path=>
+ ["","js","ts","jsx","tsx","d.ts"].map(extension=>
+ absolute+path+(extension?".":"")+extension)).reduce((file,source)=>
  file.catch(fail=>access(source).then(file=>source))
 ,Promise.reject());
 };
@@ -293,7 +291,7 @@
  let path=await import("path");
  let target=absolute.replace(/\.js$|\.node$/,"");
  let relative=path.relative(location,absolute);
- let definition=await either(relative,swap({}))(importmap);
+ let definition=importmap[relative]||{};
  let entry=!compound(definition)||array(definition);
  let entries=Object.entries(entry?[definition]:definition).flatMap(function sort([remote,input],index)
 {if(remote===index)remote=undefined;
@@ -307,10 +305,9 @@
  let clean=pass(buffer(compose(swap(target),purge,done=>delete this[target]&&note.call(2,"purged sources of "+target+".")),note));
  if(entries.length)
  return compose.call
-(path.resolve(location,...entries[0].remote?
-[target,!input.some((input,index)=>index||/\/$/.test(input))
-?"0/"+input.find(string):"reexports.js"
-]:[])
+(path.resolve(location,target,entries[0].remote
+?!input.some((input,index)=>index||/\/$/.test(input))
+?"0/"+input.find(string):"reexports.js":"")
  // target entry indicates source resolution available for re-import. 
 ,entry=>this[target]=this[target]||compose.call
 (target,pass(target=>note.call(2,"Collecting source of \""+relative+"\" for "+peer+"..."))
@@ -324,7 +321,7 @@
 ,[]),"\n","join",slip(entry),true,access
 ))
  // perform idempotent source resolution before bundling to support re-imports. 
-,pass(parts=>!binding&&buffer(command.bind(import.meta.url),note)(entry))
+,pass(parts=>!binding&&delegate.call(swarm[name],["inference/tether interface/command","inference/undefine"],peer,entry))
 ,slip(entry)
 ,binding
 ?buffer
@@ -352,7 +349,7 @@
  let depot=path.join(target,String(index))+"/";
  let asset=depot.replace(/\/$/,".tar.gz");
  let local=await access(depot,false).catch(fail=>false);
- await persist({},target)
+ await persist({},target);
  if(!local&&remote)
  // download. 
  compressed
@@ -413,24 +410,25 @@
  let plugins=await compose.call
  // rollup plugins shall be deprecated in favor of Interface source formats. 
 (formats,tether(prune,([field,value])=>/^\./.test(field)?value:undefined,true,1)
-,Object.entries,infer("reduce",record(([plugin,settings])=>command.bind(import.meta.url)(plugin,"default",settings)),
-[{name:"interface"
- ,transform:(source,address)=>compose.call
+,Object.entries,infer("reduce",record(([plugin,settings])=>command.call(import.meta.url,plugin,"default",settings)),
+[{transform:(source,address)=>compose.call
 ("url","pathToFileURL",address,command.bind(import.meta.url),"href"
 ,{format:formats[route(address)[1]]}
 ,load,(code,map={mappings:''})=>({code,map})
-),resolveId:(source,client)=>client
+),resolveId(source,client)
+{return client
 ?/^\./.test(source)
-?route(client).reduce((source,entry,index,route)=>
- Object.values(relevant(parts[entry]?.format.alias||parts.map(({format})=>format).reduce(merge,{}),route.splice(2).join("/")))).includes("./"+path.relative(relation,path.resolve(path.dirname(client),source)))
+?[path.resolve(path.dirname(client),source),relation].reduce((address,relation)=>
+ // ignore external aliases. 
+ route(client).reduce((source,entry,index,route)=>
+ Object.values(relevant(parts[entry]?.format.alias||
+ parts.map(({format})=>format).reduce(merge,{})
+,route.splice(2).join("/")))).includes("./"+path.relative(relation,address))
 ?false
-:["","/index.js","/index.ts",".js",".ts",".jsx",".tsx"].map(extension=>
- path.resolve(path.dirname(client),source.replace(/\/$/,"")+extension)).reduce((source,alias)=>
- source.then(source=>source||access(alias).then(file=>file.isDirectory()?exit():alias).catch(fail=>null))
-,Promise.resolve(null))
+:extend(address.replace(/\/$/,"")))
 :null
 :null
- }
+}}
 ])
 );
  note.call(3,"bundling "+source+"...");
@@ -438,6 +436,12 @@
  let bundle=await rollup({input,plugins,...format.input});
  let {output:[{code}]}=await bundle.generate({format:"module",inlineDynamicImports:true,...format.output});
  return code;
+};
+
+ export function relevant(scope,term)
+{return Object.fromEntries(Object.entries(scope).flatMap(([field,value])=>!string(value)
+?["ends","starts"].some(side=>term[side+"With"](field))?Object.entries(value):[]
+:[[field,value]]));
 };
 
  async function make(source,parts)
@@ -829,7 +833,8 @@
 };
 
  export function purge(path)
-{return compose(path,{recursive:true,force:true},"rm",swap(path))(command.bind(import.meta.url)("fs","promises"));
+{if(!path.includes(location))throw Error("Refusing to purge outside of location: "+path);
+ return compose.call(command.call(import.meta.url,"fs","promises"),infer("rm",path,{recursive:true,force:true}),swap(path));
 };
 
  export var compile=compose(drop(1),load,parse,serialize);
@@ -850,7 +855,7 @@
  //path=new URL(note(path)).pathname;
  if(instance)
  return instance(path);
- require.instance=await resolve("module","createRequire",import.meta.url);
+ require.instance=await command.call(import.meta.url,"module","createRequire",import.meta.url);
  return require.instance(path);
 };
 

@@ -1,5 +1,5 @@
- import {note,when,crop,debug,whether,extract,relevant,wait,sum,pass,drop,swap,match,infer,either,buffer,observe,compose,combine,revert,collect,stream,rank,compound,tether,bind,slip,string,numeric,functor,is,not,native,basic,simple,iterable,array,lambda,imperative,defined,composed,odd,exit,expect,prototype,colors,stash,expressions,search,merge,prune,route,record,functional} from "./Blik_2023_inference.js";
- import {location,load} from "./Blik_2023_interface.js";
+ import {note,when,crop,debug,whether,extract,wait,sum,pass,drop,swap,match,infer,either,buffer,observe,compose,combine,revert,collect,rank,compound,tether,slip,string,numeric,functor,is,not,native,basic,simple,iterable,array,lambda,imperative,defined,composed,odd,exit,expect,prototype,colors,stash,expressions,search,merge,prune,route,record,functional} from "./Blik_2023_inference.js";
+ import {location,load,relevant} from "./Blik_2023_interface.js";
  import {random} from "./Blik_2023_search.js";
  let address=new URL(import.meta.url).pathname;
 
@@ -121,16 +121,17 @@
  let route=path.relative(location,pathname).split("/").slice(2).join("/");
  alias=relevant(alias,route);
  if(Object.keys(alias).length)
- grammar=prune.call(grammar,function({1:value})
-{let candidate=["Import","Import","ExportNamed","ExportAll"].map((type,index)=>type+(index?"Declaration":"Expression")).includes(value?.type);
+ grammar=[["Import","Import","ExportNamed","ExportAll"].map((type,index)=>type+(index?"Declaration":"Expression"))].reduce((grammar,specified)=>
+ prune.call(grammar,function({1:value})
+{let candidate=specified.includes(value?.type);
  let source=candidate&&alias[value.source?.value];
- if(!source) return value;
+ if(!source)return value;
  source=/^\./.test(source)?"./"+path.relative(relation,path.resolve(location,source)):source;
  source=["value","raw"].map(field=>
  value.source[field].replace(value.source.value,source)).reduce((value,raw)=>(
  {value,raw}));
  return [value,{source}].reduce(merge,{});
-});
+}),grammar);
  let fields={Literal:"value",Identifier:"name"};
  let generic=Object.keys(replace||{}).some(type=>fields[type]);
  if(!generic)
@@ -164,7 +165,7 @@
  // })
  await ["banner","footer"].map(extension=>
  output?.[extension]).reduce(record((extension,index)=>
- extension&&stream(extension,parse,({body})=>
+ extension&&compose.call(extension,parse,({body})=>
  grammar.body[index?"push":"unshift"](...body)))
 ,[]);
  return grammar;
@@ -677,13 +678,13 @@
 
  export async function imports(syntax,format={})
 {if(typeof syntax==="string")
- syntax=await stream(syntax,true,access,format.syntax,{...format,source:await import("url").then(({pathToFileURL:url})=>url(syntax))},parse);
+ syntax=await compose.call(syntax,true,access,format.syntax,{...format,source:await import("url").then(({pathToFileURL:url})=>url(syntax))},parse);
  let path=await import("path");
  let terms=search.call(syntax,([field,scope])=>["Declaration","Expression"].map(type=>"Import"+type).includes(scope?.type));
  let sources=Object.values(terms).map(({source})=>source.value).filter(source=>source?.startsWith(".")).map(peer=>
  path.resolve(path.dirname(syntax.meta.url.pathname),peer));
  sources=await sources.reduce(record(async source=>
- stream(source,format,imports)),[]);
+ compose.call(source,format,imports)),[]);
  return {[syntax.meta.url.pathname]:sources.reduce(merge,{})};
 }
 
@@ -703,7 +704,7 @@
 ,Object.fromEntries
 );
  let module=await import(source);
- let sources=await stream(imports(source),source,Reflect.get);
+ let sources=await compose.call(imports(source),source,Reflect.get);
  await prune.call(sources,([path,term])=>
  exports(path).then(exports=>[term,exports].reduce(merge)));
  let scopes=prune.call(module,([field,term])=>functor(term)
@@ -904,9 +905,10 @@
  export function relate(address,relation=import.meta.url)
 {// extend relation with address path. 
  let {protocol,host,pathname:path}=url(relation);
+ let relative=/^\.+\//.test(address);
  return protocol+"//"+host+address.split("/").reduce((path,field,index)=>
  field!==path[index]&&field!=="."
-?path[field===".."?"pop":"push"](field)&&path
+?path[field===".."?"pop":"splice"](relative?path.length:index,Infinity,field)&&path
 :path
 ,folder(path).split("/")).join("/");
 };
