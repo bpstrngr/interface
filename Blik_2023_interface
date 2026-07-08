@@ -41,7 +41,7 @@ Interface#[[{"svg":
 
 Interface#h1
 
-Ecmascript module loader for commands@./#Take_Command and procedures@./#Take_Control. 
+Ecmascript module loader for command@./#Take_Command and control@./#Take_Control. 
 
 2024
 
@@ -62,14 +62,14 @@ Ecmascript module loader for commands@./#Take_Command and procedures@./#Take_Con
 
  Since the arrival of loader commands in the (Ecmascript specification)@https://whatwg.github.io/loader/{"style":{"&+.media":{"filter":"invert(0.8)"}}} and their implementation in Node.js ((version 16)@https://nodejs.org/api/module.html#customization-hooks), volatile dialects can finally be standardized dynamically, without a need for external configurations or a new platform trying to contain this heterogeneity ((UMD)@https://jameshfisher.com/2020/10/04/what-are-umd-modules/, Deno@https://www.youtube.com/embed/M3BM9TB-8yA, Bun@https://bun.sh/docs). 
 
- Modules consist of imported#b, exported#b and internal declarations#b. Procedural statements are allowed due to javascript's lack of an interface to access modules otherwise. Interface#b corrects this with a single procedure that accesses their declarations with arguments provided on a (command line)#b. Take a simple module exporting a function to cumulate numbers: 
+ First things first: modules consist of imported#b, exported#b and internal declarations#b. Procedural statements are allowed due to javascript's lack of an interface to access modules otherwise. Interface#b corrects this with a single procedure that accesses their declarations with arguments provided on a (command line)#b. Take a simple module exporting a function to cumulate numbers: 
 
 sum#[["/Blik_2023_inference.js/module/namespace/sum"],"interface/fetch","interface/digest",[["exports","sum"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2023_inference.js/module/namespace/sum","scale":0.8,"gutter":213}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em;border:2px dashed #616161}
 
  To invoke it, you wouldn't want to include a new procedure for every specific use case. Merging Interface among your files, it will infer them dynamically from specification on the command line: 
 
 commandline#script/highlight(` git init;
- git remote add interface https://github.com/jsinterface/interface;
+ git remote add interface https://github.com/blikest/interface;
  git checkout interface/stable .;
 
  node ./Blik_2023_interface.js ./Blik_2023_inference.js sum 1 2 3;`){display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161;font-size:.8em}
@@ -90,11 +90,11 @@ procedural#script/highlight(` node ./Blik_2023_interface.js;`){display:block;wid
 
  A command line is only one of many contexts a module may be loaded in, so the actual inference procedure depends on a specific set of their conditions. From the inside, modules have two pieces of information available about their external context: the "import"#b command carrying a (importmeta)#script/highlight(`{meta:{url}}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit} object with their own address, and the "global"#b object carrying peculiar others: (process)#script/highlight(`{process}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit} indicating Node, (window)#script/highlight(`{window}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit} a browser, or (imports)#script/highlight(`{imports}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit} a manually specified context. 
  
- After importing some general abstractions for semantics and syntax from the Inference and Meta modules, Interface uses these to derive its internal context of conditions. Its own name#b, location#b and protocol#b are promptly derived from the former, while the client agent#b ((agent)#script/highlight(`{node,browser,virtual}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit}) identified from the latter, along with corresponding language features#b ((features)#script/highlight(`{assertions,attributes,json}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit}) and command line options ((options)#script/highlight(`{loader,offload,inspected}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit}). Interpreter#b and thread#b rank are importable facilities in Node. 
+ After importing some general abstractions for syntax and semantics from the Meta and Inference modules, Interface uses these to derive its internal context of conditions. Its own name#b, location#b and protocol#b promptly from the former, then the indicated client agent#b ((agent)#script/highlight(`{node,browser,virtual}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit}) from the latter, along with corresponding language features#b ((features)#script/highlight(`{assertions,attributes,json}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit}) and command line options ((options)#script/highlight(`{loader,offload,inspected}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit}). Interpreter#b and thread#b rank are importable facilities of Node. 
 
 conditions#[["/Blik_2023_interface.js"],"interface/fetch","interface/digest",[{"source":"/Blik_2023_interface.js","scale":0.8,"range":[0,16]}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[0],{"inference/tether":["script/fold"]}]
  
- Using Interface directly ((and without the interpreter condition requiring the unstable --experimental-vm-modules option)#span{color:var(--note);}) as we did to access the sum#i function will have it only use this external context, but every import#b command creates a new internal one that may require our intervention too. Getting to specify Interface as a loader module for Node will have it intercept these contexts with specific procedures: 
+ Using Interface directly ((and without the interpreter condition requiring the unstable --experimental-vm-modules option)#span{color:var(--note);}) as we did to access the sum#i function will have it only use this external context, but every import#b command creates a new internal one that may require our intervention too. Getting to specify Interface as a loader module for Node will have it intercept these contexts with controlled procedures: 
 
 loader#script/highlight(` node16 --loader=./Blik_2023_interface.js ./haverbeke_2012_acorn.js;
  node20.2 --import 'data:text/javascript;import("module").then(({register})=>register("./Blik_2023_interface.js",{parentURL:pathToFileURL("./")}));' ./haverbeke_2012_acorn.js;
@@ -104,29 +104,33 @@ loader#script/highlight(` node16 --loader=./Blik_2023_interface.js ./haverbeke_2
 (Module detection introduced and unflagged in 21.1 and 22.7 fails to detect modules with eg. export statements far in the file, so a classic package.json entry may still be needed to ensure module syntax:)#span{display:block;padding:0 5%;color:var(--note);}
 (cat package.json 2>/dev/null || echo {} | jq '.type="module"' > package.json;)#span{display:block;white-space:nowrap;overflow:scroll;padding:0 5%;color:var(--note);}
 
- With the "import" condition, Interface "offloads" this module loading to a secondary thread where it registers#b itself explicitly from the primary one. To this end, a swarm#b record and the subscribe#b and message#b commands are borrowed from a generic module definition of worker#b{}s that allow them to send and receive command delegation#b to and from each other after initialization#b. Once intercepted, the probe#b and prepend#b commands will help imports locate#b modules with unspecified attribution ((author)#b and year#b), while the idempotent peer#b record provide access#b to remote protocols. With the interpreter condition, the Module#b command composes all 3 loading stages explicitly: locate@#___of_Location, access@#___of_Access and interpret@#___of_Interpretation. Without it, Node's import#b procedure limits control to the first two by the names "resolve" and "load", but command#b extends them with custom#b context specification and inference#b. The record of modules#b will store respective modules#script/highlight(`{resolution,resource,module,peer,tests}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit} references by relative specifier for speed and transparency. To further extend itself, location is illustrated in isolation for sources#b, specifying an importmap#b to remote addresses. 
+ With the "import" condition, Interface "offloads" this module loading to a secondary thread where it registers#b itself explicitly from the primary one. To this end, a swarm#b record and the subscribe#b and message#b commands are borrowed from a generic worker#b module definition that allow them to send and receive command delegation#b to and from each other after initialization#b. 
 
-inference#[["/Blik_2023_interface.js"],"interface/fetch","interface/digest",[{"source":"/Blik_2023_interface.js","scale":0.8,"range":[17,120]}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[0],{"inference/tether":["script/fold"]}]
+worker#[["/Blik_2023_interface.js"],"interface/fetch","interface/digest",[{"source":"/Blik_2023_interface.js","scale":0.8,"range":[17,53]}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[0],{"inference/tether":["script/fold"]}]
 
- A non-virtual, local Node client agency without the "loader" option then is the condition for the inference#b procedure, called indirectly if a loader was specified. Registration in that case replicates the worker definition's corresponding commission#b command, observing#b a message channel on its near end until initialize#b reports subscription#b from its far one. In commission this is a re-subscription command since workers have procedural initialization subscribing to a default channel, but here initialization itself is being delegated with the controlled one. After registration, the loader thread anticipates a message from the primary thread "initializing" itself with a reciprocal subscription. Finally inspect#b re-binds inspector protocols in sequence to leave the primary thread's panel visible. Inference concludes by polling the loader thread for pending tests or resources. 
+ Once intercepted, the probe#b and prepend#b commands will help imports locate#b modules with unspecified attribution ((author)#b and year#b), while the idempotent peer#b record provide access#b to remote protocols. With the interpreter condition, the Module#b command composes all 3 loading stages explicitly: locate@#___of_Location, access@#___of_Access and interpret@#___of_Interpretation. Without it, Node's import#b procedure limits control to the first two by the names "resolve" and "load", but command#b still extends them with custom#b context specification and inference#b. The record of modules#b will store respective modules#script/highlight(`{resolution,module,imports}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit} references by relative specifier for immediacy. In order to extend itself further, location is applied in isolation for an illustratively unattributed sources#b module, specifying an importmap#b to remote addresses. 
+
+inference#[["/Blik_2023_interface.js"],"interface/fetch","interface/digest",[{"source":"/Blik_2023_interface.js","scale":0.8,"range":[53,120]}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[0],{"inference/tether":["script/fold"]}]
+
+ A non-virtual, local Node client agency without the "loader" option then is the condition for the inference#b procedure, called indirectly if offloading was specified. Registration in that case replicates the worker definition's corresponding commission#b command, observing#b a message channel on its near end until initialize#b reports subscription#b from its far one. In commission this is a re-subscription command since workers have procedural initialization subscribing to a default channel, but here initialization itself is being delegated with the controlled one. After registration, the loader thread anticipates a reciprocal subscription from the primary thread likewise "initializing" itself. Inspect#b finally re-binds inspector protocols in sequence to leave the primary thread's panel visible. Inference concludes by polling the loader thread for pending tests or resources. 
 
 register#[["/Blik_2023_interface.js"],"interface/fetch","interface/digest",[{"source":"/Blik_2023_interface.js","scale":0.8,"range":[120,195]}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[0],{"inference/tether":["script/fold"]}]
 
  (...of Location)#h3{display:inline;font-size:inherit}: 
 
- By standard, modules are identified by the protocol (node, file, http or data), domain and full path of their (universal resource locator)@https://url.spec.whatwg.org/ (URL), that a 'dot' can abbreviate relative to a target context. Node already diverges from this by allowing npm's package identifiers to be resolved through obscure folder and manifest navigation, and simply rejecting module specifiers that aren't found - necessitating package management in the first place. To restore respect of the standard, Interface forgets the notion of a package, and instead extends location to attribution prefixes and importmap#b entry points (file, archive or sparse git branch) if declared for the given specifier, downloading, standardizing and redirecting to them before access#i. 
+ By standard, modules are identified by the protocol (data, file, http or node), domain and full path of their (universal resource locator)@https://url.spec.whatwg.org/ (URL), that a 'dot' can abbreviate relative to a target context. Node already diverges from this by allowing npm's package identifiers to be resolved through obscure folder and manifest navigation, and simply rejecting module specifiers that aren't found - necessitating package management in the first place. To restore respect for the standard, Interface forgets the notion of a package, and instead extends "resolution" with its location of attribution prefixes and importmap#b entry points if declared for the given specifier, downloading, standardizing and redirecting to them before access#i. 
 
 sources#[["/Blik_2023_sources.json"],"interface/fetch","interface/digest",[["haverbeke_2012_acorn.js","davidbonnet_2015_astring.js","Harris_2015_rollup.js"]],"inference/flip","inference/extract","meta/aphorize",[{"source":"/Blik_2023_sources.json","scale":0.8}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[4],{"inference/tether":["script/fold"]}]
 
- This sample shows the general parser (acorn) and serializer/bundler (astring and rollup) module that Interface itself imports to standardize#b dialects in the "load" stage when needed. When importing these for the first time, standardization of their own source is performed by them being accessed from right there, before the idempotent bundles they produce for access replace the arbitrarily structured sources. Node passes a context#b object to all imports containing the peer#b module's identifier implicitly and some "attributes" specifiable explicitly (mostly attributes#script/highlight(`{type:"json"}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit}), which command#b inverts to be explicit and implicit respectively - the explicit peer#script/highlight(`{peer}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit} attribute being pruned later as Node's internal resolution rejects it. A lack of the implicit identifier indicates the primary import to be re-delegated for inference. 
+ This sample maps the general parser (acorn) and serializer/bundler (astring and rollup) module that Interface itself imports to standardize#b dialects in the "load" stage when needed. When importing these for the first time, standardization of their own source is performed by them being accessed from right there, before the idempotent bundles they produce for access replace the arbitrarily structured sources. Node passes a context#b object to all imports containing the peer#b module's identifier implicitly and some "attributes" specifiable explicitly (mostly attributes#script/highlight(`{type:"json"}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit}), which command#b inverts to be explicit and implicit respectively (the explicit peer#script/highlight(`{peer}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit} attribute being pruned later as Node's internal resolution rejects it). The implicit identifier's lack indicates the primary import to be re-delegated for indirect inference. 
 
- Since the module specifier can be relative, its absolute#b identifier is established given that of its peer module ((relation)#b), and a relative path to both from Interface. These are then used to probe the record of modules for a resolution precedent#b, or attempt Node's internal resolution, latter retried with extensions#b if a folder was hit, location#b in case attribution was missing, acquisition#b or alias#b if specified in an importmap context ((cases to be merged into locate#b when interpret#b is stabilized)#span{color:var(--note)}). As acquisition will import modules from source before bundling, the source definition is recovered from the path and passed on for access as format#script/highlight(`{format}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit} along with url#script/highlight(`{url}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit} in the resolution object. Bundling achieves the same while having the definition in scope for all resolutions and transforms, only offsets external aliases to be relative to the source - or the prospective bundle as they are omitted from it. Finally it is also extended with modules#script/highlight(`{time}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit} for history and modules#script/highlight(`{shortCircuit}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit} to instruct Node not to call its internal resolution anymore, and merged into the record of modules as resolution#script/highlight(`{[relative]:resolution}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit}. As command warns when not supplied an explicit peer identifier, Interface's folder reference indicates this omission, which is obviously excluded from the concluding import tracking. 
+ Since the module specifier can be relative, its absolute#b identifier is established given that of its peer module ((relation)#b), and a relative path to both from Interface. These are then used to probe the record of modules for a resolution precedent#b, or attempt Node's internal resolution, latter retried with extensions#b if a folder was hit, location#b in case attribution was missing, acquisition#b or alias#b if an importmap scope is identified from the specifier path ((cases to be merged into location when interpretation is stabilized)#span{color:var(--note)}). As acquisition does import modules from source before bundling, this scope is also passed on to access as format#script/highlight(`{format}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit} along with url#script/highlight(`{url}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit} in the resolution object. Bundling achieves the same while having the source definition in scope for all resolutions and transforms, only offsets external aliases to be relative to the target bundle, and thus omited from it. Finally it is also extended with modules#script/highlight(`{time}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit} for history and modules#script/highlight(`{shortCircuit}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit} to instruct Node not to call its internal resolution anymore, and merged into the record of modules as resolution#script/highlight(`{[relative]:{resolution},[relation]:{imports:new Set([relative])}}`){display:inline;word-break:break-all;white-space:normal;font-family:inherit}. As command warns when not supplied an explicit peer identifier, Interface's folder reference indicates this omission, which is obviously excluded from the concluding import tracking. 
 
 location#[["/Blik_2023_interface.js"],"interface/command",[["locate","resolve"]],"inference/flip","inference/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2023_interface.js","scale":0.8,"gutter":195}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[0],{"inference/tether":["script/fold"]}]
 
  (...of Access)#h3{display:inline;font-size:inherit}: 
 
- While thus evoked during the acquisition stage of remote resolution to persist a standard bundle, an import may still locate a foreign syntax to access#b when specified directly. The context#b object will contain a format#b field that Internal resolution would have set to a native#b format, which profile#b ensures for "json", "builtin" and "module", and extends to "typescript" and "shader" based on suffix. An importmap#b entry will have been set by alias if so resolved, or acquisition#b may have passed it directly. These can contain multiple source definitions#b that are merged, and a "sparse" path relative to the relevant one is established. Edits relative to this path are then filtered, and applied between access#b and a patriation#b process of parsing#b, sanitization#b (standardization) and re-(serialization)#b. Before conclusion, check#b delegates a test#b command to the primary thread to traverse the loaded module's "tests" declaration mapping their interface to compositions of modules#script/highlight(`(...route,term,...terms,condition)`){display:inline;word-break:break-all;white-space:normal;font-family:inherit} on a context ("term" tethered to it if "scope" set). 
+ While thus evoked during the acquisition stage of remote resolution to persist a standard bundle, an import may still locate a foreign syntax to access#b when specified directly. The context#b object will contain a format#b field that Internal resolution would have set to a native#b format, which profile#b verifies for "json", "builtin" and "module", and extends to "typescript" and "shader" based on suffix. An importmap#b entry will have been set by alias if so resolved, or acquisition#b may have passed it directly. These can contain multiple source definitions#b that are merged, and a "sparse" path relative to the relevant one is established. Edits relative to this path are then filtered, and applied between access#b and a patriation#b process of parsing#b, sanitization#b (standardization) and re-(serialization)#b. Before conclusion, check#b delegates a test#b command to the primary thread to traverse the loaded module's "tests" declaration mapping their namespace to compositions of a context with modules#script/highlight(`(...route,buffer(scope?tether(term):term),...terms,condition)`){display:inline;word-break:break-all;white-space:normal;font-family:inherit}. 
 
 access#[["/Blik_2023_interface.js"],"interface/command",[["access","load"]],"inference/flip","inference/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2023_interface.js","scale":0.8,"gutter":176}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[0],{"inference/tether":["script/fold"]}]
 
@@ -136,199 +140,14 @@ access#[["/Blik_2023_interface.js"],"interface/command",[["access","load"]],"inf
 
 interpretation#[["/Blik_2023_interface.js"],"interface/command",[["interpret"]],"inference/flip","inference/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2023_interface.js","scale":0.8,"gutter":176}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[0],{"inference/tether":["script/fold"]}]
 
- The rest of Interface contains facilities to scan locations, channels and messages. To see it all visually, the default function in the Network module can represent its semantics instead of its text. Notable is the infrastructure#i function that prunes modules#i for their imports and timestamp to be represented as a timeline network. We may see that Interface was commanded to run the expose function of the Port module, with the Form and Protocol modules as its arguments. 
+ The rest of Interface contains facilities to scan locations, channels and messages. To see it all visually, its loaded semantics can be represented as a hierarchy with the default function of the Network module. Notable is the infrastructure#i function that prunes the record of modules#i for imports and resolution timestamps, again representable as a network. We may see that Interface was commanded to run the expose function of the Port module, with the Form and Protocol modules as its arguments. 
 
 namespace#[["/Blik_2023_interface.js/module/namespace"],"interface/fetch","interface/digest",[{"source":"/Blik_2023_interface.js/module/namespace","spread":"right","collapse":["g#_Blik_2023_interface_js_module_namespace-importmap","g#_Blik_2023_interface_js_module_namespace-tests","g#_Blik_2023_interface_js_module_namespace-agent","g#_Blik_2023_interface_js_module_namespace-features","g#_Blik_2023_interface_js_module_namespace-worker","g#_Blik_2023_interface_js_module_namespace-modules"]}],{"inference/slip":[0]},"network"]{height:1000px}
 Infrastructure#network("/history",{"spread":"right","linear":false,"range":"time","relations":"imports","ratio":0.1}){height:500px}#[[20],{"inference/tether":["network/zoom"]}]
 
- (Take Ownership)#h2
+ (Take Responsibility)#h2
 
- When the module loader runs on a second thread, infrastructure#i actually needs to be delegated to access its modules#i there. More importantly, these network representations are interactive#i, so a simple 'node interface/delegate infrastructure | node network' command line composition would only return a static image of them. 
-
- Since requests to a server act as the module loader for browser clients, we can further extend Interface by (opening a port)#b to listen to them. Such a function will need two things: a declaration of the model#b you want to expose, and of the protocol#b you want to use. With Interface we can supply these as module specifiers, like "./static.js" and "./protocol.json/host/local". 
-
-definitions#[[
-` {"host":
- {"local":{"http":{"port":80}
- ,"jsinterface":
- {"port":443
- ,"certification":{"domain name":["./certificate_key.pem","./certificate.pem"]}
- ,"distinguishedname":{"commonName":"example.org","countryName":"US","ST":"California","localityName":"Mountain View","organizationName":"example","OU":"admin"}
- ,"cache":{}
- }
- ,"google":"key"
- ,"password":"key"}
- }
- }
-`,{"source":"/protocol.js","scale":0.8}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161;overflow:scroll}
-
- host#[[
-` export var classified=[/.*\.git*.*/];
- export var classify=compose
-(when(are(either(string,pattern)))
-,each(wether(string,compose(crop(1),slip("path","resolve"),resolve),infer()))
-,classified.push.bind(classified)
-);
- export var published=[];
- export var publish=compose
-(when(are(either(string,pattern)))
-,each(wether(string,compose(crop(1),slip("path","resolve"),resolve),infer()))
-,published.push.bind(published)
-);
-
- export async function permit(name,list,inclusive)
-{let address=await resolve("path","resolve",name);
- let includes=list.some(term=>string(term)?term===address:term.test(address));
- if(inclusive?includes:!includes)
- return name;
- exit(Error(inclusive?"Unauthorized":"Classified"));
-};
-
- export default
- {get:compose
-(swap("path","resolve","."),resolve,true,classified,list
-,tether(prune,([field,value],path)=>value===null
-?compose(swap(resolve("path","resolve",".",...path,field)),classified,permit,"binary",access)
-:value)
-),interface()
-{let routes=await this.get();
- return document(
- {html:{body:
- {pre:{"#text":JSON.stringify(routes,null,2)}
- ,style:{"#text":css({body:{background:"black",color:"white"}})}
- }}
- });
-}};
-
- export var actions=
- {check(event,peer){peer.connected=true;}
- ,broadcast(event,peer)
-{let message=JSON.stringify(event);
- this.clients.forEach(client=>
- client.readyState===1&&client!==peer&&
- client.send(message));
-}};
-
- export var syndication={google:undefined};
- export var encryption={password:undefined};
-`,{"source":"/Blik_2024_static.js","scale":0.8}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161;overflow:scroll;}
-
- After loading them, the expose#b function scans these module namespaces for required variables, prompt the client for missing ones (port, certification, encryption keys), classifies#b the protocol and certificate files to reject requests to them, and reassigns the window origin for fetch#b. Routes can be of two types: the "default" passive http routes#b, and websocket "actions"#b to actively broadcast#b messages. In addition, they may expose empty "syndication"#b and "encryption"#b keys to be borrowed from the protocol module. If a certification#b is not found for the https protocol, the distinguishedname#b is used from it to send a certificate signing request to Letsencrypt over ACME protocol, and generate a self-signed one (in which case NODE_EXTRA_CA_CERTS=certificate.pem shell variable should also be set to permit local origin requests). Lastly a function composition binds the specified port#b to a router#b function receiving incoming requests and routing them to values on the specified cache#b, routes#b or websocket actions#b. Values are staged#b with appropriate headers to be submitted#b as response. If more certificates are provided, they are assigned to the host context#b to recognize their respective (domain name)#b in requests. 
-
-server#[["/Blik_2023_port.js"],"interface/command",[["expose","broadcast"]],"inference/flip","inference/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2023_port.js","scale":0.8}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[0],{"inference/tether":["script/fold"]}]
-
- The route#b function takes the request path and traverses the specified route hierarchy along its matching fields. Functional values are invoked with the current route scope, the original request and its body ((route)#script/highlight(`value.call(this,request,body)`){display:inline;white-space:normal;word-break:break-all;white-space:normal}), and traversal continues on their returned values. A "folder" path with a trailing slash is appended a default route for html representation (.../interface). HTTP requests have a "method" field (GET or PUT) that are considered an alternative route for when the path would lead to a dead end ((route)#script/highlight(`get.call(this,request,body)`){display:inline;white-space:normal;word-break:break-all;white-space:normal}). To associate certain routes with arbitrary scopes, a third fallback rebinds the scope to origin routes (/author/name/interface -> route#script/highlight(`routes.interface.call(author,request,body)`){display:inline;white-space:normal;word-break:break-all;white-space:normal}. 
-
-server#[["/Blik_2023_inference.js"],"interface/command",[["route"]],"inference/flip","inference/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2023_inference.js","scale":0.8}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[0],{"inference/tether":["script/fold"]}]
-
- These routes are actually distributed with Interface, so you only need the protocol module to start this server now. Open http://localhost:80/Blik_2023_interface/ see this document. 
-
-expose#script/highlight(` node --import=./Blik_2023_interface.js ./Blik_2023_port.js expose ./Blik_2024_static.js ./protocol.json/http`){display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
-
-{text-align:center;}
-(Maintenance)#h2 
-{text-align:left;}
-
-
- To use Interface in external projects, merge Interface from a new remote (or just clone it to an external folder if you prefer): 
-
-(interface(){
- echo " Merging with Interface to access modules...";
- git remote add interface https://github.com/blikest/interface;
- git fetch interface;
- echo " Stashing local changes..."
- stash=$(git status --porcelain|wc -l);
- [ $stash -gt 0 ] && git stash;
- git checkout interface/stable .;
- echo Restoring potential conflicts...;
- git restore --staged .;
- git restore $(git ls-files);
- echo " Restoring local changes."
- [ $stash -gt 0 ] && git checkout stash -- .;
-}
-interface
-)#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
-
- To contribute to Interface from external projects, checkout .gitignore before the whole remote to stash differences you may have: 
-
-(check(){
- git fetch interface;
- git checkout interface/stable .gitignore;
- git add .;
- stash=$(git status --porcelain|wc -l);
- [ $stash -gt 0 ] && git stash;
- git checkout interface/stable;
- [ $stash -gt 0 ] && git checkout stash .; 
- git restore --staged .;
-})#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
-
- Since my recommendation to manage different remotes from the same local repository is a bit unusual, here are some further git commands for awareness of tracked remotes to use beyond the common push-pull-merge on singular remotes: 
-
-( git remote -v; # list remotes. 
- git branch -avv; # list branches with remote information. 
- git remote add name url; # add remotes with more specific names than the common "origin". 
- git remote remove name;
- git checkout name/branch; # contribute to remote branch without creating in locally ("detached" HEAD). 
- git switch -c branch name/branch; # create local branch, eg. eponymous branch of remote tracking its stable branch. 
- git push name HEAD:refs/heads/branch; # creates branch remotely from "detached" HEAD. 
- git push name HEAD:branch. # contribute to remote branch from detached HEAD. 
- git pull --rebase; # reapply local commits on remote ones. 
- git branch -d branch; # delete local branch (capital -D to discard its unmerged commits too.)
- git push -d remote branch; # delete remote branch. 
- git ls-remote --tags interface
- tag=YEAR.MM; git tag -d $tag; git tag $tag; git push $(target remote) :$tag; git push $(target remote) tag $tag;
- remote=$(git branch -r --contains HEAD); # tracked remote. 
- commit=$(git rev-parse HEAD);
-)#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
-
- Copy Interface's pre-commit script as a git hook to test staged modules and format them to a specified style before each commit:
-
-( cp git_hook_pre-commit .git/hooks/pre-commit;
-)#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
-
- Copy the post-commit hook as well to restage your original formatting stashed by pre-commit after each commit: 
-
-( cp git_hook_post-commit .git/hooks/post-commit;
-)#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
-
- To format between different dialects, substitute modularisation with persistence in the default loading sequence: 
- host#script/highlight(` compose(access,parse,"astring",serialize,slip("./module.js"),true,access)("./module.js")`){background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
- or use you client's commands to invoke them sequentially if it also supports composition: 
-( node ./Blik_2023_interface.js ./Blik_2023_interface.js access "module.ts" | xargs -0text \
- node ./Blik_2023_interface.js ./Blik_2023_meta.js parse $text "typescript" | xargs -0syntax\
- node ./Blik_2023_interface.js ./Blik_2023_meta.js serialize $syntax "astring" | xargs -0text\
- node ./Blik_2023_interface.js ./Blik_2023_interface.js access "module.ts" $text;
-)#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
-
- Uninstall external modules bundled based on their source definitions: 
-
-( for file in $(cat *sources.json | jq keys[] --raw-output);do rm -rf $file $(echo $file | sed 's/\.js$//');done
-)#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
-
- or, if you're sure every file you need for all remotes are included in your gitignore file: 
- 
-( rm -rf $(git check-ignore *);
-)#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
-
- To install Node.js: 
-
-(node(){
- version=$0;
- release=node-v$version-$(uname|tr '[:upper:]' '[:lower:]')-$([[ $(uname -m) -eq aarch64 ]] && echo "arm64" || uname -m );
- curl -O https://nodejs.org/download/release/v$version/$release.tar.gz;
- tar xf $release.tar.gz -C . --strip-components=2 $release/bin/node;
- rm $release.tar.gz;
- for command in node;do 
-alias $command=$(pwd)/$command;
- done;
-}
-node 22.7.0
-)#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
-
- To uninstall Node.js: 
-
-( rm node;
-)#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
+ When the module loader runs on a second thread, infrastructure#i actually needs to be delegated to access its loaded modules#i there. More importantly, these representations produced by the Network module are not just raw text, but physical interfaces themselves: nodes can be zoomed, collapsed, expanded or even added and removed. As a matter of fact, this whole document has been a physical interface: you've scrolled, interpretted colors and shapes, clicked, typed, perhaps watched a video. Its source text is in the Blik_2023_interface file, but inferring this representation of it with a simple '(media)#script/highlight(`node interface/access ./Blik_2024_interface | node fragment/media`){display:inline;white-space:normal;word-break:break-all;white-space:normal;font-size:0.8em}' command, or that of networks with '(network)#script/highlight(`node interface/delegate infrastructure | node network`){display:inline;white-space:normal;word-break:break-all;white-space:normal;font-size:0.8em}' would at best produce a static version of them. Like Interface for javascript modules, Browsers#b provide a stable, standard (however bloated) platform for such "hypermedia", using a "request" protocol called Hypertext Transfer (HTTP). The Port module exposes an interface for the command of these requests, extending Interface's control beyond the command line. 
 
 
 

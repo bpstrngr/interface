@@ -1,7 +1,7 @@
- import {locate,command,recompose,delegate,agent,thread,fetch as freefetch,digest,query} from "./Blik_2023_interface.js";
+ import {locate,command,recompose,delegate,agent,thread,fetch as freefetch,digest} from "./Blik_2023_interface.js";
  import {note,index,describe,decide,colors,wait,stagger,search,merge,prune,record,route,observe,rank,constant,rotate,deduce,lift,fold,collect,slip,spill,push,infer,either,each,pass,tether,surge,flush,buffer,differ,compose,some,flip,skip,stash,revert,combine,whether,swap,compound,something,string,basic,minor,functor,promise,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdf,when,debug,expect,generator,plural,native,clock,type,complex,heritage,prototype,expressions,cede,extract,fields} from "./Blik_2023_inference.js";
  import {unfold} from "./Blik_2023_search.js";
- import {serialize,proceduralize,mime,data,file,relate} from "./Blik_2023_meta.js";
+ import {serialize,proceduralize,mime,data,file,relate,cookie,query} from "./Blik_2023_meta.js";
  import * as layout from "./Blik_2023_layout.js";
  import {color} from "./Blik_2023_layout.js";
  var address=new URL(import.meta.url).pathname;
@@ -65,15 +65,64 @@
 })(url);
 };
 
- export var cookie=cookie=>string(cookie)?cookies(window.document.cookie)[cookie]:Object.entries(cookie||{}).map(([field,value])=>field+"="+value).join(";");
- export var cookies=buffer(compose(when(string),/ *; */,"split",rank,each(entry=>entry.split("=")),collect,Object.fromEntries),swap({}));
+ export function* document(fragment,namespace,language)
+{// yield document nodes and suspended generators of their descendants from a fragment declaration. 
+ let bound=is(window.Element)(this);
+ if(bound)
+ yield this;
+ let scope=bound?this:Reflect.construct(window.DocumentFragment,[]);
+ let loop=infer(document.bind(scope),namespace,language);
+ let insert=append.bind(scope);
+ yield each.call(fragment||{},decide(
+ {node:[simple,compose(Object.entries,rank,each(compose(each([rank]),lift,drop(2,0,flip),crop(3),push(namespace,language,scope),populate)),lift)]
+ ,text:[string,compose(slip(scope),tether(text),insert)]
+ ,plural:[array,compose(rank,loop)]
+ ,promise:[promise,deduce(loop)]
+ ,generator:[plural,loop]
+ ,ready:[is(window.NodeList),compose(rank,each(insert))]
+ ,rest:[something,insert]
+ ,else:drop()
+ }))
+};
 
- export var create=describe(compose
-(when(either(is("Element"),is("Attribute")),string)
-,whether(compose(drop(2),string),infer(),crop(2))
-,stash(compose(combine(swap("create"),crop(1),compose(drop(2),whether(string,swap("NS"),drop()))),lift,"concat"))
-,drop(1),flip,slip(window?.document),tether(infer)
-),"create");
+ var populate=buffer(decide(
+ {text:
+[is(something,"#text"),function(content,field,context,namespace,language,scope)
+{return append.call(scope,text.call(scope,simple(content)?content[language]||Object.values(content)[0]:content,context))
+}
+],dataset:
+[is(simple,"dataset")
+,compose(drop(3,2),each([dataset]),lift,drop(-3,1),rotate(1),tether(document),drop(1),lift,lift)
+],actions:
+[is(string,"data-actions")
+,compose(drop(-1,1),flip,tether(capture),infer("getAttributeNode","data-actions"))
+],class:
+[is(array,"class")
+,compose(drop(3,2),each([infer("join"," "),compose(crop(1),collect)]),lift,drop(2,0,record),rotate(1),tether(document),drop(1))
+],plural:
+[compound
+,compose
+((node,name,path,...context)=>[node].flat().filter(something).map((node,index)=>[node,name,index,...context]),rank
+,each(compose
+(crop(-1),each([rank]),lift
+,whether(is([simple,not(has("#text"))],"style"),each([compose(crop(1),css,["#text"],record)])),lift
+,rotate(1),combine(crop(1),tether(element))
+,lift,drop(2,0,tether(append))
+)),lift
+)
+],attribute:
+[either(string,numeric,binary)
+,compose(drop(3,2),rotate(1),combine(crop(1),tether(attribute)),lift,tether(append))
+],null:
+[is(null)
+,compose(drop(3,2),drop(1),rotate(1),0,tether(descend),infer("forEach",destroy),drop())
+],else:drop()
+ })
+,compose(each(["stack"]),rotate(1),drop(4,3),combine(crop(1),tether(text)),lift,tether(append)));
+
+ export function create(type,name,namespace)
+{return window?.document["create"+type+(namespace?"NS":"")](...[namespace||[],name].flat());
+};
 
  function element({drop,sort,update=true,...value},name,index,namespace,language)
 {if(is(window.EventTarget)(arguments[0]))
@@ -108,86 +157,24 @@
 };
 
  function text(content,context)
-{let precedent=Array.from(this.childNodes||[]).filter(({nodeType:type})=>type===3)[context?.length];
- if(precedent)
- return Object.assign(precedent,{textContent:content});
+{let precedent=Array.from(this.childNodes||[]).filter(({nodeType:type})=>type===3);
+ if(precedent.length)
+ return Object.assign(precedent[0],{nodeValue:content});
  return this.ownerDocument.createTextNode(content);
 };
 
- export var append=describe(compose
-(when(is(window?.EventTarget))
-,collect,pass(infer("reduce",compose(whether
-(compose(drop(1),"nodeType",is(2))
-,whether
-(compose(drop(1),infer("specified"))
-// not used cuz createAttributeNS out of context is crazy, couldn't get eg. viewBox or id to be valid on svg in any create/set namespace combination. 
-// stash(compose(drop(1),whether(compose("namespaceURI",string),swap("NS"),drop()),"setAttributeNode",flip,"concat"))
-,compose
-(each([crop(1),combine("name","value")])
-//,skip(whether(compose(crop(1),is("data-actions")),compose(drop(2,1),tether(capture))))
-,lift,pass("setAttribute")
-)
-,compose(each([crop(1),"name"]),pass("removeAttribute"))
-)
-,pass(whether(not("contains"),"appendChild",drop(1)))
-),crop(1)))),rank,drop(1)
-),"append");
-
- export function* document(fragment,namespace,language)
-{// yield document nodes and suspended generators of their descendants from a fragment declaration. 
- let bound=is(window.Element)(this);
- if(bound)
- yield this;
- let scope=bound?this:Reflect.construct(window.DocumentFragment,[]);
- let loop=infer(document.bind(scope),namespace,language);
- let insert=append.bind(scope);
- yield each.call(fragment||{},decide(
- {node:[simple,compose(Object.entries,rank,each(compose(each([rank]),lift,drop(2,0,flip),crop(3),push(namespace,language,scope),populate)),lift)]
- ,text:[string,compose(slip(scope),tether(text),insert)]
- ,plural:[array,compose(rank,loop)]
- ,promise:[promise,deduce(loop)]
- ,generator:[plural,loop]
- ,ready:[is(window.NodeList),compose(rank,each(insert))]
- ,rest:[something,insert]
- ,else:drop()
- }))
+ export function append(node,...nodes)
+{if(nodes.length)
+ return yank([node,...nodes].map(node=>append.call(this,node)));
+ if(!is(window.Node)(node))
+ return;
+ let attribute=node.nodeType===2;
+ if(attribute)
+ this[(node.specified?"set":"remove")+"Attribute"](node.name,node.value);
+ if(!attribute&&!this.contains(node))
+ this.appendChild(node);
+ return node;
 };
-
- var populate=buffer(decide(
- {text:
-[is(something,"#text"),function(content,field,context,namespace,language,scope)
-{return append(scope,text.call(scope,simple(content)?content[language]||Object.values(content)[0]:content,context))
-}
-//,compose(drop(-2,1),combine(whether(simple,either(Reflect.get,compose(Object.values,search(0))),crop(1)),drop(-1)),lift,flip,combine(crop(1),tether(text)),lift,append)
-],dataset:
-[is(simple,"dataset")
-,compose(drop(3,2),each([dataset]),lift,drop(-3,1),rotate(1),tether(document),drop(1),lift,lift)
-],actions:
-[is(string,"data-actions")
-,compose(drop(-1,1),flip,tether(capture),infer("getAttributeNode","data-actions"))
-],class:
-[is(array,"class")
-,compose(drop(3,2),each([infer("join"," "),compose(crop(1),collect)]),lift,drop(2,0,record),rotate(1),tether(document),drop(1))
-],plural:
-[compound
-,compose
-((node,name,path,...context)=>[node].flat().filter(something).map((node,index)=>[node,name,index,...context]),rank
-,each(compose
-(crop(-1),each([rank]),lift
-,whether(is([simple,not(has("#text"))],"style"),each([compose(crop(1),css,["#text"],record)])),lift
-,rotate(1),combine(crop(1),tether(element))
-,lift,drop(2,0,append)
-)),lift
-)
-],attribute:
-[either(string,numeric,binary)
-,compose(drop(3,2),rotate(1),combine(crop(1),tether(attribute)),lift,append)
-],null:
-[is(null)
-,compose(drop(3,2),drop(1),rotate(1),0,tether(descend),infer("forEach",destroy),drop())
-],else:drop()
- })
-,compose(each(["stack"]),rotate(1),drop(4,3),combine(crop(1),tether(text)),lift,append));
 
  export function markup(object,indentation)
 {let xml="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
@@ -295,10 +282,11 @@
 };
 
  export function focus(node)
-{combine
-(compose(drop(1),node,node.textContent.length,combine("setStart","collapse"))
+{combine.call
+(unit(node.ownerDocument.defaultView.getSelection(),node.ownerDocument.createRange())
+,compose(drop(1),node,node.textContent.length,combine("setStart","collapse"))
 ,"removeAllRanges","addRange"
-)(node.ownerDocument.defaultView.getSelection(),node.ownerDocument.createRange());
+);
 };
 
  export function hypertext(body,title,favicon,scripts,styles=[])
@@ -306,8 +294,8 @@
  return {imports:
  {"/Blik_2023_fragment.js":["","capture","image","canvas","insert"]
  ,"/Blik_2023_inference.js":["","infer","buffer","compose","undefine"]
- ,"/Blik_2023_interface.js":["","command","path","query","socket"]
- ,"/Blik_2023_meta.js":["","url"]
+ ,"/Blik_2023_interface.js":["","command","socket"]
+ ,"/Blik_2023_meta.js":["","url","path","query"]
  }
  ,exports:{default:
  {body:
@@ -473,39 +461,100 @@
 
  export var annotate=(fields,labels)=>labels
 ?prune.call(fields,([field,value])=>defined(labels[field])?{label:labels[field],value}:value,0,0)
-:exit("no labels rankd to"+annotate.name+" fields.");
+:exit("no labels passed to"+annotate.name+" fields.");
 
- export function form(fields={})
-{let method=Object.entries(fields).reduce((method,[field,value],index)=>
- simple(value)&&!array(value)&&!index&&field,false);
- if(method)
- fields=fields[method];
- let span=Object.entries(fields).flatMap(function([id,entry])
-{let {label,value}=defined(entry?.label)?entry:{label:id,value:entry};
+ export function field(entry)
+{if(entry?.constructor?.name==="IncomingMessage")
+ return {imports:
+ {"/Blik_2023_interface.js":["","command","locate","digest"]
+ ,"/Blik_2023_inference.js":";note;unit;merge;route;record;search;prune;spill;debug;expect;compose;combine;pass;stash;trace;drop;crop;slip;infer;tether;whether;wait;observe;buffer;swap;when;array;has;each;differ;rank;collect;is;match;basic;defined;functor;extract".split(";")
+ ,"/Blik_2023_fragment.js":";* as fragment;document;form;progress;image;canvas;demarkup;insert;navigate;detransform;transform;stretch;vectorspace;error;drillresize;deselect;namespaces;keyboard;spell;expand;parse;semiotics;destroy;reference;fill;qualify;cursor;capture;css;focus;drag;list".split(";")
+ ,"/Blik_2023_layout.js":["* as layout"]
+ ,"/Blik_2023_meta.js":["","domain","url","cookie","query","path"]
+ ,"/Blik_2023_search.js":["","unfold"]
+ ,"/Blik_2024_svg.js":"* as svg"
+ }
+ ,exports:{default:
+ {span:
+ {keydown(event)
+{let {target,key,keyCode,ctrlKey}=event;
+ let {enter,backspace,escape,updown,leftright}=keyboard(keyCode);
+ if(escape)
+ return target.dispatchEvent(new Event("blur",{bubbles:true}));
+ let value=target.textContent;
+ if(enter&&!ctrlKey&&value)
+ return event.preventDefault(),compose.call(target.parentNode
+,{span:[{},{role:"menu"}]
+ ,ul:list([value])
+ },tether(document),spill,lift);
+ let {method}=demarkup(this.closest("[role=form]"),"method");
+ let values=this.closest("[title]").querySelector("ul");
+ let selection=Array.from(values?.querySelectorAll("li.hover")||[]);
+ if(method==="get"&&enter)
+ return event.preventDefault()
+,selection.length?selection.pop().click():target.dispatchEvent(new Event("submit",{bubbles:true}));
+ if(values&&(updown||leftright))
+ return [Array.from(values.querySelectorAll("li")),![38,39].includes(keyCode)||-1].reduce((list,step)=>compose
+(next=>selection.at(-1)?.contains(next)?[next]:[selection,unfold.call(next,({parentNode:node})=>node.closest("li"))]
+,"flat",infer("forEach",selection=>selection.classList.toggle('hover'))
+)(list.at((list.indexOf(selection.at(-1))+step)%list.length)));
+}}
+ ,"[role=checkbox]":
+ {click({target})
+{compose.call(target,{"aria-checked":this.getAttribute("aria-checked")==="false"},tether(document),spill,lift);
+},keydown({keyCode,target})
+{let {space}=keyboard(keyCode);
+ if(!space)return;
+ this.dispatchEvent(new Event("click",{bubbles:true}));
+}}
+ ,li:
+ {click({target})
+{if(target.nodeName.toLowerCase()!=="span")
+ return;
+ let label=this.closest("[title]");
+ let input=label.querySelector("span[role=menu]");
+ input.textContent=unfold.call(target.closest("li")
+,li=>li.parentNode.closest("li")).filter(Boolean).map(li=>
+ li.childNodes[0].textContent).reverse().join("/");
+ input.dispatchEvent(new Event("blur",{bubbles:true})); 
+ input.closest("[role=form]").dispatchEvent(new Event("submit",{bubbles:true}));
+}}
+ }}};
+ let [title,{label=title,value=entry[1]}]=entry??{};
  if(!defined(value))
  return [];
- let [text,type]=whether([either(binary,match(/^(true|false)$/)),basic,is(Set),is(Date)],...Object.entries(
- {checkbox:[undefine]
- ,menu:[undefine]
- ,radio:[undefine]
- ,time:["datetime",clock]
- ,textbox:[whether(is(defined),infer(),swap(""))]
- }).map(([type,text])=>compose(...text,type)))(value);
- return {id,title:id,class:method,span:
-[{"#text":label},defined(value)
-?{class:id,name:id,role:type,"aria-checked":{checkbox:value}[type]
- ,tabindex:"0",contenteditable:type!=="checkbox","#text":text
- }:undefined
-],ul:type==="time"?clockwork(value):compound(value)?{li:list(value)}:null
+ let [text,type]=decide(merge(prune.call(
+ {textbox:[string,whether(is(defined),infer(),swap(""))]
+ ,checkbox:[either(binary,match(/^(true|false)$/)),undefine]
+ ,menu:[basic,undefine]
+ ,radio:[is(Set),undefine]
+ ,time:[is(Date),"datetime",clock]
+ },([type,[condition,...text]])=>
+ [condition,compose(...text,type)],0,0)
+,{else:unit}))(value);
+ return {id:title,title,span:
+[{"#text":label}
+,{class:title,name:title,tabindex:"0",contenteditable:type!=="checkbox"
+ ,"aria-checked":{checkbox:value}[type]
+ ,role:type,"#text":text
+ }
+],ul:compound(value)?{li:list(value)}:type==="time"?clockwork(value):null
  ,drop:value===null
+ ,dataset:{actions:["",name,"module",field.name,"module"].join("/")}
  };
-});
+};
+
+ export function form(fields={},method)
+{let groups=Object.entries(fields).filter(([field,value])=>simple(value));
+ if(!method&&groups.length)
+ return yank(groups.map(([method,fields])=>form.call(this,fields,method)));
+ let span=Object.entries(fields).flatMap(field).map(infer(merge,{class:method}));
  let style=[{"@scope":{":scope":
  {"&>span[title]":
  {...layout.label
  ,"&>span[name]":layout.input
  ,"&>span[role=list]":
- {position:"fixed",padding:"0px","bottom":"6em"
+ {position:"fixed",display:"none",padding:"0px","bottom":"6em"
  ,"max-height":"100%","max-width":"100%",overflow:"scroll"
  ,"&>span":{margin:"0.25em 0em"}
  }
@@ -539,14 +588,23 @@
 
  export function fill(fields)
 {if(!simple(fields))
- return compose(Array.from
-,infer("filter",input=>!fields||input.parentNode.classList.contains(fields))
-,infer("map",input=>[input.getAttribute("name"),input.role==="checkbox"?input.getAttribute("aria-checked")==="true":input.textContent])
-,Object.fromEntries)(this.querySelectorAll("span[contenteditable]"));
+ return compose
+(Array.from
+,fields&&infer("filter",input=>
+ input.parentNode.classList.contains(fields))
+,infer("map",input=>(
+ {[input.parentNode.className]:
+ {[input.getAttribute("name")]:input.role==="checkbox"
+?input.getAttribute("aria-checked")==="true"
+:input.textContent
+ }
+ }))
+,infer("reduce",merge)
+)(this.querySelectorAll("span[contenteditable]"));
  if(fields)
  Object.entries(fields||{}).map(([field,value])=>
- [!compound(value)&&this.querySelector("[name="+field+"]"),value]).forEach(([node,text])=>
- node&&compose(tether(document),spill,lift)(node,{[node.role==="checkbox"?"aria-checked":"#text"]:text}));
+ [!compound(value)&&this.querySelector("[name="+field+"]"),value]).forEach(([input,value])=>
+ input&&compose(tether(document),spill,lift)(input,{[input.role==="checkbox"?"aria-checked":"#text"]:value}));
  return fill.call(this,this.getAttribute("method"));
 };
 
@@ -665,7 +723,7 @@
 };
 
  export function print(file)
-{return command.bind(import.meta.url)(
+{return command.call(import.meta.url,
 ["/mozilla_2010_pdf_viewer_brightspace.js"
 ,"/mozilla_2010_pdf_link_service_brightspace.js"
 ,"/mozilla_2010_pdf_brightspace.js"
@@ -749,21 +807,21 @@
 }}
  }}};
  let {naturalWidth:width,naturalHeight:height}=image;
- let [canvas]=compose(document,spill,lift)({canvas:
+ let [fragment]=compose(document,spill,lift)({canvas:
  {role:"img","aria-label":image.getAttribute("alt")
  ,width,height
  }});
- let frame=canvas.getContext("2d");
+ let frame=fragment.getContext("2d");
  if(!frame)
- spill(document.call(canvas
+ spill(document.call(fragment
 ,{style:"background:repeating-linear-gradient(135deg,black,black 2px,transparent 2px,transparent 4px"
  ,dataset:
  {source:image.getAttribute("src")
- ,actions:["",name,"module","canvas","module"].join("/")
+ ,actions:["",name,"module",canvas.name,"module"].join("/")
  }
  }));
  else frame.drawImage(image,0,0);
- return canvas;
+ return fragment;
 };
 
  export function vector(node)
@@ -989,7 +1047,7 @@
  }
  }
  };
- address=/^http/.test(address)?address:relate(address,window.location.origin);
+ address=/^http/.test(address)?address:relate(address,window.location.origin+window.location.pathname);
  let {1:extension}=new URL(address).pathname.match(/\.([^\/]+)$/)||[];
  let [format]=extension&&fields(
  {audio:["mp3"],video:["mp4","webm"]
@@ -1285,11 +1343,13 @@
 };
 
  export function css(style,prefix="")
-{let rule=prefix&&Object.entries(style).filter(([field])=>
- !"&@".includes(field[0])).reduce((rule,entry,index)=>
- [rule,something(entry[1])?simple(entry[1])
+{let styles=prefix&&Object.entries(style).filter(([field])=>
+ !"&@".includes(field[0]));
+ let rule=styles.length&&styles.reduce((rule,entry,index)=>
+[rule,something(entry[1])?simple(entry[1])
 ?[""," "][Number(Boolean(index))]+css(...entry.reverse())
-:["",";"][Number(Boolean(index))]+entry.join(":"):""].join("")
+:["",";"][Number(Boolean(index))]+entry.join(":"):""
+].join("")
 ,prefix+"{")+"}";
  let rules=Object.entries(style).filter(([field])=>
  !prefix||"&@".includes(field[0])).flatMap(([field,value])=>
@@ -1616,7 +1676,7 @@
  {scope:true
  ,context:[{span:{span:{id:"a"}}}]
  ,route:[document,surge,crop(1),{span:{id:"a",drop:true}}]
- ,terms:[surge,"childNodes",rank,collect,"length",0]
+ ,terms:[surge,"childNodes","length",0]
  ,condition:"equal"
  }
  ,async:

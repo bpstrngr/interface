@@ -900,6 +900,12 @@
 ,undefined)?.join("/")
 );
 
+ export function cookie(cookies=(this.ownerDocument||this).cookie)
+{return simple(cookies)
+?Object.entries(cookies).map(([field,value])=>field+"="+value).join(";")
+:Object.fromEntries(cookies.split(/ *; */).map(infer("split","=")));
+};
+
  export function file(address){return address.replace(/.*\//,"");};
  export function folder(address){return address.replace(/\/[^/]*$/,"");};
  export function relate(address,relation=import.meta.url)
@@ -920,6 +926,14 @@
 ,exit
 )
 ,collect,slip(URL),Reflect.construct);
+ export var query=compose
+(when(is(URL)),"searchParams","entries",Array.from,Object.fromEntries
+,tether(prune,([field,value])=>[true,false].find(boolean=>String(boolean)===value)??value,0,0)
+);
+ export function path(request)
+{let address=!string(request)?"http://"+request.headers.host+request.url:request;
+ return new URL(address).pathname.replace(/^\/*|\/*$/g,"");
+};
 
  export var demarkup=text=>Array.from(text).map(symbol=>
  ({"<":"&lt;",">":"&gt;"}[symbol]||symbol)).join("");

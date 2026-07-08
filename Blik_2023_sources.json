@@ -979,11 +979,31 @@
       "safe-buffer": "./Tarr_2014_sha1/1/index.js",
       "to-buffer": "./Tarr_2014_sha1/2/index.js"
     }}]},
-    "https://github.com/feross/safe-buffer":{"v5.2.1":[{"syntax":"commonjs"}]},
+    "https://github.com/feross/buffer":{"v6.0.3":[{"syntax":"commonjs","alias":{
+      "base64-js":"./Tarr_2014_sha1/4/index.js",
+      "ieee754":"./Feross_2013_ieee754.js"
+    }}]},
     "https://github.com/browserify/to-buffer":{"v1.2.0":[{"syntax":"commonjs","alias":{
       "safe-buffer":"./Tarr_2014_sha1/1/index.js",
       "isarray":"./Tarr_2014_sha1/3/index.js"
     }}]},
-    "https://github.com/juliangruber/isarray":{"v2.0.5":[{"syntax":"commonjs"}]}
-  }
+    "https://github.com/juliangruber/isarray":{"v2.0.5":[{"syntax":"commonjs"}]},
+    "https://github.com/beatgammit/base64-js":{"v1.3.1":[{"syntax":"commonjs"}]}
+  },
+  "Hilton_2018_lightningfs.js": {
+    "https://github.com/isomorphic-git/lightning-fs": {
+      "v4.6.2": ["src/index.js",{"syntax":"commonjs","alias":{
+          "@isomorphic-git/idb-keyval": "./Hilton_2018_lightningfs/1/idb-keyval.ts",
+          "just-debounce-it": "./Hilton_2018_lightningfs/3/packages/function-debounce/index.mjs",
+          "just-once": "./Hilton_2018_lightningfs/4/packages/function-once/index.mjs"
+      },"edit":{
+        "src/DefaultBackend.js":{"{ encode, decode } = require\\(\\\"isomorphic-textencoder\\\"\\)":"{encode,decide}=globalThis.process?await import('../../2/main.js'):await import('../../2/browser.js')"}
+      }}]
+    },
+    "https://github.com/isomorphic-git/idb-keyval": {"v3.3.2": [{"syntax":"typescript","edit":{"export class":"export default class"}}]},
+    "https://github.com/billiegoose/isomorphic-textencoder": {"v1.0.0": [{"syntax":"commonjs"}]},
+    "https://github.com/angus-c/just/packages/function-debounce": {"just-debounce-it@3.0.1": []},
+    "https://github.com/angus-c/just/packages/function-once": {"just-once@2.0.1": []}
+  },
+  "Ruizok_2021_perfect-freehand.js":{"https://github.com/steveruizok/perfect-freehand/packages/perfect-freehand/src":{"v1.2.3":["packages/perfect-freehand/src/index.ts"]}}
 }

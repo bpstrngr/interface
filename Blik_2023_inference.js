@@ -590,7 +590,10 @@
 :route[0]);
  let Group=[Set,Map].find(group=>target instanceof group);
  if(Group)
- return override?source:new Group([source,target].flatMap(part=>Array.from(part)));
+ return override<0
+?new Group(Array.from(target).filter(target=>!source[array(source)?"includes":"has"](target)))
+:override?source
+:new Group([source,target].flatMap(part=>Array.from(part)));
  let extensible=[target,source].every(array);
  if(extensible&&!override)
  return target.concat(source);
@@ -648,7 +651,7 @@
  let fail=compose(swap(branch),Error("not found: "+path.join("/")),"concat",infer("find",is(Error)),exit);
  let terms=path.map((term,index,path)=>infer(either
 (buffer(term,store)
-,whether(has(method),buffer(compose(methodic,lift,differ(term),store),compose(store,swap(undefined))),unit)
+,whether(has(method),buffer(compose(methodic,lift,differ(term),store),compose(store,swap(undefined))))
 ,buffer(tether(scope[term]),store)
 ,fail
 ),...context,path.slice(0,index)));
@@ -699,7 +702,7 @@
 
  export function extract(fields,exclusive)
 {if(!this)return exclusive?extract.call(exclusive,fields):tether(extract,fields);
- fields=string(fields)?[fields]:fields;
+ fields=[fields].flat();
  if(exclusive)
  return prune.call(this,([field,value])=>
  fields.includes(field)?undefined:value,0,0);
@@ -810,7 +813,7 @@
  return entries.reduce((scope,[event,action])=>constructor[event]
 ?action
 ?compose.call(constructor[event],[action],Reflect.construct,combine
-(infer("observe",scope,register)
+(infer("observe",scope,register===true?undefined:register)
 ,observer=>scope[method]("unobserve",({detail})=>detail===event&&observer.unobserve(this),{once:true})
 ),lift,swap(scope))
 :scope.dispatchEvent(new CustomEvent("unobserve",{detail:event}))||scope

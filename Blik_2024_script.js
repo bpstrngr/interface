@@ -1,8 +1,8 @@
  import {unfold} from "./Blik_2023_search.js";
- import {aphorize,serialize} from "./Blik_2023_meta.js";
+ import {aphorize,serialize,cookie} from "./Blik_2023_meta.js";
  import {debug,merge,prune,record,stagger,infer,compose,cede,buffer,whether,wait,string,note,basic,defined,drop,modular,observe,extract} from "./Blik_2023_inference.js";
- import {fetch,digest,path,agent} from "./Blik_2023_interface.js";
- import {window,document,css,cookie,capture,dataset,destroy,keyboard} from "./Blik_2023_fragment.js";
+ import {fetch,digest,agent} from "./Blik_2023_interface.js";
+ import {window,document,css,capture,dataset,destroy,keyboard} from "./Blik_2023_fragment.js";
  import {EditorState,Compartment} from './haverbeke_2022_codemirror_state.js';
  import {EditorView,ViewPlugin,keymap,lineNumbers,drawSelection} from './haverbeke_2022_codemirror_view.js';
  import {history,defaultKeymap,historyKeymap} from './haverbeke_2022_codemirror_commands.js';
@@ -62,7 +62,7 @@
  let buffer=Object.assign(new FileReader()
 ,{onload:compose
 ((file,event)=>fetch(target,{method:"put",body:btoa(event.target.result)})
-,note,"text",combine
+,"text",combine
 (body=>fetch("/inspect?module="+this.dataset.source,{method:"put",body})
 ,compose(["message"],record,{action:"broadcast",room:this.dataset.source},merge
 ,["data"],record,{bubbles:true},merge,slip("message"),collect,slip(MessageEvent)
@@ -95,7 +95,7 @@
  resize.call(this,Math.max(1,Math.round(past*scale)));
 }}
  }}};
- let author=cookie("author");
+ let {author}=cookie.call(window.document);
  let {gutter=true,range,scale
  ,font=author?await compose(fetch,digest,"font")("/author/"+author):""
  ,parent=compose.call
@@ -111,7 +111,7 @@
  doc.split("\n").slice(start,end).join("\n"));
  let size=font?font.size+"px":(scale||1)+"em";
  let theme=new Compartment().of(EditorView.theme(
- {".cm-content":{"text-align":"left","font-family":font,"font-size":size}
+ {".cm-content":{"text-align":"left","font-family":font.name,"font-size":size}
  ,".cm-gutters":{background:"transparent","font-size":size}
  // gutter heights are calculated dynamically on client-side. 
  ,".cm-gutterElement":{height:"4px !important",color:"var(--note)"}
@@ -157,7 +157,7 @@
  {".cm-content":{"font-size":next+"px"}
  ,".cm-gutters":{"font-size":next+"px"}
  }),theme.inner])});
- let author=cookie("author");
+ let {author}=cookie.call(this);
  if(!author)return;
  buffer(compose
 (wait(10000),size,when(is(next)),drop()

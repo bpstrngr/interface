@@ -1,13 +1,13 @@
- import {note,debug,sum,colors,search,merge,prune,record,remember,route,when,stash,flip,are,functor,string,not,pattern,revert,each,describe,clock,observe,is,has,same,minor,slip,something,compound,infer,tether,whether,collect,rank,buffer,differ,compose,combine,either,drop,crop,swap,wait,exit,pass,binary,simple,array,expect,extract} from "./Blik_2023_inference.js";
+ import {note,debug,sum,colors,search,merge,prune,record,remember,route,when,stash,flip,are,functor,string,not,pattern,revert,each,describe,clock,observe,is,has,same,minor,slip,something,compound,infer,tether,whether,collect,rank,buffer,compose,combine,either,drop,crop,swap,wait,exit,pass,binary,simple,array,expect,extract} from "./Blik_2023_inference.js";
  import {name as loader,delegate,swarm,command,access,locate,prompt,list,fetch,digest,persist,version,compress,stage,feature} from "./Blik_2023_interface.js";
  import {encrypt} from "./Blik_2023_search.js";
- import {mime,bytes,url} from "./Blik_2023_meta.js";
- import {browser,jsdom,cookies,cookie} from "./Blik_2023_fragment.js";
+ import {mime,bytes,url,cookie} from "./Blik_2023_meta.js";
+ import {browser,jsdom} from "./Blik_2023_fragment.js";
  import {animal} from "./Blik_2024_svg.js";
 
  export async function expose(model,protocol,suspend=true)
 {({model,protocol}=await prompt({model,protocol}));
- let [module,...fields]=string(protocol)?await locate(protocol.split("/")):[protocol];
+ let [module,...fields]=string(protocol)?await locate(protocol):[protocol];
  let [{default:routes,relay,syndication,encryption,classify,classified,published,permit},{default:credentials}]=
  await [model,module].reduce(record(module=>
  string(module)?command.call(import.meta.url,module):{default:module}),[]);
@@ -97,7 +97,7 @@
  ,"Access-Control-Allow-Origin":"*"
  //,"X-Frame-Options":"DENY"
  ,"Location":location
- ,"Set-Cookie":cookie(cookies)||undefined
+ ,"Set-Cookie":cookies?cookie(cookies):undefined
  ,"Content-Type":type
  ,...this.headers
  },JSON.stringify,JSON.parse

@@ -1,14 +1,14 @@
  import {note,compose,buffer,when,collect,infer,combine,wait,drop,slip,differ,crop,each,swap,pass,not,compound,functor,native,exit,tether,either,whether,describe,string,pattern,major,match,has,is,are,defined,flip,heritage} from "./Blik_2023_inference.js";
- import {access,persist,purge,resolve,list,query,fetch,path,swarm,delegate,location,listen,socket} from "./Blik_2023_interface.js";
- import {cookies,cookie} from "./Blik_2023_fragment.js";
+ import {access,persist,purge,resolve,list,fetch,swarm,delegate,location,listen,socket} from "./Blik_2023_interface.js";
  import {authorize} from "./Blik_2024_static.js";
+ import {cookie,query} from "./Blik_2023_meta.js";
 
  var sessions={};
 
  export default
  {async get(request)
 {await authorize(request,"ranger");
- let {inspector:sessionId}=cookies(request.headers.cookie||"");
+ let {inspector:sessionId}=cookie(request.headers.cookie||"");
  if(!sessionId)
  sessionId=await compose.call
 ("http://127.0.0.1:9100/json",fetch,digest,JSON.parse
@@ -42,7 +42,7 @@
  return {body:scope,cookie};
 },async put(request,scriptSource)
 {await authorize(request,"ranger");
- let {inspector:sessionId}=cookies(request.headers.cookie||"");
+ let {inspector:sessionId}=cookie(request.headers.cookie||"");
  let {cookie}=sessionId
 ?{cookie:{inspector:sessionId,path:"/",expires:new Date(new Date().getTime()+1000*60*60*6).toUTCString(),httponly:true,samesite:true}}
 :await this.get(...arguments);

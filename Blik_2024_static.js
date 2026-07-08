@@ -1,8 +1,11 @@
  import {note,search,merge,prune,record,remember,compose,spill,buffer,when,collect,infer,combine,wait,drop,slip,lift,differ,crop,each,swap,pass,not,compound,functor,native,exit,tether,either,whether,describe,string,pattern,major,match,has,is,are,defined,flip,heritage,extract} from "./Blik_2023_inference.js";
- import {name as loader,access,persist,purge,command,list,interpret,query,fetch,path,swarm,delegate,location,listen,infrastructure} from "./Blik_2023_interface.js";
- import {document,hypertext,css,throttle,error,capture,defer,cookies,cookie,} from "./Blik_2023_fragment.js";
- import {url,serialize,mime,proceduralize,sourcemap} from "./Blik_2023_meta.js";
+ import {name as loader,access,persist,purge,command,list,interpret,fetch,swarm,delegate,location,listen,infrastructure} from "./Blik_2023_interface.js";
+ import {document,hypertext,css,throttle,error,capture,defer} from "./Blik_2023_fragment.js";
+ import {url,serialize,mime,proceduralize,sourcemap,cookie,folder,path,query} from "./Blik_2023_meta.js";
  import {random} from "./Blik_2023_search.js";
+ import git from "./Blik_2026_git.js";
+ var address=import.meta.url;
+ var relation=folder(new URL(address).pathname);
 
  export var encryption={code:undefined};
  export var classified=[/.*\.git.*/];
@@ -19,8 +22,8 @@
 );
  export async function permit(name,list,inclusive)
 {let path=[await command.call(import.meta.url,"path","resolve",name),name.endsWith("/")?"/":""].join("");
- let includes=list.some(term=>string(term)?path.startsWith(term):term.test(path));
- return (inclusive?includes:!includes)||exit(Error(inclusive?"Unauthorized":"Classified"));
+ let includes=list.find(term=>string(term)?path.startsWith(term):term.test(path));
+ return (inclusive?includes:!includes)||exit(Error((inclusive?"Unauthorized":"Classified")+": "+path+" ["+includes+"]"));
 };
 
  let filesystem=compose
@@ -48,15 +51,17 @@
  {infrastructure(){return delegate.call(swarm[loader],"infrastructure");}
  ,history(){return delegate.call(swarm[loader],"infrastructure","time");}
  ,sources(){return infrastructure();}
+ ,git:prune.call(git,({1:git})=>describe(compose(drop(1),pass(authorize,"ranger"),git),git))
  ,get:compose(combine(filesystem,routes),lift,merge)
  ,put:compose
-(drop(1),pass(buffer(combine
-(compose(path,slip("path","resolve","./"),command.bind(import.meta.url),published,true,permit)
-,compose(drop(1),JSON.parse,Object.keys,"length",when(major(0)))
-),compose(drop(1),infer(authorize,"ranger"))))
+(drop(1),drop(2,1,buffer(JSON.parse,compose(drop(1,2),"base64",Buffer.from,"toString")))
+,pass(buffer(compose(each(
+[compose(path,slip("path","resolve","./"),command.bind(import.meta.url),published,true,permit)
+,compose(Object.keys,"length",when(major(0)))
+]),lift),compose(drop(1),infer(authorize,"ranger"))))
 ,combine
 (compose(path,slip("path","resolve","./"),command.bind(import.meta.url),pass(permit,classified))
-,compose(drop(1),buffer(JSON.parse,compose(drop(1,2),"base64",Buffer.from,"toString")))
+,drop(1,2)
 ,compose(url,query,buffer(differ("override"),swap(undefined)),is(true))
 ),lift
 ,combine
@@ -116,7 +121,7 @@
 ?compose(swap(field),pass(permit,classified),"binary",access):value);
 },put:async function(request,body)
 {let {2:name}=request.url.split("/");
- let {signature}=cookies(request.headers.cookie||"");
+ let {signature}=cookie(request.headers.cookie||"");
  body=body?await prune.call(JSON.parse(body)
 ,([field,value])=>encryption[field]?.(value)||value):{};
  let credentials=extract.call(body,Object.keys(encryption));
@@ -147,14 +152,14 @@
 }});
 };
 
- export async function authorize({headers:{cookie}},rank)
+ export function authorize({headers:{cookie:cookies}},rank)
 {when(defined)(rank);
- let {author:name}=cookies(cookie||"");
+ let {author:name}=cookie(cookies||"");
  if(!name)exit(Error("unauthorized"));
  return either
 (compose(fetch,"json",match({rank}))
 ,compose(swap("unauthorised"),Error,exit)
-)("/author/"+name,{method:"put",headers:{cookie}});
+)("/author/"+name,{method:"put",headers:{cookie:cookies}});
 };
 
  export var peer={};
