@@ -757,6 +757,7 @@
  }))
 ,swap([])
 ),infer("slice",1),infer("map",match=>match||"anonymous")
+,infer("filter",match=>match!=="Promise.all")
 );
 
  export function trace(term,path=[])

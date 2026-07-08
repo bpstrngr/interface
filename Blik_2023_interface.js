@@ -88,8 +88,8 @@
 :inference(globalThis.process.argv.slice(2));
 
  export function command(specifier,...context)
-{if(!string(this))
- console.warn("Importing without peer module's reference in scope for \""+specifier+"\".\nWill default to \""+location+"/\" (none).");
+{//if(!string(this))
+ //console.warn("Importing without peer module's reference in scope for \""+specifier+"\".\nWill default to \""+location+"/\" (none).");
  if(array(specifier))
  return specifier.reduce(record(compose(drop(1),crop(1),push(...context),command.bind(this))),[]);
  let {protocol,host,pathname}=url(specifier,this);
@@ -219,7 +219,6 @@
 (combine(unit,either(compose("url",url,"pathname",decodeURI,modulepath,format),swap({}))),lift,merge
 ,{shortCircuit:true},merge
 ,stash(compose(drop(),push(Date),[],Reflect.construct,"getTime",["time"],record)),merge
-,["resolution"],record
 );
 
  export async function resolve(specifier,context,next)
@@ -237,7 +236,7 @@
  // clone immutable context without custom attributes ({peer} overrides parentURL for commands). 
  context=prune.call(context,([field,value])=>({peer:undefined}[field]||value));
  let relation=peer.replace(folder(import.meta.url),"");
- let {pathname:absolute,protocol,host}=url(specifier,peer);
+ let {pathname:absolute,protocol,host}=url(specifier,peer); 
  let relative=agent.node&&"file:"===protocol?"/"+await command.call(import.meta.url,"path","relative",location,absolute):absolute;
  let extend=!protocol.startsWith("http")
 ?compose(crop(2),stash(immediate),recover,modules,absolute,peer,"call",peer,relate)
@@ -246,10 +245,10 @@
 ,{[relative]:{}
  ,[relation]:peer.endsWith("/")?undefined:{imports:new Set([relative])}
  },0)[relative];
- let redact=compose(swap(modules),{[relative]:undefined,[relation]:{imports:new Set([relative])}},-1,merge);
+ let redact=compose(swap(modules),{[relative]:undefined,[relation]:{imports:new Set([relative])}},-1,merge,undefine);
  return precedent.resolution=precedent.resolution||compose
-(buffer(next,either(compose(extend,["url"],record),compose(crop(1,redact),exit)))
-,shortcircuit,[relative],record,slip(modules),merge,search([relative,"resolution"])
+(buffer(next,either(compose(extend,["url"],record),compose(crop(1,redact),note.bind(1),exit)))
+,shortcircuit,slip(modules),[relative,"resolution"],merge,search([relative,"resolution"])
 ,pass(compose(swap(colors.yellow+"export:"+colors.cyan+relative+colors.yellow+" to:"+colors.gray+relation+colors.steady),console.log))
 ,cede
 )(absolute,context);
@@ -259,7 +258,7 @@
 
  function recover(fail,source,immediate)
 {return {ERR_MODULE_NOT_FOUND:!immediate?alias
-        :buffer(compose(drop(1,2),when(not(match(/_/))),prepend),compose(drop(1),tether(acquire)))
+        :either(tether(acquire),compose(drop(1,2),extend),compose(drop(1,2),prepend))
         ,ERR_UNSUPPORTED_DIR_IMPORT:immediate&&extend
         }[fail.code]||exit(fail);
 };
@@ -293,7 +292,9 @@
  let path=await import("path");
  let target=absolute.replace(/\.js$|\.node$/,"");
  let relative=path.relative(location,absolute);
- let definition=importmap[relative]||{};
+ let definition=importmap[relative];
+ if(!definition)
+ exit("no source definition for "+absolute);
  let entry=!compound(definition)||array(definition);
  let entries=Object.entries(entry?[definition]:definition).flatMap(function sort([remote,input],index)
 {if(remote===index)remote=undefined;
@@ -337,8 +338,6 @@
 )),swap(entry),pass(note.bind(3,"Accessing source entry of \""+relative+"\" for "+peer+":\n ")))
 )
 );
- let sloppy=!/\.(js|json)$/.test(absolute)&&await extend(absolute).catch(fail=>false);
- return sloppy||exit("no source definition for "+absolute);
 };
 
  async function assemble({remote,branch,input,target},index,{length}={})
@@ -509,11 +508,9 @@
 (compose(access,edits,edit,patriate,cede)
 ,fail=>note.call(1,"Failed to patriate "+syntax+" \""+source+"\" due to",fail)&&wait(1000)(fail).then(exit)
 )(source,true);
- if(next)
- return compose(source=>(
+ return next?compose.call(module,source=>(
  {source,format:{json:"json"}[syntax]||"module"
- }),shortcircuit,cede)(module);
- return module;
+ }),shortcircuit,cede):module;
 };
 
  export async function profile(source,context,attributes,format,syntax)
