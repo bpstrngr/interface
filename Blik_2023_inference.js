@@ -630,8 +630,8 @@
 {// record on an implicit scope. 
  let scope=this||[];
  return induce(either
-(compose(slip(scope),tether(distinction),slip(scope),Reflect.get)
-,compose(slip(scope),combine(record(term,distinction),tether(distinction)),lift,Reflect.get)
+(compose(slip(scope),tether(distinction),slip(scope),tether(search))
+,compose(slip(scope),combine(record(term,distinction),tether(distinction)),lift,tether(search))
 ),cede);
 };
 
@@ -660,6 +660,14 @@
 (branched,infer(),buffer(compose(infer(method,...context),crop(1)),crop(1))
 )),route,...arguments);
  return scope?composition(scope):composition;
+};
+
+ export function map(range)
+{if(!defined(this))
+ return pivot(map,...arguments);
+ return prune.call(this,function([field,value],path)
+{return search.call(range,path)?.call?.(this,value)||value;
+});
 };
 
  export function set(options,namespace)

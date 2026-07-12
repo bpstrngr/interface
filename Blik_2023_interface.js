@@ -194,21 +194,6 @@
  //await segmentation();
 };
 
- export async function locate(action)
-{// find boundary in deep "module/namespace" paths. 
- action=array(action)?action:action.split("/");
- let lead=["","."].find(match(action[0]))?.concat("/")||"";
- let [module,feature="default",...path]=action.slice(!!lead);
- let [name,extension="js"]=module.split(".").reverse().flatMap((extension,index,name)=>
- [name.splice(1-name.length).reverse().join("."),...name.filter(Boolean)]);
- module=lead+name+"."+extension;
- path.unshift(module.includes("_")?module:await prepend(module),feature);
- return path.reduce((past,file,index,path,left=path.length-index-1)=>past.catch(fail=>
- probe(path.slice(0,index+1).join("/")||"/").then(file=>left&&agent.node&&file.isDirectory()
-?exit(path.join("/")+" is a directory.")
-:cede(unit(path.splice(0,index+1).join("/"),...path))))
-,Promise.reject());
-};
  var precedent=compose("resolution",collect,slip(modules),tether(search));
  var modulepath=when(is([match(/^[\/\.]/),not(match(RegExp(sources+"$")))]));
  var format=compose
@@ -235,8 +220,8 @@
  if(attributes?.peer)
  // clone immutable context without custom attributes ({peer} overrides parentURL for commands). 
  context=prune.call(context,([field,value])=>({peer:undefined}[field]||value));
- let relation=peer.replace(folder(import.meta.url),"");
  let {pathname:absolute,protocol,host}=url(specifier,peer); 
+ let relation=peer.replace(folder(import.meta.url),"");
  let relative=agent.node&&"file:"===protocol?"/"+await command.call(import.meta.url,"path","relative",location,absolute):absolute;
  let extend=!protocol.startsWith("http")
 ?compose(crop(2),stash(immediate),recover,modules,absolute,peer,"call",peer,relate)
@@ -245,13 +230,29 @@
 ,{[relative]:{}
  ,[relation]:peer.endsWith("/")?undefined:{imports:new Set([relative])}
  },0)[relative];
- let redact=compose(swap(modules),{[relative]:undefined,[relation]:{imports:new Set([relative])}},-1,merge,undefine);
+ let redact=compose(swap(modules),{[relative]:undefined,[relation]:{imports:new Set([relative])}},-1,merge);
  return precedent.resolution=precedent.resolution||compose
-(buffer(next,either(compose(extend,["url"],record),compose(crop(1,redact),note.bind(1),exit)))
+(buffer(next,buffer(compose(extend,["url"],record),compose(pass(redact),drop(1,2),note.bind(1),exit)))
 ,shortcircuit,slip(modules),[relative,"resolution"],merge,search([relative,"resolution"])
 ,pass(compose(swap(colors.yellow+"export:"+colors.cyan+relative+colors.yellow+" to:"+colors.gray+relation+colors.steady),console.log))
 ,cede
 )(absolute,context);
+};
+
+ export async function locate(specifier)
+{// find boundary in deep "module/namespace" paths. 
+ let path=array(specifier)?specifier:specifier.split("/");
+ let lead=["","."].find(match(path[0]))?.concat("/")||"";
+ let [module,feature="default",...route]=path.slice(!!lead);
+ let [name,extension="js"]=module.split(".").reverse().flatMap((extension,index,name)=>
+ [name.splice(1-name.length).reverse().join("."),...name.filter(Boolean)]);
+ module=lead+name+"."+extension;
+ route.unshift(module.includes("_")?module:await prepend(module),feature);
+ return route.reduce((past,file,index,route,left=route.length-index-1)=>past.catch(fail=>
+ probe(route.slice(0,index+1).join("/")||"/").then(file=>left&&agent.node&&file.isDirectory()
+?exit(route.join("/")+" is a directory.")
+:cede(unit(route.splice(0,index+1).join("/"),...route))))
+,Promise.reject());
 };
 
  function immediate({message},source){return message.includes("'"+source+"'");};
@@ -455,6 +456,33 @@
  let {1:target}=binding.match(/"target_name": *"(.*)"/);
  await buffer(compose(spawn.bind(true),note),exit)("node-gyp","-C",path.join("/"),"configure","build");
  return path.join("/")+"/build/Release/"+target+".node";
+};
+
+ export async function access(file,encoding,content)
+{// access folder/file's metadata, content with specified encoding, or overwrite its content. 
+ if(!string(file))
+ file=file.path;
+ when(string)(file);
+ if(file.startsWith("http"))
+ return compose(fetch,whether(compose("status",is(200)),"text",compose("text",exit)))(file);
+ if(/^file:\/\//.test(file))
+ file=new URL(file).pathname;
+ let {promises:fs}=await import("fs");
+ if(!encoding)
+ return merge(await fs.stat(file),{path:file});
+ if(/\/$/.test(file))
+ return fs.readdir(file,{withFileTypes:true});
+ if(content)
+ return fs.writeFile(file,...binary(content)
+?[basic(encoding)?JSON.stringify(encoding):encoding,'utf8']
+:[content,encoding]).then(written=>file);
+ let buffer=await fs.readFile(file);
+ if(["binary",1].includes(encoding))
+ return buffer;
+ content=buffer.toString([true,"object"].includes(encoding)?"utf8":encoding);
+ if(encoding==="object")
+ return JSON.parse(content);
+ return content;
 };
 
  export async function load(source,context,next)
@@ -740,33 +768,6 @@
 }*/
 };
 
- export async function access(file,encoding,content)
-{// access folder/file's metadata, content with specified encoding, or overwrite its content. 
- if(!string(file))
- file=file.path;
- when(string)(file);
- if(file.startsWith("http"))
- return compose(fetch,whether(compose("status",is(200)),"text",compose("text",exit)))(file);
- if(/^file:\/\//.test(file))
- file=new URL(file).pathname;
- let {promises:fs}=await import("fs");
- if(!encoding)
- return merge(await fs.stat(file),{path:file});
- if(/\/$/.test(file))
- return fs.readdir(file,{withFileTypes:true});
- if(content)
- return fs.writeFile(file,...binary(content)
-?[basic(encoding)?JSON.stringify(encoding):encoding,'utf8']
-:[content,encoding]).then(written=>file);
- let buffer=await fs.readFile(file);
- if(["binary",1].includes(encoding))
- return buffer;
- content=buffer.toString([true,"object"].includes(encoding)?"utf8":encoding);
- if(encoding==="object")
- return JSON.parse(content);
- return content;
-};
-
  export async function list(file,recursive=true,exclude=[])
 {let wildcard=file.split("/").at(-1).includes("*");
  if(wildcard)
@@ -873,8 +874,8 @@
  export function listen(action,message)
 {// revert message events on bound socket to terminate listening. 
  return control(new AbortController(),revert
-((resume,reject,{signal},events,message,call)=>
- call(observe.call(events,{message(response)
+((resume,reject,{signal},socket,message,call)=>
+ call(observe.call(socket,{message(response)
 {action.call(this,JSON.parse(response.data),message,resume,reject);
 }},{signal}))
 ),this,message,message?infer("send",JSON.stringify(message)):infer());
@@ -957,8 +958,11 @@
  await command.bind(import.meta.url)("./Blik_2023_fragment.js","destroy",response);
  return (
  {status,body,location:request.url,cookie,headers
- ,json(){return this.text(true);}
- ,async text(json=false)
+ ,text,arrayBuffer,json(){return this.text(true);}
+ });
+};
+
+ export async function text(json=false)
 {if(!binary(json))json=false;
  let buffer=this.body.constructor?.name==="Buffer";
  let gzip=Array(2).fill("Content-Encoding").find((field,index)=>this.headers?.get(index?field.toLowerCase():field)==="gzip");
@@ -966,9 +970,10 @@
  if(compound(text))
  return json?text:JSON.stringify(text);
  return json?JSON.parse(text):text;
-},async arrayBuffer()
-{let gzip=this.headers["Content-Encoding"]==="gzip";
- // if(simple(this.body))
+};
+
+ export async function arrayBuffer()
+{// if(simple(this.body))
  // return compose(JSON.stringify(this.body),"encode","buffer")(new TextEncoder());
  if(this.body?.constructor?.name==="Buffer")
  return compose
@@ -977,7 +982,6 @@
 ,"buffer"
 )(this.body);
  return Buffer.from(this.body??"","utf-8");
-}});
 };
 
  export var script=compose

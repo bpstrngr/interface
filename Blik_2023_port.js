@@ -1,56 +1,50 @@
- import {note,debug,sum,colors,search,merge,prune,record,remember,route,when,stash,flip,are,functor,string,not,pattern,revert,each,describe,clock,observe,is,has,same,minor,slip,something,compound,infer,tether,whether,collect,rank,buffer,compose,combine,either,drop,crop,swap,wait,exit,pass,binary,simple,array,expect,extract} from "./Blik_2023_inference.js";
- import {name as loader,delegate,swarm,command,access,locate,prompt,list,fetch,digest,persist,version,compress,stage,feature} from "./Blik_2023_interface.js";
+ import {note,debug,sum,map,colors,search,surge,merge,prune,record,remember,route,when,stash,flip,are,functor,string,not,pattern,revert,each,clock,observe,is,has,same,minor,slip,something,compound,infer,tether,whether,collect,rank,buffer,compose,combine,either,drop,crop,swap,wait,exit,pass,binary,simple,array,expect,extract} from "./Blik_2023_inference.js";
+ import {name as loader,arrayBuffer,delegate,swarm,command,access,locate,prompt,list,fetch,digest,version,compress,stage,feature} from "./Blik_2023_interface.js";
  import {encrypt} from "./Blik_2023_search.js";
  import {mime,bytes,url,cookie} from "./Blik_2023_meta.js";
  import {browser,jsdom} from "./Blik_2023_fragment.js";
  import {animal} from "./Blik_2024_svg.js";
 
- export async function expose(model,protocol,suspend=true)
-{({model,protocol}=await prompt({model,protocol}));
+ export async function expose(protocol,range,suspend=true)
+{({range,protocol}=await prompt({range,protocol}));
  let [module,...fields]=string(protocol)?await locate(protocol):[protocol];
  let [{default:routes,relay,syndication,encryption,classify,classified,published,permit},{default:credentials}]=
- await [model,module].reduce(record(module=>
+ await [range,module].reduce(record(module=>
  string(module)?command.call(import.meta.url,module):{default:module}),[]);
  let {network,port,certification={},distinguishedname,cache}=search.call(credentials,fields);
- let agent=await command.call(import.meta.url,network);
+ let memory=cache&&await buffer(access,compose(infer(access,{},true),"object",access))(cache,"object");
  let [[domain,[signature,certificate]=[]]=[]]=Object.entries(certification);
  let [encrypted,syndicated]=await [encryption,syndication].reduce(record(required=>
  required?prompt(extract.call(credentials,Object.keys(required))):{}),[]);
+ let agent=await command.call(import.meta.url,network);
  let required={"https:":{domain,signature,certificate}}[agent.globalAgent.protocol];
  ({port,domain,signature,certificate}=await prompt({port,...required}));
  merge(syndication,syndicated);
  merge(certification,required&&{[domain]:[signature,certificate]});
  merge(encryption,prune.call(encrypted,([field,value])=>encrypt(value)));
- merge(globalThis,{cache,published,classified,classify});
+ merge(globalThis,{memory,published,classified,classify});
  let certificates=await Promise.all(Object.values(certification).flat().map(compose(crop(1),slip("path","resolve"),command.bind(import.meta.url))));
  await classify?.(module,...certificates);
  let certifications=prune.call(certification,([domain,certificates])=>
  certify(certificates,distinguishedname,[domain]),0,0);
- // send jsdom composition to loader thread too so it can fetch modules from this interface during eg. server-side rendering.
- let origin=agent.globalAgent.protocol+"//localhost"+":"+port;
- await jsdom.call(browser,origin);
- var router=compose(combine(whether
-(match({url:/^http/}),fetch
-,compose(combine(path,unit),lift,buffer(route.bind(routes),either(tether(routes.error),crop(1))))
-),unit),lift,stage);
- var dynamic=compose
- // included in classified or published paths. 
-(url,"pathname",slip("."),"concat"
-,combine(...[classified,published].map(list=>
- infer(permit,list))),lift
+ await jsdom.call(browser,agent.globalAgent.protocol+"//localhost"+":"+port);
+ var cachable=each([unit,compose(infer("join","/"),slip("/"),"concat",published,permit),when(match({method:/get/i}))]);
+ var response=compose
+(combine(path,unit),lift
+,combine(buffer(route.bind(routes),either(tether(routes.error),crop(1))),unit),lift
+,combine(describe,drop(1)),lift
+,cache&&pass(buffer(compose(pass(compose(cachable,lift)),pass(persist,memory,cache))))
+,crop(1)
 );
- var distinction=({url,headers})=>[url,...Object.values(feature(version(headers))).map(Boolean).map(Number)].join("");
  var respond=compose
-(revert(decode,new TextDecoder("utf-8")),rank,combine(whether
-(cache&&buffer(compose(combine(compose("method",/get/i,"match"),dynamic),lift),swap(false))
-,remember.call(cache,compose(drop(1),router),distinction)
-,router
-),unit),lift,cache&&pass(bust),tether(submit)
+(drop(1),drop(1,0,stash(revert(decode,new TextDecoder("utf-8")))),combine
+(either(cache&&compose(distinction,slip(memory),tether(search),reencode),response)
+,unit
+),surge,tether(submit)
 );
- function bust({status},request){if(status===500)delete cache[distinction(request)];};
  return compose
 ("createServer",port
-,revert((listen,cancel,host,port)=>host.listen(port,infer(listen)))
+,revert((proceed,cancel,host,port)=>host.listen(port,infer(proceed)))
 ,...Object.entries(certifications).map(([domain,certification])=>
  // for self-signed certificates, assign them to the NODE_EXTRA_CA_CERTS option. 
  pass(compose(domain,certification,lift,"addContext")))
@@ -58,55 +52,95 @@
 ,pass(compose(relay,broadcast))
 ,revert((close,error,channel)=>observe.call(channel,{close,error})&&suspend||close(channel))
 ,cede
-)(agent,await Object.values(certifications)[0],buffer(respond,compose(note,exit)));
+)(agent,await Object.values(certifications)[0],buffer(respond,compose(crop(1),note)));
 };
 
- function decode(end,error,decoder,agent,request,response,body=[])
-{let color=colors[["yellow","cyan"][Number(/get/i.test(request.method))]];
- console.log([color,clock(),"@",request.connection?.remoteAddress||"",request.url,"...",colors.steady].join(""));
- return observe.call(request
-,{data:record(data=>decoder.decode(data)).bind(body)
- ,end(){end([request,body.length?body.join(""):undefined,response]);}
- ,finish:note
- ,error
- });
+ function distinction({url,headers})
+{return url+Object.values(feature(version(headers))).map(Boolean).map(Number).join("");
 };
 
- async function path(request)
+ function persist(response,memory,cache,path,request)
+{merge(memory,response,distinction(request));
+ return access(cache,memory,true);
+};
+
+ function path(request)
 {let {query,pathname}=new URL(request.url.replace(/^\//,"http://localhost/"));
  let method=request.method.toLowerCase();
  let methodic=pathname==="/"+method;
  return compose
 ("/","split",infer("slice",1)
-,infer("filter",(step,index,{length})=>(index+1/length<1?step:true)&&step!==".")
+,infer("filter",(step,index,{length})=>(index+1<length?step:true)&&step!==".")
 ,{get:infer("map",step=>step||"interface")}[!methodic&&method]
 )(decodeURIComponent(methodic?"":pathname));
 };
 
- export async function submit(request,body,response)
-{let {status,location,cookie:cookies}=this;
- let type=this.headers.get("Content-Type");
- let gzip=this.headers.get("Content-Encoding")==="gzip";
- let stream=functor(this.body);
- body=stream?this.body:await buffer(type===mime("json")&&!gzip?"text"
-:is(Buffer)(this.body)?"body":compose("arrayBuffer",bytes),"stack")(this);
- if(is(Error)(body))
- body=note.call(1,body).message,status=500,type=mime("txt");
- let header=compose.call
-({status:response?status:undefined
+ function decode(end,error,decoder,request,body=[])
+{let color=colors[["yellow","cyan"][Number(/get/i.test(request.method))]];
+ console.log([color,clock(),"@",request.connection?.remoteAddress||"",request.url,"...",colors.steady].join(""));
+ return observe.call(request
+,{data:record(data=>decoder.decode(data)).bind(body)
+ ,end(){end(body.length?body.join(""):undefined);}
+ ,finish:note
+ ,error
+ });
+};
+
+ function encode(response)
+{return compose.call(response,buffer(whether
+([is(Error),is(Buffer),has("nodeName")]
+,compose(note.bind(1),"message")
+,compose(["body"],record,tether(arrayBuffer),bytes)
+,compose(combine
+(whether(match({constructor:{name:"HTMLHtmlElement"}}),swap("<!DOCTYPE html>"),drop())
+,whether(match({constructor:{name:"DocumentFragment"}}),compose("children",Array.from,infer("map",infer("outerHTML")),"","join"),"outerHTML")
+),lift,collect,"","join")
+),"stack"));
+};
+
+ function reencode(response)
+{let {content,header}=response;
+ let json=header["Content-Type"]===mime("json");
+ if(match({type:"Buffer",data:array})(content))
+ content=Buffer.from(content);
+ return merge(response,content,["content"]);
+};
+
+ export async function describe(response,path,request)
+{let agent=version(request.headers);
+ let features=feature(agent);
+ let browser="Mozilla/Chrome/Safari/AppleWebKit".split("/").some(has.bind(agent||{}));
+ let direct=request.headers?.referer?.endsWith(request.url)===false;
+ let importing=!direct&&request?.headers?.["sec-fetch-dest"]==="script";
+ let {body:content=response,type,status,location,headers,cookie:cookies}=response||{};
+ let fail=is(Error)(content);
+ type=!fail&&type||headers?.["Content-Type"]||mime(content?.nodeName?.toLowerCase()||(either(simple,array)(response)?"json":path.join("/")))||mime(content.nodeName?"html":"txt");
+ let [js,json]=[type===mime("js"),type===mime("json")];
+ if(basic(content))
+ content=JSON.stringify(content);
+ if(json&&importing&&!features.json)
+ content=Buffer.from("export default "+content+";"),type=mime("js"),js=true;
+ content=await encode(content);
+ status=response?fail?500:response.status||200:404;
+ return {content,status
+ ,header:JSON.parse(JSON.stringify({status
  ,"Access-Control-Allow-Origin":"*"
  //,"X-Frame-Options":"DENY"
  ,"Location":location
  ,"Set-Cookie":cookies?cookie(cookies):undefined
  ,"Content-Type":type
- ,...this.headers
- },JSON.stringify,JSON.parse
-);
+ ,...headers
+ }))
+ };
+};
+
+ export function submit(request,body,response)
+{let {content,status,header}=this;
  response?.writeHead(status,header)||request.respond(header);
  let color=colors[{200:"green"}[status]||"red"];
- console.log([color,clock(),"@",request.connection?.remoteAddress||"",request.url," ",type,colors.steady].join(""));
+ console.log([color,clock(),"@",request.connection?.remoteAddress||"",request.url," ",header["Content-Type"],colors.steady].join(""));
  let target=response||request;
- return stream?body(target):target.end(body);
+ return functor(content)?content(target):target.end(content);
 };
 
  function persistence()

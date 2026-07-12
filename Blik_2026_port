@@ -1,0 +1,84 @@
+
+{text-align:justify}
+
+ A Port is an interface we can provide for commands ("requests") over (Hypertext Transfer protocol)@https://www.rfc-editor.org/rfc/rfc9110.html (HTTP). These consist of four main fields: a (universal resource locator)@https://url.spec.whatwg.org/ (URL) address, a method (mainly GET or PUT), a record of headers, and a stream of arbitrary data ("body"). To respond to this structure, we need to specify a context of a port number to receive them on, a domain name, certification and (distinguishedname)@https://datatracker.ietf.org/doc/html/rfc4514 to "sign" our responses, and an actual "range" of responses to expose#b, which may demand additional syndication and encryption keys from the protocol specification (eg. API proxy or local password). With Interface we can supply these in modules to a command with their specifiers, like (expose)#script/highlight(`NODE_EXTRA_CA_CERTS=./certificate_localhost.pem node --import=./interface.js ./port.js expose ./protocol.json/host/local ./static.js`){display:inline;word-break:break-all;white-space:normal;font-family:inherit}. 
+
+definitions#[[
+` {"host":
+ {"local":{"network":"http","port":80}
+ ,"jsrebels":
+ {"network":"https","port":443,"cache":"./Blik_2026_jsrebels.json","certification":
+ {"jsrebels.org":["./certificate_jsrebels_key.pem","./certificate_jsrebels.pem"]
+ ,"localhost":["./certificate_localhost_key.pem","./certificate_localhost.pem"]
+ }
+ ,"distinguishedname":{"commonName":"jsrebels.org","countryName":"US","ST":"California","localityName":"Mountain View","organizationName":"example"}
+ }
+ ,"google":"key"
+ ,"password":"key"}
+ }
+`,{"source":"/protocol.json","scale":0.8}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161;overflow:scroll}
+
+ host#[[
+` export var classified=[/.*\.git*.*/];
+ export var classify=compose
+(when(are(either(string,pattern)))
+,each(wether(string,compose(crop(1),slip("path","resolve"),resolve),infer()))
+,classified.push.bind(classified)
+);
+ export var published=[];
+ export var publish=compose
+(when(are(either(string,pattern)))
+,each(wether(string,compose(crop(1),slip("path","resolve"),resolve),infer()))
+,published.push.bind(published)
+);
+
+ export async function permit(name,list,inclusive)
+{let address=await resolve("path","resolve",name);
+ let includes=list.some(term=>string(term)?term===address:term.test(address));
+ if(inclusive?includes:!includes)
+ return name;
+ exit(Error(inclusive?"Unauthorized":"Classified"));
+};
+
+ export default
+ {get:compose
+(swap("path","resolve","."),resolve,true,classified,list
+,tether(prune,([field,value],path)=>value===null
+?compose(swap(resolve("path","resolve",".",...path,field)),classified,permit,"binary",access)
+:value)
+),interface()
+{let routes=await this.get();
+ return document(
+ {html:{body:
+ {pre:{"#text":JSON.stringify(routes,null,2)}
+ ,style:{"#text":css({body:{background:"black",color:"white"}})}
+ }}
+ });
+}};
+
+ export var actions=
+ {check(event,peer){peer.connected=true;}
+ ,broadcast(event,peer)
+{let message=JSON.stringify(event);
+ this.clients.forEach(client=>
+ client.readyState===1&&client!==peer&&
+ client.send(message));
+}};
+
+ export var syndication={google:undefined};
+ export var encryption={password:undefined};
+`,{"source":"/Blik_2024_static.js","scale":0.8}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161;overflow:scroll;}
+
+ After loading them, the expose#b command extracts the required protocol context, prompting the client for missing ones, and classifies#b the protocol, certificate and cache files to exclude them from the filesystem range. If a specified certification#b is not found, the distinguishedname#b is used to send a certificate signing request to Letsencrypt over ACME@https://datatracker.ietf.org/doc/html/rfc8555/ protocol, or generate a self-signed one. To access the domain locally, the Fragment module's browser window "origin" is reassigned with the specified port for the reference of relative urls in fetch#b, which is why a certificate should be specified for localhost along with that of the public domain name, and assigned to NODE_EXTRA_CA_CERTS as it would be rejected as self-signed. When more certificates are provided, they are assigned to the host context#b to recognize their respective (domain name)#b in requests. 
+
+ The domain module can define two ranges: the "default" passive http routes#b, and websocket "relay"#b actions to actively broadcast#b messages. A composition binds the agent#b interface with a respond#b function to a port, processing incoming requests by decoding#b their body, routing#b into the domain on their path, and persisting the described#b response#b into cache given no precedent was found there, that's otherwise reencoded#b for submission#b. 
+
+server#[["/Blik_2023_port.js"],"interface/command",[["expose","broadcast"]],"inference/flip","inference/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2023_port.js","scale":0.8}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[0],{"inference/tether":["script/fold"]}]
+
+ The route#b function takes the request path and traverses the specified domain hierarchy along its matching fields. Functional values are invoked with the current route scope, the original request and its body ((route)#script/highlight(`value.call(this,request,body)`){display:inline;white-space:normal;word-break:break-all;white-space:normal}), and traversal continues on their returned values. A "folder" path with a trailing slash is appended a default route for html representations (.../interface). The "method" field on HTTP requests can be considered an alternative route for when the path would lead to a dead end ((route)#script/highlight(`scope[method].call(this,request,body)`){display:inline;white-space:normal;word-break:break-all;white-space:normal}), but only once as branch#b records this invocation. To associate certain routes with arbitrary scopes, a third fallback rebinds the scope to origin routes (/author/name/interface -> route#script/highlight(`domain.interface.call(author,request,body)`){display:inline;white-space:normal;word-break:break-all;white-space:normal}. 
+
+server#[["/Blik_2023_inference.js"],"interface/command",[["route"]],"inference/flip","inference/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2023_inference.js","scale":0.8}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[0],{"inference/tether":["script/fold"]}]
+
+ These routes are actually distributed with Interface, so you only need the protocol module to start this server now. Open http://localhost:80/Blik_2023_port/@http://localhost:80/Blik_2023_port/ to see this document. 
+
+expose#script/highlight(` node --import=./Blik_2023_interface.js ./Blik_2023_port.js expose ./Blik_2024_static.js ./protocol.json/http`){display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
