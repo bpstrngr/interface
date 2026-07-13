@@ -9,7 +9,7 @@
  export var {loader,import:offload,inspect:inspected}=flags(globalThis.process);
  export var agent=merge({virtual:typeof imports!=="undefined"}
 ,globalThis.process?.versions
-?prune.call(globalThis.process.versions,({1:value})=>string(value)?Number(value.match(/(\.{0,1}\d+){1,2}/)[0]):value)
+?prune.call(globalThis.process.versions,({1:value})=>string(value)?Number(value.match(/(\.{0,1}\d+){1,2}/)?.[0]):value)
 :version(globalThis.window.navigator));
  export var features=feature(agent);
  export var interpreter=agent.node&&await import("vm").then(search(["Module"]));
