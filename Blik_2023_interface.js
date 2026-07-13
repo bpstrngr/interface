@@ -663,7 +663,7 @@
  let socket=await buffer.call
 (command.call(import.meta.url,"net","connect",globalThis.process.debugPort)
 ,revert((connect,error,connection)=>observe.call(connection,{connect:infer(connect),error}))
-,compose(note,swap("debug port unavailable for "+prompt.name),note.bind(1))
+,compose("message",note.bind(1))
 );
  let {createInterface}=await import("readline");
  let interfaces=[{input,output}/*,socket&&{input:socket,output:socket}||[]*/].flat().map(createInterface);
@@ -740,9 +740,7 @@
  let pathspace=globalThis.process.stdout.columns-prefix.length;
  await revert((resolve,reject,stream)=>observe.call(stream
 ,{entry(entry)
-{globalThis.process.stdout.cursorTo?.(prefix.length);
- globalThis.process.stdout.clearLine?.(1);
- globalThis.process.stdout.write(entry.path.slice(0,pathspace));
+{status(entry.path.slice(0,pathspace),prefix.length);
  entry.on("data",function(data){this.push(data.toString("utf-8"))}.bind(
  entry.path.match(/^(.*)\/(.*)/).slice(1).map(path=>
  path.split("/")).reduce((path,[file])=>
@@ -766,6 +764,12 @@
 }catch(fail)
 {return note(fail);
 }*/
+};
+
+ export function status(message,indent)
+{globalThis.process.stdout.cursorTo?.(indent);
+ globalThis.process.stdout.clearLine?.(1);
+ globalThis.process.stdout.write(string(message)?message:JSON.stringify(message));
 };
 
  export async function list(file,recursive=true,exclude=[])
