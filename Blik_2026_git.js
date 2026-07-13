@@ -30,50 +30,30 @@
 
  export async function check(remote,branch)
 {({remote,branch}=await prompt({remote,branch}));
- let dir=relation;
- let ref=[remote,branch].join("/");
+ await authorize();
+ let [dir,ref]=[relation,[remote,branch].join("/")];
  console.log(" Pivotting to "+ref+".");
- await git.fetch(
- {fs,http,remote,dir
- ,onProgress(message){status(message);}
- ,onPostCheckout(message){console.log(message);}
- }).then(fetch=>console.log({fetch}));
- await git.checkout(
- {fs,dir,ref,filepaths:[".gitignore"],noUpdateHead:true,track:false
- ,onProgress(message){status(message);}
- ,onPostCheckout(gitignore){console.log({gitignore});}
- });
- //let files=await git.listFiles({fs,dir}).then(note);
- //let stats=files.map(filepath=>git.status({fs,dir,filepath}).then(note));
- let files=await index();
- console.log({files});
- await files.reduce(record(filepath=>
- git.add({fs,dir,filepath,force:true})),[]);
- let [name,email]=await Promise.all(["name","email"].map(field=>
- git.getConfig({fs,dir,path:"user."+field})));
- await prompt({"user.name":name,"user.email":email,["branch."+branch+".remote"]:remote,["branch."+branch+".merge"]:"refs/heads/"+branch}).then(config=>
- Object.entries(config).reduce(record(([field,value])=>
- git.setConfig({fs,dir,path:field,value})),[]));
- let stash=files.length&&await git.stash({fs,dir,op:"push"});
- console.log({stash})
- if(stash)
- await git.stash({fs,dir,op:"list"}).then(note);
- await git.checkout(
- {fs,dir,ref
- ,onProgress(message){status(message);}
- ,onPostCheckout(message){console.log(message);}
- });
- if(stash)
- await git.checkout(
- {fs,dir,ref:stash,noUpdateHead:true,track:false
- ,onProgress(message){status(message);}
- ,onPostCheckout(message){console.log(message);}
- });
+ await git.fetch({fs,http,remote,dir,onProgress,onPostCheckout}).then(note);
+ await git.checkout({fs,dir,ref,filepaths:[".gitignore"],noUpdateHead:true,track:false,onProgress,onPostCheckout});
+ let files=await index().then(note);
+ await files.reduce(record(filepath=>git.add({fs,dir,filepath,force:true})),[]);
+ let stash=files.length&&await git.stash({fs,dir,op:"push"}).then(note);
+ if(stash)await git.stash({fs,dir,op:"list"}).then(note);
+ await git.checkout({fs,dir,ref,onProgress,onPostCheckout});
+ if(stash)await git.checkout({fs,dir,ref:stash,noUpdateHead:true,track:false,onProgress,onPostCheckout});
  console.log(" Restored stash: "+stash);
  let staged=await stage();
- await Promise.all(staged.map(([filepath])=>
- git.resetIndex({fs,dir,filepath})));
+ await staged.reduce(record(([filepath])=>git.resetIndex({fs,dir,filepath})),[]);
  console.log(" Unstaged changes: "+JSON.stringify(staged));
+ function onProgress(message){status(message);};
+ function onPostCheckout(message){console.log(message);};
+};
+
+ export async function authorize(dir=relation)
+{let [name,email]=await ["name","email"].reduce(record(field=>git.getConfig({fs,dir,path:"user."+field})),[]);
+ return prompt({name,email}).then(({name,email})=>
+ [name,email].reduce(record(([field,value])=>
+ git.setConfig({fs,dir,path:"user."+field,value})),[]));
 };
 
  export async function index(dir=relation)
