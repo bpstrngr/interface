@@ -44,15 +44,14 @@
  await git.add({fs,dir,filepath:"."});
  //let files=await git.listFiles({fs,dir}).then(note);
  //let stats=files.map(filepath=>git.status({fs,dir,filepath}).then(note));
- let matrix=await git.statusMatrix({fs,dir});
- let changes=matrix.filter(([name,head,work,stage])=>work===2).map(([file])=>file);
- console.log({changes});
+ let index=await changes();
+ console.log({index});
  let [name,email]=await Promise.all(["name","email"].map(field=>
  git.getConfig({fs,dir,path:"user."+field})));
  await prompt({name,email}).then(config=>Promise.all(
  Object.entries(config).map(([field,value])=>!{name,email}[field]&&
  git.setConfig({fs,dir,path:"user."+field,value}))));
- let stash=changes.length&&await git.stash({fs,dir,op:"push"}).then(note);
+ let stash=index.length&&await git.stash({fs,dir,op:"push"}).then(note);
  if(stash)
  await git.stash({fs,dir,op:"list"}).then(note);
  await git.checkout(
@@ -63,7 +62,19 @@
  if(stash)
  await git.stash({fs,dir,op:"pop"});
  console.log(" Restored stash: "+stash);
- await Promise.all(changes.map(([filepath])=>
+ let staged=await stage();
+ await Promise.all(staged.map(([filepath])=>
  git.resetIndex({fs,dir,filepath})));
- console.log(" Unstaged changes: "+JSON.stringify(changes));
-}
+ console.log(" Unstaged changes: "+JSON.stringify(staged));
+};
+
+ export async function changes(dir=relation)
+{// git status --porcelain;
+ let matrix=await git.statusMatrix({fs,dir});
+ return matrix.filter(([name,head,work,stage])=>work===2).map(([file])=>file);
+};
+
+ export async function stage(dir=relation)
+{let matrix=await git.statusMatrix({fs,dir});
+ return matrix.filter(([name,head,work,stage])=>work===3).map(([file])=>file);
+};
