@@ -29,38 +29,41 @@
 
  export async function check(remote,branch)
 {({remote,branch}=await prompt({remote,branch}));
- console.log("Pivotting to "+[remote,branch].join("/")+".");
+ console.log(" Pivotting to "+[remote,branch].join("/")+".");
  let dir=relation;
  await git.fetch(
  {fs,http,remote,dir
  ,onProgress(message){status(message);}
  ,onPostCheckout(message){console.log(message);}
- }).then(note);
+ }).then(fetch=>console.log({fetch}));
  await git.checkout(
  {fs,dir,remote,ref:branch,filepaths:[".gitignore"]
  ,onProgress(message){status(message);}
- ,onPostCheckout(message){console.log(message);}
+ ,onPostCheckout(gitignore){console.log({gitignore});}
  });
  await git.add({fs,dir,filepath:"."});
  //let files=await git.listFiles({fs,dir}).then(note);
  //let stats=files.map(filepath=>git.status({fs,dir,filepath}).then(note));
  let matrix=await git.statusMatrix({fs,dir});
- let stash=matrix.filter(([name,head,work,stage])=>work===2).map(([file])=>file);
- console.log(stash);
+ let changes=matrix.filter(([name,head,work,stage])=>work===2).map(([file])=>file);
+ console.log({changes});
  let [name,email]=await Promise.all(["name","email"].map(field=>
  git.getConfig({fs,dir,path:"user."+field})));
  await prompt({name,email}).then(config=>Promise.all(
  Object.entries(config).map(([field,value])=>!{name,email}[field]&&
  git.setConfig({fs,dir,path:"user."+field,value}))));
- if(stash.length)
- await git.stash({fs,dir,op:"push"}).then(note).then(commit=>
- git.stash({fs,dir,op:"list"}).then(note));
+ let stash=changes.length&&await git.stash({fs,dir,op:"push"}).then(note);
+ if(stash)
+ await git.stash({fs,dir,op:"list"}).then(note);
  await git.checkout(
  {fs,dir,remote,ref:branch
  ,onProgress(message){status(message);}
  ,onPostCheckout(message){console.log(message);}
  });
- if(stash.length)
- await git.stash({fs,dir,op:"pop"}).then(note);
- // git restore --staged .; 
+ if(stash)
+ await git.stash({fs,dir,op:"pop"});
+ console.log(" Restored stash: "+stash);
+ await Promise.all(changes.map(([filepath])=>
+ git.resetIndex({fs,dir,filepath})));
+ console.log(" Unstaged changes: "+JSON.stringify(changes));
 }

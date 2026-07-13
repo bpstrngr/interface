@@ -766,7 +766,7 @@
 }*/
 };
 
- export function status(message,indent)
+ export function status(message,indent=0)
 {globalThis.process.stdout.cursorTo?.(indent);
  globalThis.process.stdout.clearLine?.(1);
  globalThis.process.stdout.write(string(message)?message:JSON.stringify(message));
