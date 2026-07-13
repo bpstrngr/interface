@@ -29,15 +29,16 @@
 
  export async function check(remote,branch)
 {({remote,branch}=await prompt({remote,branch}));
- console.log(" Pivotting to "+[remote,branch].join("/")+".");
  let dir=relation;
+ let ref=[remote,branch].join("/");
+ console.log(" Pivotting to "+ref+".");
  await git.fetch(
  {fs,http,remote,dir
  ,onProgress(message){status(message);}
  ,onPostCheckout(message){console.log(message);}
  }).then(fetch=>console.log({fetch}));
  await git.checkout(
- {fs,dir,remote,ref:branch,filepaths:[".gitignore"]
+ {fs,dir,ref,filepaths:[".gitignore"]
  ,onProgress(message){status(message);}
  ,onPostCheckout(gitignore){console.log({gitignore});}
  });
@@ -51,11 +52,12 @@
  await prompt({name,email}).then(config=>Promise.all(
  Object.entries(config).map(([field,value])=>!{name,email}[field]&&
  git.setConfig({fs,dir,path:"user."+field,value}))));
- let stash=index.length&&await git.stash({fs,dir,op:"push"}).then(note);
+ let stash=index.length&&await git.stash({fs,dir,op:"push"});
+ console.log({stash})
  if(stash)
  await git.stash({fs,dir,op:"list"}).then(note);
  await git.checkout(
- {fs,dir,remote,ref:branch
+ {fs,dir,ref
  ,onProgress(message){status(message);}
  ,onPostCheckout(message){console.log(message);}
  });
