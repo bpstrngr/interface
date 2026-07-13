@@ -38,21 +38,22 @@
  ,onPostCheckout(message){console.log(message);}
  }).then(fetch=>console.log({fetch}));
  await git.checkout(
- {fs,dir,ref,filepaths:[".gitignore"]
+ {fs,dir,ref,filepaths:[".gitignore"],noUpdateHead:true,track:false
  ,onProgress(message){status(message);}
  ,onPostCheckout(gitignore){console.log({gitignore});}
  });
- await git.add({fs,dir,filepath:"."});
  //let files=await git.listFiles({fs,dir}).then(note);
  //let stats=files.map(filepath=>git.status({fs,dir,filepath}).then(note));
- let index=await changes();
- console.log({index});
+ let files=await index();
+ console.log({files});
+ await files.reduce(record(filepath=>
+ git.add({fs,dir,filepath,force:true})),[]);
  let [name,email]=await Promise.all(["name","email"].map(field=>
  git.getConfig({fs,dir,path:"user."+field})));
  await prompt({name,email}).then(config=>Promise.all(
  Object.entries(config).map(([field,value])=>!{name,email}[field]&&
  git.setConfig({fs,dir,path:"user."+field,value}))));
- let stash=index.length&&await git.stash({fs,dir,op:"push"});
+ let stash=files.length&&await git.stash({fs,dir,op:"push"});
  console.log({stash})
  if(stash)
  await git.stash({fs,dir,op:"list"}).then(note);
@@ -62,7 +63,11 @@
  ,onPostCheckout(message){console.log(message);}
  });
  if(stash)
- await git.stash({fs,dir,op:"pop"});
+ await git.checkout(
+ {fs,dir,ref:stash,noUpdateHead:true,track:false
+ ,onProgress(message){status(message);}
+ ,onPostCheckout(message){console.log(message);}
+ });
  console.log(" Restored stash: "+stash);
  let staged=await stage();
  await Promise.all(staged.map(([filepath])=>
@@ -70,13 +75,13 @@
  console.log(" Unstaged changes: "+JSON.stringify(staged));
 };
 
- export async function changes(dir=relation)
+ export async function index(dir=relation)
 {// git status --porcelain;
  let matrix=await git.statusMatrix({fs,dir});
- return matrix.filter(([name,head,work,stage])=>work===2).map(([file])=>file);
+ return matrix.filter(([name,head,work,stage])=>work).map(([file])=>file);
 };
 
  export async function stage(dir=relation)
 {let matrix=await git.statusMatrix({fs,dir});
- return matrix.filter(([name,head,work,stage])=>work===3).map(([file])=>file);
+ return matrix.filter(([name,head,work,stage])=>stage===3).map(([file])=>file);
 };
