@@ -27,6 +27,7 @@
 );
 }};
 
+
  export async function check(remote,branch)
 {({remote,branch}=await prompt({remote,branch}));
  let dir=relation;
@@ -50,9 +51,9 @@
  git.add({fs,dir,filepath,force:true})),[]);
  let [name,email]=await Promise.all(["name","email"].map(field=>
  git.getConfig({fs,dir,path:"user."+field})));
- await prompt({name,email}).then(config=>Promise.all(
- Object.entries(config).map(([field,value])=>!{name,email}[field]&&
- git.setConfig({fs,dir,path:"user."+field,value}))));
+ await prompt({"user.name":name,"user.email":email,["branch."+branch+".remote"]:remote,["branch."+branch+".merge"]:"refs/heads/"+branch}).then(config=>
+ Object.entries(config).reduce(record(([field,value])=>
+ git.setConfig({fs,dir,path:field,value})),[]));
  let stash=files.length&&await git.stash({fs,dir,op:"push"});
  console.log({stash})
  if(stash)
