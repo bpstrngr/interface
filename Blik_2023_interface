@@ -72,6 +72,17 @@ commandline#script/highlight(` git init;
  git remote add interface https://github.com/blikest/interface;
  git checkout interface/stable .;
 
+ node()
+{version=$0;
+ release=node-v$version-$(uname|tr '[:upper:]' '[:lower:]')-$([[ $(uname -m) -eq aarch64 ]] && echo "arm64" || uname -m );
+ curl -O https://nodejs.org/download/release/v$version/$release.tar.gz;
+ tar xf $release.tar.gz -C . --strip-components=2 $release/bin/node;
+ rm $release.tar.gz;
+ for command in node;do alias $command=$(pwd)/$command; done;
+ echo " to remove: rm node && unalias node;"
+}
+ node 22.7.0;
+
  node ./Blik_2023_interface.js ./Blik_2023_inference.js sum 1 2 3;`){display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161;font-size:.8em}
 
  Without a command to infer, it will expose its own declarations for procedural use. Grab a terminal@https://termux.dev/, you might need it later: 
@@ -148,6 +159,16 @@ namespace#[["/Blik_2023_interface.js/module/namespace"],"interface/fetch","inter
 Infrastructure#network("/history",{"spread":"right","linear":false,"range":"time","relations":"imports","ratio":0.1}){height:500px}#[[20],{"inference/tether":["network/zoom"]}]
 
  When the module loader runs on a second thread, infrastructure#i actually needs to be delegated to access its loaded modules#i there. More importantly, these representations produced by the Network module are not just raw text, but physical interfaces themselves: nodes can be zoomed, collapsed, expanded or even added and removed. As a matter of fact, this whole document has been a physical interface: you've scrolled, interpretted colors and shapes, clicked, typed, perhaps watched a video. Its source text is in the Blik_2023_interface file, but inferring this representation of it with a simple '(media)#script/highlight(`node interface/access ./Blik_2024_interface | node fragment/media`){display:inline;white-space:normal;word-break:break-all;white-space:normal;font-size:0.8em}' command, or that of networks with '(network)#script/highlight(`node interface/delegate infrastructure | node network`){display:inline;white-space:normal;word-break:break-all;white-space:normal;font-size:0.8em}' would at best produce a static version of them. Like Interface for javascript modules, Browsers#b provide a stable, standard (however bloated) platform for such hypermedia#b, using a "request" protocol called Hypertext Transfer (HTTP). The Port module exposes an interface for the command of these requests, extending our control beyond the command line. 
+
+ Uninstall external modules bundled based on their source definitions: 
+
+( for file in $(cat *sources.json | jq keys[] --raw-output);do rm -rf $file $(echo $file | sed 's/\.js$//');done
+)#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
+
+ or, if you're sure every file you need is committed on their respective remotes: 
+ 
+( rm -rf $(git check-ignore *);
+)#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
 
 
 

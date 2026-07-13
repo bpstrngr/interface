@@ -1005,5 +1005,6 @@
     "https://github.com/angus-c/just/packages/function-debounce": {"just-debounce-it@3.0.1": []},
     "https://github.com/angus-c/just/packages/function-once": {"just-once@2.0.1": []}
   },
+  "Hilton_2018_isomorphic-git-http.js":{"https://github.com/isomorphic-git/isomorphic-git/src/http/node/index.js src/utils":{"v1.38.4":["src/http/node/index.js",{"detach":["../../typedefs-http.js"],"alias":{"simple-get":"./Feross_2014_simpleget.js"}}]}},
   "Ruizok_2021_perfect-freehand.js":{"https://github.com/steveruizok/perfect-freehand/packages/perfect-freehand/src":{"v1.2.3":["packages/perfect-freehand/src/index.ts"]}}
 }

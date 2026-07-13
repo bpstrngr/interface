@@ -3,7 +3,7 @@
 
 (Remote project composition)#h2
 
- Interface has a "flat" folder structure, meaning no folder structure, but rather an author and year attribution prefix naming convention for modules. Its ability to command modules with arbitrary context makes them generic enough that any folder would limit their potential meaning, or invert import hierarchies. Classification between such generic modules may exist, but it makes them independent enough that they constitute new projects, where file names are evidently complementary, or ensured by the attribution prefix. It is therefore safe to use interface in any project by merging its files from a new remote: 
+ Interface has a "flat" folder structure, meaning no folder structure, but rather an author and year attribution prefix naming convention for modules. Its ability to command modules with arbitrary context allows them to be generic enough that any folder could only limit their meaning, or invert import hierarchies. Classification of such generic modules is possible, but it makes them independent enough that they constitute new projects, where file names are evidently complementary, or ensured by the attribution prefix. It is therefore safe to use interface in any project by merging its files from a new remote: 
 
 (interface(){
  echo " Stashing local changes in case of conflict..."
@@ -20,10 +20,10 @@
  git restore $(git ls-files);
  [ $stash -gt 0 ] && git checkout stash -- .;
 }
-interface
+ interface
 )#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
 
- This leaves your own project files in git's scope, but if you want to contribute to different remotes like this, their ignore file file needs to be checked out first to put your changes to its files into scope (imagine switching back to track your project's branch and finding it reset by a simple checkout): 
+ This leaves your own project files in git's scope, but if you want to contribute to different remotes like this, their ignore file needs to be checked out first to put your changes to its files into scope (imagine switching back to your project and finding it reset by a simple checkout): 
 
 (check(){
  remote=$1
@@ -40,14 +40,16 @@ interface
  git checkout $remote/$branch;
  [[ $stash -gt 0 ]] && git checkout stash .;
  git restore --staged .; 
-})#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
+}
+ check interface stable
+)#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
 
- Treating ignore files as project scope trackers like this as God intended proves "monorepo" and "submodule" concepts obsolete, given each project gives module names the respect argued above too. Changes can remain "detached" at the remote HEAD, without local branch references. A commit to a local branch reference is only needed in the unlikely scenario that you intend to inspect the same file for multiple conflicting tasks, or do so offline for an extended period of time - otherwise you can manage branches directly on remote references. Since this practice of merging different remotes into the same local repository is a bit unusual, here are some further git commands for awareness of tracked scopes to use beyond the common pull-push-merge on singular remotes: 
+ Treating ignore files as project scope trackers like this proves "monorepo" and "submodule" concepts obsolete, given each project also gives module names the respect described above. Changes can remain "detached" at the remote HEAD, without local branch references. A commit to a local branch reference is only needed in the unlikely case that you intend to inspect the same file for multiple conflicting tasks, or do so offline for an extended time period - otherwise you can manage branches directly on remote references. Since this practice of merging different remotes into the same local repository is a bit unusual, here are some further git commands for awareness of tracked scopes to use beyond the common pull-push-merge on singular remotes: 
 
 ( git remote -v; # list remotes. 
- git branch -avv; # list branches with remote information. 
  git remote add name url; # add remotes with more specific names than the common "origin". 
  git remote remove name;
+ git branch -avv; # list branches with remote information. 
 
  git checkout name/branch; # contribute to remote branch without local reference ("detached" HEAD). 
  git switch -c branch name/branch; # create local branch, eg. eponymous branch of remote tracking its stable branch. 
@@ -56,13 +58,24 @@ interface
  git push name HEAD:branch. # contribute to existing branch. 
  git push name HEAD:refs/heads/branch; # create remote branch. 
  git pull --rebase; # reapply local commits on remote ones. 
+
  git ls-remote --tags interface;
  tag=YEAR.MM; git tag -d $tag; git tag $tag; git push $(target remote) :$tag; git push $(target remote) tag $tag;
  remote=$(git branch -r --contains HEAD); # tracked remote. 
  commit=$(git rev-parse HEAD);
 )#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
 
- Copy Interface's pre-commit script as a git hook to test staged modules and format them to a specified style before each commit:
+(Git with javascript)#h2
+
+ The standard UNIX implementation of Git is robust, but these Shell languages to script them are notoriously cryptic, and inconsistent. Isomorphic-git is a javascript implementation that we can use to write these commands instead. 
+
+sources#[["/Blik_2023_sources.json"],"interface/fetch","interface/digest",[["Hilton_2017_isomorphic-git.js","Feross_2014_simpleget.js","Schouten_2015_async-lock.js","White_2016_clean-gitref.js","Sheets_2014_crc32.js","Wanek_2016_diff3.js","Kael_2015_ignore.js","Hinosawa_2015_minimisted.js","Puzrin_2014_pako.js","sindresorhus_2015_pify.js","isaacs_2012_readable-stream.js","Tarr_2014_sha1.js","Hilton_2018_lightningfs.js"]],"inference/flip","inference/extract","meta/aphorize",[{"source":"/Blik_2023_sources.json","scale":0.8}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[4],{"inference/tether":["script/fold"]}]
+
+ Interface's Git module provides the above check#b command and more: 
+
+(Semantic checkout)#h2
+
+ Copy Interface's pre-commit script as a git hook to test staged modules and format them to a convention before each commit:
 
 ( cp git_hook_pre-commit .git/hooks/pre-commit;
 )#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
@@ -79,36 +92,6 @@ interface
  node ./Blik_2023_interface.js ./Blik_2023_meta.js parse $text "typescript" | xargs -0syntax\
  node ./Blik_2023_interface.js ./Blik_2023_meta.js serialize $syntax "astring" | xargs -0text\
  node ./Blik_2023_interface.js ./Blik_2023_interface.js access "module.ts" $text;
-)#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
-
- Uninstall external modules bundled based on their source definitions: 
-
-( for file in $(cat *sources.json | jq keys[] --raw-output);do rm -rf $file $(echo $file | sed 's/\.js$//');done
-)#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
-
- or, if you're sure every file you need for all remotes are included in your gitignore file: 
- 
-( rm -rf $(git check-ignore *);
-)#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
-
- To install Node.js: 
-
-(node(){
- version=$0;
- release=node-v$version-$(uname|tr '[:upper:]' '[:lower:]')-$([[ $(uname -m) -eq aarch64 ]] && echo "arm64" || uname -m );
- curl -O https://nodejs.org/download/release/v$version/$release.tar.gz;
- tar xf $release.tar.gz -C . --strip-components=2 $release/bin/node;
- rm $release.tar.gz;
- for command in node;do 
-alias $command=$(pwd)/$command;
- done;
-}
-node 22.7.0
-)#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
-
- To uninstall Node.js: 
-
-( rm node;
 )#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
 
 
