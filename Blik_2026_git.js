@@ -45,25 +45,36 @@
  });
  // git add .;
  let matrix=await git.statusMatrix({fs,dir});
- let past=await scope(matrix,"work",2);
- let next=await scope(matrix,"head",1);
- await past.reduce(record(filepath=>git.add({fs,dir,filepath,force:true})),[]);
- await next.reduce(record(buffer(compose(drop(1),filepath=>git.add({fs,dir,filepath})),undefine)),[]);
- note({past,next})
- await git.statusMatrix({fs,dir}).then(matrix=>matrix.sort(([,past],[,next])=>past<next?-1:1)).then(console.table);
+ await matrix.reduce(record(buffer(compose(drop(1),([filepath])=>git.add({fs,dir,filepath,force:true})),undefine)),[]);
+ console.log(" Merged scopes:");
+ await status().then(console.log);
  // stash=$(git status --porcelain|wc -l);
- let stash=Array.from(new Set([past,next].flat()));
+ let stash=matrix.filter(([file,head,work])=>work!==head).map(([file])=>file);
  // [[ $stash -gt 0 ]] && git stash;
- let object=stash.length&&await git.stash({fs,dir,op:"push"}).then(note);
+ let object=stash.length&&await git.stash({fs,dir,op:"push"});
+ let stashed=await git.listFiles({fs,dir,ref:object});
+ console.log("Stashed "+stashed.length);
  // git checkout $remote/$branch;
  await git.checkout({fs,dir,ref,onProgress,onPostCheckout});
+ console.log(" New scope:");
+ await status().then(console.log);
  // [[ $stash -gt 0 ]] && git checkout stash .;
  if(object)
- await git.checkout({fs,dir,ref:object,filepaths:stash,noUpdateHead:true,track:false,onProgress,onPostCheckout}).then(note);
+ await git.checkout(
+ {fs,dir,ref:object,filepaths:stashed
+ // leave HEAD to show changes. 
+ // do Checkout to merge scopes. 
+ // do not track to remain oriented towards current. 
+ ,noUpdateHead:true,noCheckout:false,track:false
+ ,onProgress,onPostCheckout
+ });
+ console.log(" Re-merged scopes:");
+ await status().then(console.log);
  // git restore --staged .;
- matrix=await git.statusMatrix({fs,dir});
- await matrix.reduce(record(([filepath])=>git.resetIndex({fs,dir,filepath})),[]);
- note(" Restored changes.");
+ await git.statusMatrix({fs,dir}).then(matrix=>
+ matrix.reduce(record(([filepath])=>
+ git.resetIndex({fs,dir,filepath})),[]));
+ note(" Unstaged changes.");
  function onProgress(message){print(message);};
  function onPostCheckout(message){console.log(message);};
 };
