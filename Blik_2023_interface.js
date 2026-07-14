@@ -837,7 +837,9 @@
  return compose.call(command.call(import.meta.url,"fs","promises"),infer("rm",path,{recursive:true,force:true}),swap(path));
 };
 
- export var compile=compose(drop(1),load,parse,serialize);
+ export function compile(source,format)
+{return compose.call(source,load,parse,format,serialize);
+}
 
  export function bundling(source)
 {return Object.entries(modules).some(([field,{resolution}])=>

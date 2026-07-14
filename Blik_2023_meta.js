@@ -489,7 +489,7 @@
  if(!namespace)return "";
  let parser={astring:["./davidbonnet_2015_astring.js","generate"]}[format];
  if(namespace?.type==="Program"&&parser)
- return command.bind(import.meta.url)(...parser,namespace);
+ return command.call(import.meta.url,...parser,namespace);
  if(string(namespace))
  return namespace.startsWith("data:text/javascript;")?namespace.replace(/^data:text\/javascript;/,""):JSON.stringify(namespace);
  if(functor(namespace))
