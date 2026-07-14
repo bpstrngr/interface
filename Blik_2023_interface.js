@@ -121,6 +121,8 @@
 
  export function register(address)
 {// register loader thread. 
+ if(agent.node>=25.9)
+ return command.call(import.meta.url,"module","registerHooks",{resolve,load});
  return compose.call
 ("worker_threads",command.bind(import.meta.url),tether(search,["MessageChannel"]),[],Reflect.construct
 ,address,revert(function register(resume,onerror,{port1:near,port2:far},address)

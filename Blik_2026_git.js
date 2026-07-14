@@ -29,29 +29,40 @@
 
 
  export async function check(remote,branch)
-{({remote,branch}=await prompt({remote,branch}));
- await authorize();
+{// pivot to tracking remote/branch, preserving files from the current one and changes to theirs.
+ ({remote,branch}=await prompt({remote,branch}));
  let [dir,ref]=[relation,[remote,branch].join("/")];
- console.log(" Pivotting to "+ref+".");
- await git.fetch({fs,http,remote,dir,onProgress,onPostCheckout}).then(note);
- await git.checkout({fs,dir,ref,filepaths:[".gitignore"],noUpdateHead:false,noCheckout:false,track:false,onProgress,onPostCheckout});
+ console.log(" Pivotting to "+ref+".\n");
+ // git fetch $remote;
+ await git.fetch({fs,http,remote,dir,onProgress}).then(note);
+ // git checkout $remote/$branch .gitignore;
+ await git.checkout({fs,dir,ref,filepaths:[".gitignore"]
+ // update HEAD to include .gitignore's scope. 
+ // do Checkout to show .gitignore as unmodified. 
+ // do not track to remain oriented towards current. 
+ ,noUpdateHead:false,noCheckout:false,track:false
+ ,onProgress,onPostCheckout
+ });
+ // git add .;
  let matrix=await git.statusMatrix({fs,dir});
- let past=await scope(matrix,"head",0);
- let next=await scope(matrix,"head");
+ let past=await scope(matrix,"work",2);
+ let next=await scope(matrix,"head",1);
  await past.reduce(record(filepath=>git.add({fs,dir,filepath,force:true})),[]);
- await next.reduce(record(buffer((record,filepath)=>git.resetIndex({fs,dir,filepath,force:true}),undefine)),[]);
- matrix=await git.statusMatrix({fs,dir});
- let added=await scope(matrix,"stage",[2,3]);
- let removed=await scope(matrix,"stage",0);
- note({matrix,past,next,added,removed})
- return
- let stash=stage.length&&await git.stash({fs,dir,op:"push"}).then(note);
+ await next.reduce(record(buffer(compose(drop(1),filepath=>git.add({fs,dir,filepath})),undefine)),[]);
+ await git.statusMatrix({fs,dir}).then(matrix=>matrix.sort(([,past],[,next])=>past<next?-1:1)).then(console.table);
+ // stash=$(git status --porcelain|wc -l);
+ let stash=Array.from(new Set([past,next].flat()));
+ // [[ $stash -gt 0 ]] && git stash;
+ let object=stash.length&&await git.stash({fs,dir,op:"push"}).then(note);
+ // git checkout $remote/$branch;
  await git.checkout({fs,dir,ref,onProgress,onPostCheckout});
- if(stash)await git.checkout({fs,dir,ref:stash,noUpdateHead:true,noCheckout:true,track:false,onProgress,onPostCheckout});
- console.log(" Restored stash: "+stash);
- await past.reduce(record(filepath=>git.remove({fs,dir,filepath})),[]);
- await next.reduce(record(filepath=>git.remove({fs,dir,filepath})),[]);
- console.log(" Unstaged changes: "+JSON.stringify(next));
+ // [[ $stash -gt 0 ]] && git checkout stash .;
+ if(object)
+ await git.checkout({fs,dir,ref:object,filepaths:stash,noUpdateHead:true,track:false,onProgress,onPostCheckout}).then(note);
+ // git restore --staged .;
+ matrix=await git.statusMatrix({fs,dir});
+ await matrix.reduce(record(([filepath])=>git.resetIndex({fs,dir,filepath})),[]);
+ note(" Restored changes.");
  function onProgress(message){status(message);};
  function onPostCheckout(message){console.log(message);};
 };

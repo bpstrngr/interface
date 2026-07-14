@@ -67,15 +67,26 @@
 
 (Git with javascript)#h2
 
- The standard UNIX implementation of Git is robust, but these Shell languages to script them are notoriously cryptic, and inconsistent. Isomorphic-git is a javascript implementation that we can use to write these commands instead. 
+ The standard UNIX implementation of Git is robust, but these Shell languages to script them are notoriously cryptic, and inconsistent. Isomorphic-git is a javascript implementation that we can use to write these commands instead: 
 
-sources#[["/Blik_2023_sources.json"],"interface/fetch","interface/digest",[["Hilton_2017_isomorphic-git.js","Feross_2014_simpleget.js","Schouten_2015_async-lock.js","White_2016_clean-gitref.js","Sheets_2014_crc32.js","Wanek_2016_diff3.js","Kael_2015_ignore.js","Hinosawa_2015_minimisted.js","Puzrin_2014_pako.js","sindresorhus_2015_pify.js","isaacs_2012_readable-stream.js","Tarr_2014_sha1.js","Hilton_2018_lightningfs.js"]],"inference/flip","inference/extract","meta/aphorize",[{"source":"/Blik_2023_sources.json","scale":0.8}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[4],{"inference/tether":["script/fold"]}]
+sources#[["/Blik_2023_sources.json"],"interface/fetch","interface/digest",[["Hilton_2017_isomorphic-git.js","Feross_2014_simpleget.js","Schouten_2015_async-lock.js","White_2016_clean-gitref.js","Sheets_2014_crc32.js","Wanek_2016_diff3.js","Kael_2015_ignore.js","Hinosawa_2015_minimisted.js","Puzrin_2014_pako.js","sindresorhus_2015_pify.js","isaacs_2012_readable-stream.js","Tarr_2014_sha1.js","Hilton_2018_lightningfs.js","Hilton_2018_isomorphic-git-http.js"]],"inference/flip","inference/extract","meta/aphorize",[{"source":"/Blik_2023_sources.json","scale":0.8}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[4],{"inference/tether":["script/fold"]}]
+
+location#[["/Blik_2026_git.js"],"interface/command",[["check"]],"inference/flip","inference/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2026_git.js","scale":0.8,"gutter":31}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[0],{"inference/tether":["script/fold"]}]
 
  Interface's Git module provides the above check#b command and more: 
 
 (Semantic checkout)#h2
 
- Copy Interface's pre-commit script as a git hook to test staged modules and format them to a convention before each commit:
+ Everyone may have their own formatting preferences, unless a convention requires us to read it in the same dialect. Procedurally, this means substituting modularisation with persistence in the default loading sequence: 
+ host#script/highlight(` compose(access,parse,"astring",serialize,slip("./module.js"),true,access)("./module.js")`){background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
+ or use you client's commands to invoke them sequentially if it also supports composition: 
+( node ./Blik_2023_interface.js ./Blik_2023_interface.js access "module.ts" | xargs -0text \
+ node ./Blik_2023_interface.js ./Blik_2023_meta.js parse $text "typescript" | xargs -0syntax\
+ node ./Blik_2023_interface.js ./Blik_2023_meta.js serialize $syntax "astring" | xargs -0text\
+ node ./Blik_2023_interface.js ./Blik_2023_interface.js access "module.ts" $text;
+)#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
+ 
+ Interface provides a pre-commit script you can copy as a git hook to format staged modules to a convention (and test them) before each commit:
 
 ( cp git_hook_pre-commit .git/hooks/pre-commit;
 )#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
@@ -85,14 +96,6 @@ sources#[["/Blik_2023_sources.json"],"interface/fetch","interface/digest",[["Hil
 ( cp git_hook_post-commit .git/hooks/post-commit;
 )#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
 
- To format between different dialects, substitute modularisation with persistence in the default loading sequence: 
- host#script/highlight(` compose(access,parse,"astring",serialize,slip("./module.js"),true,access)("./module.js")`){background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}
- or use you client's commands to invoke them sequentially if it also supports composition: 
-( node ./Blik_2023_interface.js ./Blik_2023_interface.js access "module.ts" | xargs -0text \
- node ./Blik_2023_interface.js ./Blik_2023_meta.js parse $text "typescript" | xargs -0syntax\
- node ./Blik_2023_interface.js ./Blik_2023_meta.js serialize $syntax "astring" | xargs -0text\
- node ./Blik_2023_interface.js ./Blik_2023_interface.js access "module.ts" $text;
-)#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
 
 
 
