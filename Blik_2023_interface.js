@@ -742,7 +742,7 @@
  let pathspace=globalThis.process.stdout.columns-prefix.length;
  await revert((resolve,reject,stream)=>observe.call(stream
 ,{entry(entry)
-{status(entry.path.slice(0,pathspace),prefix.length);
+{print(entry.path.slice(0,pathspace),prefix.length);
  entry.on("data",function(data){this.push(data.toString("utf-8"))}.bind(
  entry.path.match(/^(.*)\/(.*)/).slice(1).map(path=>
  path.split("/")).reduce((path,[file])=>
@@ -768,7 +768,7 @@
 }*/
 };
 
- export function status(message,indent=0)
+ export function print(message,indent=0)
 {globalThis.process.stdout.cursorTo?.(indent);
  globalThis.process.stdout.clearLine?.(1);
  globalThis.process.stdout.write(string(message)?message:JSON.stringify(message));

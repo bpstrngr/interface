@@ -1,5 +1,5 @@
- import {note,buffer,expect,record,prune} from "./Blik_2023_inference.js";
- import {prompt,status} from "./Blik_2023_interface.js";
+ import {note,buffer,expect,record,prune,colors} from "./Blik_2023_inference.js";
+ import {prompt,print} from "./Blik_2023_interface.js";
  import {folder} from "./Blik_2023_meta.js";
  import http from "./Hilton_2018_isomorphic-git-http.js";
  import git from "./Hilton_2017_isomorphic-git.js";
@@ -49,6 +49,7 @@
  let next=await scope(matrix,"head",1);
  await past.reduce(record(filepath=>git.add({fs,dir,filepath,force:true})),[]);
  await next.reduce(record(buffer(compose(drop(1),filepath=>git.add({fs,dir,filepath})),undefine)),[]);
+ note({past,next})
  await git.statusMatrix({fs,dir}).then(matrix=>matrix.sort(([,past],[,next])=>past<next?-1:1)).then(console.table);
  // stash=$(git status --porcelain|wc -l);
  let stash=Array.from(new Set([past,next].flat()));
@@ -63,7 +64,7 @@
  matrix=await git.statusMatrix({fs,dir});
  await matrix.reduce(record(([filepath])=>git.resetIndex({fs,dir,filepath})),[]);
  note(" Restored changes.");
- function onProgress(message){status(message);};
+ function onProgress(message){print(message);};
  function onPostCheckout(message){console.log(message);};
 };
 
@@ -72,6 +73,18 @@
  return prompt({name,email}).then(({name,email})=>
  [name,email].reduce(record(([field,value])=>
  git.setConfig({fs,dir,path:"user."+field,value})),[]));
+};
+
+ export async function status()
+{let matrix=await git.statusMatrix({fs,dir:relation});
+ let width=Math.max(...matrix.map(([name])=>name.length));
+ return matrix.sort(([,past],[,next])=>past<next?-1:1).map(([name,head,work,stage])=>
+[colors[work?work===stage?"green":"yellow":"red"]+name+" ".repeat(width-name.length),
+[["       ","tracked"][head]
+,["X"," ","*"][work]
+,["X"," ","+","*"][stage]
+].join(" ")+colors.steady
+].join("")).join("\n");
 };
 
  export async function scope(matrix,record="head",delta=1)
