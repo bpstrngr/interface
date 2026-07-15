@@ -53,6 +53,14 @@
  note(" Unstaged changes.");
 };
 
+ export async function log(depth,ref,dir=process.cwd())
+{return git.log({fs,dir,ref,depth:Number(depth)}).then(log=>
+ console.log(log.map(({oid,commit:{message,author:{name,email,timestamp}}})=>
+ [colors.green+oid+colors.steady
+ ,colors.dim+name+" <"+email+"> "+new Date(timestamp*1000).toISOString()+colors.steady
+ ," "+message].join("\n")).join("\n")));
+};
+
  export async function push(credentials="protocol.json",dir=process.cwd())
 {// commit whatever's changed and push HEAD to whichever remote branch it descends from.
  let matrix=await git.statusMatrix({fs,dir});
@@ -96,9 +104,18 @@
  confirmation["force?"]==="yes"?false:true)),2
 )({fs,http,dir,url,remote,ref:head,remoteRef:"refs/heads/"+branch});
  await git.fetch({fs,http,remote,dir}).then(note);
- let log=await git.log({fs,dir,depth:2});
- console.log(log.flatMap(({oid,commit:{message}})=>
- ["\n",colors.green+oid+colors.steady,message]).join("\n"));
+ await log(2,undefined,dir);
+};
+
+ export async function amend(dir=process.cwd())
+{let commit=await git.resolveRef({fs,dir,ref:"HEAD"});
+ let {commit:{parent}}=await git.readCommit({fs,dir,oid:commit});
+ if(!parent.length)
+ return console.log(" No parent to amend onto.");
+ let ref=await git.currentBranch({fs,dir,fullname:true})||"HEAD";
+ await git.writeRef({fs,dir,ref,value:parent[0],force:true});
+ await log(1,commit,dir);
+ await log(1,undefined,dir);
 };
 
  export async function authorize(dir=process.cwd())
