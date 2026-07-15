@@ -73,8 +73,6 @@ sources#[["/Blik_2023_sources.json"],"interface/fetch","interface/digest",[["Hil
 
 check#[["/Blik_2026_git.js/module/namespace"],"interface/fetch","interface/digest",[["check"]],"inference/flip","inference/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2026_git.js","scale":0.8,"gutter":31}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[0],{"inference/tether":["script/fold"]}]
 
- Interface's Git module provides the above check#b command and more: 
-
 (Semantic checkout)#h2
 
  Everyone has different preferences of writing, but a convention requires us to at least commit it in the same dialect. We can specify this format in the Meta module's serialize#b function, and substitute modularisation from Interface's loading sequence with persistence in a compile#b function: 

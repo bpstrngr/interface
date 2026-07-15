@@ -52,7 +52,7 @@
  export var {swarm={},subscribe,message}=worker.exports;
 
  export var authors=["Blik"];
- export var years=[2020,new Date().getFullYear()].reduce((min,max)=>
+ export var years=[2019,new Date().getFullYear()].reduce((min,max)=>
  Array.from({length:max-min},(year,index)=>max-index));
  export var probe=agent.node?compose(command.bind(import.meta.url,"path","resolve"),command.call(import.meta.url,"fs","promises"),flip,"stat"):command.bind(import.meta.url);
  export var prepend=either(...

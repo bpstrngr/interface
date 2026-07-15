@@ -1,5 +1,5 @@
  import {note,slip,buffer,expect,record,prune,colors} from "./Blik_2023_inference.js";
- import {prompt,print,compile,command} from "./Blik_2023_interface.js";
+ import {prompt,print,compile,command,access,test,locate} from "./Blik_2023_interface.js";
  import {folder} from "./Blik_2023_meta.js";
  import http from "./Hilton_2018_isomorphic-git-http.js";
  import git from "./Hilton_2017_isomorphic-git.js";
@@ -33,36 +33,18 @@
 {// pivot to tracking remote/branch, preserving files from the current one and changes to theirs.
  ({remote,branch}=await prompt({remote,branch}));
  let [dir,ref]=[process.cwd(),[remote,branch].join("/")];
- console.log(" Pivotting to "+ref+".\n");
- // git fetch $remote;
+ console.log(" Pivotting "+dir+" to "+ref+".\n");
  await git.fetch({fs,http,remote,dir,onProgress}).then(note);
- // git checkout $remote/$branch .gitignore;
- await git.checkout({fs,dir,ref,filepaths:[".gitignore"]
- // update HEAD to include .gitignore's scope. 
- // do Checkout to show .gitignore as unmodified. 
- // do not track to remain oriented towards current. 
- ,noUpdateHead:false,noCheckout:false,track:false
- ,onProgress,onPostCheckout
- });
- // git add .;
+ await include(ref,dir);
  let matrix=await git.statusMatrix({fs,dir});
  await matrix.reduce(record(buffer(compose(drop(1),([filepath])=>git.add({fs,dir,filepath,force:true})),undefine)),[]);
- console.log(" Merged scopes:");
- await status().then(console.log);
- // stash=$(git status --porcelain|wc -l);
- let stash=matrix.filter(([file,head,work])=>work!==head).map(([file])=>file);
- // [[ $stash -gt 0 ]] && git stash;
- let object=stash.length&&await git.stash({fs,dir,op:"push"});
- // git checkout $remote/$branch;
+ console.log(" Merged scopes:\n"+await status());
+ let changes=matrix.filter(([file,head,work])=>work!==head).map(([file])=>file);
+ let stash=changes.length&&await git.stash({fs,dir,op:"push"});
  await git.checkout({fs,dir,ref,onProgress,onPostCheckout});
- console.log(" New scope:");
- await status().then(console.log);
- // [[ $stash -gt 0 ]] && git checkout stash .;
- if(object)
- await apply(object,dir);
- console.log(" Re-merged scopes:");
- await status().then(console.log);
- // git restore --staged .;
+ console.log(" New scope:\n"+await status());
+ if(stash)await apply(stash,dir);
+ console.log(" Re-merged scopes:"+await status());
  await git.statusMatrix({fs,dir}).then(matrix=>
  matrix.reduce(record(([filepath])=>
  git.resetIndex({fs,dir,filepath})),[]));
@@ -139,6 +121,16 @@
  });
 };
 
+ export function include(ref,dir=process.cwd())
+{return git.checkout({fs,dir,ref,filepaths:[".gitignore"]
+ // update HEAD to include .gitignore's scope. 
+ // do Checkout to show .gitignore as unmodified. 
+ // do not track to remain oriented towards current. 
+ ,noUpdateHead:false,noCheckout:false,track:false
+ ,onProgress,onPostCheckout
+ });
+};
+
  export async function author(ref,format,dir=process.cwd())
 {let files=await git.listFiles({fs,dir,ref});
  let matrix=await git.statusMatrix({fs,dir});
@@ -147,3 +139,14 @@
  console.log(" Formatting "+file+" to "+format+"...")||
  compose.call(file,format,compile,slip(file),true,access,test)),[])
 };
+
+ export async function target(remote,author,credentials="protocol.json",dir=process.cwd())
+{({remote,author}=await prompt({remote,author}));
+ let github=syndication.github||await locate(credentials).then(([module])=>
+ access(module,"object")).then(({github})=>github);
+ let code=github[author].personal_token;
+ let address=await git.getConfig({fs,dir,path:"remote."+remote+".url"});
+ return address.replace("://","://"+author+":"+code+"@");
+};
+
+ export var syndication={github:undefined};

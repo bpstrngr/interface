@@ -3,7 +3,8 @@
  import {document,hypertext,css,throttle,error,capture,defer} from "./Blik_2023_fragment.js";
  import {url,serialize,mime,proceduralize,sourcemap,cookie,folder,path,query} from "./Blik_2023_meta.js";
  import {random} from "./Blik_2023_search.js";
- import git from "./Blik_2026_git.js";
+ import git,{syndication} from "./Blik_2026_git.js";
+ export {syndication};
  var address=import.meta.url;
  var relation=folder(new URL(address).pathname);
 
