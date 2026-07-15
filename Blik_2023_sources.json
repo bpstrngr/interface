@@ -958,7 +958,8 @@
   "Schouten_2015_async-lock.js":{"https://github.com/rogierschouten/async-lock/lib":{"v1.4.1":["lib/index.js",{"syntax":"commonjs"}]}},
   "White_2016_clean-gitref.js":{"https://github.com/elicwhite/clean-git-ref":{"v2.0.1":["src/index.js",{"syntax":"commonjs"}]}},
   "Sheets_2014_crc32.js":{"https://github.com/SheetJS/js-crc32":{"v1.2.0":["crc32.js",{"syntax":"commonjs"}]}},
-  "Wanek_2016_diff3.js":{"https://github.com/axosoft/diff3":{"cd8d7618bb1505b65f70fea7d260344cc99ace38":["diff3.js",{"syntax":"commonjs"}]}},
+  "Wanek_2016_diff3.js":{"https://github.com/axosoft/diff3":{"cd8d7618bb1505b65f70fea7d260344cc99ace38":["diff3.js",{"syntax":"commonjs","alias":{"./onp":"./Wanek_2016_onp.js"}}]}},
+  "Wanek_2016_onp.js":{"https://github.com/axosoft/diff3":{"cd8d7618bb1505b65f70fea7d260344cc99ace38":["onp.js",{"syntax":"commonjs","edit":{"ed = delta \\+ 2 \\* p;":"var ed = delta + 2 * p;"}}]}},
   "Kael_2015_ignore.js":{"https://github.com/kaelzhang/node-ignore":{"7.0.5":["index.js",{"syntax":"commonjs"}]}},
   "Hinosawa_2015_minimisted.js":{
     "https://github.com/kt3k/minimisted":{"v2.0.1":["index.js",{

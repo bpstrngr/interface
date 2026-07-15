@@ -1,8 +1,9 @@
- import {note,slip,buffer,expect,record,prune,colors,exit} from "./Blik_2023_inference.js";
+ import {note,compose,slip,buffer,expect,record,prune,colors,exit} from "./Blik_2023_inference.js";
  import {prompt,print,compile,command,access,test,locate} from "./Blik_2023_interface.js";
  import {folder} from "./Blik_2023_meta.js";
  import http from "./Hilton_2018_isomorphic-git-http.js";
  import git from "./Hilton_2017_isomorphic-git.js";
+ import onp from "./Wanek_2016_onp.js";
  import fs from "fs";
  var address=import.meta.url;
  var relation=folder(new URL(address).pathname);
@@ -55,11 +56,51 @@
 
  export async function log(depth,ref,dir=process.cwd())
 {return git.log({fs,dir,ref,depth:Number(depth)}).then(log=>
- console.log(log.map(({oid,commit:{message,author:{name,email,timestamp}}})=>
+ log.map(({oid,commit:{message,author:{name,email,timestamp}}})=>
  [colors.green+oid+colors.steady
  ,colors.dim+name+" <"+email+"> "+new Date(timestamp*1000).toISOString()+colors.steady
- ," "+message].join("\n")).join("\n")));
+ ," "+message].join("\n")).join("\n"));
 };
+
+ export function delta(a,b)
+{let [from,to]=[a,b].map(text=>text.split("\n"));
+ return new onp(from,to).compose().map(({file1,file2})=>
+ ({from:{start:file1[0],count:file1[1],lines:from.slice(file1[0],file1[0]+file1[1])}
+  ,to:{start:file2[0],count:file2[1],lines:to.slice(file2[0],file2[0]+file2[1])}
+  }));
+};
+
+ export async function diff(dir=process.cwd())
+{let commit=await git.resolveRef({fs,dir,ref:"HEAD"});
+ let matrix=await git.statusMatrix({fs,dir});
+ let files=matrix.filter(([file,head,work])=>work!==head).map(([file])=>file);
+ return files.reduce(record(async filepath=>
+ {let from=await git.readBlob({fs,dir,oid:commit,filepath}).then(({blob})=>Buffer.from(blob).toString("utf8")).catch(undefine);
+  let to=await fs.promises.readFile(dir+"/"+filepath,"utf8").catch(undefine);
+  return [filepath,delta(from||"",to||"")];
+ }),[]).then(Object.fromEntries);
+};
+
+ export async function lines(changes,context=2)
+{return Object.entries(changes).reduce(record(async ([filepath,hunks])=>
+{let source=await access(filepath,"utf8").then(text=>text.split("\n"));
+ let cursor=0;
+ let text=hunks.map(({from,to},index)=>
+{let limit=hunks[index+1]?.to.start??source.length;
+ let before=source.slice(Math.max(cursor,to.start-context),to.start).map(line=>" "+line);
+ cursor=Math.min(to.start+to.count+context,limit);
+ let after=source.slice(to.start+to.count,cursor).map(line=>" "+line);
+ return [...before
+,...from.lines.map(line=>colors.red+"-"+line+colors.steady)
+,...to.lines.map(line=>colors.green+"+"+line+colors.steady)
+,...after
+].join("\n");
+}).join("\n"+colors.dim+"..."+colors.steady+"\n");
+ return [colors.steady+colors.bright+colors.underscore+filepath+colors.steady,text];
+}),[]).then(diff=>diff.flat().join("\n\n"));
+};
+
+ export var changes=compose(diff,lines);
 
  export async function push(credentials="protocol.json",dir=process.cwd())
 {// commit whatever's changed and push HEAD to whichever remote branch it descends from.
@@ -99,9 +140,9 @@
  return console.log(" Aborting.");
  let head=await git.commit({fs,dir,message,author:{name,email}});
  await expect
-(buffer(git.push,fail=>
+(buffer(git.push,(fail,options)=>note(fail)&&
  prompt({"force?":undefined}).then(confirmation=>
- confirmation["force?"]==="yes"?false:true)),2
+ confirmation["force?"]==="yes"?!merge(options,{force:true}):exit("Aborting."))),0,2
 )({fs,http,dir,url,remote,ref:head,remoteRef:"refs/heads/"+branch});
  await git.fetch({fs,http,remote,dir}).then(note);
  await log(2,undefined,dir);
@@ -126,9 +167,10 @@
 };
 
  export async function status(matrix)
-{matrix=matrix||await git.statusMatrix({fs,dir:process.cwd()});
+{let history=await log(1);
+ matrix=matrix||await git.statusMatrix({fs,dir:process.cwd()});
  let width=Math.max(...matrix.map(([name])=>name.length));
- return matrix.sort(([,past],[,next])=>past<next?-1:1).map(([name,head,work,stage])=>
+ return history+"\n"+matrix.sort(([,past],[,next])=>past<next?-1:1).map(([name,head,work,stage])=>
 [colors[work?work===stage?"green":"yellow":"red"]+name+" ".repeat(width-name.length),
 [["       ","tracked"][head]
 ,["X"," ","*"][work]
