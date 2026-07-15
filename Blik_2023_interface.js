@@ -673,7 +673,7 @@
  entries=await entries.reduce(record(([field,term])=>
  control(new AbortController(),revert((resolve,reject,abortion,...interfaces)=>
  term?resolve(term):interfaces.forEach(infer("question",field+":"
-,combine(compose(note,swap(abortion),"abort"),resolve)))),...interfaces).then(term=>
+,combine(compose(swap(abortion),"abort"),resolve)))),...interfaces).then(term=>
  [field,term]))
 ,[]);
  return compose(each("close"),swap(Object.fromEntries(entries)),cede)(...interfaces);

@@ -1,4 +1,4 @@
- import {note,slip,buffer,expect,record,prune,colors} from "./Blik_2023_inference.js";
+ import {note,slip,buffer,expect,record,prune,colors,exit} from "./Blik_2023_inference.js";
  import {prompt,print,compile,command,access,test,locate} from "./Blik_2023_interface.js";
  import {folder} from "./Blik_2023_meta.js";
  import http from "./Hilton_2018_isomorphic-git-http.js";
@@ -6,6 +6,8 @@
  import fs from "fs";
  var address=import.meta.url;
  var relation=folder(new URL(address).pathname);
+ function onProgress(message){print(message);};
+ function onPostCheckout(message){console.log(message);};
 
  export default
  {log(request)
@@ -49,19 +51,65 @@
  matrix.reduce(record(([filepath])=>
  git.resetIndex({fs,dir,filepath})),[]));
  note(" Unstaged changes.");
- function onProgress(message){print(message);};
- function onPostCheckout(message){console.log(message);};
+};
+
+ export async function push(credentials="protocol.json",dir=process.cwd())
+{// commit whatever's changed and push HEAD to whichever remote branch it descends from.
+ let matrix=await git.statusMatrix({fs,dir});
+ let changes=matrix.filter(([file,head,work])=>work!==head).map(([file])=>file);
+ if(!changes.length)
+ return console.log(" Nothing to commit.");
+ await status(matrix).then(console.log)
+ let commit=await git.resolveRef({fs,dir,ref:"HEAD"});
+ let remotes=await git.listRemotes({fs,dir}).then(remotes=>remotes.map(({remote})=>remote));
+ let branches=await remotes.reduce(record(remote=>
+ git.listBranches({fs,dir,remote}).then(branches=>
+ branches.map(branch=>remote+"/"+branch))),[]).then(branches=>branches.flat());
+ let tracking=await branches.reduce(record(async ref=>
+ {let tip=await git.resolveRef({fs,dir,ref});
+  return tip===commit||await git.isDescendent({fs,dir,oid:tip,ancestor:commit})?ref:undefined;
+ }),[]).then(refs=>refs.filter(Boolean));
+ if(!tracking.length)
+ return console.log(" Not descendent of any remote branch.");
+ if(tracking.length>1)
+ console.log(" Upstream branches:\n"+tracking.map((branch,index)=>[index+1,branch].join(" ")).join("\n"))
+,tracking.splice(0,undefined,await prompt({branch:undefined}).then(({branch})=>tracking[branch-1]||branch));
+ let [remote,branch]=tracking[0].split("/");
+ if(!remote||!branch)
+ return exit(" No such remote branch:"+tracking[0]);
+ let [name,email]=await authorize(dir);
+ if(!name||!email)
+ return console.log(" git user config missing.");
+ console.log(" Committing "+commit+" to "+remote+"/"+branch+" as "+name+" of "+email+".");
+ let confirmation=await prompt({"good?":undefined});
+ if(confirmation["good?"]!=="yes")
+ return console.log(" Aborting.");
+ let url=await target(remote,name,credentials);
+ await changes.reduce(record(buffer(compose(drop(1),filepath=>git.add({fs,dir,filepath,force:true})),undefine)),[]);
+ let {message}=await prompt({message:undefined});
+ if(!message)
+ return console.log(" Aborting.");
+ let head=await git.commit({fs,dir,message,author:{name,email}});
+ await expect
+(buffer(git.push,fail=>
+ prompt({"force?":undefined}).then(confirmation=>
+ confirmation["force?"]==="yes"?false:true)),2
+)({fs,http,dir,url,remote,ref:head,remoteRef:"refs/heads/"+branch});
+ await git.fetch({fs,http,remote,dir}).then(note);
+ let log=await git.log({fs,dir,depth:2});
+ console.log(log.flatMap(({oid,commit:{message}})=>
+ ["\n",colors.green+oid+colors.steady,message]).join("\n"));
 };
 
  export async function authorize(dir=process.cwd())
 {let [name,email]=await ["name","email"].reduce(record(field=>git.getConfig({fs,dir,path:"user."+field})),[]);
  return prompt({name,email}).then(({name,email})=>
- [name,email].reduce(record(([field,value])=>
- git.setConfig({fs,dir,path:"user."+field,value})),[]));
+ Object.entries({name,email}).reduce(record(([field,value])=>
+ git.setConfig({fs,dir,path:"user."+field,value}).then(set=>value)),[]));
 };
 
- export async function status()
-{let matrix=await git.statusMatrix({fs,dir:process.cwd()});
+ export async function status(matrix)
+{matrix=matrix||await git.statusMatrix({fs,dir:process.cwd()});
  let width=Math.max(...matrix.map(([name])=>name.length));
  return matrix.sort(([,past],[,next])=>past<next?-1:1).map(([name,head,work,stage])=>
 [colors[work?work===stage?"green":"yellow":"red"]+name+" ".repeat(width-name.length),
@@ -144,7 +192,7 @@
 {({remote,author}=await prompt({remote,author}));
  let github=syndication.github||await locate(credentials).then(([module])=>
  access(module,"object")).then(({github})=>github);
- let code=github[author].personal_token;
+ let code=github[author]?.personal_token||exit("no credentials for "+author);
  let address=await git.getConfig({fs,dir,path:"remote."+remote+".url"});
  return address.replace("://","://"+author+":"+code+"@");
 };
