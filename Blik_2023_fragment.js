@@ -1512,7 +1512,7 @@
  let context=jsons.reduce(terms,[last.context]).flatMap(term=>string(term)
 ?Array.from(term.replace(/(^(\n|,| +)|( +|,|\n)$)/g,"")).reduce(split,[""]).reverse()
 :[term]);
- let evaluate=compose(locate.bind(import.meta.url),push(...context),command.bind(import.meta.url));
+ let evaluate=compose(locate.bind(window.origin),push(...context),command.bind(window.origin));
  let fragment=await compose
 (buffer(evaluate,fail=>({span:{update:false,"#text":fail?.stack}}))
 ,each(infer(this.annotate,last.title)),cede

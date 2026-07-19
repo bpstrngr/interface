@@ -1,5 +1,5 @@
- import {note,when,crop,debug,whether,extract,wait,sum,pass,drop,swap,match,infer,either,buffer,observe,compose,combine,revert,collect,rank,compound,tether,slip,string,numeric,functor,is,not,native,basic,simple,iterable,array,lambda,imperative,defined,composed,odd,exit,expect,prototype,colors,stash,expressions,search,merge,prune,route,record,functional} from "./Blik_2023_inference.js";
- import {location,load,relevant} from "./Blik_2023_interface.js";
+ import {note,induce,when,lift,crop,debug,whether,extract,wait,sum,pass,drop,swap,match,infer,either,buffer,observe,compose,combine,revert,collect,rank,compound,tether,slip,string,numeric,functor,is,not,native,basic,simple,iterable,array,lambda,imperative,defined,composed,odd,exit,expect,prototype,colors,stash,expressions,search,merge,prune,route,record,functional,each,spill,decide,push,minor,modular} from "./Blik_2023_inference.js";
+ import {location,load,relevant,command} from "./Blik_2023_interface.js";
  import {random} from "./Blik_2023_search.js";
  let address=new URL(import.meta.url).pathname;
 
@@ -26,7 +26,6 @@
  if(source.constructor?.name==="Buffer")
  source=source.toString();
  if(syntax==="json")return JSON.parse(source);
- if(syntax==="lisp")return interpret(source,"lisp");
  let url=options.source?options.source.startsWith("file:/")
 ?new URL(options.source)
 :await import("url").then(({pathToFileURL:url})=>url(options.source))
@@ -486,14 +485,18 @@
 
  export function serialize(namespace,format="astring",trace=new Set())
 {// convert abstract syntax tree or runtime namespace to javascript;
- if(!namespace)return "";
- let parser={astring:["./davidbonnet_2015_astring.js","generate"]}[format];
- if(namespace?.type==="Program"&&parser)
- return command.call(import.meta.url,...parser,namespace);
+ let renderer=
+ {astring:["./davidbonnet_2015_astring.js","generate"]
+ ,tacit:["./Blik_2023_meta.js","tacit"]
+ }[format];
+ if(namespace?.type==="Program"&&renderer)
+ return command.call(import.meta.url,...renderer,namespace);
  if(string(namespace))
  return namespace.startsWith("data:text/javascript;")?namespace.replace(/^data:text\/javascript;/,""):JSON.stringify(namespace);
  if(functor(namespace))
  return compose.call(model(namespace,format),({signature,body})=>signature+body);
+ if(!compound(namespace))
+ return JSON.stringify(namespace);
  if(namespace[Symbol.toStringTag]==="Module")
  return modularize({exports:namespace});
  if(format==="module")
@@ -513,6 +516,54 @@
  let wrap=[short||suited?"":"\n",array(namespace)||suited?"":" "].join("");
  return [wrap,declaration.replace(/^\[\n {/,"[{"),wrap,end].join("");
 };
+
+ var list=compose(rank,each(command.bind(import.meta.url,import.meta.url,"tacit")),lift,collect,infer("join",","));
+ // draft ast renderer: each/rank drive per-child generators, spill/collect combine them with literal tokens, prune covers unhandled node types.
+ // decide pattern-matches node.type (alternating within a case, eg. call/new, function declaration/expression, binary/logical/assignment) instead of one render branch per type.
+ // statically declared: list's self-reference goes through command (dynamic export lookup) since a direct `tacit` closure would still be undefined here.
+ export var tacit=compose(whether(modular,drop(1)),decide(
+ {raw:[not(compound),whether(is(null),swap(""),String)]
+ ,empty:[match({type:"EmptyStatement"}),()=>""]
+ ,block:[match({type:/Program|BlockStatement/}),compose
+(combine
+(({body},context)=>collect(...each.call(rank(body),tacit))
+,whether(match({type:"Program"}),swap(" ","\n"),swap((node,context)=>unit("{","}"+(context?.at(-5)?";":""))))
+),lift
+,whether(compose(infer("map",({length})=>length),sum,minor(100)),push(""),push("\n "))
+,(body,start,end,join)=>(join&&"\n")+start+body.join(join)+(join&&"\n")+end
+)]
+ ,expression:[match({type:"ExpressionStatement"}),({expression})=>unit(tacit(expression),";")]
+ ,return:[match({type:"ReturnStatement"}),({argument})=>unit("return",argument?" "+tacit(argument):"",";")]
+ ,branch:[match({type:"IfStatement"}),({test,consequent,alternate})=>unit("if(",tacit(test),")",tacit(consequent),alternate?unit("else",tacit(alternate)):"")]
+ ,ternary:[match({type:"ConditionalExpression"}),({test,consequent,alternate})=>unit(tacit(test),"?",tacit(consequent),":",tacit(alternate))]
+ ,loop:[match({type:"WhileStatement"}),({test,body})=>unit("while(",tacit(test),")",tacit(body))]
+ ,declaration:[match({type:"VariableDeclaration"}),({kind,declarations})=>unit(kind+" ",list(declarations),";")]
+ ,declarator:[match({type:"VariableDeclarator"}),({id,init})=>unit(tacit(id),init?unit("=",tacit(init)):"")]
+ ,imports:[match({type:"ImportDeclaration"}),({specifiers,source})=>unit("import "
+,[specifiers.filter(({type})=>type!=="ImportSpecifier").map(({type,local})=>type==="ImportNamespaceSpecifier"?"* as "+tacit(local):tacit(local))
+ ,specifiers.filter(({type})=>type==="ImportSpecifier").map(({local,imported})=>imported.name===local.name?tacit(local):tacit(imported)+" as "+tacit(local))
+ ].map((names,index)=>index?names.length?"{"+names.join(",")+"}":"":names.join(",")).filter(Boolean).join(",")
+,specifiers.length?" from ":"",tacit(source),";")]
+ ,exports:[match({type:"ExportNamedDeclaration"}),({declaration,specifiers,source})=>declaration
+?unit("export ",tacit(declaration))
+:unit("export {",specifiers.map(({local,exported})=>local.name===exported.name?tacit(local):tacit(local)+" as "+tacit(exported)).join(","),"}",source?unit(" from ",tacit(source)):"",";")]
+ ,defaultexport:[match({type:"ExportDefaultDeclaration"}),({declaration})=>unit("export default ",tacit(declaration),/Declaration$/.test(declaration.type)?"":";")]
+ ,exportall:[match({type:"ExportAllDeclaration"}),({source,exported})=>unit("export *",exported?" as "+tacit(exported):""," from ",tacit(source),";")]
+ ,function:[match({type:/^Function(Declaration|Expression)$/}),({id,params,body},context)=>each(tacit)(context?.at(-1)===":"||context?.at(-2)&&!id?.name?"":"function ",id||"","(",list(params),")",body)]
+ ,arrow:[match({type:"ArrowFunctionExpression"}),({params,body})=>each(tacit)("(",list(params),")=>",body)]
+ ,invoke:[match({type:/^(Call|New)Expression$/}),({type,callee,arguments:args})=>unit(type==="NewExpression"?"new ":"",tacit(callee),"(",list(args),")")]
+ ,member:[match({type:"MemberExpression"}),({object,property,computed})=>unit(tacit(object),computed?"[":".",tacit(property),computed?"]":"")]
+ ,operator:[match({type:/^(Assignment|Binary|Logical)Expression$/}),({left,operator,right})=>unit(tacit(left),operator,tacit(right))]
+ ,unary:[match({type:"UnaryExpression"}),({operator,argument})=>unit(operator,tacit(argument))]
+ ,array:[match({type:"ArrayExpression"}),({elements})=>unit("[",list(elements),"]")]
+ ,object:[match({type:"ObjectExpression"}),({properties})=>unit("{",list(properties),"}")]
+ ,property:[match({type:"Property"}),({key,value})=>each(tacit)(key,key.name===value.id?.name||(!value.id?.name&&value.type==="FunctionExpression")?"":":",value)]
+ ,identifier:[match({type:"Identifier"}),({name})=>name]
+ ,literal:[match({type:"Literal"}),({raw,value})=>raw??serialize(value,"object")]
+ ,else:compose(tether(prune,([field,value])=>
+ /^(type|start|end|loc|range)$/.test(field)?undefined:tacit(value)
+,true,1),Object.values,rank,collect,infer("join",""))
+ }),spill,collect,infer("join",""));
 
  export function modularize({exports,imports,procedures})
 {if(![exports,imports,procedures].some(Boolean))
@@ -771,8 +822,7 @@
 
  export async function interpret(source,syntax="lisp",file)
 {// interpret language syntax. 
- if(!semiotics[syntax])
- exit("no semiotics provided to interpret "+type(source));
+ let language=[semiotics.general,semiotics[syntax]].reduce(merge,{});
  if(file)
  source=await import("fs").then(({promises:{readFile}})=>readFile(source));
  if(source?.constructor?.name==="Buffer")
@@ -780,19 +830,96 @@
  if(!string(source))
  exit("can't parse "+type(source));
  return collect(...each.call(rank(Array.from(source))
-,function* interpret(text,index,length,grammar)
+,function* interpret(text,{length:index},length,grammar)
 {if(!index)
  yield grammar[1];
- let [last,past]=[semiotics[syntax][text]?.(grammar)||
- semiotics[syntax].text(text,grammar)].flat();
- if(last)
- grammar.splice(0,1,last);
+ let [next,past]=[language[text]?.(grammar)||language.text(text,grammar)].flat();
+ if(next)
+ grammar.splice(0,1,next);
  if(past)
  yield grammar.splice(1,1,past)&&past;
  if(index+1===length)
- yield* [semiotics[syntax].end?.(grammar)||[]].flat();
-},source.length,[{depth:0},{body:[],namespace:syntax}])).reduce(merge);
+ yield* [language.end?.(grammar)||[]].flat();
+},source.length,[{path:["body",0]},{body:[],namespace:syntax}])).reduce(merge);
 };
+
+ var semiotics=
+ {general:
+ {text(text,[next])
+{return merge(next,{text:[next.text||"",text].join("")});
+},end([next,past])
+{let {text,path,string}=next;
+ if(string)return;
+ if(!text||!path.length)return [next,past];
+ let item=isNaN(text)?text:Number(text);
+ let last=record(item,path);
+ let index=path.pop();
+ if(numeric(index))
+ path.push(index+1);
+ return [merge(next,{text:"",path}),last];
+},"\"":function string([next]){return merge(this.text("\"",[next]),{string:next.string?undefined:true});}
+ ,"\n":function(){return this.end(...arguments)||{text:""};}
+ ," ":function(){return this.end(...arguments);}
+ }
+ ,lisp:
+ {"(":function open(...args)
+{let [next,past]=this[" "](...args)||args;
+ let {path}=next;
+ return [merge(next,{path:[path,0].flat()}),merge(past,record([],path))];
+},")":function close(...args)
+{let [next,past]=this[" "](...args)||args;
+ let {path}=next;
+ path.pop();
+ let index=path.pop();
+ if(numeric(index))
+ path.push(index+1);
+ return [merge(next,{path}),past];
+}}
+ ,javascript:
+ {"":function([next]){return merge(next,{});}
+ ,"(":function open([next,past])
+{let {path,text}=next;
+ let node={name:text,arguments:[]};
+ return [merge(next,{text:"",path:[...path,"arguments",0]}),merge(past,record(node,path))];
+},")":function close(...args)
+{let [next,past]=this.end(...args)||args;
+ let {path}=next;
+ path.pop();
+ let index=path.pop();
+ if(numeric(index))
+ path.push(index+1);
+ return [merge(next,{path}),past];
+},end([next,past])
+{let {text,path,string}=next;
+ if(string)return;
+ if(!text||!path.length)return [next,past];
+ let declaration=["function"].includes(text);
+ let field=declaration?"type":isNaN(text)?"name":"value";
+ let last=record({[field]:string||text},path);
+ let index=path.pop();
+ if(numeric(index))
+ path.push(index+1);
+ return [merge(next,{text:"",path}),last];
+},",":function(){return this.end(...arguments);}
+ ,"{":function([next,past])
+{let last=record({statements:[]},next.path);
+ next.path.push("statements",0);
+ return [next,last];
+},"}":function()
+{let [next,last]=this.end(...arguments);
+ return next;
+}," ":function()
+{let [next,last]=this.end(...arguments);
+ next.path.push(next.path.pop()-1);
+ return [next,last];
+}}
+ };
+
+ var namespaces=
+ {lisp:
+ {defun(name,...context){this[name]=proceduralize(context);}
+ }
+ };
 
  export async function compute(syntax,namespaces)
 {// reduce procedure to its value. 
@@ -807,64 +934,6 @@
 };
 
  export var run=compose(parse,namespaces,compute);
-
- var semiotics=
- {lisp:
- {text(text,[{text:last=""}])
-{return merge(arguments[1][0],{text:last+text});
-}," ":function adjunct([last,past])
-{let {text,depth,string}=last;
- if(string)return;
- if(!text)return [last,past];
- let next=prune.call(past,([index,value],{length})=>length===depth-1&&compound(value)
-?{[array(value)?value.length:+Object.keys(value).pop()+1]:
- isNaN(text)?text:Number(text)
- }
-:value,0);
- return [merge(last,{text:""}),next];
-},"(":function open([last,past])
-{let {depth}=last;
- let open=([index,value],{length})=>length===depth-1&&compound(value)
-?{[array(value)?value.length:+Object.keys(value).pop()+1]:[]}
-:value;
- return this[" "](...arguments)?.reduce(({depth},past)=>
- [merge(last,{depth:depth+1}),merge(past,prune.call(past,open))])||
- [merge(last,{text:"",depth:depth+1}),prune.call(past,open)];
-},")":function close([last,past])
-{return this[" "](...arguments)?.reduce(({depth},next)=>
- [merge(last,{depth:depth-1}),next])||
- [merge(last,{text:"",depth:last.depth-1})];
-},"\"":function string([last]){return merge(this.text("\"",[last]),{string:last.string?undefined:true});}
- ,"\n":function(){return this[" "](...arguments)||{text:""};}
- ,"":function([last]){return merge(last,{});}
- ,end(){this[" "](...arguments);}
- }
- ,javascript:
- {text(text,[{text:last=""}])
-{return merge(arguments[1][0],{text:last+text});
-},"\"":function string([last]){return merge(this.text("\"",[last]),{string:last.string?undefined:true});}
- ,"(":function open([last,past])
-{let {depth}=last;
- let open=([index,value],{length})=>length===depth-1&&compound(value)
-?{[array(value)?value.length:+Object.keys(value).pop()+1]:[]}
-:value;
- return this[" "](...arguments)?.reduce(({depth},past)=>
- [merge(last,{depth:depth+1}),merge(past,prune.call(past,open))])||
- [merge(last,{text:"",depth:depth+1}),prune.call(past,open)];
-},")":function close([last,past])
-{return this[" "](...arguments)?.reduce(({depth},next)=>
- [merge(last,{depth:depth-1}),next])||
- [merge(last,{text:"",depth:last.depth-1})];
-},"":function()
-{return merge(last,{});
-}}
- };
-
- var namespaces=
- {lisp:
- {defun(name,...context){this[name]=proceduralize(context);}
- }
- };
 
  export function records(records,separator="\",\"")
 {if(records instanceof ArrayBuffer||records.constructor?.name==="Buffer")
@@ -951,17 +1020,6 @@
  {parse:
 [{empty:{context:[""],terms:["type","Program"],condition:"equal"}
  }
-,{lisp:
-[{context:["(first (list 1 (+ 2 3) 9))","lisp"],condition:when(match({body:["first",["list",1,["+",2,3],9]]}))}
-,{context:["(first(list 1(+ 2 3)9))","lisp"],condition:when(match({body:["first",["list",1,["+",2,3],9]]}))}
-,{context:[`(defun fib (n)
-  \"Return the nth Fibonacci number.\"
-    (if (< n 2)
-      n
-        (+ (fib (- n 1))
-          (fib (- n 2)))))`,"lisp"],condition:when(match({body:["defun","fib",["n"],"\"Return the nth Fibonacci number.\"",["if",["<","n",2],"n",["+",["fib",["-","n",1],"fib",["-","n",2]],["fib",["-","n",2]]]]]}))}
-]
- }
 ],sanitize:
  {dynamicrequire:
  {block:{route:["var a=!async function(){a=require('')}()",parse,{syntax:"commonjs"}],terms:[serialize,"let exports = {}, module = {\n  exports\n};\nvar a = !(async function () {\n  a = await import('').then(({default: module}) => module);\n})();\nexport default module.exports;\n"],condition:"equal"}
@@ -1001,28 +1059,38 @@
  }
  ,interpret:
  {lisp:
-[{context:["(first (list 1 (+ 2 3) 9))","lisp"],condition:when(match({body:["first",["list",1,["+",2,3],9]]}))}
-,{context:["(first(list 1(+ 2 3)9))","lisp"],condition:when(match({body:["first",["list",1,["+",2,3],9]]}))}
-,{context:["(())","lisp"],condition:when(match({body:[[]]}))}
+[{context:["(())","lisp"],condition:when(match({body:[[[]]]}))}
+,{context:["(first(list 1(+ 2 3)9))","lisp"],condition:when(match({body:[["first",["list",1,["+",2,3],9]]]}))}
+,{context:["(first (list 1 (+ 2 3) 9))","lisp"],condition:when(match({body:[["first",["list",1,["+",2,3],9]]]}))}
 ,{context:[`(defun fib (n)
   "Return the nth Fibonacci number."  
     (if (< n 2)
       n
         (+ (fib (- n 1))
-          (fib (- n 2)))))`,"lisp"],condition:when(match({body:["defun","fib",["n"],"\"Return the nth Fibonacci number.\"",["if",["<","n",2],"n",["+",["fib",["-","n",1],"fib",["-","n",2]],["fib",["-","n",2]]]]]}))}
+          (fib (- n 2)))))`,"lisp"],condition:when(match({body:[["defun","fib",["n"],"\"Return the nth Fibonacci number.\"",["if",["<","n",2],"n",["+",["fib",["-","n",1]],["fib",["-","n",2]]]]]]}))}
 ],javascript:
-[{context:["abc","javascript"],condition:when(match({text:"abc"}))}
-,{context:["abc(def)","javascript"],condition:when(match({name:"abc",arguments:[{name:"def",arguments:[]}]}))}
-,{context:["a(b,c)","javascript"],condition:when(match({name:"a",arguments:["b","c"]}))}
-,{context:["a(b(c))","javascript"],condition:when(match({name:"a",arguments:[{name:"b",arguments:["c"]}]}))}
-,{context:["a(1,2,3)","javascript"],condition:when(match({name:"a",arguments:[1,2,3]}))}
+[{context:["abc","javascript"],condition:when(match({body:[{name:"abc"}]}))}
+,{context:["abc(def)","javascript"],condition:when(match({body:[{name:"abc",arguments:[{name:"def"}]}]}))}
+,{context:["a(b,c)","javascript"],condition:when(match({body:[{name:"a",arguments:[{name:"b"},{name:"c"}]}]}))}
+,{context:["a(b(c))","javascript"],condition:when(match({body:[{name:"a",arguments:[{name:"b",arguments:[{name:"c"}]}]}]}))}
+,{context:["a(1,2)","javascript"],condition:when(match({body:[{name:"a",arguments:["1","2"].map(value=>({value}))}]}))}
+,{context:["function a(){b();}","javascript"],condition:when(match({body:[{name:"a",arguments:[],statements:[{name:"b",arguments:[]}]}]}))}
 ]}
  ,serialize:
  {module:
-[{context:[{sum:"data:text/javascript;function sum(a,b){return a+b;}"},"module"],condition:when(match("export function sum(a,b){return a+b;}"))}
-,{context:[{exports:{sum(a,b){return a+b;}}}],condition:when(match("export function sum(a,b){return a+b;}\n"))}
-]}
+[{context:[{exports:{sum:"data:text/javascript;function sum(a,b){return a+b;}"}},"module"],condition:when(match(" export function sum(a,b){return a+b;}\n"))}
+,{context:[{exports:{sum(a,b){return a+b;}}},"module"],condition:when(match(" export function sum(a,b){return a+b;}\n"))}
+],tacit:
+ {function:{context:[parse("function a(){}"),"tacit"],route:lift,condition:when(match(" function a(){};\n"))}
+ ,control:{context:[parse("if(a>1){b=2}else{b=3}"),"tacit"],route:lift,condition:when(match(" if(a>1){b=2;}else{b=3;}\n"))}
+ ,nesting:{context:[parse("var a=[1,{b:2}];"),"tacit"],route:lift,condition:when(match(" var a=[1,{b:2}];\n"))}
+ ,ternary:{context:[parse("a?1:2;"),"tacit"],route:lift,condition:when(match(" a?1:2;\n"))}
+ ,imports:{context:[parse("import a,{b} from \"mod\";"),"tacit"],route:lift,condition:when(match(" import a,{b} from \"mod\";\n"))}
+ ,exports:{context:[parse("export {a} from \"mod\";"),"tacit"],route:lift,condition:when(match(" export {a} from \"mod\";\n"))}
+ ,exportdefault:{context:[parse("export default function(){}"),"tacit"],route:lift,condition:when(match(" export default function (){};\n"))}
+ ,exportall:{context:[parse("export * as ns from \"mod\";"),"tacit"],route:lift,condition:when(match(" export * as ns from \"mod\";\n"))}
+ }}
  ,domain:
-[{context:[function(){when(string)}],terms:note,condition:when(infer(Object.is,string))}
+[{context:[function(){when(string)}],condition:when(infer(Object.is,string))}
 ,{context:[compose(when(string),drop())],condition:when(infer(Object.is,string))}
 ]};

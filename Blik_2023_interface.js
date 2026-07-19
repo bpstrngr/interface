@@ -234,7 +234,7 @@
  },0)[relative];
  let redact=compose(swap(modules),{[relative]:undefined,[relation]:{imports:new Set([relative])}},-1,merge);
  return precedent.resolution=precedent.resolution||compose
-(buffer(next,buffer(compose(extend,["url"],record),compose(pass(redact),drop(1,2),note.bind(1),exit)))
+(buffer(next,buffer(compose(extend,["url"],record),compose(pass(redact),drop(0,2),note.bind(1),exit)))
 ,shortcircuit,slip(modules),[relative,"resolution"],merge,search([relative,"resolution"])
 ,pass(compose(swap(colors.yellow+"export:"+colors.cyan+relative+colors.yellow+" to:"+colors.gray+relation+colors.steady),console.log))
 ,cede
@@ -839,7 +839,7 @@
 
  export function compile(source,format)
 {return compose.call(source,load,parse,format,serialize);
-}
+};
 
  export function bundling(source)
 {return Object.entries(modules).some(([field,{resolution}])=>
