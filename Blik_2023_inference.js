@@ -494,23 +494,42 @@
 };
 
  export function prune(term,collapse,limit=[],path=[],trace=[])
-{// map entries recursively.
+{// map entries recursively. collapse: 0 drops pruned fields; 1 grafts a pruned field's children up;
+ // 2 recurses bottom-up first, so term sees each field's already-reduced (already Object.entries-shaped) child.
  let scope=this;
  if(!compound(scope))return scope;
  let entries=Object.entries(scope);
  if(!entries.length)
  for(let field in scope)
  entries.push([field,scope[field]]);
- return compose.call
-(entries,infer("reduce",record(function([field,source],index,entries)
-{let terminal=numeric(limit)?path.length===limit:[limit].flat().some(limit=>
+ let terminal=field=>numeric(limit)?path.length===limit:[limit].flat().some(limit=>
 [[limit],[array(limit)?path:[],field]
-].map(compose("flat","/","join")).reduce(Object.is))
+].map(compose("flat","/","join")).reduce(Object.is));
+ return compose.call
+(entries,infer("reduce",record(collapse===2?function([field,source])
+{let done=terminal(field);
+ if(done||!compound(source))
+{let value=term.call(scope,[field,source],path,trace);
+ return defined(value)?[[field,value]]:[];
+}
+ return compose.call
+(collect(source)
+,infer("reduce",record(value=>
+ prune.call(value,term,collapse,limit,path.concat(field),trace.concat([scope]))),[])
+,infer("flatMap",reduced=>
+{let value=term.call(scope,[field,reduced],path,trace);
+ let pluck=!defined(value);
+ let graft=pluck&&collapse;
+ return graft?Object.entries(compound(reduced)?reduced:{}):pluck?[]:[[field,value]];
+})
+);
+}:function([field,source],index,entries)
+{let done=terminal(field);
  let value=term.call(scope,[field,source],path,trace);
  let pluck=!defined(value);
- if(pluck&&(!collapse||terminal))
+ if(pluck&&(!collapse||done))
  return [];
- if(terminal)
+ if(done)
  return [[field,value]];
  let graft=pluck&&collapse;
  return compose.call
@@ -1051,6 +1070,15 @@
  ,promise:{scope:true,context:[{a:1,b:2},([field,value])=>field==="b"?Promise.resolve(value*100):value,false,[]],terms:[{a:1,b:200}],condition:["deepEqual"]}
  ,source:{scope:true,context:[{a:1,b:Promise.resolve({x:1,y:2})},([field,value])=>field==="b"?undefined:value,true,[]],terms:[{a:1,x:1,y:2}],condition:["deepEqual"]}
  ,nested:{scope:true,context:[{a:{b:Promise.resolve(5)}},([field,value])=>value,false,[]],terms:[{a:{b:5}}],condition:["deepEqual"]}
+ ,bottom:
+ {leaf:{scope:true,context:[{a:{x:1,y:2},b:3},([field,value])=>numeric(value)?value*10:value,2,[]],terms:[{a:{x:10,y:20},b:30}],condition:["deepEqual"]}
+ ,fold:{scope:true,context:[{a:{x:1,y:2,z:3},b:4},([field,value])=>field==="a"?Object.values(value).reduce((sum,v)=>sum+v,0):value,2,[]],terms:[{a:6,b:4}],condition:["deepEqual"]}
+ ,drop:{scope:true,context:[{a:1,b:{x:1,y:2}},([field,value])=>field==="x"?undefined:value,2,[]],terms:[{a:1,b:{y:2}}],condition:["deepEqual"]}
+ ,graft:{scope:true,context:[{a:1,b:{x:1,y:2},c:3},([field,value])=>field==="b"?undefined:numeric(value)?value*10:value,2,[]],terms:[{a:10,x:10,y:20,c:30}],condition:["deepEqual"]}
+ ,terminal:{scope:true,context:[{a:{b:{c:1,d:2},e:3},f:4},([field,value])=>numeric(value)?value*10:value,2,1],terms:[{a:{b:{c:1,d:2},e:30},f:40}],condition:["deepEqual"]}
+ ,promise:{scope:true,context:[{a:{b:Promise.resolve(5)},c:2},([field,value])=>numeric(value)?value*10:value,2,[]],terms:[{a:{b:50},c:20}],condition:["deepEqual"]}
+ ,array:{scope:true,context:[[{x:1,y:2},{x:3,y:4}],([field,value])=>field==="0"||field==="1"?Object.values(value).reduce((sum,v)=>sum+v,0):value,2,[]],terms:[[3,7]],condition:["deepEqual"]}
+ }
  }
  ,revert:
 [{context:[(resolve,reject,context)=>resolve(context)],terms:[2,Function.call,2],condition:["equal"]}
