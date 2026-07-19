@@ -518,22 +518,19 @@
 };
 
  var list=compose(rank,each(command.bind(import.meta.url,import.meta.url,"tacit")),lift,collect,infer("join",","));
- // draft ast renderer: each/rank drive per-child generators, spill/collect combine them with literal tokens, prune covers unhandled node types.
- // decide pattern-matches node.type (alternating within a case, eg. call/new, function declaration/expression, binary/logical/assignment) instead of one render branch per type.
- // statically declared: list's self-reference goes through command (dynamic export lookup) since a direct `tacit` closure would still be undefined here.
  export var tacit=compose(whether(modular,drop(1)),decide(
  {raw:[not(compound),whether(is(null),swap(""),String)]
  ,empty:[match({type:"EmptyStatement"}),()=>""]
  ,block:[match({type:/Program|BlockStatement/}),compose
 (combine
 (({body},context)=>collect(...each.call(rank(body),tacit))
-,whether(match({type:"Program"}),swap(" ","\n"),swap((node,context)=>unit("{","}"+(context?.at(-5)?";":""))))
+,whether(match({type:"Program"}),swap(" ","\n"),swap("{","}"))
 ),lift
 ,whether(compose(infer("map",({length})=>length),sum,minor(100)),push(""),push("\n "))
 ,(body,start,end,join)=>(join&&"\n")+start+body.join(join)+(join&&"\n")+end
 )]
  ,expression:[match({type:"ExpressionStatement"}),({expression})=>unit(tacit(expression),";")]
- ,return:[match({type:"ReturnStatement"}),({argument})=>unit("return",argument?" "+tacit(argument):"",";")]
+ ,return:[match({type:"ReturnStatement"}),({argument})=>unit("return",argument?" ":"",tacit(argument),";")]
  ,branch:[match({type:"IfStatement"}),({test,consequent,alternate})=>unit("if(",tacit(test),")",tacit(consequent),alternate?unit("else",tacit(alternate)):"")]
  ,ternary:[match({type:"ConditionalExpression"}),({test,consequent,alternate})=>unit(tacit(test),"?",tacit(consequent),":",tacit(alternate))]
  ,loop:[match({type:"WhileStatement"}),({test,body})=>unit("while(",tacit(test),")",tacit(body))]
@@ -549,11 +546,11 @@
 :unit("export {",specifiers.map(({local,exported})=>local.name===exported.name?tacit(local):tacit(local)+" as "+tacit(exported)).join(","),"}",source?unit(" from ",tacit(source)):"",";")]
  ,defaultexport:[match({type:"ExportDefaultDeclaration"}),({declaration})=>unit("export default ",tacit(declaration),/Declaration$/.test(declaration.type)?"":";")]
  ,exportall:[match({type:"ExportAllDeclaration"}),({source,exported})=>unit("export *",exported?" as "+tacit(exported):""," from ",tacit(source),";")]
- ,function:[match({type:/^Function(Declaration|Expression)$/}),({id,params,body},context)=>each(tacit)(context?.at(-1)===":"||context?.at(-2)&&!id?.name?"":"function ",id||"","(",list(params),")",body)]
- ,arrow:[match({type:"ArrowFunctionExpression"}),({params,body})=>each(tacit)("(",list(params),")=>",body)]
+ ,function:[match({type:/^Function(Declaration|Expression)$/}),({type,id,params,body},context)=>each(tether(infer,tacit))(context?.at(-1)===":"||context?.at(-2)&&!id?.name?"":"function ",id||"","(",list(params),")",body,type.endsWith("Declaration")?";":"")]
+ ,arrow:[match({type:"ArrowFunctionExpression"}),({params,body})=>each(tether(infer,tacit))("(",list(params),")=>",body)]
  ,invoke:[match({type:/^(Call|New)Expression$/}),({type,callee,arguments:args})=>unit(type==="NewExpression"?"new ":"",tacit(callee),"(",list(args),")")]
  ,member:[match({type:"MemberExpression"}),({object,property,computed})=>unit(tacit(object),computed?"[":".",tacit(property),computed?"]":"")]
- ,operator:[match({type:/^(Assignment|Binary|Logical)Expression$/}),({left,operator,right})=>unit(tacit(left),operator,tacit(right))]
+ ,operator:[match({type:/^(Assignment|Binary|Logical)Expression$/}),({left,operator,right})=>each(tether(infer,tacit))(left,operator,right)]
  ,unary:[match({type:"UnaryExpression"}),({operator,argument})=>unit(operator,tacit(argument))]
  ,array:[match({type:"ArrayExpression"}),({elements})=>unit("[",list(elements),"]")]
  ,object:[match({type:"ObjectExpression"}),({properties})=>unit("{",list(properties),"}")]
@@ -1081,7 +1078,7 @@
 [{context:[{exports:{sum:"data:text/javascript;function sum(a,b){return a+b;}"}},"module"],condition:when(match(" export function sum(a,b){return a+b;}\n"))}
 ,{context:[{exports:{sum(a,b){return a+b;}}},"module"],condition:when(match(" export function sum(a,b){return a+b;}\n"))}
 ],tacit:
- {function:{context:[parse("function a(){}"),"tacit"],route:lift,condition:when(match(" function a(){};\n"))}
+ {function:{context:[parse("function a(b,c){return b+c}"),"tacit"],route:lift,condition:when(match(" function a(b,c){return b+c;};\n"))}
  ,control:{context:[parse("if(a>1){b=2}else{b=3}"),"tacit"],route:lift,condition:when(match(" if(a>1){b=2;}else{b=3;}\n"))}
  ,nesting:{context:[parse("var a=[1,{b:2}];"),"tacit"],route:lift,condition:when(match(" var a=[1,{b:2}];\n"))}
  ,ternary:{context:[parse("a?1:2;"),"tacit"],route:lift,condition:when(match(" a?1:2;\n"))}

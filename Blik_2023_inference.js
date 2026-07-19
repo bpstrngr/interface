@@ -501,7 +501,8 @@
  if(!entries.length)
  for(let field in scope)
  entries.push([field,scope[field]]);
- entries=entries.flatMap(function([field,source],index,entries)
+ return compose.call
+(entries,infer("reduce",record(function([field,source],index,entries)
 {let terminal=numeric(limit)?path.length===limit:[limit].flat().some(limit=>
 [[limit],[array(limit)?path:[],field]
 ].map(compose("flat","/","join")).reduce(Object.is))
@@ -512,17 +513,17 @@
  if(terminal)
  return [[field,value]];
  let graft=pluck&&collapse;
- let range=[...collect(graft?source:value)].map(value=>
- prune.call(value,term,collapse,limit,path.concat(field),trace.concat([scope])));
- return range.flatMap(scope=>graft
+ return compose.call
+(collect(graft?source:value)
+,infer("reduce",record(value=>
+ prune.call(value,term,collapse,limit,path.concat(field),trace.concat([scope]))),[])
+,infer("flatMap",scope=>graft
 ?Object.entries(compound(scope)?scope:{})
-:[[field,scope]]);
-});
- let iterable=//!entries.length||
- array(scope)&&(entries.length||array(scope))&&!entries.some(([field],index,entries)=>
- isNaN(field)||[entries[index-1]?.[0],field].map(Number).reduce((past,next)=>next<past));
- if(iterable)
- entries.forEach(function([field],index,entries)
+:[[field,scope]])
+);
+}),[]),"flat",whether
+(array(scope)&&not(infer("some",labeled))
+,compose(pass(infer("forEach",function([field],index,entries)
 {if(!index)
  // snap first index. 
  return field!=0&&entries.forEach(entry=>entry[0]=Number(entry[0])-entries[0][0]);
@@ -530,25 +531,13 @@
  if(leap)
  // spread plural indexes. 
  entries.slice(index).forEach((entry)=>entry[0]=Number(entry[0])+leap);
-});
- scope=Object.fromEntries(entries);
- return iterable?Object.assign(Array(0),scope):scope;
- // composition for async terms, makes some optimization overdue. 
- return compose.call(entries,infer("reduce",record(function([field,source],index,entries)
-{let terminal=numeric(limit)?path.length===limit:[limit].flat().some(limit=>
-[[limit],[array(limit)?path:[],field]
-].map(compose("flat","/","join")).reduce(Object.is));
- let dispensible=!collapse||terminal;
- return compose(tether(term),either
-(whether(dispensible&&not(defined),swap([]))
-,whether(terminal,value=>[[field,value]])
-,either(whether(collapse&&not(defined),swap(true,source)),slip(false))
-),collect,([graft,...scope])=>[graft,scope.map(scope=>
- prune.call(scope,term,collapse,limit,path.concat(field)))]
-,"flat",rank,collect,([graft,...range])=>range.flatMap(scope=>graft
-?Object.entries(compound(scope)?scope:{})
-:[[field,scope]]))(scope,[field,source],path);
-}),[]),"flat",scope,reindex);
+})),Object.fromEntries,slip(Array(0)),merge)
+,Object.fromEntries
+)
+);
+ function labeled([field],index,entries)
+{return isNaN(field)||[entries[index-1]?.[0],field].map(Number).reduce((past,next)=>next<past);
+};
 };
 
  var reindex=whether
@@ -1050,6 +1039,18 @@
  ,emptymatch:{context:[["a",""],[]],terms:[true],condition:["equal"]}
  ,emptyvalue:{context:[[],[string]],terms:[false],condition:["equal"]}
  ,mismatch:{context:[0,[string]],terms:[false],condition:["equal"]}
+ }
+ ,prune:
+ {map:{scope:true,context:[{a:1,b:2,c:3},([field,value])=>field==="b"?undefined:value*10,false,[]],terms:[{a:10,c:30}],condition:["deepEqual"]}
+ ,collapse:{scope:true,context:[{a:1,b:{x:1,y:2},c:3},([field,value])=>field==="b"?undefined:value,true,[]],terms:[{a:1,x:1,y:2,c:3}],condition:["deepEqual"]}
+ ,recurse:{scope:true,context:[{a:{x:1,y:2},b:3},([field,value])=>value,false,[]],terms:[{a:{x:1,y:2},b:3}],condition:["deepEqual"]}
+ ,array:{scope:true,context:[[1,2,3],([field,value])=>value,false,[]],terms:[[1,2,3]],condition:["deepEqual"]}
+ ,reindex:{scope:true,context:[[1,2,3,4],([field,value])=>value%2?undefined:value,false,[]],terms:[[2,4]],condition:["deepEqual"]}
+ ,terminal:{scope:true,context:[{type:"Identifier",start:0,end:1,name:"a"},([field,value])=>/^(type|start|end|loc|range)$/.test(field)?undefined:value,true,1],terms:[{name:"a"}],condition:["deepEqual"]}
+ ,depth:{scope:true,context:[{a:{b:{c:1,d:2},e:3},f:4},([field,value])=>value,false,1],terms:[{a:{b:{c:1,d:2},e:3},f:4}],condition:["deepEqual"]}
+ ,promise:{scope:true,context:[{a:1,b:2},([field,value])=>field==="b"?Promise.resolve(value*100):value,false,[]],terms:[{a:1,b:200}],condition:["deepEqual"]}
+ ,source:{scope:true,context:[{a:1,b:Promise.resolve({x:1,y:2})},([field,value])=>field==="b"?undefined:value,true,[]],terms:[{a:1,x:1,y:2}],condition:["deepEqual"]}
+ ,nested:{scope:true,context:[{a:{b:Promise.resolve(5)}},([field,value])=>value,false,[]],terms:[{a:{b:5}}],condition:["deepEqual"]}
  }
  ,revert:
 [{context:[(resolve,reject,context)=>resolve(context)],terms:[2,Function.call,2],condition:["equal"]}
