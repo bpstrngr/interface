@@ -247,23 +247,21 @@ import * as namespace from "./Blik_2023_inference.js";
  let [scope]=context;
  let map=functor(term);
  if(map&&!warn.infer)console.trace(warn.infer="Infer will be limited to dynamic access. Use Reduce to add/induce a term.")
- let bound=map&&term.name.startsWith("bound ");
- let free=map&&(!term.name||term.name.includes("(")||freeterms.has(term.name));
  let detach=string(term)&&term.startsWith("tether ")&&term.substring(7);
- let attend=something(scope)&&!array(term)&&!bound&&!free
-?[Object(scope),detach||term].reduce((domain,term)=>map
-?(domain[term.name]===term||undefined
-//   ||heritage(domain?.buffer instanceof ArrayBuffer?Object.getPrototypeOf(domain):domain).find((field,index,fields)=>
-// {try{return Object.is(Reflect.get(domain,field),term);}catch(fail){};
-// })
- )&&term
-:Reflect.get(domain,term?.toString?term:null))
+ let field=detach||term;
+ let dynamic=map
+ // named, unbound, uncomposed, not a freeterm: may be a method of scope.
+?term.name&&!term.name.startsWith("bound ")&&!term.name.includes("(")&&!freeterms.has(term.name)
+:!array(term);
+ let attend=something(scope)&&dynamic
+?map
+?Object(scope)[term.name]===term?term:undefined
+:Reflect.get(Object(scope),field?.toString?field:null)
 :undefined;
  if(detach)context.shift();
  if(!functor(defined(attend)?attend:term))
  return defined(attend)?attend:rank(context.push(term)&&context);
- let inference=attend?Function.call.bind(attend):term;
- return inference(...context);
+ return (attend?Function.call.bind(attend):term)(...context);
 };
 
  export function fold(term=unit)
