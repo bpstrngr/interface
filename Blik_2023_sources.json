@@ -592,7 +592,7 @@
           "XMLHttpRequest-impl.js":{"(const syncWorkerFile =) .*?\n":"$1 null;"},
           "lib/api.js":{"^((?:.*[\n$])*)":"$1\nexport default new Promise(function expect(resolve){setTimeout(...module.exports.JSDOM&&idlUtils?[time=>resolve(module.exports),3000]:[time=>expect(resolve),1000]);});"}
         },
-        "comment":"circular static requires need to be edited to await hoisted assignment in bundle. AbortSignal seems to be the last file in the bundle. should be genneralized from the list of circular require specifiers."
+        "comment":"circular static requires need to be edited to await hoisted assignment in bundle. AbortSignal seems to be the last file in the bundle. should be generalized from a list of circular require specifiers."
       }
     ]}
   },

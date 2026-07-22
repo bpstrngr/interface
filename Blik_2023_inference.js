@@ -1,57 +1,83 @@
- import * as namespace from "./Blik_2023_inference.js";
+
+import * as namespace from "./Blik_2023_inference.js";
  export * from "./Blik_2026_type.js";
  export const {pathname:address,origin}=new URL(import.meta.url);
  export const location=address.replace(/\/[^/]*$/,"");
  var browser=globalThis.window||(globalThis.constructor.name==="DedicatedWorkerGlobalScope");
  // skip dynamic inference for combinators in ./infer. 
  var freeterms=new Set([...Object.values(namespace).filter(functor),Array,Object.assign,Object.values,Object.entries,Object.fromEntries,RegExp].map(term=>term.name));
+ var warn={};
 
  import {colors,describe,cast,construct,type,defined,something,functor,simple,compound,string,numeric,iterable,array,heritage,asynchronous,promise,generator,asyncgenerator,plural,pattern,basic} from "./Blik_2026_type.js";
 
+ // CONTEXT ALGEBRA
+
+ export function undefine(){};
+ export function constant(term){return describe(function(){return term;},constant,term);};
+ export function unary(term){return term;};
  export function* unit(){yield* arguments;};
-
  export function index(){return Array.from(arguments);};
-
- export var trickle=describe(infer("reduce",(queue,next,index,heap)=>
- // sort promises by speed. 
-[queue
+ export function rank(index){if(!iterable(index))console.warn("Rank invoked on non-index. Uninduced context?");return unit.apply(null,index);}
+ export function yank(index){return array(index)?index.length-1?rank(index):index[0]:index;};
+ 
+ export var trickle=describe(infer("reduce",(queue,next,index,heap)=>[queue
+ // sort promises in index by speed. 
 ,Promise.resolve(queue.at(-1)).then(past=>
  Promise.any(heap.map((slot,index)=>
- Promise.race([slot,false]).then(next=>next?past===next
-?Promise.reject(heap.splice(index,1))
-:stagger(next):slot)
- )))
-].flat(),[]),"trickle");
+ Promise.race([slot,false]).then(next=>
+ next?past===next?Promise.reject(heap.splice(index,1)):stagger(next):slot)
+ )))].flat(),[]),"trickle");
 
- export var settle=describe(Object.values(
- // resolve async context in index. 
- {promise(context){return Promise.all(context);}
- ,asyncgenerator(context)
-{return context.reduce(function resolve(context,term)
-{return promise(context)
-?context.then(context=>resolve(context,term))
-:asyncgenerator(term)
-?term.next().then(({value,done})=>!done?resolve(context,term).then(next=>
- next.splice(context.length,0,value)&&next):[...context])
-:[...context,term];
-},[]);
-}}).map(term=>(
- {type(index){return index.some({promise,asyncgenerator,generator}[term.name]);}
- ,term
- })).map(({type,term})=>cast(type,term)).reduce(induce,index),"settle");
+ export var [settle,expand]=
+ // spread generators in context. 
+[[asyncgenerator,function settle(index)
+{return index.reduce(induce(pluck),[]);
+ function pluck(index,term){return asyncgenerator(term)?term.next().then(next=>stack(next,index,term)):[...index,term];}
+ function stack({value:next,done},past,term){return !done?pluck(past,term).then(index=>graft(index,past,next)):[...past];}
+ function graft(index,past,term){return index.splice(past.length,0,term)&&index;}
+}]
+,[generator,function expand(index){return index.reduce((index,term)=>(index.push(...generator(term)?term:[term]),index),[]);}]
+].map(([type,unfold])=>cast(index=>index.some(type),unfold));
 
- export function expand(context){return context.flatMap(term=>generator(term)?[...term]:[term]);};
+ export var collect=describe([settle,expand].reduce(deduce,index),"collect");
+ export var lift=reduce(unit);
+ export var cede=deduce(collect,yank);
 
- export var collect=describe(induce(settle,cast(index=>index.some(generator),expand)),"collect");
+ // RECURSION SCHEMES 
 
- export var rank=
- // infer unit from index. 
- describe(deduce(unit.apply.bind(unit,null)),"rank");
-
- export function yank(index)
-{// rank plurality or yield singularity of index. 
- return array(index)?index.length-1?rank(index):index[0]:index;
+ export function induce(fold=unit)
+{// promise-agnostic inference (catamorphism - any category over Kleisli Promise). 
+ return describe(function(term)
+{return arguments.length-1?Array.from(arguments).some(promise)
+?Promise.all(arguments).then(fold.apply.bind(fold,this))
+:fold.call(this,...arguments):promise(term)?term.then(fold.bind(this)):fold.call(this,term);
+},induce,fold);
 };
+
+ export function deduce(fold=unit,unfold=cede)
+{// monadic co-induction (hylomorphism - arbitrary transient category). 
+ [fold,unfold]=[fold,unfold].map(induce);
+ let deduction=describe(function(...context)
+{if(defined(this))context.unshift(this);
+ return unfold(fold(...context));
+},deduce,...arguments);
+ return defined(this)?deduction(this):deduction;
+};
+
+ export function reduce(fold=unit)
+{// variadic re-induction (paramorphism - Unit-Array-Argument-refold). 
+ let induction=functor(fold)?fold:infer(fold);
+ let reduction=deduce(collect,induction.apply.bind(induction,undefined));
+ return describe(reduction,reduce,fold);
+};
+
+ export function produce(...terms)
+{// co-reduction. 
+ let procedure=terms.map(reduce).reduce(deduce,unit);
+ return defined(this)?procedure.call(this):procedure;
+};
+
+ // CONTEXT COMBINATORS
 
  export function drop(stop=Infinity,start=0,...stack)
 {// filter context between (or outside if stop<start) indexes. 
@@ -59,28 +85,18 @@
  // stop may be a filter condition, stack may be a function on dropped context (start<stop). 
  if(functor(stop))
  return each(whether(is(not(functor),major(start-1)),drop()));
- let modulus=(offset,index,{length})=>
- offset<length?(length+offset)%length:length;
- let split=compose("length",Array,[start,stop],Object.assign
-,infer("map",modulus)
-,combine
-(infer("reduce",(start,stop)=>Number(stop<start))
-,compose
-(combine(1),0,infer("sort",(stop,start)=>(start<stop)?1:-1)
-,combine(infer(0),infer("reduce",(past,next)=>next-past))
-,collect
-)
-),lift);
  return describe(function(...context)
 {if(defined(this))
  context.unshift(this);
- let [crop,interval]=split(context);
- let replace=!crop&&interval[1]&&functor(stack[0]);
+ let length=Math.max(context.length,2);
+ let modulus=offset=>offset<length?(length+offset)%length:length;
+ let [starting,stopping]=[start,stop].map(modulus);
+ let crop=Number(stopping<starting);
+ let [head,tail]=[starting,stopping].sort((past,next)=>past-next);
+ let replace=!crop&&tail-head&&functor(stack[0]);
  return infer.call
-(replace?infer.call(rank(interval.reduce((index,length)=>crop
-?[context.slice(index+length),context.slice(0,index)].flat()
-:context.slice(index,index+length))),...stack):rank(stack)
-,(...stack)=>rank([context,context.splice(...interval,...stack)][crop])
+(replace?infer.call(rank(context.slice(head,tail)),...stack):rank(stack)
+,(...stack)=>rank([context,context.splice(head,tail-head,...stack)][crop])
 );
 },drop,...arguments);
 };
@@ -97,49 +113,7 @@
 },rotate,...arguments);
 };
 
- export function undefine(){};
-
- export function constant(term){return describe(function(){return term;},constant,term);};
-
- export function add(...terms){return describe(function*(){yield* arguments;yield* terms;},add,...term);};
-
- export function deduce(unfold)
-{// monadic inference. 
- return describe(function(term)
-{return promise(term)?term.then(unfold):unfold(term);
-},deduce,unfold);
-};
-
- export function induce(fold=unit,unfold=cede)
-{// variadic inference with monadic conclusion. 
- let deduction=deduce(unfold);
- let induction=describe(function(...context)
-{if(defined(this))
- context.unshift(this);
- return deduction(fold(...context));
-},induce,...arguments);
- return defined(this)?induction(this):induction;
-};
-
- export function reduce(fold)
-{// co-induction. 
- return describe(induce(collect,fold.apply.bind(fold,null)),reduce,fold);
-};
-
- export function conduce(term)
-{// co-reduction. 
- let fold=functor(term)?reduce:add;
- return fold(term);
-};
-
- export function produce(...terms)
-{// co-conduction. 
- return terms.map(conduce).reduce(induce);
-};
-
- export var lift=induce(collect,rank);
-
- export var cede=induce(collect,yank);
+ export function add(...terms){return describe(function*(){yield* arguments;yield* terms;},add,...terms);};
 
  export function not(term)
 {let functor=describe(compose(term,is(false)),not,term);
@@ -172,10 +146,10 @@
  return collect(this).some(is(terms));
 };
 
- export function same(...context)
+ export function same(...terms)
 {let identity=describe
-(compose(index,context,(terms,context)=>
- !context.some((context,index)=>context!==terms[index]))
+(compose(index,terms,(context,terms)=>
+ !terms.length?false:!terms.some((term,index)=>term!==context[index]))
 ,same,...arguments
 );
  return defined(this)?identity(this):identity;
@@ -272,6 +246,7 @@
  return yank(context);
  let [scope]=context;
  let map=functor(term);
+ if(map&&!warn.infer)console.trace(warn.infer="Infer will be limited to dynamic access. Use Reduce to add/induce a term.")
  let bound=map&&term.name.startsWith("bound ");
  let free=map&&(!term.name||term.name.includes("(")||freeterms.has(term.name));
  let detach=string(term)&&term.startsWith("tether ")&&term.substring(7);
@@ -314,22 +289,23 @@
 };
 
  export function spill(...context)
-{// depth-first surge. 
+{// depth-first surge.
  let controller=this;
- let controlled=is(AbortController)(controller);
+ let controlled=controller instanceof AbortController;
  let loop=next.apply.bind(next,null);
- return rank(context.reduce(next,[]));
+ return walk(context);
+ function walk(context){return induce(rank)(context.reduce(next,[]));}
  function next(context,term)
 {if(controlled&&controller.signal.aborted)
  return exit(controller.signal.reason);
  if(promise(context)||promise(term))
  return Promise.all([context,term]).then(loop);
  context.push(!plural(term)?term
-:compose.call(each.call(term,(next,past)=>spill.call(controller
- // synchronize promises. 
-,promise(past.at(-1))?past.at(-1).then(past=>next):next)),lift,cede));
+:infer.call(each.call(term,(next,past)=>walk(
+[promise(past.at(-1))?past.at(-1).then(()=>next):next]
+)),cede));
  return context;
-};
+}
 };
 
  export function model(...context)
@@ -359,18 +335,14 @@
  return pivot(buffer,...arguments);
  let context=collect(this);
  try
-{let next=infer.call(rank(context),term);
- return promise(next)?next.catch(infer(quit,rank(context))):next;
-}catch(fail){return infer(quit,rank(context))(fail);};
+{let next=infer.call(induce(rank)(context),term);
+ return promise(next)?next.catch(infer(quit,induce(rank)(context))):next;
+}catch(fail){return infer(quit,induce(rank)(context))(fail);};
 };
 
  export function differ(term)
 {// infer without allowing identity. 
- let difference=compose
-(combine(compose(same,not,when),term),lift
-,infer,Function.call
-);
- return defined(this)?difference(this):difference;
+ return compose.call(this,combine(compose(same,not,when),term),lift,infer,Function.call);
 };
 
  export function compose(...terms)
@@ -448,8 +420,8 @@
  export function each(term,...stack)
 {if(!defined(this))
  return pivot(each,...arguments);
- let status=deduce(next=>next.done);
- let value=fold(deduce(search("value")));
+ let status=induce(next=>next.done);
+ let value=fold(induce(search("value")));
  let context=plural(this)?this:rank([this]);
  let synchronous=generator(context)&&!asynchronous(term);
  return describe(synchronous
@@ -493,9 +465,11 @@
  return Object.fromEntries([range,subrange].flat());
 };
 
- export function prune(term,collapse,limit=[],path=[],trace=[])
-{// map entries recursively. collapse: 0 drops pruned fields; 1 grafts a pruned field's children up;
- // 2 recurses bottom-up first, so term sees each field's already-reduced (already Object.entries-shaped) child.
+ export function prune(term,collapse=0,limit=[],path=[],trace=[])
+{// map entries recursively. collapse: 
+ // 0 drops undefined entries; 
+ // 1 grafts their children;
+ // -1 goes depth-first, so term sees already pruned scopes.
  let scope=this;
  if(!compound(scope))return scope;
  let entries=Object.entries(scope);
@@ -506,39 +480,31 @@
 [[limit],[array(limit)?path:[],field]
 ].map(compose("flat","/","join")).reduce(Object.is));
  return compose.call
-(entries,infer("reduce",record(collapse===2?function([field,source])
+(entries,infer("reduce",record(function([field,source])
 {let done=terminal(field);
- if(done||!compound(source))
-{let value=term.call(scope,[field,source],path,trace);
- return defined(value)?[[field,value]]:[];
-}
- return compose.call
-(collect(source)
-,infer("reduce",record(value=>
- prune.call(value,term,collapse,limit,path.concat(field),trace.concat([scope]))),[])
-,infer("flatMap",reduced=>
-{let value=term.call(scope,[field,reduced],path,trace);
+ let immediate=collapse>-1||done||!compound(source);
+ let value=immediate?term.call(scope,[field,source],path,trace):undefined;
  let pluck=!defined(value);
- let graft=pluck&&collapse;
- return graft?Object.entries(compound(reduced)?reduced:{}):pluck?[]:[[field,value]];
-})
-);
-}:function([field,source],index,entries)
-{let done=terminal(field);
- let value=term.call(scope,[field,source],path,trace);
- let pluck=!defined(value);
+ if(collapse<0&&immediate)
+ return pluck?[]:[[field,value]];
+ if(collapse>-1)
  if(pluck&&(!collapse||done))
  return [];
- if(done)
+ else if(done)
  return [[field,value]];
- let graft=pluck&&collapse;
+ let graft=pluck&&collapse>0;
  return compose.call
-(collect(graft?source:value)
+(collect(graft||collapse<0?source:value)
 ,infer("reduce",record(value=>
  prune.call(value,term,collapse,limit,path.concat(field),trace.concat([scope]))),[])
-,infer("flatMap",scope=>graft
-?Object.entries(compound(scope)?scope:{})
-:[[field,scope]])
+,infer("flatMap",collapse<0?function(reduced)
+{let value=term.call(scope,[field,reduced],path,trace);
+ return defined(value)?[[field,value]]:[];
+}:function(source)
+{return graft
+?Object.entries(compound(source)?source:{})
+:[[field,source]];
+})
 );
 }),[]),"flat",whether
 (array(scope)&&not(infer("some",labeled))
@@ -637,7 +603,7 @@
  export function remember(term,distinction="0")
 {// record on an implicit scope. 
  let scope=this||[];
- return induce(either
+ return deduce(either
 (compose(slip(scope),tether(distinction),slip(scope),tether(search))
 ,compose(slip(scope),combine(record(term,distinction),tether(distinction)),lift,tether(search))
 ),cede);
@@ -734,31 +700,27 @@
 
  export function note(...context)
 {// expose context in console. (combine(compose(note,drop()),unit))
- let stack=trace().slice(0,-1);
- // let composition="compose/reduce/compose/infer\\((bound )*note\\)/infer/note".split("/");
- // let composed=composition.every((term,index,{length})=>RegExp(term+"$").test(stack.at(index-length)?.[0]));
- // stack=stack.slice(0,composed?-composition.length:-1);
  let {steady,dim,bright,blue,gray,bold}=colors;
- let source=dim+gray+"@"+bright+blue+stack.at(-1)?.[1]||"...intractable";
- stack=compose.call
-(stack
-,whether(compose(infer("at",-6),"0",is("rank.pivot")),infer("slice",0,-6),unit)
-,infer("map",([term,position],index,{length})=>length-index-1
+ let stack=trace().slice(0,-1);
+ if(stack.at(-6)?.[0]==="rank.pivot")
+ stack=stack.slice(0,-6);
+ let source=dim+gray+"@"+bright+blue+(stack.at(-1)?.[1]??"...intractable");
+ let path=stack.map(([term,position],index,{length})=>index<length-1
 ?term||position?.replace(origin+location.slice(1),".")
-:(steady+bright+blue+term))
-,dim+blue+"/"+dim+gray,"join"
-)+steady;
+:steady+bright+blue+term).join(dim+blue+"/"+dim+gray)+steady;
  let stream=console[this?"info":"log"];
  console.groupCollapsed(steady+bright+bold+blue+" "+clock(new Date())+source+steady);
- stream(bright+blue+stack+steady+":");
+ stream(bright+blue+path+steady+":");
  console.groupEnd();
  let color=!compound(this)&&this;
  let phase=colors[color]||Object.values(colors)[color]||steady;
- if(!browser)globalThis.process.stdout.write(phase);
- else context.unshift(phase),context.push(steady);
- stream(...browser&&context.every(string)?[context.join(" ")]:context);
- if(!browser)globalThis.process.stdout.write(steady);
- else context.shift(),context.pop();
+ if(browser)
+{let output=[phase,...context,steady];
+ return stream(...output.every(string)?[output.join(" ")]:output),yank(context);
+};
+ globalThis.process.stdout.write(phase);
+ stream(...context);
+ globalThis.process.stdout.write(steady);
  return yank(context);
 };
 
@@ -900,25 +862,38 @@
  return defined(this)?condition(this):condition;
 };
 
- export var measure=function(label)
-{return function mark(...context)
-{if(!this.has(label))
- this.set(label,performance.now());
- else console.log({[label]:performance.now()-this.get(label)})
-,this.delete(label);
+ export function measure(label)
+{let persistent=defined(this);
+ let scope=persistent?this:{};
+ return function mark(...context)
+{if(!scope[label])
+ scope[label]={start:performance.now()/1000};
+ else merge(scope,{[label]:{end:(performance.now()/1000-scope[label].start)+"s"}})
+,persistent||console.log({[label]:scope[label].end});
  return yank(context);
-}.bind(this);
-}.bind(new Map());
+}.bind(scope);
+};
 
  export function exit(fail){throw is(Error)(fail)?fail:Error(fail,{reason:fail});};
 
  export var tests=
- {deduce:{context:[sum],terms:[1,2,3,"call"],condition:when(is(2))}
- ,induce:
+ {induce:{context:[sum],terms:[1,2,3,"call"],condition:when(is(5))}
+ ,deduce:
  {identity:{context:[sum],terms:[1,2,3,"call"],condition:when(is(6))}
  ,reduce:{context:[index,cast(index=>index.some(generator),expand)],terms:[1,rank([2,3]),4,"call"],condition:when(match([1,2,3,4]))}
- }
- ,infer:
+ },produce:
+[{context:[3],terms:[1,2,Function.call],condition:when(is(1,2,3))}
+,{context:[3],terms:[rank([1,2]),Function.call],condition:when(is(plural,3))}
+,{context:[3],terms:[rank([1,2]),Function.call,is(plural,3),true],condition:"equal"}
+,{context:[3],terms:[rank([rank([1,2])]),Function.call,is(plural,3),true],condition:"equal"}
+,{context:Array(100).fill(unit),terms:[rank([rank([1,2])]),Function.call,is(plural,3),false],condition:"equal",benchmark:true}
+],compose:
+[{context:[3],terms:[1,2,Function.call],condition:when(is(1,2,3))}
+,{context:[3],terms:[rank([1,2]),Function.call],condition:when(is(plural,3))}
+,{context:[3],terms:[rank([1,2]),Function.call,is(plural,3),true],condition:"equal"}
+,{context:[3],terms:[rank([rank([1,2])]),Function.call,is(plural,3),true],condition:"equal"}
+,{context:Array(100).fill(unit),terms:[rank([rank([1,2])]),Function.call,is(plural,3),false],condition:"equal",benchmark:true}
+],infer:
  {undefined:{context:[],terms:[Function.call,collect,c=>c.length,0],condition:["equal"]}
  ,identity:{context:[],terms:[0,Function.call,0],condition:["equal"]}
  ,monad:{scope:true,context:[rank([2]),1],terms:[is(2,1),true],condition:["equal"]}
@@ -932,7 +907,7 @@
 ],access:{scope:true,context:[[],"length"],terms:[0],condition:["equal"]}
  ,invoke:{context:[isNaN],terms:[{},Function.call,true],condition:["equal"]}
  ,method:
-[{scope:true,context:[[1],"map",induce(crop(1),cede)],terms:[[1]],condition:["deepEqual"]}
+[{scope:true,context:[[1],"map",deduce(crop(1),cede)],terms:[[1]],condition:["deepEqual"]}
 ,{scope:true,context:[{a:a=>1},"a"],terms:[1],condition:["equal"]}
 ]}
  ,is:
@@ -1009,6 +984,13 @@
  {scope:{context:[function(){return this;}],terms:[1,2,3,"call",collect,[1,2,3]],condition:["deepEqual"]}
  ,terms:{context:[function(term){return term;},4],terms:[1,2,3,"call",4],condition:["equal"]}
  }
+ ,each:
+ {map:{context:[a=>a*2],terms:[1,2,3,"call",collect,[2,4,6]],condition:"deepEqual"}
+ ,cumulative:{context:[(item,past)=>item+(past.at(-1)||0)],terms:[1,10,100,"call",collect,[1,11,111]],condition:"deepEqual"}
+ ,perposition:{context:[[a=>a+1,a=>a+2,a=>a+3]],terms:[10,10,10,"call",collect,[11,12,13]],condition:"deepEqual"}
+ ,shortarray:{context:[[a=>a+100]],terms:[10,20,30,"call",collect,[110,20,30]],condition:"deepEqual"}
+ ,async:{context:[async a=>a*2],terms:[1,2,3,"call",collect,[2,4,6]],condition:"deepEqual"}
+ }
  ,buffer:
 [{context:[a=>{throw Error()},fail=>2],terms:[1,Function.call,2],condition:"equal"}
 ,{context:[a=>2,fail=>3],terms:[1,Function.call,2],condition:"equal"}
@@ -1033,23 +1015,23 @@
 ],indexed:{context:[a=>a,swap(1),swap(2)],terms:[null,1,infer(Function.call),2],condition:["equal"]}
  ,switch:{context:[[a=>a,a=>true],swap(1),swap(2)],terms:[null,false,infer(Function.call),2],condition:["equal"]}
  ,fallback:{context:[[a=>a,a=>a],1,2,swap(3)],terms:[null,false,infer(Function.call),3],condition:["equal"]}
- }
+ ,literal:
+[{context:[true,()=>"YES",()=>"NO"],terms:["call","YES"],condition:"equal"}
+,{context:[false,()=>"YES",()=>"NO"],terms:["call","NO"],condition:"equal"}
+]}
  ,combine:
 [{context:[a=>a*2,a=>a*3,a=>a*4],terms:[1,Function.call,collect,[2,3,4]],condition:["deepEqual"]}
 ,{context:[a=>rank([a,a]),a=>a*3,a=>a*4],terms:[1,Function.call,is(plural,3,4),true],condition:"equal"}
-],compose:
-[{context:[3],terms:[1,2,Function.call],condition:when(is(1,2,3))}
-,{context:[3],terms:[rank([1,2]),Function.call],condition:when(is(plural,3))}
-,{context:[3],terms:[rank([1,2]),Function.call,is(plural,3),true],condition:"equal"}
-,{context:[3],terms:[rank([rank([1,2])]),Function.call,is(plural,3),true],condition:"equal"}
 ],is:
  {nothing:{context:[something],terms:[Function.call,false],condition:["equal"]}
  ,something:{context:[something],terms:[0,Function.call,true],condition:["equal"]}
  ,anything:{context:[],terms:[1,Function.call,true],condition:["equal"]}
  ,neutral:{context:[],terms:[Function.call,true],condition:["equal"]}
  ,instance:{context:[Function],terms:[infer(undefined,function(){}),Function.call,true],condition:["equal"]}
- ,multiple:{context:[[iterable,a=>a.some(Boolean)]],terms:[[1,2],Function.call,true],condition:["equal"]}
- ,respective:{context:[[iterable,a=>a.some(Boolean)],a=>a==="a"],terms:[[1,2],"a",Function.call,true],condition:["equal"]}
+ ,multiple:
+[{context:[[numeric,string]],terms:[5,Function.call,false],condition:"equal"}
+,{context:[[numeric,a=>a>0]],terms:[5,Function.call,true],condition:"equal"}
+],respective:{context:[[iterable,a=>a.some(Boolean)],a=>a==="a"],terms:[[1,2],"a",Function.call,true],condition:["equal"]}
  }
  ,match:
  {deep:{context:Array(2).fill({a:{b:"a"},c:5}),terms:[true],condition:["equal"]}
@@ -1071,13 +1053,13 @@
  ,source:{scope:true,context:[{a:1,b:Promise.resolve({x:1,y:2})},([field,value])=>field==="b"?undefined:value,true,[]],terms:[{a:1,x:1,y:2}],condition:["deepEqual"]}
  ,nested:{scope:true,context:[{a:{b:Promise.resolve(5)}},([field,value])=>value,false,[]],terms:[{a:{b:5}}],condition:["deepEqual"]}
  ,bottom:
- {leaf:{scope:true,context:[{a:{x:1,y:2},b:3},([field,value])=>numeric(value)?value*10:value,2,[]],terms:[{a:{x:10,y:20},b:30}],condition:["deepEqual"]}
- ,fold:{scope:true,context:[{a:{x:1,y:2,z:3},b:4},([field,value])=>field==="a"?Object.values(value).reduce((sum,v)=>sum+v,0):value,2,[]],terms:[{a:6,b:4}],condition:["deepEqual"]}
- ,drop:{scope:true,context:[{a:1,b:{x:1,y:2}},([field,value])=>field==="x"?undefined:value,2,[]],terms:[{a:1,b:{y:2}}],condition:["deepEqual"]}
- ,graft:{scope:true,context:[{a:1,b:{x:1,y:2},c:3},([field,value])=>field==="b"?undefined:numeric(value)?value*10:value,2,[]],terms:[{a:10,x:10,y:20,c:30}],condition:["deepEqual"]}
- ,terminal:{scope:true,context:[{a:{b:{c:1,d:2},e:3},f:4},([field,value])=>numeric(value)?value*10:value,2,1],terms:[{a:{b:{c:1,d:2},e:30},f:40}],condition:["deepEqual"]}
- ,promise:{scope:true,context:[{a:{b:Promise.resolve(5)},c:2},([field,value])=>numeric(value)?value*10:value,2,[]],terms:[{a:{b:50},c:20}],condition:["deepEqual"]}
- ,array:{scope:true,context:[[{x:1,y:2},{x:3,y:4}],([field,value])=>field==="0"||field==="1"?Object.values(value).reduce((sum,v)=>sum+v,0):value,2,[]],terms:[[3,7]],condition:["deepEqual"]}
+ {leaf:{scope:true,context:[{a:{x:1,y:2},b:3},([field,value])=>numeric(value)?value*10:value,-1,[]],terms:[{a:{x:10,y:20},b:30}],condition:["deepEqual"]}
+ ,fold:{scope:true,context:[{a:{x:1,y:2,z:3},b:4},([field,value])=>field==="a"?Object.values(value).reduce((sum,v)=>sum+v,0):value,-1,[]],terms:[{a:6,b:4}],condition:["deepEqual"]}
+ ,drop:{scope:true,context:[{a:1,b:{x:1,y:2}},([field,value])=>field==="x"?undefined:value,-1,[]],terms:[{a:1,b:{y:2}}],condition:["deepEqual"]}
+ ,compound:{scope:true,context:[{a:1,b:{x:1,y:2},c:3},([field,value])=>field==="b"?undefined:numeric(value)?value*10:value,-1,[]],terms:[{a:10,c:30}],condition:["deepEqual"]}
+ ,terminal:{scope:true,context:[{a:{b:{c:1,d:2},e:3},f:4},([field,value])=>numeric(value)?value*10:value,-1,1],terms:[{a:{b:{c:1,d:2},e:30},f:40}],condition:["deepEqual"]}
+ ,promise:{scope:true,context:[{a:{b:Promise.resolve(5)},c:2},([field,value])=>numeric(value)?value*10:value,-1,[]],terms:[{a:{b:50},c:20}],condition:["deepEqual"]}
+ ,array:{scope:true,context:[[{x:1,y:2},{x:3,y:4}],([field,value])=>field==="0"||field==="1"?Object.values(value).reduce((sum,v)=>sum+v,0):value,-1,[]],terms:[[3,7]],condition:["deepEqual"]}
  }
  }
  ,revert:

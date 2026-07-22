@@ -1,5 +1,5 @@
  import {locate,command,recompose,delegate,agent,thread,fetch as freefetch,digest} from "./Blik_2023_interface.js";
- import {note,index,describe,decide,colors,wait,stagger,search,merge,prune,record,route,observe,rank,constant,rotate,deduce,lift,fold,collect,slip,spill,push,infer,either,each,pass,tether,surge,flush,buffer,differ,compose,some,flip,skip,stash,revert,combine,whether,swap,compound,something,string,basic,minor,functor,promise,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdf,when,debug,expect,generator,plural,native,clock,type,complex,heritage,prototype,expressions,cede,extract,fields} from "./Blik_2023_inference.js";
+ import {note,index,describe,decide,produce,colors,wait,stagger,search,merge,prune,record,route,observe,rank,constant,rotate,deduce,lift,fold,collect,slip,spill,push,infer,either,each,pass,tether,surge,flush,buffer,differ,compose,some,flip,skip,stash,revert,combine,whether,swap,compound,something,string,basic,minor,functor,promise,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdf,when,debug,expect,generator,plural,native,clock,type,complex,heritage,prototype,expressions,cede,extract,fields} from "./Blik_2023_inference.js";
  import {unfold} from "./Blik_2023_search.js";
  import {serialize,proceduralize,mime,data,file,relate,cookie,query} from "./Blik_2023_meta.js";
  import * as layout from "./Blik_2023_layout.js";
@@ -77,7 +77,7 @@
  {node:[simple,compose(Object.entries,rank,each(compose(each([rank]),lift,drop(2,0,flip),crop(3),push(namespace,language,scope),populate)),lift)]
  ,text:[string,compose(slip(scope),tether(text),insert)]
  ,plural:[array,compose(rank,loop)]
- ,promise:[promise,deduce(loop)]
+ ,promise:[promise,induce(loop)]
  ,generator:[plural,loop]
  ,ready:[is(window.NodeList),compose(rank,each(insert))]
  ,rest:[something,insert]
@@ -92,33 +92,33 @@
 }
 ],dataset:
 [is(simple,"dataset")
-,compose(drop(3,2),each([dataset]),lift,drop(-3,1),rotate(1),tether(document),drop(1),lift,lift)
+,produce(drop(3,2),each([dataset]),lift,drop(-3,1),rotate(1),tether(document),drop(1),lift,lift)
 ],actions:
 [is(string,"data-actions")
-,compose(drop(-1,1),flip,tether(capture),infer("getAttributeNode","data-actions"))
+,produce(drop(-1,1),flip,tether(capture),infer("getAttributeNode","data-actions"))
 ],class:
 [is(array,"class")
-,compose(drop(3,2),each([infer("join"," "),compose(crop(1),collect)]),lift,drop(2,0,record),rotate(1),tether(document),drop(1))
+,produce(drop(3,2),each([infer("join"," "),produce(crop(1),collect)]),lift,drop(2,0,record),rotate(1),tether(document),drop(1))
 ],plural:
 [compound
-,compose
+,produce
 ((node,name,path,...context)=>[node].flat().filter(something).map((node,index)=>[node,name,index,...context]),rank
-,each(compose
+,each(produce
 (crop(-1),each([rank]),lift
-,whether(is([simple,not(has("#text"))],"style"),each([compose(crop(1),css,["#text"],record)])),lift
+,whether(is([simple,not(has("#text"))],"style"),each([produce(crop(1),css,["#text"],record)])),lift
 ,rotate(1),combine(crop(1),tether(element))
 ,lift,drop(2,0,tether(append))
 )),lift
 )
 ],attribute:
 [either(string,numeric,binary)
-,compose(drop(3,2),rotate(1),combine(crop(1),tether(attribute)),lift,tether(append))
+,produce(drop(3,2),rotate(1),combine(crop(1),tether(attribute)),lift,tether(append))
 ],null:
 [is(null)
-,compose(drop(3,2),drop(1),rotate(1),0,tether(descend),infer("forEach",destroy),drop())
+,produce(drop(3,2),drop(1),rotate(1),0,tether(descend),infer("forEach",destroy),drop())
 ],else:drop()
  })
-,compose(each(["stack"]),rotate(1),drop(4,3),combine(crop(1),tether(text)),lift,tether(append)));
+,produce(each(["stack"]),rotate(1),drop(4,3),combine(crop(1),tether(text)),lift,tether(append)));
 
  export function create(type,name,namespace)
 {return window?.document["create"+type+(namespace?"NS":"")](...[namespace||[],name].flat());
@@ -339,7 +339,7 @@
 }
 }};
  let activation=
- {exports:{capture,merge,heritage,dispatch,defer,prototype,something,defined,simple,compound,array,string,construct}
+ {exports:{capture,merge,heritage,dispatch,defer,prototype,type,something,defined,simple,compound,array,string,construct}
  ,procedures:function()
 {capture.call(window.document.body);
  let workers=["worker","serviceworker"];

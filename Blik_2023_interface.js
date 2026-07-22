@@ -1,4 +1,4 @@
- import {modular,construct,deduce,zap,induce,stash,decide,note,collect,search,merge,prune,route,record,remember,tally,rotate,cede,unit,lift,push,sum,same,are,has,promise,pass,slip,something,observe,functor,describe,expect,control,trace,array,compound,simple,revert,rank,tether,differ,whether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,numeric,binary,basic,match,wait,string,defined,minor,compose,combine,exit,clock,major,colors,skip,flip,debug,extract} from "./Blik_2023_inference.js";
+ import {modular,measure,construct,deduce,zap,induce,stash,decide,note,collect,search,merge,prune,route,record,remember,tally,rotate,cede,unit,lift,push,sum,same,are,has,promise,pass,slip,something,observe,functor,describe,expect,control,trace,array,compound,simple,revert,rank,tether,differ,whether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,numeric,binary,basic,match,wait,string,defined,minor,compose,combine,exit,clock,major,colors,skip,flip,debug,extract} from "./Blik_2023_inference.js";
  import {file,folder,url,relate,cookie,path,parser,parse,sanitize,serialize,exports,reexport,mime,coordinates,records} from "./Blik_2023_meta.js";
 
  export var {protocol,host,pathname:address}=new URL(import.meta.url);
@@ -567,7 +567,7 @@
  // composition declarations: [[context],"module/name module/name",{"module/name":[argument,{"module/name":{}}]}]
 (whether(modular,drop(1)),zap,each(compose(crop(1),lift,decide
 ({induce:[simple,compose(each([Object.entries]),zap,each(compose
-(crop(1),lift,each([deduce(infer("flat"))]),command.bind(import.meta.url,import.meta.url,"recompose"),infer,"call"
+(crop(1),lift,each([induce(infer("flat"))]),command.bind(import.meta.url,import.meta.url,"recompose"),infer,"call"
 )),lift)]
  ,reduce:[string,compose(each([compose(crop(1),infer("split"," "))]),lift,zap,each(compose
 (crop(1),lift,flip,combine(crop(1),tether(locate)),lift,drop(2,0,tether(command)),crop(1,collect),tether(search)
@@ -1121,30 +1121,29 @@
  let assert=await import("assert");
  let noncondition=either(not(defined),simple,is([array,infer("some",({condition})=>condition)]));
  let fails=await [tests].reduce(function test(term,tests,depth,path)
-{let {scope,context=[],route=[],terms=[],condition}=tests;
+{let {scope,context=[],route=[],terms=[],condition,benchmark}=tests;
+ benchmark=benchmark&&measure(path.join("/"))
  return noncondition(condition)
 ?compose(Object.entries,infer("reduce",record(([name,tests])=>
  test(term[name]??term,tests,depth+1,[depth?path:[],name].flat())),[]),"flat")(tests)
 :buffer(compose
 (...[route].flat()
-,buffer(scope?tether(term):term)
-,...[terms].flat(),assert[condition]||condition,swap({})
-),({stack})=>({[path.join("/")]:stack}))(...[context].flat());
+,buffer(scope?tether(term):term),benchmark
+,...[terms].flat(),assert[condition]||condition,swap({}),benchmark
+),({stack})=>(benchmark?.(),{[path.join("/")]:stack}))(...[context].flat());
 },namespace);
  fails=fails.reduce(merge,{});
  let format=compose((item,order,items)=>
  [item,order,Math.max(...items.map(({length})=>length))]
 ,([item,order,length])=>
  item+(order%Math.floor(globalThis.process.stdout.columns/length)
-? " ".repeat(length-item.length):"\n"));
+?" ".repeat(length-item.length):"\n"));
  let report=[fails,tests,namespace].map((subject,index)=>
 ["\x1b["+["31mFAIL:","32mPASS:","34mSKIP:"][index]
 ,...Object.keys(subject).map(index?field=>field:field=>field.match(/(.*?)(\/|$)/)[1])
-]).map((subject,index,subjects)=>
+]).map((subject,index,subjects,past=subjects.slice(0,index).flat())=>
  subject.filter(test=>
- !subjects.slice(0,index).flat().includes(test)).slice(0,15).concat(subject.length<16
-?(!subject.length?"-":[])
-:"...").map(format).join("")).filter(subject=>subject.length>11).join("\n")+"\x1b[0m\n";
+ !past.includes(test)).concat(!subject.length?"-":[]).map(format).join("")).filter(subject=>subject.length>11).join("\n")+"\x1b[0m\n";
  let {length}=Object.keys(fails);
  console.groupCollapsed(colors[length?"red":"green"]+"Tested "+target+colors.steady);
  console.log(report);
