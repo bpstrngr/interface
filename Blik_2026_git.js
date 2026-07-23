@@ -1,37 +1,51 @@
- import {note,compose,slip,buffer,expect,record,prune,colors,exit} from "./Blik_2023_inference.js";
+ import {note,compose,slip,swap,unary,buffer,expect,record,prune,colors,exit} from "./Blik_2023_inference.js";
  import {prompt,print,compile,command,access,test,locate} from "./Blik_2023_interface.js";
- import {folder} from "./Blik_2023_meta.js";
+ import {folder,url,query} from "./Blik_2023_meta.js";
  import http from "./Hilton_2018_isomorphic-git-http.js";
  import git from "./Hilton_2017_isomorphic-git.js";
  import onp from "./Wanek_2016_onp.js";
  import fs from "fs";
  var address=import.meta.url;
- var relation=folder(new URL(address).pathname);
+ var relation=folder(new URL(address).pathname),dir=relation;
  function onProgress(message){print(message);};
  function onPostCheckout(message){console.log(message);};
 
  export default
- {log(request)
-{return git.log({fs,dir:relation});
-},tree(request)
-{let dir=relation;
- return compose.call
-({fs,dir},git.listBranches,infer("reduce",record
-(branch=>git.log({fs,dir,ref:branch})
-,branch=>branch
-),{}),tether(prune,function([ref,commit])
-{if(array(commit))
- return commit.reduce(record(({commit:{message,parent}})=>({message,source:parent}),({oid})=>oid),{});
- if(!commit.source?.length)
- return commit;
- let sources=commit.source.flatMap(oid=>
- Object.values(search.call(this,is(something,match([oid]))))).map(source=>
- merge(source,{[ref]:commit},0));
-},0,1)
+ {async index(request,body,response,path)
+{let {branch="stable"}=query(request.url);
+ let scope=await compose.call(relation,remotes,branch,relation,note,zap,index,infer("reduce",record(files,({remote})=>remote),{}));
+ let {pathname}=url(request);
+ let [remote,commit,file]=pathname.split("/").slice(path.length+2);
+ return scope;
+},async remotes(request,body,response)
+{let {pathname}=url(request);
+ let path=pathname.split("/").slice(3);
+ return prune.call
+(path.length?record(null,path):await compose.call(relation,remotes,infer("reduce",record(undefine,({remote})=>remote),{}))
+,([field,value],[remote,branch,commit,...file])=>!value
+?!remote?compose.call(field,relation,branches,infer("filter",not(match("HEAD"))),infer("reduce",record(undefine,unary),{}))
+:!branch?compose.call({fs,dir,ref:[remote,field].join("/")},git.log,infer("reduce",record(({commit:{message,parent}})=>({message,parent}),({oid})=>oid),{}))
+:!commit?compose.call({fs,dir,ref:field},git.listFiles)
+:describe(async function(request,body,response,path)
+{let filepath=[file,field].flat().join("/");
+ let {oid,object}=note(await git.readObject({fs,dir,oid:commit,filepath:"",format:"parsed"}));
+ return Buffer.from(object);
+},file.join("/")+"/"+field)
+:value
 );
 }};
 
+ export function remotes(dir=process.cwd())
+{return git.listRemotes({fs,dir});
+};
 
+ export function branches(remote,dir)
+{return git.listBranches({fs,dir,remote});
+};
+
+ export function files({remote},branch,dir)
+{return git.listFiles({fs,dir,ref:[remote,branch].filter(string).join("/")});
+};
  export async function check(remote,branch)
 {// pivot to tracking remote/branch, preserving files from the current one and changes to theirs.
  ({remote,branch}=await prompt({remote,branch}));
@@ -64,10 +78,10 @@
 
  export function delta(a,b)
 {let [from,to]=[a,b].map(text=>text.split("\n"));
- return new onp(from,to).compose().map(({file1,file2})=>
- ({from:{start:file1[0],count:file1[1],lines:from.slice(file1[0],file1[0]+file1[1])}
-  ,to:{start:file2[0],count:file2[1],lines:to.slice(file2[0],file2[0]+file2[1])}
-  }));
+ return new onp(from,to).compose().map(({file1,file2})=>(
+ {from:{start:file1[0],count:file1[1],lines:from.slice(file1[0],file1[0]+file1[1])}
+ ,to:{start:file2[0],count:file2[1],lines:to.slice(file2[0],file2[0]+file2[1])}
+ }));
 };
 
  export async function diff(dir=process.cwd())
@@ -114,10 +128,10 @@
  let branches=await remotes.reduce(record(remote=>
  git.listBranches({fs,dir,remote}).then(branches=>
  branches.map(branch=>remote+"/"+branch))),[]).then(branches=>branches.flat());
- let tracking=await branches.reduce(record(async ref=>
- {let tip=await git.resolveRef({fs,dir,ref});
-  return tip===commit||await git.isDescendent({fs,dir,oid:tip,ancestor:commit})?ref:undefined;
- }),[]).then(refs=>refs.filter(Boolean));
+ let tracking=await branches.reduce(record(ref=>
+ git.resolveRef({fs,dir,ref}).then(tip=>tip===commit||
+ git.isDescendent({fs,dir,oid:tip,ancestor:commit})).then(tracking=>
+ tracking?ref:undefined)),[]).then(refs=>refs.filter(Boolean));
  if(!tracking.length)
  return console.log(" Not descendent of any remote branch.");
  if(tracking.length>1)

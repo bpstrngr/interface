@@ -92,7 +92,8 @@
 }
 ],dataset:
 [is(simple,"dataset")
-,produce(drop(3,2),each([dataset]),lift,drop(-3,1),rotate(1),tether(document),drop(1),lift,lift)
+,produce((content,field,context,namespace,language,scope)=>
+ rank([scope,dataset(content),namespace,language]),tether(document),drop(1),lift,lift)
 ],actions:
 [is(string,"data-actions")
 ,produce(drop(-1,1),flip,tether(capture),infer("getAttributeNode","data-actions"))
@@ -112,8 +113,9 @@
 )
 ],attribute:
 [either(string,numeric,binary)
-,produce(drop(3,2),rotate(1),combine(crop(1),tether(attribute)),lift,tether(append))
-],null:
+,function attach(content,field,context,namespace,language,scope)
+{return append.call(scope,attribute(content,field,namespace));
+}],null:
 [is(null)
 ,produce(drop(3,2),drop(1),rotate(1),0,tether(descend),infer("forEach",destroy),drop())
 ],else:drop()

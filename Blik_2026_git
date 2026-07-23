@@ -86,19 +86,19 @@ compile#[["/Blik_2023_interface.js/module/namespace"],"interface/fetch","interfa
 
  The standardize#b command can call this with a provided format for every staged module, before each commit if used in a pre-commit script (or explicitly by a future commit#b command): 
 
-( cp git_hook_pre-commit .git/hooks/pre-commit;
+( cp *git_hook_pre-commit.sh .git/hooks/pre-commit;
 )#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
 
  Copy the post-commit hook as well to re-apply your original formatting stashed by pre-commit after each commit: 
 
-( cp git_hook_post-commit .git/hooks/post-commit;
+( cp *git_hook_post-commit.sh .git/hooks/post-commit;
 )#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
 
 standardize#[["/Blik_2026_git.js/module/namespace"],"interface/fetch","interface/digest",[["standardize","apply"]],"inference/flip","inference/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2026_git.js","scale":0.8,"gutter":31}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[0],{"inference/tether":["script/fold"]}]
 
  Further, to apply a preferred formatting to merged changes, the author#b command can be used in a post-checkout script: 
 
-( cp git_hook_post-checkout .git/hooks/post-checkout;
+( cp *git_hook_post-checkout.sh .git/hooks/post-checkout;
 )#div{display:block;width:90%;margin:0px 5%;border-radius:.5em;border:1px solid #43a047;background:black;overflow:scroll;white-space:pre;font-family:monospace;color:#616161}
 
 location#[["/Blik_2026_git.js/module/namespace"],"interface/fetch","interface/digest",[["author"]],"inference/flip","inference/extract",[["exports"]],"inference/record",["module"],"meta/serialize",[{"source":"/Blik_2026_git.js","scale":0.8,"gutter":31}],"script","script/index"]{background:transparent;max-width:90%;margin:auto;border-radius:.5em; border:2px dashed #616161}#[[0],{"inference/tether":["script/fold"]}]

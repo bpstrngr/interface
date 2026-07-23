@@ -487,7 +487,7 @@
 {// convert abstract syntax tree or runtime namespace to javascript;
  let renderer=
  {astring:["./davidbonnet_2015_astring.js","generate"]
- ,tacit:["./Blik_2023_meta.js","tacit"]
+ ,tacit:["./Blik_2023_meta.js","aphorize"]
  }[format];
  if(namespace?.type==="Program"&&renderer)
  return command.call(import.meta.url,...renderer,namespace);
@@ -517,16 +517,35 @@
  return [wrap,declaration.replace(/^\[\n {/,"[{"),wrap,end].join("");
 };
 
- export var tacit=compose
- // reduce AST body to formatted string. 
-(whether(modular,drop(1))
-,tether(prune,decide(
+ export var aphorize=compose
+ // reduce data or AST body to formatted string. 
+(whether(modular,drop(1)),whether
+(is(any,match("json"))
+,function aphorize(source,field)
+{if(!basic(source))
+ return JSON.stringify(source);
+ let entries=Object.entries(source).map(([field,value])=>
+[array(source)?[]:/[^\w]/.test(field)?JSON.stringify(field):field
+,aphorize.call(source,value,field)
+].flat().join(":"));
+ let {length}=entries;
+ let long=length>1&&
+ sum(entries.map(({length})=>length))>100||
+ entries.some(entry=>entry.includes("\n"));
+ let space=long?"\n"+" ".repeat(simple(source)):"";
+ let [top,end]=simple(source)?"{}":"[]";
+ let content=entries.reduce((content,entry,index,entries)=>
+ [content,entries[index-1]?.endsWith("\n]")&&entry.endsWith("}")?"":space,",",entry].join("")
+,entries.shift());
+ let join=content?.endsWith("\n]")&&simple(source);
+ return [simple(this)?space:" ".repeat(!this&&simple(source)),top,content,join?"":space,end].join("")
+},compose(prune(decide(
  {else:(scope,{1:value})=>value?.type?label(value,"type"):value
  ,root:[is(match({type:"Program"}),match(["body"])),function(scope,[field,body])
-{return [" ",body,"\n"].flat().join("\n ");
+{return [" ",body,"\n"].flat().join(";\n ");
 }]
- ,...prune.call(
- {EmptyStatement(){return "";}
+ ,...prune(([type,value])=>[is(any,match([any,{type}])),value],0,0)
+({EmptyStatement(){return "";}
  ,BlockStatement(scope,[field,{body}])
 {let join=sum(body.map(({length})=>length))<100?"":"\n ";
  let [start,end]=scope.type==="Program"?[" ","\n"]:["{","}"];
@@ -557,7 +576,8 @@
  let rename=!id||id===method;
  return [async?"async ":"",method?"":"function",generator?"* ":"",rename?method:id||"","(",params,")",body].join("");
 },ArrowFunctionExpression(scope,[field,{params,body}])
-{return "("+params.join(",")+")=>"+body;
+{let lead=body.length>100?"\n":"";
+ return "("+params.join(",")+")=>"+lead+body;
 },VariableDeclaration(scope,[field,{kind,declarations}])
 {return kind+" "+declarations.join(",");
 },VariableDeclarator(scope,[field,{id,init}])
@@ -575,20 +595,40 @@
 },IfStatement(scope,[field,{test,consequent,alternate}])
 {return "if("+test+")"+(consequent.length>100?"\n":"")+consequent+(alternate==null?"":"else"+(alternate.length>100?"\n":"")+alternate);
 },ConditionalExpression(scope,[field,{test,consequent,alternate}])
-{return test+"?"+consequent+":"+alternate;
+{let index=[consequent,alternate].findIndex(match({length:major(100)}))+1;
+ let carriage=[["",""],"\n\n",["","\n"]][index];
+ return test+carriage[0]+"?"+consequent+carriage[1]+":"+alternate;
 },BinaryExpression(scope,[field,{left,operator,right}])
 {return left+operator+right;
 },LogicalExpression(scope,[field,{left,operator,right}])
 {return left+operator+right;
+},ChainExpression(scope,[field,{expression}])
+{return expression;
 },...Object.entries(
  {Array(scope,[field,{elements}])
-{return "["+elements.join(",")+"]";
+{let width=0;
+ let groups=elements.reduce((groups,property)=>
+{if(groups.length&&width+property.length<100)
+ groups.at(-1).push(property);
+ else width=0,groups.push([property]);
+ width+=property?.length||0;
+ return groups;
+},[]);
+ let carriage=groups.length-1?"":"\n";
+ return carriage+"["+groups.join("\n,")+"]";
 },Object(scope,[field,{properties}])
-{let groups=properties.reduce((groups,property)=>merge(groups
-,{[[groups.findIndex(group=>sum(group.map(({length})=>length))+property.length<100),groups.length].find(index=>index>-1)]:[property]
- },0)
-,[]);
- return "{"+groups.join("\n ,")+"}";
+{let width=0;
+ let groups=properties.reduce((groups,property)=>
+{if(groups.length&&width+property.length<100)
+ groups.at(-1).push(property);
+ else width=0,groups.push([property]);
+ width+=property.length;
+ return groups;
+},[]);
+ let lambda=scope.type==="ArrowFunctionExpression";
+ let [start,end]=lambda?"()":["",""];
+ let carriage=groups.length===1?"":"\n";
+ return start+carriage+"{"+groups.join("\n ,")+"}"+end;
 }}).map(([type,value])=>["Pattern","Expression"].map(field=>[type+field,value])).map(Object.fromEntries).reduce(merge)
  ,Property(scope,[field,{key,value,shorthand,method}])
 {return [method?"":key,shorthand?"":(method?"":":")+value].join("");
@@ -610,9 +650,9 @@
 {return name;
 },Literal(scope,[field,{raw,value}])
 {return raw??JSON.stringify(value);
-}},([type,value])=>[is(any,match([any,{type}])),value],0,0)
- }),-1),"body"
-);
+}}
+)}),-1),"body")
+));
 
  export function modularize({exports,imports,procedures})
 {if(![exports,imports,procedures].some(Boolean))
@@ -751,29 +791,6 @@
  merge(past,next,0))).map(([name,value])=>
  " "+[name+":",...value||[]].join("\n"));
  return {version:3,file,sources:[address],names,mappings,report,quantifiers};
-};
-
- export function aphorize(source)
-{if(compound(source))
- return infer(function aphorize(source,field)
-{if(!basic(source))
- return JSON.stringify(source);
- let entries=Object.entries(source).map(([field,value])=>
-[array(source)?[]:/[^\w]/.test(field)?JSON.stringify(field):field
-,aphorize.call(source,value,field)
-].flat().join(":"));
- let {length}=entries;
- let long=length>1&&
- sum(entries.map(({length})=>length))>100||
- entries.some(entry=>entry.includes("\n"));
- let space=long?"\n"+" ".repeat(simple(source)):"";
- let [top,end]=simple(source)?"{}":"[]";
- let content=entries.reduce((content,entry,index,entries)=>
- [content,entries[index-1]?.endsWith("\n]")&&entry.endsWith("}")?"":space,",",entry].join("")
-,entries.shift());
- let join=content?.endsWith("\n]")&&simple(source);
- return [simple(this)?space:" ".repeat(!this&&simple(source)),top,content,join?"":space,end].join("")
-})(source);
 };
 
  export async function imports(syntax,format={})
@@ -1045,7 +1062,7 @@
 )
 ,collect,slip(URL),Reflect.construct);
  export var query=compose
-(when(is(URL)),"searchParams","entries",Array.from,Object.fromEntries
+(whether(string,url,when(is(URL))),"searchParams","entries",Array.from,Object.fromEntries
 ,tether(prune,([field,value])=>[true,false].find(boolean=>String(boolean)===value)??value,0,0)
 );
  export function path(request)

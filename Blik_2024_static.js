@@ -52,7 +52,7 @@
  {infrastructure(){return delegate.call(swarm[loader],"infrastructure");}
  ,history(){return delegate.call(swarm[loader],"infrastructure","time");}
  ,sources(){return infrastructure();}
- ,git:prune.call(git,({1:git})=>describe(compose(drop(1),pass(authorize,"ranger"),git),git))
+ ,git:prune.call(git,({1:git})=>functor(git)?compose(pass(crop(1,infer(authorize,"ranger"))),tether(git)):git)
  ,get:compose(combine(filesystem,routes),lift,merge)
  ,put:compose
 (drop(1),drop(2,1,buffer(JSON.parse,compose(drop(1,2),"base64",Buffer.from,"toString")))
@@ -74,7 +74,7 @@
 ,compose(crop(1),slip("path","relative","./"),command.bind(import.meta.url),"/","split")
 ),lift,record
 ),interface:compose
-(crop(1),"get",routes=>(
+(note,crop(1),"get",routes=>(
  {pre:{"#text":JSON.stringify(routes,null,2)}
  ,style:{body:{background:"black",color:"white"}}
  }),"interface","svg",[],"./style",hypertext,document,spill,lift,crop(1)

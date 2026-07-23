@@ -1,5 +1,6 @@
 
-import * as namespace from "./Blik_2023_inference.js";
+ import * as namespace from "./Blik_2023_inference.js";
+ import {colors,describe,cast,construct,type,defined,something,functor,simple,compound,string,numeric,iterable,array,heritage,asynchronous,promise,generator,asyncgenerator,plural,pattern,basic,native} from "./Blik_2026_type.js";
  export * from "./Blik_2026_type.js";
  export const {pathname:address,origin}=new URL(import.meta.url);
  export const location=address.replace(/\/[^/]*$/,"");
@@ -7,8 +8,6 @@ import * as namespace from "./Blik_2023_inference.js";
  // skip dynamic inference for combinators in ./infer. 
  var freeterms=new Set([...Object.values(namespace).filter(functor),Array,Object.assign,Object.values,Object.entries,Object.fromEntries,RegExp].map(term=>term.name));
  var warn={};
-
- import {colors,describe,cast,construct,type,defined,something,functor,simple,compound,string,numeric,iterable,array,heritage,asynchronous,promise,generator,asyncgenerator,plural,pattern,basic} from "./Blik_2026_type.js";
 
  // CONTEXT ALGEBRA
 
@@ -57,22 +56,22 @@ import * as namespace from "./Blik_2023_inference.js";
  export function deduce(fold=unit,unfold=cede)
 {// monadic co-induction (hylomorphism - arbitrary transient category). 
  [fold,unfold]=[fold,unfold].map(induce);
- let deduction=describe(function(...context)
+ let deduction=describe(induce.call(this,function(...context)
 {if(defined(this))context.unshift(this);
  return unfold(fold(...context));
-},deduce,...arguments);
+}),deduce,...arguments);
  return defined(this)?deduction(this):deduction;
 };
 
  export function reduce(fold=unit)
-{// variadic re-induction (paramorphism - Unit-Array-Argument-refold). 
+{// variadic re-induction (paramorphism - Apply unfolds transient Array). 
  let induction=functor(fold)?fold:infer(fold);
  let reduction=deduce(collect,induction.apply.bind(induction,undefined));
  return describe(reduction,reduce,fold);
 };
 
  export function produce(...terms)
-{// co-reduction. 
+{// recursive co-reduction. 
  let procedure=terms.map(reduce).reduce(deduce,unit);
  return defined(this)?procedure.call(this):procedure;
 };
@@ -163,15 +162,14 @@ import * as namespace from "./Blik_2023_inference.js";
  return [fields].flat().every(field=>field in this);
 };
 
- export function match(next,past)
+ export function match(target,source)
 {if(arguments.length<2)
- return describe(infer(match,next),match,...arguments);
- return past===next?true
-:pattern(past)?past.test(next)
-:functor(past)?past(next)
-:basic(past)?compound(next)&&
- Object.entries(past).every(([field,value])=>
- match(next?.[field],value))
+ return describe(infer(match,target),match,...arguments);
+ return source===target?true
+:pattern(source)?source.test(target)
+:functor(source)?source(target)
+:compound(source)?something(target)&&Object.keys(source).every((field,i,d)=>
+ match(target[field],source[field]))
 :false;
 };
 
@@ -253,8 +251,7 @@ import * as namespace from "./Blik_2023_inference.js";
  // named, unbound, uncomposed, not a freeterm: may be a method of scope.
 ?term.name&&!term.name.startsWith("bound ")&&!term.name.includes("(")&&!freeterms.has(term.name)
 :!array(term);
- let attend=something(scope)&&dynamic
-?map
+ let attend=something(scope)&&dynamic?map
 ?Object(scope)[term.name]===term?term:undefined
 :Reflect.get(Object(scope),field?.toString?field:null)
 :undefined;
@@ -330,12 +327,14 @@ import * as namespace from "./Blik_2023_inference.js";
  export function buffer(term,quit)
 {// alternative inference for failure. 
  if(!defined(this))
- return pivot(buffer,...arguments);
+ return pivot(induce(buffer),...arguments);
  let context=collect(this);
+ if(promise(context))
+ return context.then(context=>buffer.call(rank(context),...arguments))
  try
-{let next=infer.call(induce(rank)(context),term);
- return promise(next)?next.catch(infer(quit,induce(rank)(context))):next;
-}catch(fail){return infer(quit,induce(rank)(context))(fail);};
+{let next=infer.call(rank(context),term);
+ return promise(next)?next.catch(infer(quit,rank(context))):next;
+}catch(fail){return infer(quit,rank(context))(fail);};
 };
 
  export function differ(term)
@@ -409,11 +408,11 @@ import * as namespace from "./Blik_2023_inference.js";
 {return describe(compose(combine(unit,...terms.map(term=>functor(term)?term:swap(term))),lift),stash,...arguments);
 };
 
- export var zap=compose(each(
- // lift context into index. (([1,2],3)=>(1,3),(2,3))
-[compose(crop(1),index,"flat")
-,compose(crop(1),swap,slip(1),crop)
-]),infer("map"),rank);
+ export var zap=compose(combine
+ // rank index with context. (([1,2],3)=>(1,3),(2,3))
+(compose(unary,index,"flat")
+,compose(drop(1),swap,slip(1),crop)
+),infer("map"),rank);
 
  export function each(term,...stack)
 {if(!defined(this))
@@ -468,6 +467,8 @@ import * as namespace from "./Blik_2023_inference.js";
  // 0 drops undefined entries; 
  // 1 grafts their children;
  // -1 goes depth-first, so term sees already pruned scopes.
+ if(!defined(this))
+ return tether(prune,...arguments);
  let scope=this;
  if(!compound(scope))return scope;
  let entries=Object.entries(scope);
@@ -495,14 +496,9 @@ import * as namespace from "./Blik_2023_inference.js";
 (collect(graft||collapse<0?source:value)
 ,infer("reduce",record(value=>
  prune.call(value,term,collapse,limit,path.concat(field),trace.concat([scope]))),[])
-,infer("flatMap",collapse<0?function(reduced)
-{let value=term.call(scope,[field,reduced],path,trace);
- return defined(value)?[[field,value]]:[];
-}:function(source)
-{return graft
-?Object.entries(compound(source)?source:{})
-:[[field,source]];
-})
+,infer("flatMap",collapse<0
+?function(reduced){let value=term.call(scope,[field,reduced],path,trace);return defined(value)?[[field,value]]:[];}
+:function(source){return graft?Object.entries(compound(source)?source:{}):[[field,source]];})
 );
 }),[]),"flat",whether
 (array(scope)&&not(infer("some",labeled))
@@ -927,7 +923,7 @@ import * as namespace from "./Blik_2023_inference.js";
 ,{context:[is(plural)],terms:[rank([rank([1,2])]),fold(infer("call")),is(plural),true],condition:"equal"}
 ],unit:
 [{context:[1,2,3],condition:when(is(1,2,3))}
-,{context:[rank([1])],condition:when(is(plural))}
+,{context:[rank([rank([1])])],condition:when(is(plural))}
 ],cede:
 [{context:[1,2,3],terms:[],condition:when(is(1,2,3))}
 ,{context:[1,rank([2,3])],condition:when(is(1,2,3))}
