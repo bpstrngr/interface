@@ -1,5 +1,5 @@
  import {locate,command,recompose,delegate,agent,thread,fetch as freefetch,digest} from "./Blik_2023_interface.js";
- import {note,index,describe,decide,produce,colors,wait,stagger,search,merge,prune,record,route,observe,rank,constant,rotate,deduce,lift,fold,collect,slip,spill,push,infer,either,each,pass,tether,surge,flush,buffer,differ,compose,some,flip,skip,stash,revert,combine,whether,swap,compound,something,string,basic,minor,functor,promise,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdf,when,debug,expect,generator,plural,native,clock,type,complex,heritage,prototype,expressions,cede,extract,fields} from "./Blik_2023_inference.js";
+ import {note,induce,index,describe,decide,produce,colors,wait,stagger,search,merge,prune,record,route,observe,rank,constant,rotate,deduce,lift,fold,collect,slip,spill,push,infer,either,each,pass,tether,surge,flush,buffer,differ,compose,some,flip,skip,stash,revert,combine,whether,swap,compound,something,string,basic,minor,functor,promise,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdf,when,debug,expect,generator,plural,native,clock,type,complex,heritage,prototype,expressions,cede,extract,fields} from "./Blik_2023_inference.js";
  import {unfold} from "./Blik_2023_search.js";
  import {serialize,proceduralize,mime,data,file,relate,cookie,query} from "./Blik_2023_meta.js";
  import * as layout from "./Blik_2023_layout.js";
@@ -135,7 +135,8 @@
  }[name],0);
  let node=is(window.EventTarget)(this)&&update&&infer.call
 (qualify({[name]:value}),
-(selector,index,specified=selector.length-name.length
+(selector,index
+,specified=selector.length-name.length
 ,nodes=buffer(descend.bind(this),constant([]))(selector,0)
 )=>(update==="last"||specified)?nodes.at(-1):nodes[index]||
  specified&&descend.call(this,name,0).find(node=>
@@ -380,23 +381,29 @@
 };
 
  export function capture(module=this?.dataset.actions)
-{// register events to be routed to actions scoped by selector (eg. {#form:{submit(){}}}). 
+{// register events to be routed to actions scoped by selector (eg. {#form:{submit(){}}}).
  if(!module)
  return console.warn("No actions defined to capture on:",this),this;
  let fragment=this?.constructor?.name==="Object";
  let actions=fragment?[]:JSON.parse(this.dataset.actions||"[]");
  if(this)try{module=JSON.parse(module);}catch(fail){};
  if(fragment||globalThis!==globalThis.window)
- // Re-invoke on client to capture events. 
+ // Re-invoke on client to capture events.
  return fragment
 ?prune.call(this,({1:value})=>merge(value,{dataset:{actions:[module].flat()}}),0,0)
 :this.dataset.actions=JSON.stringify(Array.from(new Set([actions,module].flat())))
 ,this;
+ let scope=this===this.ownerDocument.body?this.ownerDocument.defaultView:this;
+ let specifiers=new Set([module].flat());
+ let captured=capture.captured||(capture.captured=new WeakMap());
+ let already=captured.get(scope)||new Set();
+ if([...specifiers].every(specifier=>already.has(specifier)))
+ return this;
+ captured.set(scope,already.union(specifiers));
  actions=Promise.all([module].flat().map(module=>
  import(module).then(({default:module})=>module))).then(modules=>
  modules.reduce((past,next)=>merge(past,next,0),{}));
  let refer=defer.bind(actions);
- let scope=this===this.ownerDocument.body?this.ownerDocument.defaultView:this;
  let deferred=new Set(heritage(scope).filter(event=>event.startsWith?.("on")));
  deferred=deferred.union(new Set(["focusout","focusin","message"].map(event=>"on"+event)));
  deferred=deferred.difference(new Set(

@@ -57,12 +57,9 @@
  export var probe=agent.node?compose(command.bind(import.meta.url,"path","resolve"),command.call(import.meta.url,"fs","promises"),flip,"stat"):command.bind(import.meta.url);
  export var prepend=either(...
  [authors,years].reduce((authors,years)=>authors.flatMap(author=>years.map(year=>
- "/"+author+"_"+year))).map((prefix,index,{length},left=length-index-1)=>
- buffer
-(compose
+ "/"+author+"_"+year))).map(prefix=>compose
 (/^([^\/])/,"./$1","replace",infer(url,address),"pathname",combine(folder,file),drop(1,1,prefix,"_"),"concat",pass(probe)
-),left?drop():exit
-)));
+)),drop());
  export var peer=remember
 (compose(drop(1,2),"Agent",{timeout:5*60*1000},command.bind(import.meta.url))
 ,protocol=>protocol
@@ -261,7 +258,7 @@
 
  function recover(fail,source,immediate)
 {return {ERR_MODULE_NOT_FOUND:!immediate?alias
-        :either(tether(acquire),compose(drop(1,2),extend),compose(drop(1,2),prepend))
+        :either(tether(acquire),whether(match(/(?!\.js$)/),compose(drop(1,2),prepend),compose(drop(1,2),extend)))
         ,ERR_UNSUPPORTED_DIR_IMPORT:immediate&&extend
         }[fail.code]||exit(fail);
 };
@@ -1179,4 +1176,4 @@
  if(agent.node&&!agent.virtual&&!remote)
  // expose functions for procedural use. 
 [import.meta.url,"./Blik_2023_inference.js","./Blik_2023_search.js"
-].forEach(compose(crop(1),command.bind(import.meta.url),globalThis,flip,Object.assign));
+].forEach(produce(crop(1),command.bind(import.meta.url),globalThis,flip,Object.assign));

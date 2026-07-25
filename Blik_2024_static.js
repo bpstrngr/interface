@@ -1,4 +1,4 @@
- import {note,search,merge,prune,record,remember,compose,spill,buffer,when,collect,infer,combine,wait,drop,slip,lift,differ,crop,each,swap,pass,not,compound,functor,native,exit,tether,either,whether,describe,string,pattern,major,match,has,is,are,defined,flip,heritage,extract} from "./Blik_2023_inference.js";
+ import {note,produce,search,merge,prune,record,remember,compose,spill,buffer,when,collect,infer,combine,wait,drop,slip,lift,differ,crop,each,swap,pass,not,compound,functor,native,exit,tether,either,whether,describe,string,pattern,major,match,has,is,are,defined,flip,heritage,extract} from "./Blik_2023_inference.js";
  import {name as loader,access,persist,purge,command,list,interpret,fetch,swarm,delegate,location,listen,infrastructure} from "./Blik_2023_interface.js";
  import {document,hypertext,css,throttle,error,capture,defer} from "./Blik_2023_fragment.js";
  import {url,serialize,mime,proceduralize,sourcemap,cookie,folder,path,query} from "./Blik_2023_meta.js";
@@ -9,18 +9,16 @@
  var relation=folder(new URL(address).pathname);
 
  export var encryption={code:undefined};
- export var classified=[/.*\.git.*/];
- export var classify=compose
+ export var [classified,published]=
+[[/.*\.git.*/]
+,[]
+];
+ export var [classify,publish]=[classified,published].map(list=>produce
 (when(are(either(string,pattern)))
-,each(whether(string,compose(crop(1),slip("path","resolve"),command.bind(import.meta.url)),crop(1)))
-,spill,classified.push.bind(classified)
-);
- export var published=[];
- export var publish=compose
-(when(are(either(string,pattern)))
-,each(whether(string,compose(crop(1),slip("path","resolve"),command.bind(import.meta.url)),crop(1)))
-,spill,published.push.bind(published)
-);
+,each(whether(string,produce(crop(1),slip("path","resolve"),command.bind(import.meta.url)),crop(1)))
+,lift,list.push.bind(list)
+));
+
  export async function permit(name,list,inclusive)
 {let path=[await command.call(import.meta.url,"path","resolve",name),name.endsWith("/")?"/":""].join("");
  let includes=list.find(term=>string(term)?path.startsWith(term):term.test(path));

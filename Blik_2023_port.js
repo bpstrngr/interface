@@ -1,4 +1,4 @@
- import {note,debug,sum,map,colors,search,surge,merge,prune,record,remember,route,when,stash,flip,are,functor,string,not,pattern,revert,each,clock,observe,is,has,same,minor,slip,something,compound,infer,tether,whether,collect,rank,buffer,compose,combine,either,drop,crop,swap,wait,exit,pass,binary,simple,array,expect,extract,numeric} from "./Blik_2023_inference.js";
+ import {note,debug,cede,lift,match,unit,sum,map,colors,search,surge,merge,prune,record,remember,route,when,stash,flip,are,functor,string,not,pattern,revert,each,clock,observe,is,has,same,minor,slip,something,compound,infer,tether,whether,collect,rank,buffer,compose,combine,either,drop,crop,swap,wait,exit,pass,binary,simple,array,expect,extract,numeric} from "./Blik_2023_inference.js";
  import {name as loader,arrayBuffer,delegate,swarm,command,access,locate,prompt,list,fetch,digest,version,compress,stage,feature} from "./Blik_2023_interface.js";
  import {encrypt} from "./Blik_2023_search.js";
  import {mime,bytes,url,cookie} from "./Blik_2023_meta.js";

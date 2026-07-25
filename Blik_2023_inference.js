@@ -11,6 +11,12 @@
 
  // CONTEXT ALGEBRA
 
+ export function model(...context)
+{// snapshot of context. 
+ return Object.fromEntries(Object.entries(context).map(([index,term])=>
+ [index,plural(term)?model(...term):term]));
+};
+
  export function undefine(){};
  export function constant(term){return describe(function(){return term;},constant,term);};
  export function unary(term){return term;};
@@ -39,44 +45,37 @@
 ].map(([type,unfold])=>cast(index=>index.some(type),unfold));
 
  export var collect=describe([settle,expand].reduce(deduce,index),"collect");
- export var lift=reduce(unit);
  export var cede=deduce(collect,yank);
+ export var lift=reduce(unit);
 
- // RECURSION SCHEMES 
-
- export function induce(fold=unit)
-{// promise-agnostic inference (catamorphism - any category over Kleisli Promise). 
- return describe(function(term)
-{return arguments.length-1?Array.from(arguments).some(promise)
-?Promise.all(arguments).then(fold.apply.bind(fold,this))
-:fold.call(this,...arguments):promise(term)?term.then(fold.bind(this)):fold.call(this,term);
-},induce,fold);
+ export function surge(...context)
+{// recursive lift. 
+ if(match(this,context))
+ return rank(this);
+ let scope=this||context;
+ return induce(bind(surge))(collect(...scope),...scope);
 };
 
- export function deduce(fold=unit,unfold=cede)
-{// monadic co-induction (hylomorphism - arbitrary transient category). 
- [fold,unfold]=[fold,unfold].map(induce);
- let deduction=describe(induce.call(this,function(...context)
-{if(defined(this))context.unshift(this);
- return unfold(fold(...context));
-}),deduce,...arguments);
- return defined(this)?deduction(this):deduction;
+ export function flush(...context)
+{// forgetful surge. 
+ if(!context.length)
+ return rank([]);
+ return compose(lift,flush,swap(...context),lift)(...context.filter(plural));
 };
 
- export function reduce(fold=unit)
-{// variadic re-induction (paramorphism - Apply unfolds transient Array). 
- let induction=functor(fold)?fold:infer(fold);
- let reduction=deduce(collect,induction.apply.bind(induction,undefined));
- return describe(reduction,reduce,fold);
+ export function spill(...context)
+{// depth-first surge.
+ let controller=this;
+ let controlled=controller instanceof AbortController;
+ let flat=deduce((term,past)=>
+ controlled&&controller.signal.aborted?exit(controller.signal.reason)
+:plural(term)?recursion(term,past.at(-1))
+:term,reduce(lift));
+ let recursion=induce(term=>each.call(term,flat));
+ return cede(each.call(rank(context),flat));
 };
 
- export function produce(...terms)
-{// recursive co-reduction. 
- let procedure=terms.map(reduce).reduce(deduce,unit);
- return defined(this)?procedure.call(this):procedure;
-};
-
- // CONTEXT COMBINATORS
+ export function add(...terms){return describe(function*(){yield* arguments;yield* terms;},add,...terms);};
 
  export function drop(stop=Infinity,start=0,...stack)
 {// filter context between (or outside if stop<start) indexes. 
@@ -104,7 +103,7 @@
  export var crop=drop.bind(null,Infinity);
  export var swap=drop.bind(null,Infinity,0);
  export var push=drop.bind(null,Infinity,Infinity);
- export var flip=describe(compose(collect,"reverse",rank),"flip");
+ export var flip=describe(produce(collect,"reverse",rank),"flip");
  export function rotate(offset)
 {return describe(function(...context)
 {return rank(context.map((value,index,context)=>
@@ -112,7 +111,101 @@
 },rotate,...arguments);
 };
 
- export function add(...terms){return describe(function*(){yield* arguments;yield* terms;},add,...terms);};
+ export var zap=compose(combine
+ // rank index with context. (([1,2],3)=>(1,3),(2,3))
+(compose(unary,index,"flat")
+,compose(drop(1),swap,slip(1),crop)
+),infer("map"),rank);
+
+ export var tally=compose(when(numeric),crop(1),combine
+(compose(-1,sum,major,slip(fold(),collect,"length"),compose,"tally")
+,unit
+),lift,describe);
+
+ export function major(past,next){if(!defined(next))return compose(when(numeric),infer(major,past));return next<past;}
+ export function minor(past,next){if(!defined(next))return compose(when(numeric),infer(minor,past));return past<next;}
+
+ export function extreme(series)
+{return ["min","max"].map(key=>Math[key](...[series].flat()));
+};
+
+ export function sum(...context)
+{// cumulate context values. 
+ return context.flat().reduce((sum,value)=>sum+(Number(value)||0),0);
+};
+
+ // CONTINUATION  
+ // #1 `this` immediately invokes combinators. 
+ // #2 deduce and induce calls terms with scope, pivot prepends it for functors with stack/context separation. 
+ //
+ //            Generator             Array              Generator
+ //       unit/         \expand    /collect\apply      /fold     \cede
+ // ...Context           ...Context          ...Context           ...Context
+
+ export function fold(term=unit)
+{// rank procedure. (protects Promise/Generator from induction/reduction until collected)
+ return function* fold(){yield term(...arguments);};
+};
+
+ export function induce(fold=unit,...stack)
+{// promise-agnostic inference (catamorphism - any category over Kleisli Promise). 
+ function catamorphism(term)
+{return arguments.length-1?Array.from(arguments).some(promise)
+?Promise.all(arguments).then(fold.apply.bind(fold,this))
+:fold.call(this,...arguments):promise(term)?term.then(fold.bind(this)):fold.call(this,term);
+};
+ return defined(this)?catamorphism(this):describe(catamorphism,induce,fold);
+};
+
+ export function deduce(fold=unit,monad=cede)
+{// monadic co-induction (paramorphism - arbitrary transient category). 
+ let catamorphism=induce(monad);
+ let paramorphism=describe(induce(function(...context)
+{return catamorphism(fold.call(this,...context));
+}),deduce,...arguments);
+ return defined(this)?paramorphism(this):paramorphism;
+};
+
+ export function reduce(fold=unit)
+{// variadic re-induction (cata+ana hylomorphism - Collect and Apply a transient Array). 
+ let catamorphism=functor(fold)?fold:infer(fold);
+ let hylomorphism=deduce(collect,catamorphism.apply.bind(catamorphism,undefined));
+ return defined(this)?hylomorphism(this):describe(hylomorphism,reduce,fold);
+};
+
+ export function produce(...terms)
+{// recursive reduction of a Unit fold. 
+ let procedure=terms.map(reduce).reduce(deduce,unit);
+ return defined(this)?procedure(this):describe(procedure,produce,...terms);
+};
+
+ export function bind(term,...stack)
+{return function(){return term.call(...stack,...arguments);};
+};
+
+ export function free(term)
+{return function(){return term(...arguments);};
+};
+
+ export function pivot(term,...stack)
+{// rank dynamic context in term scope.
+ // pivot is for combinators that need to unfold a plural `this` themselves (like infer or
+ // buffer do, internally) while keeping that unfolded `this` separate from `stack`, their own
+ // closure-captured static context - term.call(scope,...stack) keeps scope and stack apart.
+ // reduce can't stand in for this: reduce.apply flattens everything into one positional list,
+ // so it would collapse stack into scope instead of preserving the separation.
+ function pivot(...context)
+{if(defined(this))
+ context.unshift(this);
+ let scope=rank(context);
+ return functor(term)
+?term.call(scope,...stack)
+:lift(scope,term,rank(stack));
+};
+ return defined(this)?pivot(this):describe(pivot,...arguments);
+};
+
+ // PREDICATES 
 
  export function not(term)
 {let functor=describe(compose(term,is(false)),not,term);
@@ -154,12 +247,19 @@
  return defined(this)?identity(this):identity;
 };
 
- export function has(fields)
-{if(!defined(this))
- return tether(has,fields);
+ export function has(entry,value)
+{// match entries by [field] or [value]. for pairs use match({field:value})
+ if(!defined(this))
+ return tether(has,entry,value);
  if(!compound(this)&&!functor(this))
  return false;
- return [fields].flat().every(field=>field in this);
+ let defines=[entry].flat().every(entry=>entry in this);
+ if(!value?.length&&!string(value))
+ return defines;
+ let values=Object.values(this);
+ let assigns=[value].flat().every(value=>
+ values[string(value)?"includes":"some"](pattern(value)?match(pattern):value));
+ return defines&&assigns;
 };
 
  export function match(target,source)
@@ -168,7 +268,7 @@
  return source===target?true
 :pattern(source)?source.test(target)
 :functor(source)?source(target)
-:compound(source)?something(target)&&Object.keys(source).every((field,i,d)=>
+:basic(source)?something(target)&&Object.keys(source).every(field=>
  match(target[field],source[field]))
 :false;
 };
@@ -196,38 +296,13 @@
  return time+separator+zeros+value;
 },"");
 };
- export function sum(...context)
-{// cumulate context values. 
- return context.flat().reduce((sum,value)=>sum+(Number(value)||0),0);
-};
- export function extreme(series)
-{return ["min","max"].map(key=>Math[key](...[series].flat()));
-};
- export function minor(past,next){if(!defined(next))return compose(when(numeric),infer(minor,past));return past<next;}
- export function major(past,next){if(!defined(next))return compose(when(numeric),infer(major,past));return next<past;}
 
- export var tally=compose(when(numeric),crop(1),combine
-(compose(-1,sum,major,slip(fold(),collect,"length"),compose,"tally")
-,unit
-),lift,describe);
+ // INFERENCE 
 
- export function tether(term,...context)
+ export function tether(term,...stack)
 {// infer term with scope. 
- let bind=describe(compose(when(defined),infer(functor(term)?Function.call.bind(term):term,...context)),tether,...arguments);
+ let bind=describe(compose(when(defined),infer(functor(term)?Function.call.bind(term):term,...stack)),tether,...arguments);
  return defined(this)?bind(this):bind;
-};
-
- export function pivot(term,...stack)
-{// rank dynamic context in term scope. 
- return defined(this)?pivot(this):describe(pivot,...arguments);
- function pivot(...context)
-{if(defined(this))
- context.unshift(this);
- let scope=rank(context);
- return functor(term)
-?term.call(scope,...stack)
-:lift(scope,term,...stack);
-};
 };
 
  export function infer(term,...stack)
@@ -235,7 +310,7 @@
  if(!defined(this))
  return pivot(infer,...arguments);
  let context=[collect(this),collect(...stack)];
- if(context.some(promise)) // rank prevents surge in recursion. 
+ if(context.some(promise)) // rank prevents surge in recursion.
  return Promise.all(context).then(([context,stack])=>
  infer.call(rank(context),term,rank(stack)));
  context=context.reduce((context,stack)=>
@@ -244,7 +319,7 @@
  return yank(context);
  let [scope]=context;
  let map=functor(term);
- if(map&&!warn.infer)console.trace(warn.infer="Infer will be limited to dynamic access. Use Reduce to add/induce a term.")
+ if(map&&!warn.infer)console.trace(warn.infer="Infer will be demoted to dynamic access. Use Reduce to induce/append a term.")
  let detach=string(term)&&term.startsWith("tether ")&&term.substring(7);
  let field=detach||term;
  let dynamic=map
@@ -259,69 +334,6 @@
  if(!functor(defined(attend)?attend:term))
  return defined(attend)?attend:rank(context.push(term)&&context);
  return (attend?Function.call.bind(attend):term)(...context);
-};
-
- export function fold(term=unit)
-{// rank procedure. 
- return function* fold(){yield term(...arguments);};
-};
-
- export function surge(...context)
-{// recursive lift. 
- if(promise(this))
- return this.then(scope=>surge.call(scope,...context));
- if(match(this,context))
- return rank(this);
- let scope=this||context;
- return surge.call(collect(...scope),...scope);
-};
-
- export function flush(...context)
-{// forgetful surge. 
- if(!context.length)
- return rank([]);
- return compose(lift,flush,swap(...context),lift)(...context.filter(plural));
-};
-
- export function spill(...context)
-{// depth-first surge.
- let controller=this;
- let controlled=controller instanceof AbortController;
- let loop=next.apply.bind(next,null);
- return walk(context);
- function walk(context){return induce(rank)(context.reduce(next,[]));}
- function next(context,term)
-{if(controlled&&controller.signal.aborted)
- return exit(controller.signal.reason);
- if(promise(context)||promise(term))
- return Promise.all([context,term]).then(loop);
- context.push(!plural(term)?term
-:infer.call(each.call(term,(next,past)=>walk(
-[promise(past.at(-1))?past.at(-1).then(()=>next):next]
-)),cede));
- return context;
-}
-};
-
- export function model(...context)
-{// snapshot of context. 
- return Object.fromEntries(Object.entries(context).map(([index,term])=>
- [index,plural(term)?model(...term):term]));
-};
-
- export function pass(term,...context)
-{// synchronous side-effect inference. 
- return describe(compose
-(combine(unit,compose(infer(...arguments),drop()))
-,cede
-),pass,...arguments);
-};
-
- export function skip(...terms)
-{// parallel side-effect inference. 
- return function(...context)
-{return infer(...terms)(...context),rank(context);
-};
 };
 
  export function buffer(term,quit)
@@ -340,6 +352,38 @@
  export function differ(term)
 {// infer without allowing identity. 
  return compose.call(this,combine(compose(same,not,when),term),lift,infer,Function.call);
+};
+
+ export function pass(term,...context)
+{// synchronous side-effect inference. 
+ return describe(compose
+(combine(unit,compose(infer(...arguments),drop()))
+,cede
+),pass,...arguments);
+};
+
+ export function skip(...terms)
+{// parallel side-effect inference. 
+ return function(...context)
+{return infer(...terms)(...context),rank(context);
+};
+};
+
+ export function stash(...terms)
+{return describe(compose(combine(unit,...terms.map(term=>functor(term)?term:swap(term))),lift),stash,...arguments);
+};
+
+ // PRISMS 
+
+ export function when(...terms)
+{// demand conditions on context. 
+ let condition=pass(describe(combine
+(...terms.map((term,index,terms)=>compose
+(drop(index),combine(not(term),unit),lift,(fail,...context)=>fail&&
+ exit(term.name+": "+context.map(buffer(JSON.stringify,drop(1,2))).join(""))
+))
+),when,...terms));
+ return defined(this)?condition(this):condition;
 };
 
  export function compose(...terms)
@@ -376,24 +420,39 @@
 };
 
  export function either(...terms)
-{// alternative difference before last inference. 
+{if(!terms.length)
+ return unit;
  let valid=is([something,not(is(false)),not(is(Error))]);
- let composition=terms.reduce((past,term,index,{length},left=length-index-1)=>
- buffer(past,compose(drop(1),left?compose(differ(term),when(valid)):term))
-,terms.length?exit:unit);
- describe(composition,either,...arguments);
- return defined(this)?infer.call(this,composition):composition;
+ return function(...context)
+{if(defined(this))context.unshift(this);
+ let scope=context.shift();
+ return attempt(0);
+ function attempt(index)
+{if(index===terms.length-1)
+ return infer(terms[index],...context)(scope);
+ return produce
+(buffer(differ(terms[index]))
+,result=>valid(result)?result:attempt(index+1)
+)(scope,...context);
+};
+};
 };
 
  export function whether(condition,...terms)
-{// conditional inference. 
- let index=[condition].flat().map((condition,index)=>compose
-(functor(condition)?condition:swap(condition)
-,when(is([something,not(is(false))])),swap(index)
-));
- let term=compose(either(...index,swap(index.length)),slip(terms),Reflect.get);
- let composition=describe(compose(combine(term,fold()),lift,infer,Function.call),whether,...arguments);
- return defined(this)?infer.call(this,composition):composition;
+{let conditions=[condition].flat();
+ return function(...context)
+{if(defined(this))context.unshift(this);
+ let scope=context.shift();
+ return test(0);
+ function test(index)
+{if(index===conditions.length)
+ return infer(terms[index],...context)(scope);
+ let condition=conditions[index];
+ let result=functor(condition)?infer(condition,...context)(scope):condition;
+ return induce(result=>valid(result)?infer(terms[index],...context)(scope):test(index+1))(result);
+};
+};
+ function valid(result){return something(result)&&result!==false;}
 };
 
  export function decide({else:otherwise,...cases})
@@ -403,16 +462,6 @@
 ,otherwise
 );
 };
-
- export function stash(...terms)
-{return describe(compose(combine(unit,...terms.map(term=>functor(term)?term:swap(term))),lift),stash,...arguments);
-};
-
- export var zap=compose(combine
- // rank index with context. (([1,2],3)=>(1,3),(2,3))
-(compose(unary,index,"flat")
-,compose(drop(1),swap,slip(1),crop)
-),infer("map"),rank);
 
  export function each(term,...stack)
 {if(!defined(this))
@@ -434,6 +483,8 @@
 )(past.at(-1));
 };
 };
+
+ // LENSES 
 
  export function search(term,recursive=false,limit=false,path=[])
 {// traverse scope for entries satisfying a term (condition or path).
@@ -535,19 +586,6 @@
 ,Object.fromEntries
 );
 
-//  export function route(scope,term,path)
-// {// insert/invoke term in scope on given path.
-//  if(!scope)return;
-//  let paths=[path(scope,term)].flat().filter(something);
-//  if(!paths.length)return;
-//  let descended=paths.find(field=>route(scope[field],term,path));
-//  if(descended)return descended;
-//  let entries=paths.map(path=>[path,functor(term)?term([path,scope[path]]):term]);
-//  return entries.reduce(record(([path,term])=>infer(term,term=>
-//  array(scope)?scope.splice(path,0,term):Object.assign(scope,{[path]:term})))
-// ,[]);
-// };
-
  export function merge(target,source,override=1)
 {// unite scopes (assign if path specified to override).
  let assign=array(override)||string(override);
@@ -603,29 +641,30 @@
 ),cede);
 };
 
- export function route(term,...context)
+ export function route(term,...stack)
 {// compose with static context, methodic and scope-rebound alternatives. 
- if(functor(context[1]))
+ if(functor(stack[1]))
  throw Error("Route variant to merge dynamic values on dynamic paths is deprecated. Use search.merge to support it.");
  if(!this)return tether(route,...arguments);
  let scope=this;
  let path=[term].flat();
- let method=context[0]?.method?.toLowerCase();
+ let method=stack[0]?.method?.toLowerCase();
  let methodic=combine(method,drop(1));
  // record for methodic route taken. 
  let branch=[];
  let branched=compose(swap(branch),"length",major(0));
  let store=pass(record(drop(1,2)).bind(branch));
+ let offbeat=term=>buffer(compose(methodic,lift,differ(term),store),compose(store,swap(undefined)));
  let fail=compose(swap(branch),Error("not found: "+path.join("/")),"concat",infer("find",is(Error)),exit);
  let terms=path.map((term,index,path)=>infer(either
-(buffer(term,store)
-,whether(has(method),buffer(compose(methodic,lift,differ(term),store),compose(store,swap(undefined))))
+(buffer(term,compose(store,note))
+,whether(has(method),offbeat(term))
 ,buffer(tether(scope[term]),store)
 ,fail
-),...context,path.slice(0,index)));
+),...stack,path.slice(0,index)));
  let composition=describe(compose(...terms,whether
  // invoke method if not done already. 
-(branched,infer(),buffer(compose(infer(method,...context),crop(1)),crop(1))
+(branched,infer(),buffer(compose(infer(method,...stack),crop(1)),crop(1))
 )),route,...arguments);
  return scope?composition(scope):composition;
 };
@@ -824,14 +863,14 @@
  if(!limit)return infer.call(this,condition);
  let context=collect(this);
  let repeat=compose(wait(interval),swap(rank(context)),lift,expect(condition,interval,limit-1));
- return either.call(rank(context),condition,repeat);
+ return reduce(either(condition,repeat))(rank(context));
 };
 
- export function revert(term,...context)
+ export function revert(term,...stack)
 {// revert a Promise's inversion of control. 
  if(!defined(this))
  return pivot(revert,...arguments);
- return new Promise(compose(rank(context),this,lift,term));
+ return new Promise(compose(rank(stack),this,lift,term));
 };
 
  export function control(controller,...context)
@@ -843,17 +882,6 @@
 ,observe.call(controller.signal,{abort({target:{reason}})
 {(is(Error)(reason[0])?reject:resolve)(...reason);
 }},{once:true})))(...arguments);
-};
-
- export function when(...terms)
-{// demand conditions on context. 
- let condition=pass(describe(combine
-(...terms.map((term,index,terms)=>compose
-(drop(index),combine(not(term),unit),lift,(fail,...context)=>fail&&
- exit(term.name+": "+context.map(buffer(JSON.stringify,drop(1,2))).join(""))
-))
-),when,...terms));
- return defined(this)?condition(this):condition;
 };
 
  export function measure(label)
@@ -873,14 +901,14 @@
  export var tests=
  {induce:{context:[sum],terms:[1,2,3,"call"],condition:when(is(5))}
  ,deduce:
- {identity:{context:[sum],terms:[1,2,3,"call"],condition:when(is(6))}
- ,reduce:{context:[index,cast(index=>index.some(generator),expand)],terms:[1,rank([2,3]),4,"call"],condition:when(match([1,2,3,4]))}
+ {identity:{context:[sum],terms:[1,2,3,"call"],condition:when(is(5))}
+ ,reduce:{context:[index,cast(index=>index.some(generator),expand)],terms:[0,1,rank([2,3]),4,"call"],condition:when(match([1,2,3,4]))}
  },produce:
-[{context:[3],terms:[1,2,Function.call],condition:when(is(1,2,3))}
-,{context:[3],terms:[rank([1,2]),Function.call],condition:when(is(plural,3))}
-,{context:[3],terms:[rank([1,2]),Function.call,is(plural,3),true],condition:"equal"}
-,{context:[3],terms:[rank([rank([1,2])]),Function.call,is(plural,3),true],condition:"equal"}
-,{context:Array(100).fill(unit),terms:[rank([rank([1,2])]),Function.call,is(plural,3),false],condition:"equal",benchmark:true}
+[{context:[3],terms:[0,1,2,Function.call],condition:when(is(1,2,3))}
+,{context:[3],terms:[0,rank([1,2]),Function.call],condition:when(is(plural,3))}
+,{context:[3],terms:[0,rank([1,2]),Function.call,is(plural,3),true],condition:"equal"}
+,{context:[3],terms:[0,rank([rank([1,2])]),Function.call,is(plural,3),true],condition:"equal"}
+,{context:Array(100).fill(unit),terms:[0,rank([rank([1,2])]),Function.call,is(plural,3),false],condition:"equal",benchmark:true}
 ],compose:
 [{context:[3],terms:[1,2,Function.call],condition:when(is(1,2,3))}
 ,{context:[3],terms:[rank([1,2]),Function.call],condition:when(is(plural,3))}
@@ -923,7 +951,7 @@
 ,{context:[is(plural)],terms:[rank([rank([1,2])]),fold(infer("call")),is(plural),true],condition:"equal"}
 ],unit:
 [{context:[1,2,3],condition:when(is(1,2,3))}
-,{context:[rank([rank([1])])],condition:when(is(plural))}
+,{context:[rank([rank([rank([1])])])],condition:when(is(plural))}
 ],cede:
 [{context:[1,2,3],terms:[],condition:when(is(1,2,3))}
 ,{context:[1,rank([2,3])],condition:when(is(1,2,3))}
@@ -963,8 +991,8 @@
  ,flush:{context:[1,rank([rank([rank([rank([2,3])])])]),4],condition:when(is(1,4))}
  ,model:{context:[0,rank([1,rank([2,3]),4,rank([5,rank([6,7]),8]),9]),10],condition:when(match({0:0,1:{0:1,1:{0:2,1:3},2:4,3:{0:5,1:{0:6,1:7},2:8},4:9},2:10}))}
  ,spill:
- {sync:{context:[1,rank([rank([rank([rank([rank([rank([2,3])])])])])]),4],terms:[lift],condition:when(is(1,2,3,4))}
- ,async:{context:[1,rank([rank([rank([rank([Promise.resolve(2),rank([rank([3])])])])])]),4],terms:[lift],condition:when(is(1,2,3,4))}
+ {sync:{context:[1,rank([2,3]),4],terms:[lift],condition:when(is(1,2,3,4))}
+ ,async:{context:[1,rank([rank([rank([rank([Promise.resolve(2),rank([rank([3])])])])])]),4],terms:[lift,],condition:when(is(1,Promise,3,4))}
  ,asyncgen:{context:[1,each.call(rank([Promise.resolve(2),rank([rank([3])])]),async a=>Promise.resolve(a)),4],terms:[lift],condition:when(is(1,2,3,4))}
  ,drain:{context:[1,rank([rank([rank([rank([2,3])])])]),4],terms:[flush],condition:when(is(1,4))}
  }
@@ -990,25 +1018,25 @@
 ,{context:[a=>2,fail=>3],terms:[1,Function.call,2],condition:"equal"}
 ,{context:[exit],terms:[Function.call,is(Error),true],condition:"equal"}
 ],differ:
-[{context:[a=>a],terms:[buffer,1,infer(Function.call),is(Error)],condition:"ok"}
-,{context:[a=>2],terms:[1,infer(Function.call),2],condition:"equal"}
+[{context:[a=>a],terms:[buffer,1,"call",is(Error)],condition:"ok"}
+,{context:[a=>2],terms:[1,"call",2],condition:"equal"}
 ,{context:[],terms:[buffer,1,Function.call,is(Error)],condition:"ok"}
 ],either:
  {first:{context:[a=>a*2,a=>a*3],terms:[1,Function.call,2],condition:["equal"]}
  ,second:{context:[a=>false,a=>a*3],terms:[1,Function.call,3],condition:["equal"]}
  ,abscond:{context:[a=>false,drop()],terms:[1,Function.call,collect,c=>c.length,0],condition:["equal"]}
  ,identity:{context:[],terms:[null,1,Function.call,1],condition:["equal"]}
- ,neither:{context:[differ()],terms:[buffer,1,2,Function.call,is(Error),true],condition:["equal"]}
- ,promise:{context:[a=>false,a=>2],terms:[Promise.resolve(1),Function.call,2],condition:["equal"]}
- ,fail:{context:[a=>exit("b"),a=>2],terms:[1,Function.call,2],condition:["equal"]}
+ ,neither:{context:[differ()],terms:[buffer,0,1,2,Function.call,is(Error),true],condition:["equal"]}
+ ,promise:{context:[a=>false,a=>2],terms:[0,Promise.resolve(1),Function.call,2],condition:["equal"]}
+ ,fail:{context:[a=>exit("b"),a=>2],terms:[0,1,Function.call,2],condition:["equal"]}
  }
  ,whether:
  {boolean:
-[{context:[a=>true,1,2],terms:[{1:"a"},infer(Function.call),"a"],condition:["equal"]}
-,{context:[a=>false,1,2],terms:[{2:"a"},infer(Function.call),"a"],condition:["equal"]}
-],indexed:{context:[a=>a,swap(1),swap(2)],terms:[null,1,infer(Function.call),2],condition:["equal"]}
- ,switch:{context:[[a=>a,a=>true],swap(1),swap(2)],terms:[null,false,infer(Function.call),2],condition:["equal"]}
- ,fallback:{context:[[a=>a,a=>a],1,2,swap(3)],terms:[null,false,infer(Function.call),3],condition:["equal"]}
+[{context:[a=>true,1,2],terms:[{1:"a"},"call","a"],condition:["equal"]}
+,{context:[a=>false,1,2],terms:[{2:"a"},"call","a"],condition:["equal"]}
+],indexed:{context:[a=>a,swap(1),swap(2)],terms:[null,1,"call",2],condition:["equal"]}
+ ,switch:{context:[[a=>a,a=>true],swap(1),swap(2)],terms:[null,false,"call",2],condition:["equal"]}
+ ,fallback:{context:[[a=>a,a=>a],1,2,swap(3)],terms:[null,false,"call",3],condition:["equal"]}
  ,literal:
 [{context:[true,()=>"YES",()=>"NO"],terms:["call","YES"],condition:"equal"}
 ,{context:[false,()=>"YES",()=>"NO"],terms:["call","NO"],condition:"equal"}
@@ -1059,4 +1087,10 @@
  ,revert:
 [{context:[(resolve,reject,context)=>resolve(context)],terms:[2,Function.call,2],condition:["equal"]}
 ,{context:[(resolve,reject,context)=>Promise.resolve(context).then(resolve)],terms:[3,Function.call,3],condition:["equal"]}
-]};
+],route:
+{direct:{context:["greet","world"],terms:[{greet(request){return "hello "+request;}},"call",collect,["hello world"]],condition:"deepEqual"}
+,nested:{context:[["a","b"],"X"],terms:[{a:{b(request){return "got "+request;}}},"call",collect,["got X"]],condition:"deepEqual"}
+,method:{context:["missing",{method:"GET"}],terms:[{get(request){return {missing:"GET"};}},"call",collect,["GET"]],condition:"deepEqual"}
+,constitution:{context:["missing",{method:"GET"}],terms:[{missing:{get(request){return "GET";}}},"call",collect,["GET"]],condition:"deepEqual"}
+,recursive:{context:[["b","c","a"]],terms:[{a(){return this+2;},b:{c:1}},"call",collect,[3]],condition:"deepEqual"}
+}};

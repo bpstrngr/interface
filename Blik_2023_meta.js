@@ -545,7 +545,9 @@
 {return [" ",body,"\n"].flat().join(";\n ");
 }]
  ,...prune(([type,value])=>[is(any,match([any,{type}])),value],0,0)
-({EmptyStatement(){return "";}
+({Identifier(scope,[field,{name}]){return name;}
+ ,Literal(scope,[field,{raw,value}]){return raw??JSON.stringify(value);}
+ ,EmptyStatement(){return "";}
  ,BlockStatement(scope,[field,{body}])
 {let join=sum(body.map(({length})=>length))<100?"":"\n ";
  let [start,end]=scope.type==="Program"?[" ","\n"]:["{","}"];
@@ -646,10 +648,6 @@
 {return "await "+argument;
 },SpreadElement(scope,[field,{argument}])
 {return "..."+argument;
-},Identifier(scope,[field,{name}])
-{return name;
-},Literal(scope,[field,{raw,value}])
-{return raw??JSON.stringify(value);
 }}
 )}),-1),"body")
 ));
