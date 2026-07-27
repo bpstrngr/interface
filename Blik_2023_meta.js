@@ -702,6 +702,23 @@
 +"\\{|\\}[ \\n]*$","g"),"");
 };
 
+ export var hash=compose
+(stash(compose(drop(),"crypto","sha256","createHash",command.bind(import.meta.url)))
+,flip,"update","hex","digest"
+);
+
+ export function vlq(quantifiers)
+{let alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+ return Object.assign(Array(),quantifiers).map(entries=>
+ entries.map(segment=>segment.map(quantifier=>
+ // https://github.com/Rich-Harris/vlq/blob/master/src/index.js
+ [quantifier<0?(-quantifier<<1)|1:quantifier<<1].reduce(function clamp(stack,shifted)
+{return (!stack.length||shifted>0)&&(shifted>>>5>0)
+?clamp([...stack,(shifted&31)|32],shifted>>>5)
+:[...stack,shifted&31];
+},[]).map(quantifier=>alphabet[quantifier]).join("")).join("")).join(",")).join(";");
+};
+
  export async function sourcemap(request,body,response,route)
 {let target=this;
  if(simple(target))
@@ -771,16 +788,8 @@
  }
 ])})).reduce((quantifiers,quantifier)=>
  merge(quantifiers,quantifier,0));
- let vlq='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
- let mappings=Object.assign(Array(),quantifiers).map(entries=>
- entries.map(({skim,file,down,right,name})=>
- [skim,file,down,right,name].map(quantifier=>
- // https://github.com/Rich-Harris/vlq/blob/master/src/index.js
- [quantifier<0?(-quantifier<<1)|1:quantifier<<1].reduce(function clamp(stack,shifted)
-{return (!stack.length||shifted>0)&&(shifted>>>5>0)
-?clamp([...stack,(shifted&31)|32],shifted>>>5)
-:[...stack,shifted&31];
-},[]).map(quantifier=>vlq[quantifier]).join("")).join("")).join(",")).join(";");
+ let mappings=vlq(quantifiers.map(entries=>
+ entries.map(({skim,file,down,right,name})=>[skim,file,down,right,name])));
  let report=Object.entries(locations.map(([origin,target,name])=>[name,[
 [[address,origin.map(index=>index+1)].flat().join(":")
 ,[file,target.map(index=>index+1)].flat().join(":")
@@ -789,6 +798,62 @@
  merge(past,next,0))).map(([name,value])=>
  " "+[name+":",...value||[]].join("\n"));
  return {version:3,file,sources:[address],names,mappings,report,quantifiers};
+};
+
+ export async function stylemap(css,literal,source,address)
+{let object=Object.values(await interpret(css,"css").then(({body})=>body[0]))[0];
+ function tokens(node,found=[])
+{Object.entries(node).forEach(([key,value])=>
+ string(value)?found.push({key,value}):tokens(value,found));
+ return found;
+};
+ function candidates(node,found=[])
+{if(node?.type!=="ObjectExpression")
+ return found;
+ node.properties.forEach(property=>
+{let key=property.key?.type==="Literal"?String(property.key.value):property.key?.name;
+ if(key===undefined)
+ return;
+ let value=property.value?.type==="Literal"?String(property.value.value):undefined;
+ found.push({key,value,start:property.start});
+ candidates(property.value,found);
+});
+ return found;
+};
+ let astCandidates=candidates(literal);
+ let consumed=new Set();
+ let cursor=0;
+ let matches=[];
+ tokens(object).forEach(token=>
+{let match=astCandidates.find(candidate=>
+ !consumed.has(candidate)&&candidate.key===token.key&&candidate.value===token.value);
+ if(!match)
+ return;
+ consumed.add(match);
+ let needle=token.value!==undefined?token.key+":"+token.value:token.key;
+ let index=css.indexOf(needle,cursor);
+ if(index===-1)
+ return;
+ cursor=index+needle.length;
+ matches.push({generated:index,original:match.start});
+});
+ matches.sort((a,b)=>a.generated-b.generated);
+ let previous={generated:[0,0],original:[0,0]};
+ let quantifiers=[];
+ matches.forEach(({generated,original})=>
+{let targetPosition=coordinates(css,generated);
+ let sourcePosition=coordinates(source,original);
+ let line=targetPosition[0];
+ quantifiers[line]=quantifiers[line]||[];
+ quantifiers[line].push(
+[targetPosition[1]-(previous.generated[0]===line?previous.generated[1]:0)
+,0
+,sourcePosition[0]-previous.original[0]
+,sourcePosition[1]-previous.original[1]
+]);
+ previous={generated:targetPosition,original:sourcePosition};
+});
+ return {version:3,sources:[address],names:[],mappings:vlq(quantifiers)};
 };
 
  export async function imports(syntax,format={})
@@ -977,6 +1042,26 @@
  next.path.push(next.path.pop()-1);
  return [next,last];
 }}
+ ,css:
+ {" ":function([next]){return this.text(" ",[next]);}
+ ,"\n":function([next]){return this.text("\n",[next]);}
+ ,"{":function open([next])
+{let {path,text="",field}=next;
+ let selector=field!==undefined?field+":"+text:text;
+ return [merge(next,{text:"",field:undefined,path:[...path,selector.trim()]})];
+},"}":function close([next])
+{let {path,text="",field}=next;
+ let last=field!==undefined?record(text.trim(),[...path,field]):undefined;
+ return [merge(next,{text:"",field:undefined,path:path.slice(0,-1)}),last];
+},":":function colon([next])
+{let {text="",field}=next;
+ return [merge(next,{text:"",field:(field!==undefined?field+":":"")+text})];
+},";":function semicolon([next])
+{let {path,text="",field}=next;
+ if(field===undefined)
+ return [merge(next,{text:""})];
+ return [merge(next,{text:"",field:undefined}),record(text.trim(),[...path,field])];
+}}
  };
 
  var namespaces=
@@ -1080,6 +1165,10 @@
  return next;
 };
 
+ var stylemapsource="let composer={span:{style:[{\"@scope\":{\":scope\":{color:\"red\"}}}]}}";
+ var stylemapliteral=Object.values(search.call(await parse(stylemapsource)
+,({1:value})=>value?.type==="ObjectExpression"&&value.properties?.[0]?.key?.value==="@scope",true))[0];
+
  export const tests=
  {parse:
 [{empty:{context:[""],terms:["type","Program"],condition:"equal"}
@@ -1139,7 +1228,15 @@
 ,{context:["a(b(c))","javascript"],condition:when(match({body:[{name:"a",arguments:[{name:"b",arguments:[{name:"c"}]}]}]}))}
 ,{context:["a(1,2)","javascript"],condition:when(match({body:[{name:"a",arguments:["1","2"].map(value=>({value}))}]}))}
 ,{context:["function a(){b();}","javascript"],condition:when(match({body:[{name:"a",arguments:[],statements:[{name:"b",arguments:[]}]}]}))}
+],css:
+[{context:["&>span{opacity:0;animation:1s ease 0s 1 normal none running fadein}","css"],condition:when(match({body:[{"&>span":{opacity:"0",animation:"1s ease 0s 1 normal none running fadein"}}]}))}
+,{context:[":scope{&:not(.focused){display:none}}","css"],condition:when(match({body:[{":scope":{"&:not(.focused)":{display:"none"}}}]}))}
+,{context:["&:not(.focused):not(:hover){width:0}","css"],condition:when(match({body:[{"&:not(.focused):not(:hover)":{width:"0"}}]}))}
+,{context:["@scope{:scope{&>span[title]{&:hover{opacity:1}}&>span{opacity:0;animation:fadeout 2s}}}","css"],condition:when(match({body:[{"@scope":{":scope":{"&>span[title]":{"&:hover":{opacity:"1"}},"&>span":{opacity:"0",animation:"fadeout 2s"}}}}]}))}
 ]}
+ ,stylemap:
+[{context:["@scope{:scope{color:red}}",stylemapliteral,stylemapsource,"test.js"],condition:when(match({version:3,sources:["test.js"],names:[]}))}
+]
  ,serialize:
  {module:
 [{context:[{exports:{sum:"data:text/javascript;function sum(a,b){return a+b;}"}},"module"],condition:when(match(" export function sum(a,b){return a+b;}\n"))}

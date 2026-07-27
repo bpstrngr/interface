@@ -319,7 +319,7 @@
  return yank(context);
  let [scope]=context;
  let map=functor(term);
- if(map&&!warn.infer)console.trace(warn.infer="Infer will be demoted to dynamic access. Use Reduce to induce/append a term.")
+ if(map&&!warn.infer)console.warn(warn.infer=" Infer will be limited to dynamic access in the future.\n Use Reduce to induce/append a term dynamically.")
  let detach=string(term)&&term.startsWith("tether ")&&term.substring(7);
  let field=detach||term;
  let dynamic=map
@@ -992,7 +992,7 @@
  ,model:{context:[0,rank([1,rank([2,3]),4,rank([5,rank([6,7]),8]),9]),10],condition:when(match({0:0,1:{0:1,1:{0:2,1:3},2:4,3:{0:5,1:{0:6,1:7},2:8},4:9},2:10}))}
  ,spill:
  {sync:{context:[1,rank([2,3]),4],terms:[lift],condition:when(is(1,2,3,4))}
- ,async:{context:[1,rank([rank([rank([rank([Promise.resolve(2),rank([rank([3])])])])])]),4],terms:[lift,],condition:when(is(1,Promise,3,4))}
+ ,async:{context:[1,rank([rank([rank([rank([Promise.resolve(2),rank([rank([3])])])])])]),4],terms:[lift,],condition:when(is(1,2,3,4))}
  ,asyncgen:{context:[1,each.call(rank([Promise.resolve(2),rank([rank([3])])]),async a=>Promise.resolve(a)),4],terms:[lift],condition:when(is(1,2,3,4))}
  ,drain:{context:[1,rank([rank([rank([rank([2,3])])])]),4],terms:[flush],condition:when(is(1,4))}
  }

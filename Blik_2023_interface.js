@@ -17,15 +17,19 @@
 
  export var worker=
  {imports:
- {"/Blik_2023_inference.js":["","revert","compose","combine","drop","collect","infer","buffer","is","note","exit","slip","differ","observe"]
+ {"/Blik_2023_inference.js":["","revert","compose","combine","drop","collect","infer","buffer","is","string","note","exit","slip","differ","observe"]
  }
  ,exports:
- {name:""
- ,subscribe(worker,label)
+ {name:"anonymous"
+ ,subscribe(peer,label)
 {// receive commands from ./delegate. 
- return observe.call(swarm[label]=string(worker)?swarm[label]:worker,{message,error(fail){exit(label,fail)}}).postMessage("Worker "+name+" subscribed \nto commands from "+label);
+ if(swarm[label])
+ return console.warn("Worker "+name+" already subscribed to a peer with label: "+label);
+ return observe.call(swarm[label]=peer,{message,error(fail){exit(label,fail)}}).postMessage("Worker "+name+" subscribed \nto commands from "+label);
 },unsubscribe(label)
 {// stop receiving commands. 
+ if(!swarm[label])
+ return console.warn("Worker "+name+" not subscribed to a peer with label: "+label);
  return observe.call(swarm[label],{message,error(fail){exit(label,fail);}},false).postMessage("Worker "+name+" unsubscribed \nof commands from "+label);
 },command
  ,message({data})
@@ -46,7 +50,8 @@
 )();
 }},procedures:{async initialize()
 {var swarm={};
- subscribe(this||globalThis.self||await import("worker_threads").then(({parentPort})=>parentPort),name);
+ var peer=this||globalThis.self||await import("worker_threads").then(({parentPort})=>parentPort);
+ subscribe(peer,"default");
 }}
  };
  export var {swarm={},subscribe,message}=worker.exports;
@@ -76,7 +81,7 @@
  offload
 ?await register(address).then(async function initialize(loader)
 {// reciprocate subscription to commands from loader thread. 
- worker.exports.subscribe(loader,name);
+ subscribe(loader,"loader");
  if(!inspected)return;
  let {debugPort:port}=globalThis.process;
  await delegate.call(loader,"inspect",port+1);
@@ -92,7 +97,10 @@
  let {protocol,host,pathname}=url(specifier,this);
  let type=specifier.endsWith(".json")?"json":undefined;
  let custom=(loader||offload||type)&&prune.call(
- {[features.attributes||features.assertions]:{type,peer:swarm?.[name]?this||protocol+"//"+location+"/":undefined}
+ {[features.attributes||features.assertions]:
+ {type,peer:swarm?.loader?this||protocol+"//"+location+"/":undefined
+ // swarm.loader prunes irregular attributes, but it will not guard imports from that thread itself. 
+ }
  },({1:value})=>value);
  let module=import(specifier,custom);
  return infer.call(module,...context);
@@ -101,9 +109,9 @@
  export function inference([module,...context]=globalThis.process.argv.slice(1))
 {// delegated by ./resolve on loader thread to infer command line context. 
  // without a loader in scope, the primary module is Interface itself. 
- let complete=swarm[name]?compose
+ let complete=swarm.loader?compose
 (swap("testing","bundling")
-,each(compose(crop(1),delegate.bind(swarm[name]))),lift,are(false)
+,each(compose(crop(1),delegate.bind(swarm.loader))),lift,are(false)
 ):compose(combine(testing,bundling),are(false));
  return module
 ?buffer
@@ -130,7 +138,7 @@
 );
 };
 
- export async function commission(module,name)
+ export async function commission(module,peer)
 {let ephemeral=functor(module);
  if(ephemeral&&!module.name)
  throw Error("Can't create ephemeral worker for anonymous function.");
@@ -142,19 +150,20 @@
 ?[Buffer.from,"base64","toString","data:text/javascript;base64,",flip,"concat",collect,slip(URL),Reflect.construct]
 :[{type:"text/javascript"},collect,slip(Blob),Reflect.construct,URL.createObjectURL]
 );
- let execArgv=process.execArgv.filter(not(match(/^--import/)));
+ let name=string(module)?module:functor(module)?module.name:module.exports?.name;
  let thread=await compose.call
 (agent.node?import("worker_threads"):{Worker},search("Worker")
-,[address,{type:"module",name:context[0],execArgv}],Reflect.construct
+,[address,{type:"module",name,execArgv:agent.node?process.execArgv.filter(not(match(/^--import/))):undefined}],Reflect.construct
 ,agent.node?await import("worker_threads").then(({MessageChannel})=>new MessageChannel()):{}
 ,buffer(compose
 (revert(function register(resume,error,module,{port1:near,port2:far})
-{// observe channel until worker reports subscription. 
- observe.call(near||module,{message({data}){note.call(2,data),resume([this,far||module,module]);},error,exit:error},{once:true});
-}),([near,far,module])=>
- // re-subscribe to channel port. 
- delegate.call(near,"unsubscribe",module.name).then(unsubscribed=>
- delegate.call(near,"subscribe",far,module.name)).then(swap(near))
+{// observe channel until worker reports subscription.
+ observe.call(near||module,{message({data}){note.call(2,data),resume([this,far,module]);},error,exit:error},{once:true});
+}),([near,far,module])=>far
+ // supply far end of custom message channel to re-subscribe. Browsers won't have this.
+?delegate.call(near,"unsubscribe","default").then(unsubscribed=>
+ delegate.call(near,"subscribe",far,peer)).then(swap(near))
+:module
 ),compose("stack",exit))
 );
  URL.revokeObjectURL(address);
@@ -187,8 +196,8 @@
 
  export async function initialize(primary)
 {// called on loader thread upon /register from primary. 
- worker.procedures.initialize.call(primary);
- // anticipate subscription from primary thread. 
+ subscribe(primary,"primary");
+ // anticipate subscription reciprocated by primary thread. 
  observe.call(primary,{message:compose(drop(1),"data",wait(1000),note.bind(2))},{once:true});
  //await segmentation();
 };
@@ -204,6 +213,11 @@
 ,{shortCircuit:true},merge
 ,stash(compose(drop(),push(Date),[],Reflect.construct,"getTime",["time"],record)),merge
 );
+ export function manifest(module,stage,relative,relation)
+{merge(modules,module,[relative,stage],0);
+ relation&&merge(modules,{[relation]:{imports:new Set([relative])}},0);
+ return search.call(modules,[relative,stage]);
+};
 
  export async function resolve(specifier,context,next)
 {// import module from specifier, infer context if provided. 
@@ -215,7 +229,7 @@
  let peer=attributes?.peer||context?.parentURL;
  if(!peer)
  // delegate primary import to primary thread to infer command line context. 
- return thread&&swarm[name]?delegate.call(swarm[name],"inference"):inference();
+ return thread&&swarm.primary?delegate.call(swarm.primary,"inference"):inference();
  if(attributes?.peer)
  // clone immutable context without custom attributes ({peer} overrides parentURL for commands). 
  context=prune.call(context,([field,value])=>({peer:undefined}[field]||value));
@@ -225,14 +239,11 @@
  let extend=!protocol.startsWith("http")
 ?compose(crop(2),stash(immediate),recover,modules,absolute,peer,"call",peer,relate)
 :compose(swap(swarm),search([name]),[[peer,specifier],{"inference/tether":"interface/fetch"},["headers","status"]],tether(delegate),when(is("200")),swap(specifier),peer,relate);
- let precedent=merge(modules
-,{[relative]:{}
- ,[relation]:peer.endsWith("/")?undefined:{imports:new Set([relative])}
- },0)[relative];
- let redact=compose(swap(modules),{[relative]:undefined,[relation]:{imports:new Set([relative])}},-1,merge);
+ let precedent=merge(modules,{[relative]:{}},0)[relative];
+ let redact=compose(swap(modules),{[relative]:undefined},-1,merge);
  return precedent.resolution=precedent.resolution||compose
 (buffer(next,buffer(compose(extend,["url"],record),compose(pass(redact),drop(0,2),note.bind(1),exit)))
-,shortcircuit,slip(modules),[relative,"resolution"],merge,search([relative,"resolution"])
+,shortcircuit,infer(manifest,"resolution",relative,relation)
 ,pass(compose(swap(colors.yellow+"export:"+colors.cyan+relative+colors.yellow+" to:"+colors.gray+relation+colors.steady),console.log))
 ,cede
 )(absolute,context);
@@ -250,7 +261,7 @@
  return route.reduce((past,file,index,route,left=route.length-index-1)=>past.catch(fail=>
  probe(route.slice(0,index+1).join("/")||"/").then(file=>left&&agent.node&&file.isDirectory()
 ?exit(route.join("/")+" is a directory.")
-:cede(unit(route.splice(0,index+1).join("/"),...route))))
+:cede(route.splice(0,index+1).join("/"),...route)))
 ,Promise.reject());
 };
 
@@ -324,7 +335,7 @@
 ,[]),"\n","join",slip(entry),true,access
 ))
  // perform idempotent source resolution before bundling to support re-imports. 
-,pass(parts=>!binding&&delegate.call(swarm[name],["inference/tether interface/command","inference/undefine"],peer,entry))
+,pass(parts=>!binding&&delegate.call(swarm.primary,["inference/tether interface/command","inference/undefine"],peer,entry))
 ,slip(entry)
 ,binding
 ?buffer
@@ -503,7 +514,7 @@
  context=prune.call(context,([field,value])=>field==="peer"?undefined:value);
  let {format,importAssertions:assertions={},importAttributes:attributes=assertions}=context||{};
  let syntax=attributes.type||mime(source)?.replace(/.*\//,"");
- var shortcircuit=compose({shortCircuit:true},merge,[relative,"module"],record,slip(modules),0,merge,relative,"module");
+ var shortcircuit=compose({shortCircuit:true},merge,infer(manifest,"module",relative));
  if(/^https*/.test(source))
  return compose.call(source,fetch,"text",source=>({source,format:/\.json$/.test(source)?"json":"module"}),shortcircuit,cede);
  [context,attributes,format,syntax]=await profile(source,context,attributes,format,syntax);
@@ -649,7 +660,7 @@
 {if(scope.format!=="module"||scope.tests||!scope.responseURL)
  return scope;
  return scope.tests=compose
-(buffer(delegate.bind(swarm[name],"test"))
+(buffer(swarm.primary?delegate.bind(swarm.primary,"test"):test)
 ,crop(1),["tests"],record,slip(scope),merge
 )(scope.responseURL);
 };
@@ -1165,7 +1176,7 @@
  {command:
 [{scope:true,context:["http://localhost:8000/test","/"+name],condition:when(is(modular))}
 ,{scope:true,context:[import.meta.url,import.meta.url,"tests"],terms:[entry=>rank([entry,tests]),Object.is],condition:"ok"}
-,{scope:true,context:[import.meta.url,import.meta.url],terms:[swap(swarm[name],"modules"),tether(delegate),"/"+name,has("imports")],condition:"ok"}
+,{scope:true,context:[import.meta.url,import.meta.url],terms:[swap(swarm.loader,"modules"),tether(delegate),"/"+name,has("imports")],condition:"ok"}
 ],access:
 [{context:[import.meta.url],terms:[value=>typeof value,"object"],condition:"equal"},
  {context:[import.meta.url,true],terms:[value=>typeof value,"string"],condition:"equal"}

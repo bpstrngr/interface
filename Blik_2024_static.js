@@ -1,7 +1,7 @@
  import {note,produce,search,merge,prune,record,remember,compose,spill,buffer,when,collect,infer,combine,wait,drop,slip,lift,differ,crop,each,swap,pass,not,compound,functor,native,exit,tether,either,whether,describe,string,pattern,major,match,has,is,are,defined,flip,heritage,extract} from "./Blik_2023_inference.js";
- import {name as loader,access,persist,purge,command,list,interpret,fetch,swarm,delegate,location,listen,infrastructure} from "./Blik_2023_interface.js";
+ import {access,persist,purge,command,list,interpret,fetch,swarm,delegate,location,listen,infrastructure} from "./Blik_2023_interface.js";
  import {document,hypertext,css,throttle,error,capture,defer} from "./Blik_2023_fragment.js";
- import {url,serialize,mime,proceduralize,sourcemap,cookie,folder,path,query} from "./Blik_2023_meta.js";
+ import {url,serialize,mime,proceduralize,sourcemap,cookie,folder,path,query,hash} from "./Blik_2023_meta.js";
  import {random} from "./Blik_2023_search.js";
  import git,{syndication} from "./Blik_2026_git.js";
  export {syndication};
@@ -11,7 +11,7 @@
  export var encryption={code:undefined};
  export var [classified,published]=
 [[/.*\.git.*/]
-,[]
+,[/\/hash$/]
 ];
  export var [classify,publish]=[classified,published].map(list=>produce
 (when(are(either(string,pattern)))
@@ -47,8 +47,8 @@
 );
 
  export default
- {infrastructure(){return delegate.call(swarm[loader],"infrastructure");}
- ,history(){return delegate.call(swarm[loader],"infrastructure","time");}
+ {infrastructure(){return delegate.call(swarm.loader,"infrastructure");}
+ ,history(){return delegate.call(swarm.loader,"infrastructure","time");}
  ,sources(){return infrastructure();}
  ,git:prune.call(git,({1:git})=>functor(git)?compose(pass(crop(1,infer(authorize,"ranger"))),tether(git)):git)
  ,get:compose(combine(filesystem,routes),lift,merge)
@@ -104,6 +104,8 @@
  {[field+"SourceMap"]:"./sourcemap"})).reduce(merge)
  },merge)
 )(this);
+},hash(request,body,response,route)
+{return hash(simple(this)?serialize(this,"module"):this.toString());
 },sourcemap
  ,error
  };

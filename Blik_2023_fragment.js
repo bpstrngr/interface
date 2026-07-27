@@ -106,7 +106,14 @@
 ((node,name,path,...context)=>[node].flat().filter(something).map((node,index)=>[node,name,index,...context]),rank
 ,each(produce
 (crop(-1),each([rank]),lift
-,whether(is([simple,not(has("#text"))],"style"),each([produce(crop(1),css,["#text"],record)])),lift
+,whether(is([simple,not(has("#text"))],"style"),each([produce
+(crop(1),whether(either(has("id"),has("class")),combine
+(tether(extract,["id","class","fragment"],true)
+,swap("\n/*# sourceMappingURL=./jssmap?id=")
+,compose(["style"],record,qualify,infer("slice",5)),swap("&fragment="),search("fragment"),swap("*/")
+,extract(["id","class","fragment"])
+),{}),lift,drop(1,0,css),drop(-1,0,compose(infer("concat"),["#text"],record)),merge
+)])),lift
 ,rotate(1),combine(crop(1),tether(element))
 ,lift,drop(2,0,tether(append))
 )),lift
@@ -140,7 +147,7 @@
 ,nodes=buffer(descend.bind(this),constant([]))(selector,0)
 )=>(update==="last"||specified)?nodes.at(-1):nodes[index]||
  specified&&descend.call(this,name,0).find(node=>
- match({},demarkup(node,["id","class"])))
+ match({id:value.id,class:value.class},demarkup(node,["id","class"])))
 ,index
 );
  if(update==="last"&&node?.nextSibling)
@@ -345,12 +352,13 @@
  {exports:{capture,merge,heritage,dispatch,defer,prototype,type,something,defined,simple,compound,array,string,construct}
  ,procedures:function()
 {capture.call(window.document.body);
- let workers=["worker","serviceworker"];
- workers.map(address=>
- window[address]=import("/Blik_2023_interface.js").then(({delegate})=>
- delegate(["",address,"module"].join("/"))).then(worker=>
- window[address]=worker).catch(fail=>
- window[address]=console.warn("Worker not available at "+address)));
+ window.worker=import("/Blik_2023_interface.js").then(({commission})=>
+ commission("/worker/module")).then(worker=>
+ window.worker=worker).catch(fail=>
+ window.worker=console.warn("failed to load /worker/module"));
+ window.serviceworker=navigator.serviceWorker.register("/serviceworker/module",{type:"module"}).then(registration=>
+ window.serviceworker=registration).catch(fail=>
+ window.serviceworker=console.warn("failed to load /serviceworker/module: ",fail));
 }};
  let script=[activation,scripts].flat().flatMap(src=>
 [{type:"module",defer:true}
@@ -490,16 +498,9 @@
  let {enter,backspace,escape,updown,leftright}=keyboard(keyCode);
  if(escape)
  return target.dispatchEvent(new Event("blur",{bubbles:true}));
- let value=target.textContent;
- if(enter&&!ctrlKey&&value)
- return event.preventDefault(),compose.call(target.parentNode
-,{span:[{},{role:"menu"}]
- ,ul:list([value])
- },tether(document),spill,lift);
- let {method}=demarkup(this.closest("[role=form]"),"method");
  let values=this.closest("[title]").querySelector("ul");
  let selection=Array.from(values?.querySelectorAll("li.hover")||[]);
- if(method==="get"&&enter)
+ if(enter)
  return event.preventDefault()
 ,selection.length?selection.pop().click():target.dispatchEvent(new Event("submit",{bubbles:true}));
  if(values&&(updown||leftright))
@@ -529,7 +530,8 @@
  input.closest("[role=form]").dispatchEvent(new Event("submit",{bubbles:true}));
 }}
  }}};
- let [title,{label=title,value=entry[1]}]=entry??{};
+ let [title,value]=entry;
+ [title,{label=title,value=entry[1]}]=[title,value||{}]??{};
  if(!defined(value))
  return [];
  let [text,type]=decide(merge(prune.call(
@@ -1353,15 +1355,15 @@
 
  export function css(style,prefix="")
 {let styles=prefix&&Object.entries(style).filter(([field])=>
- !"&@".includes(field[0]));
+ field[0]!=="@");
  let rule=styles.length&&styles.reduce((rule,entry,index)=>
-[rule,something(entry[1])?simple(entry[1])
-?[""," "][Number(Boolean(index))]+css(...entry.reverse())
-:["",";"][Number(Boolean(index))]+entry.join(":"):""
+[rule,something(entry[1])?["",";"][Number(Boolean(index))]+(simple(entry[1])
+?css(...entry.reverse())
+:entry.join(":")):""
 ].join("")
 ,prefix+"{")+"}";
  let rules=Object.entries(style).filter(([field])=>
- !prefix||"&@".includes(field[0])).flatMap(([field,value])=>
+ !prefix||field[0]==="@").flatMap(([field,value])=>
  field.split(",").flatMap(field=>[value].flat().map(value=>
  [field,value]))).filter(({1:value})=>
  simple(value)).map(([field,value])=>
@@ -1648,6 +1650,10 @@
  ,terms:[surge,"outerHTML"]
  ,condition:when(is("<span><style>.span{display:block}</style></span>"))
  }
+,{context:[{span:{style:[{"@scope":{":scope":{color:"red"}},id:"composer-style",fragment:"/module/function"}]}}]
+ ,terms:[surge,"outerHTML"]
+ ,condition:when(is("<span><style id=\"composer-style\" fragment=\"/module/function\">@scope{:scope{color:red}}\n/*# sourceMappingURL=./jssmap?id=#composer-style&fragment=/module/function*/</style></span>"))
+ }
 ],classed:
 [{context:[{span:{class:"node"}}]
  ,condition:compose(surge,"outerHTML",when(is("<span class=\"node\"></span>")))
@@ -1732,4 +1738,11 @@
  ,mixed:{context:["abc\nA@reference.pdf\ndef\n{text-align:left}\nghi",semiotics],terms:[collect,"length",6],condition:"equal"}
  ,noise:{context:["abc\n{text-align:left}\ndef\ng={h:1};",semiotics],terms:[collect,3,"span","span","span","#text","def\ng={h:1};"],condition:"equal"}
  }
+ ,css:
+[{context:[{".span":{"display":"block"}}],condition:when(is(".span{display:block}"))}
+,{context:[{".a":{color:"red","&:hover":{color:"blue"}}}],condition:when(is(".a{color:red;&:hover{color:blue}}"))}
+,{context:[{".a":{color:"red","&:hover,&.hover":{color:"blue"}}}],condition:when(is(".a{color:red;&:hover,&.hover{color:blue}}"))}
+,{context:[{"@scope":{":scope":{color:"red","&:hover":{color:"blue"}}}}],condition:when(is("@scope{:scope{color:red;&:hover{color:blue}}}"))}
+,{context:[{toolbar:{"&>span":{"&.title":{"white-space":"nowrap"},"&:not(.title)":{display:"block"}}}}],condition:when(is("toolbar{&>span{&.title{white-space:nowrap};&:not(.title){display:block}}}"))}
+]
  };

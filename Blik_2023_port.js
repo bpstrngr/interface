@@ -1,7 +1,7 @@
  import {note,debug,cede,lift,match,unit,sum,map,colors,search,surge,merge,prune,record,remember,route,when,stash,flip,are,functor,string,not,pattern,revert,each,clock,observe,is,has,same,minor,slip,something,compound,infer,tether,whether,collect,rank,buffer,compose,combine,either,drop,crop,swap,wait,exit,pass,binary,simple,array,expect,extract,numeric} from "./Blik_2023_inference.js";
- import {name as loader,arrayBuffer,delegate,swarm,command,access,locate,prompt,list,fetch,digest,version,compress,stage,feature} from "./Blik_2023_interface.js";
+ import {arrayBuffer,delegate,command,access,locate,prompt,list,fetch,digest,version,compress,stage,feature,manifest,location} from "./Blik_2023_interface.js";
  import {encrypt} from "./Blik_2023_search.js";
- import {mime,bytes,url,cookie} from "./Blik_2023_meta.js";
+ import {mime,bytes,url,cookie,hash} from "./Blik_2023_meta.js";
  import {browser,jsdom} from "./Blik_2023_fragment.js";
  import {animal} from "./Blik_2024_svg.js";
 
@@ -38,7 +38,7 @@
 );
  var respond=compose
 (drop(1),drop(1,0,stash(revert(decode,new TextDecoder("utf-8")))),combine
-(either(cache&&compose(distinction,slip(memory),tether(search),reencode),response)
+(either(cache&&compose(combine(distinction,compose("headers",version,feature)),slip(memory),drop(2,0,tether(search)),when(match),reencode),response)
 ,unit
 ),surge,tether(submit)
 );
@@ -49,18 +49,21 @@
  // for self-signed certificates, assign them to the NODE_EXTRA_CA_CERTS option. 
  pass(compose(domain,certification,lift,"addContext")))
 ,pass(host=>note.call(2,[host._connectionKey||port," open"].join("")))
+,pass(()=>memory&&Promise.all(Object.entries(memory).map(([key,entry])=>
+ entry.hash&&fetch(key+"/hash").then(fresh=>fresh.text()).then(fresh=>
+ fresh!==entry.hash&&delete memory[key]))))
+,pass(()=>memory&&command.bind(import.meta.url)("fs","watch",location,(event,filename)=>
+ Object.keys(memory).forEach(key=>("/"+filename).startsWith(key)&&delete memory[key])))
 ,pass(compose(relay,broadcast))
 ,revert((close,error,channel)=>observe.call(channel,{close,error})&&suspend||close(channel))
 ,cede
 )(agent,await Object.values(certifications)[0],buffer(respond,compose(crop(1),note)));
 };
 
- function distinction({url,headers})
-{return url+Object.values(feature(version(headers))).map(Boolean).map(Number).join("");
-};
+ function distinction({url}){return url;};
 
  function persist(response,memory,cache,path,request)
-{merge(memory,response,distinction(request));
+{merge(memory,merge(response,feature(version(request.headers))),distinction(request));
  return access(cache,memory,true);
 };
 
@@ -120,8 +123,12 @@
  content=JSON.stringify(content);
  if(json&&importing&&!features.json)
  content=Buffer.from("export default "+content+";"),type=mime("js"),js=true;
- content=await encode(content);
- status=response?fail?500:numeric(status)?status:200:404;
+ if(js)
+ manifest({},"served","/"+path.join("/"),importing&&request.headers.referer&&new URL(request.headers.referer).pathname);
+ let etag=js?hash(content):undefined;
+ let cached=etag&&request.headers["if-none-match"]===etag;
+ content=cached?"":await encode(content);
+ status=cached?304:response?fail?500:numeric(status)?status:200:404;
  return {content,status
  ,header:JSON.parse(JSON.stringify({status
  ,"Access-Control-Allow-Origin":"*"
@@ -129,6 +136,7 @@
  ,"Location":location
  ,"Set-Cookie":cookies?cookie(cookies):undefined
  ,"Content-Type":type
+ ,"ETag":etag
  ,...headers
  }))
  };
