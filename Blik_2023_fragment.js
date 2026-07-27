@@ -110,7 +110,7 @@
 (crop(1),whether(either(has("id"),has("class")),combine
 (tether(extract,["id","class","fragment"],true)
 ,swap("\n/*# sourceMappingURL=./jssmap?id=")
-,compose(["style"],record,qualify,infer("slice",5)),swap("&fragment="),search("fragment"),swap("*/")
+,compose(["style"],record,qualify,infer("slice",5),encodeURIComponent),swap("&fragment="),compose(search("fragment"),encodeURIComponent),swap("*/")
 ,extract(["id","class","fragment"])
 ),{}),lift,drop(1,0,css),drop(-1,0,compose(infer("concat"),["#text"],record)),merge
 )])),lift
@@ -329,7 +329,7 @@
  let window=this.ownerDocument.defaultView;
  let address=window.location.href;
  if(!message.room)
- message.room=["",path(address),query(url(address)).source].join("/");
+ message.room=[path(address),query(url(address)).source].join("/");
  if(window.socket?.readyState===3)
  window.socket=await socket(window.location.origin,listen);
  window.socket.send(JSON.stringify(message));
@@ -359,6 +359,8 @@
  window.serviceworker=navigator.serviceWorker.register("/serviceworker/module",{type:"module"}).then(registration=>
  window.serviceworker=registration).catch(fail=>
  window.serviceworker=console.warn("failed to load /serviceworker/module: ",fail));
+ if("onbeforeinstallprompt" in window)
+ window.addEventListener("beforeinstallprompt",function(event){(window.installprompt=event).preventDefault();});
 }};
  let script=[activation,scripts].flat().flatMap(src=>
 [{type:"module",defer:true}
@@ -369,7 +371,7 @@
 [index?string(style)?{"#text":style}:style:{rel:"stylesheet",type:"text/css",href:style}
 ]})
 ,[[],[]]);
- link.push({rel:"icon",type:"image/svg+xml",href:favicon||"favicon.ico"})
+ link.push({rel:"icon",type:"image/svg+xml",href:favicon||"favicon.ico"},{rel:"manifest",href:"/manifest"})
  let meta=
 [{charset:"utf-8"}
 ,{"http-equiv":"content-language",content:"en-us"}
@@ -417,7 +419,7 @@
  deferred=deferred.difference(new Set(
 [["motion","orientation","orientationabsolute"].map(sensor=>"device"+sensor)
 ,["start","run","end","cancel"].map(state=>"transition"+state)
-,"unhandledrejection","pagereveal","pageshow"
+,"unhandledrejection","pagereveal","pageshow","beforeinstallprompt"
 ].flat().map(event=>"on"+event)));
  deferred.forEach(event=>scope.addEventListener(event.slice(2),refer,{passive:false}));
  actions.then(actions=>
@@ -442,7 +444,7 @@
 };
 
  export function defer(event)
-{// asynchronizing event dispatch unblocks its synchronous default unless prevented. 
+{// preventdefault to block synchronous dispatch in favor of asynchronous action. Rescue event before destruction on block. 
  event.preventDefault();
  event=Object.fromEntries("type/target/keyCode/isTrusted/bubbles/srcElement".split("/").map(field=>
  [field,event[field]]));
@@ -931,23 +933,38 @@
  this.style[index%2?"top":"left"]=Number(this.style[index%2?"top":"left"].match(/\d+/)?.[0])+overflow*(index<2||-1)+"px",infer()));
 };
 
- export var drag=observe({point({x,y,isTrusted:click})
+ export var drag=observe({point({x,y,isTrusted:click,pointerId})
 {merge(this
 ,{drag:click&&{x,y}
  ,style:click?{transition:"transform",transform:"translate(0px,0px)"}:{transition:"",transform:""}
  ,control:!click||this.control?this.control?.abort():new AbortController()
  });
- if(click)
+ ({x,y}=this.getBoundingClientRect());
+ let size=this.getBoundingClientRect();
+ let {margin}=this.ownerDocument.defaultView.getComputedStyle(this),gap=parseFloat(margin)*2;
+ let {width,height,divide=[width-size.width-gap,height-size.height-gap]}=this.parentNode.getBoundingClientRect();
+ let [left,top]=[width,height].map((range,index)=>[x,y][index]<range/2);
+ if(!click)
+ return [transform(this.style.transform),Object.entries({right:!left,top})].reduce(({x,y},entries)=>
+ merge(this.style,{transition:"none",transform:"translate("+[x+(x<0?width:-width),-y+(y<0?height:-height)]+")"})&&
+ merge(this.style,{transition:"revert"})&&
+ entries.forEach(([name,state])=>this.classList.toggle(name,state)));
  observe.call(this
 ,{touchmove(event){if(event.cancelable)event.preventDefault();}
  ,pointermove(event)
-{let {clientX:x,clientY:y}=event;
+{if(pointerId)pointerId=this.setPointerCapture(pointerId);
+ let {clientX:x,clientY:y}=event;
  let [dx,dy]=[this.drag,this.drag={x,y}].reduce(({x:x0,y:y0},{x,y})=>[x-x0,y-y0]);
- [x,y]=[transform(this.getAttribute("transform")),/\d+/].reduce(({x,y},digits)=>[x,y].map((side,index)=>
- Math[index?"min":"max"](0,side+[dx,dy][index]).toFixed(1)+"px"));
- merge(this.style,{transform:"translate("+[x,y]+")"});
+ [x,y]=[divide,transform(this.style.transform)].reduce(([width,height],{x,y})=>
+ [x,y].map((side,index)=>
+ Math[[left,top][index]?"min":"max"]
+([width,height][index]*([left,top][index]||-1)
+,Math[[left,top][index]?"max":"min"](0,side+[dx,dy][index])
+).toFixed(1)));
+ merge(this.style,{transform:"translate("+[x,y].map(side=>side+"px")+")"});
 }},{signal:this.control.signal});
 }});
+
 
  export function drillresize({width,height})
 {// use in svg resizeobserver until SVG resize becomes observable: 
@@ -996,7 +1013,7 @@
  if(!request.headers?.accept?.split(",").includes("text/html"))
  return {body:this.stack,status:500};
  let style=await css({body:{background:"black",color:color.red}});
- let [report]=compose.call({div:{id:"frame",style:"white-space:pre-wrap","#text":this.stack}},"Error","/svg/animal/worm/document",[],[style],hypertext,document,surge);
+ let [report]=compose.call({div:{id:"frame",style:"white-space:pre-wrap","#text":this.stack}},"Error","/svg/animal/worm/vector",[],[style],hypertext,document,surge);
  let body=report.outerHTML;
  destroy(report);
  return {body,status:500,type:mime("html")};
@@ -1678,7 +1695,7 @@
  {lang:"en",head:
  {title:{"#text":"Error"}
  ,meta:[{"charset":"utf-8"}]
- ,link:[{rel:"icon",type:"image/svg+xml",href:"/svg/animal/worm/document"}]
+ ,link:[{rel:"icon",type:"image/svg+xml",href:"/svg/animal/worm/vector"}]
  ,style:[{"#text":"body{background:black;color:#c62828}"}]
  ,script:[]
  }

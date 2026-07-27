@@ -28,7 +28,7 @@
  let certifications=prune.call(certification,([domain,certificates])=>
  certify(certificates,distinguishedname,[domain]),0,0);
  await jsdom.call(browser,agent.globalAgent.protocol+"//localhost"+":"+port);
- var cachable=each([unit,compose(infer("join","/"),slip("/"),"concat",published,permit),when(match({method:/get/i}))]);
+ var cachable=each([when(match({status:minor(300)})),compose(infer("join","/"),slip("/"),"concat",published,permit),when(match({method:/get/i}))]);
  var response=compose
 (combine(path,unit),lift
 ,combine(buffer(route.bind(routes),either(tether(routes.error),crop(1))),unit),lift
@@ -52,8 +52,9 @@
 ,pass(()=>memory&&Promise.all(Object.entries(memory).map(([key,entry])=>
  entry.hash&&fetch(key+"/hash").then(fresh=>fresh.text()).then(fresh=>
  fresh!==entry.hash&&delete memory[key]))))
-,pass(()=>memory&&command.bind(import.meta.url)("fs","watch",location,(event,filename)=>
- Object.keys(memory).forEach(key=>("/"+filename).startsWith(key)&&delete memory[key])))
+,pass(()=>command.call(import.meta.url,"fs","watch",location,(event,filename)=>
+ console.warn("File "+event+": "+filename)||
+ Object.keys(memory||{}).forEach(key=>("/"+filename).startsWith(key)&&delete memory[key])))
 ,pass(compose(relay,broadcast))
 ,revert((close,error,channel)=>observe.call(channel,{close,error})&&suspend||close(channel))
 ,cede
@@ -125,7 +126,7 @@
  content=Buffer.from("export default "+content+";"),type=mime("js"),js=true;
  if(js)
  manifest({},"served","/"+path.join("/"),importing&&request.headers.referer&&new URL(request.headers.referer).pathname);
- let etag=js?hash(content):undefined;
+ let etag=js?await hash(content):undefined;
  let cached=etag&&request.headers["if-none-match"]===etag;
  content=cached?"":await encode(content);
  status=cached?304:response?fail?500:numeric(status)?status:200:404;
@@ -248,7 +249,6 @@
  let {http,dns,tls}=challenges.reduce((challenges,challenge)=>merge(challenges
 ,{[challenge.type.match(/^[^-]+/)[0]]:[challenge]},0),{});
  let routes={".well-known":{"acme-challenge":http.map(({token})=>({[token]:[token,identity].join(".")})).reduce(merge)}};
- note({http,routes});
  let host=await expose(routes,{network:"http",port:80},false);
  await http.reduce(record(({url})=>combine(acme,either
 (expect(compose(fetch,digest,note,combine("status","error"),whether
@@ -296,7 +296,7 @@
 (function(peer,host,event)
 {let message=JSON.parse(event.data);
  if(message.action!=="check")
- console.log({from:peer.author.name+"@"+peer._socket.remoteAddress,message});
+ console.log({from:peer.author.name+"@"+peer._socket.remoteAddress,...message});
  return buffer(tether(actions[message.action]),note.bind(2))(host,message,peer);
 },message=>peer.send(JSON.stringify(is(Error)(note(message))?{error:note.call(1,message).message}:message))
 ),host)
@@ -310,7 +310,7 @@
 };
 
  var anonymous=Object.entries(animal).map(([name,svg])=>
- ({name,icon:"/svg/animal/"+name+"/document"}));
+ ({name,icon:"/svg/animal/"+name+"/vector"}));
 
  export async function traverse(source)
 {let {default:{interface:html,...routes}}=await command.bind(import.meta.url)(source);

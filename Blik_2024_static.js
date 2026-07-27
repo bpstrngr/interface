@@ -1,7 +1,7 @@
  import {note,produce,search,merge,prune,record,remember,compose,spill,buffer,when,collect,infer,combine,wait,drop,slip,lift,differ,crop,each,swap,pass,not,compound,functor,native,exit,tether,either,whether,describe,string,pattern,major,match,has,is,are,defined,flip,heritage,extract} from "./Blik_2023_inference.js";
  import {access,persist,purge,command,list,interpret,fetch,swarm,delegate,location,listen,infrastructure} from "./Blik_2023_interface.js";
- import {document,hypertext,css,throttle,error,capture,defer} from "./Blik_2023_fragment.js";
- import {url,serialize,mime,proceduralize,sourcemap,cookie,folder,path,query,hash} from "./Blik_2023_meta.js";
+ import {document,hypertext,css,throttle,error,capture,defer,window} from "./Blik_2023_fragment.js";
+ import {url,serialize,mime,proceduralize,sourcemap,cookie,folder,path,query,hash,parse,stylemap} from "./Blik_2023_meta.js";
  import {random} from "./Blik_2023_search.js";
  import git,{syndication} from "./Blik_2026_git.js";
  export {syndication};
@@ -106,7 +106,25 @@
 )(this);
 },hash(request,body,response,route)
 {return hash(simple(this)?serialize(this,"module"):this.toString());
+},async jssmap(request)
+{let {id,fragment}=query(url(request));
+ let [,module,name]=fragment.split("/");
+ let {origin}=new URL("http"+(request.client.encrypted?"s":"")+"://"+request.headers.host);
+ let base=path(request).replace(/\/?jssmap$/,"");
+ let [html,source]=await Promise.all(
+[fetch(origin+"/"+base).then(response=>response.text())
+,fetch(origin+"/"+module).then(response=>response.text())
+]);
+ let dom=new window.DOMParser().parseFromString(html,"text/html");
+ let element=dom.querySelector("style"+id);
+ let ast=parse(source);
+ let [declaration]=Object.values(search.call(ast
+,([field,value])=>(value?.type==="VariableDeclarator"||value?.type==="FunctionDeclaration")&&value.id?.name===name,true));
+ let [literal]=Object.values(search.call(declaration
+,([field,value])=>value?.type==="ObjectExpression"&&value.properties?.[0]?.key?.value==="@scope",true));
+ return {type:"json",body:JSON.stringify(await stylemap(element.textContent,literal,source,module))};
 },sourcemap
+ ,vector:compose(crop(1),infer(record,["svg"]),document,spill,lift,crop(1))
  ,error
  };
 

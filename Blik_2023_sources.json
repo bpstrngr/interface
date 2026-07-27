@@ -1010,5 +1010,15 @@
     "https://github.com/angus-c/just/packages/function-once": {"just-once@2.0.1": []}
   },
   "Hilton_2018_isomorphic-git-http.js":{"https://github.com/isomorphic-git/isomorphic-git/src/http/node/index.js src/utils":{"v1.38.4":["src/http/node/index.js",{"detach":["../../typedefs-http.js"],"alias":{"simple-get":"./Feross_2014_simpleget.js"}}]}},
-  "Ruizok_2021_perfect-freehand.js":{"https://github.com/steveruizok/perfect-freehand/packages/perfect-freehand/src":{"v1.2.3":["packages/perfect-freehand/src/index.ts"]}}
+  "Ruizok_2021_perfect-freehand.js":{"https://github.com/steveruizok/perfect-freehand/packages/perfect-freehand/src":{"v1.2.3":["packages/perfect-freehand/src/index.ts"]}},
+  "Yisi_2021_resvg.js":{
+    "https://github.com/thx/resvg-js":{"v2.6.2":["wasm-binding.ts",{
+      "syntax":"typescript",
+      "alias":{"./wasm/dist":"./Yisi_2021_resvg_binding.js"}
+    }]}
+  },
+  "Yisi_2021_resvg_binding.js":{"https://github.com/thx/resvg-js":{"v2.6.2":["src/lib.rs",{
+    "syntax":"rust",
+    "replace":{"Literal":{"index_bg.wasm":"./Reizner_2017_resvg.wasm"}}
+  }]}}
 }

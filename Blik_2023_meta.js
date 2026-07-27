@@ -703,7 +703,7 @@
 };
 
  export var hash=compose
-(stash(compose(drop(),"crypto","sha256","createHash",command.bind(import.meta.url)))
+(stash(compose(drop(),"crypto","createHash","sha256",command.bind(import.meta.url)))
 ,flip,"update","hex","digest"
 );
 
@@ -788,7 +788,7 @@
  }
 ])})).reduce((quantifiers,quantifier)=>
  merge(quantifiers,quantifier,0));
- let mappings=vlq(quantifiers.map(entries=>
+ let mappings=vlq(Object.assign(Array(),quantifiers).map(entries=>
  entries.map(({skim,file,down,right,name})=>[skim,file,down,right,name])));
  let report=Object.entries(locations.map(([origin,target,name])=>[name,[
 [[address,origin.map(index=>index+1)].flat().join(":")
@@ -1234,8 +1234,15 @@
 ,{context:["&:not(.focused):not(:hover){width:0}","css"],condition:when(match({body:[{"&:not(.focused):not(:hover)":{width:"0"}}]}))}
 ,{context:["@scope{:scope{&>span[title]{&:hover{opacity:1}}&>span{opacity:0;animation:fadeout 2s}}}","css"],condition:when(match({body:[{"@scope":{":scope":{"&>span[title]":{"&:hover":{opacity:"1"}},"&>span":{opacity:"0",animation:"fadeout 2s"}}}}]}))}
 ]}
+ ,vlq:
+[// sourcemap's own quantifiers are a sparse object keyed by generated line, not a real array.
+ {context:[{0:[[0,0,0,0]],2:[[1,0,1,0]]}],condition:when(match("AAAA;;CACA"))}
+]
  ,stylemap:
 [{context:["@scope{:scope{color:red}}",stylemapliteral,stylemapsource,"test.js"],condition:when(match({version:3,sources:["test.js"],names:[]}))}
+]
+ ,hash:
+[{context:["a"],condition:when(match(/^[0-9a-f]{64}$/))}
 ]
  ,serialize:
  {module:
