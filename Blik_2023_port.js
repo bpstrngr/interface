@@ -4,6 +4,7 @@
  import {mime,bytes,url,cookie,hash} from "./Blik_2023_meta.js";
  import {browser,jsdom} from "./Blik_2023_fragment.js";
  import {animal} from "./Blik_2024_svg.js";
+ import {files,remotes} from "./Blik_2026_git.js";
 
  export async function expose(protocol,range,suspend=true)
 {({range,protocol}=await prompt({range,protocol}));
@@ -12,7 +13,8 @@
  await [range,module].reduce(record(module=>
  string(module)?command.call(import.meta.url,module):{default:module}),[]);
  let {network,port,certification={},distinguishedname,cache}=search.call(credentials,fields);
- let memory=cache&&await buffer(access,compose(infer(access,{},true),"object",access))(cache,"object");
+ Error.stackTraceLimit=Infinity
+ let memory=cache&&await buffer(access,compose(drop(1),infer(access,{},true),"object",access))(cache,"object")||{};
  let [[domain,[signature,certificate]=[]]=[]]=Object.entries(certification);
  let [encrypted,syndicated]=await [encryption,syndication].reduce(record(required=>
  required?prompt(extract.call(credentials,Object.keys(required))):{}),[]);
@@ -42,6 +44,7 @@
 ,unit
 ),surge,tether(submit)
 );
+ let scope=await Promise.all((await remotes(location)).map(remote=>files(remote,"stable",location)))
  return compose
 ("createServer",port
 ,revert((proceed,cancel,host,port)=>host.listen(port,infer(proceed)))
@@ -51,10 +54,13 @@
 ,pass(host=>note.call(2,[host._connectionKey||port," open"].join("")))
 ,pass(()=>memory&&Promise.all(Object.entries(memory).map(([key,entry])=>
  entry.hash&&fetch(key+"/hash").then(fresh=>fresh.text()).then(fresh=>
- fresh!==entry.hash&&delete memory[key]))))
-,pass(()=>command.call(import.meta.url,"fs","watch",location,(event,filename)=>
- console.warn("File "+event+": "+filename)||
- Object.keys(memory||{}).forEach(key=>("/"+filename).startsWith(key)&&delete memory[key])))
+ fresh!==entry.hash&&delete memory[key]&&
+ persist(undefined,memory,cache,[],note({url}))))))
+,pass(()=>command.call(import.meta.url,"fs","watch",location,(event,filename)=>scope.has(filename)&&
+(console.warn("File "+event+": "+filename)||
+ Object.keys(memory||{}).forEach(url=>("/"+filename).startsWith(url)&&
+ delete memory[url]&&persist(undefined,memory,cache,[],note({url})))
+)))
 ,pass(compose(relay,broadcast))
 ,revert((close,error,channel)=>observe.call(channel,{close,error})&&suspend||close(channel))
 ,cede
@@ -64,7 +70,7 @@
  function distinction({url}){return url;};
 
  function persist(response,memory,cache,path,request)
-{merge(memory,merge(response,feature(version(request.headers))),distinction(request));
+{merge(memory,merge(response,request&&feature(version(request.headers))),distinction(request));
  return access(cache,memory,true);
 };
 
