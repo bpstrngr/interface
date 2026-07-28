@@ -1,4 +1,4 @@
- import {note,debug,float,cede,lift,reduce,match,unit,sum,map,colors,search,surge,merge,prune,record,remember,route,when,stash,flip,are,functor,string,not,pattern,revert,each,clock,observe,is,has,same,minor,slip,something,compound,infer,tether,whether,collect,rank,buffer,compose,combine,either,drop,crop,swap,wait,exit,pass,binary,simple,array,expect,extract,numeric} from "./Blik_2023_inference.js";
+ import {note,debug,bind,float,cede,lift,reduce,match,unit,sum,map,colors,search,surge,merge,prune,record,remember,route,when,stash,flip,are,functor,string,not,pattern,revert,each,clock,observe,is,has,same,minor,slip,something,compound,infer,tether,whether,collect,rank,buffer,compose,combine,either,drop,crop,swap,wait,exit,pass,binary,simple,array,expect,extract,numeric} from "./Blik_2023_inference.js";
  import {arrayBuffer,delegate,command,access,locate,prompt,list,fetch,digest,version,compress,feature,manifest,location} from "./Blik_2023_interface.js";
  import {encrypt} from "./Blik_2023_search.js";
  import {mime,bytes,url,cookie,hash} from "./Blik_2023_meta.js";
@@ -29,7 +29,7 @@
  let certifications=prune.call(certification,([domain,certificates])=>
  certify(certificates,distinguishedname,[domain]),0,0);
  await jsdom.call(browser,agent.globalAgent.protocol+"//localhost"+":"+port);
- var cachable=each(
+ var cachable=bind(each,
 [when(match({status:minor(300)}))
 ,produce(infer("join","/"),slip("/"),"concat",published,permit)
 ,when(match({method:/get/i}))

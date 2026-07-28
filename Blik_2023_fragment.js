@@ -1,5 +1,5 @@
  import {locate,command,recompose,delegate,agent,thread,fetch as freefetch,digest} from "./Blik_2023_interface.js";
- import {note,induce,index,describe,decide,produce,colors,wait,stagger,search,merge,prune,record,route,observe,rank,constant,rotate,deduce,lift,fold,collect,slip,spill,push,infer,either,each,pass,tether,surge,flush,buffer,differ,compose,some,flip,skip,stash,revert,combine,whether,swap,compound,something,string,basic,minor,functor,promise,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdf,when,debug,expect,generator,plural,native,clock,type,complex,heritage,prototype,expressions,cede,extract,fields} from "./Blik_2023_inference.js";
+ import {note,induce,index,describe,decide,produce,colors,wait,stagger,search,merge,prune,record,route,observe,rank,constant,rotate,deduce,lift,fold,collect,slip,spill,push,infer,either,each,pass,tether,surge,flush,buffer,differ,compose,some,flip,skip,stash,revert,combine,whether,swap,compound,something,string,basic,minor,functor,promise,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdf,when,debug,expect,generator,plural,native,clock,type,complex,heritage,prototype,expressions,cede,extract,fields,instance} from "./Blik_2023_inference.js";
  import {unfold} from "./Blik_2023_search.js";
  import {serialize,proceduralize,mime,data,file,relate,cookie,query} from "./Blik_2023_meta.js";
  import * as layout from "./Blik_2023_layout.js";
@@ -291,12 +291,24 @@
  string(value)&&value?.length).map(value=>selector+value)).join('')+attributes;
 };
 
- export function focus(node)
-{combine.call
-(unit(node.ownerDocument.defaultView.getSelection(),node.ownerDocument.createRange())
-,compose(drop(1),node,node.textContent.length,combine("setStart","collapse"))
-,"removeAllRanges","addRange"
-);
+ export default media;
+
+ export function media(resource,{source,...fields}={})
+{if(is(window.EventTarget)(resource))
+ return resource;
+ if(is(ArrayBuffer)(resource))
+ resource=new Uint8Array(resource);
+ if(pdf(resource))
+ return print(resource);
+ if(is(Uint8Array)(resource)||resource.constructor.name==="Buffer")
+ resource=new TextDecoder("utf-8").decode(resource);
+ if(compound(resource))
+ resource=serialize(resource,"json");
+ return simple(resource)
+?document({span:{style:"white-space:pre;","#text":JSON.stringify(resource,null,2)}})
+:resource.startsWith("<")
+?window.document.createRange().createContextualFragment(resource)
+:parse(resource,semiotics);
 };
 
  export function hypertext(body,title,favicon,scripts,styles=[])
@@ -349,7 +361,7 @@
 }
 }};
  let activation=
- {exports:{capture,merge,heritage,dispatch,defer,prototype,type,something,defined,simple,compound,array,string,construct}
+ {exports:{capture,merge,heritage,dispatch,defer,prototype,type,something,defined,simple,compound,array,string,construct,instance}
  ,procedures:function()
 {capture.call(window.document.body);
  window.worker=import("/Blik_2023_interface.js").then(({commission})=>
@@ -453,8 +465,6 @@
  console.warn(event);
  console.groupEnd();
 };
-
- export function dispose(){if(globalThis.window)Object.assign(window.actions,actions);}
 
  export async function navigate(node,sibling)
 {let path=window.location.pathname.replace(/[a-zA-Z0-9]*\/$/,match=>!node||sibling?"":match)+(node?node+"/":"");
@@ -619,24 +629,6 @@
  [!compound(value)&&this.querySelector("[name="+field+"]"),value]).forEach(([input,value])=>
  input&&compose(tether(document),spill,lift)(input,{[input.role==="checkbox"?"aria-checked":"#text"]:value}));
  return fill.call(this,this.getAttribute("method"));
-};
-
- export function media(resource,{source,...fields}={})
-{if(is(window.EventTarget)(resource))
- return resource;
- if(is(ArrayBuffer)(resource))
- resource=new Uint8Array(resource);
- if(pdf(resource))
- return print(resource);
- if(is(Uint8Array)(resource)||resource.constructor.name==="Buffer")
- resource=new TextDecoder("utf-8").decode(resource);
- if(compound(resource))
- resource=serialize(resource,"json");
- return simple(resource)
-?document({span:{style:"white-space:pre;","#text":JSON.stringify(resource,null,2)}})
-:resource.startsWith("<")
-?window.document.createRange().createContextualFragment(resource)
-:parse(resource,semiotics);
 };
 
  // export function dispatch(form)
@@ -1203,12 +1195,12 @@
  // }),target.nextSibling);
 };
 
- export async function charge(actions,syntax)
-{return compose
-({exports:{actions}
- ,procedures:[proceduralize(dispose)]
- },merge,"module",serialize,text=>({type:"module","#text":text})
-)(syntax);
+ export function focus(node)
+{combine.call
+(unit(node.ownerDocument.defaultView.getSelection(),node.ownerDocument.createRange())
+,compose(drop(1),node,node.textContent.length,combine("setStart","collapse"))
+,"removeAllRanges","addRange"
+);
 };
 
  export function keyboard(code)

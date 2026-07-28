@@ -181,7 +181,11 @@
 };
 
  export function bind(term,...stack)
-{return function(){return term.call(...stack,...arguments);};
+{return function(scope,...context){return term.call(scope,...stack,...context);};
+};
+
+ export function haul(term)
+{return function(){return term(this,...arguments);};
 };
 
  export function free(term)
@@ -478,7 +482,7 @@
  function resolve(past,terms,term,stack)
 {let next=array(term)?term[past.length-1]:term;
  return compose
-(value,next?whether(tally(1),infer(next,terms,...stack)):unit
+(value,next?whether(tally(1),induce(infer(next,terms,...stack))):unit
 ,pass(term=>terms.push(term))
 )(past.at(-1));
 };

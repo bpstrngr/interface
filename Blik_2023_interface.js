@@ -704,17 +704,10 @@
 };
 
  export async function prompt(...context)
-{// request context from client interface, 
- // or offer it to the client (syncing the cli 
- // with debugPort and customizing it don't work yet). 
+{// request context from client interface.
  let {stdin:input,stdout:output}=globalThis.process;
- let socket=await buffer.call
-(command.call(import.meta.url,"net","connect",globalThis.process.debugPort)
-,revert((connect,error,connection)=>observe.call(connection,{connect:infer(connect),error}))
-,compose("message",note.bind(1))
-);
  let {createInterface}=await import("readline");
- let interfaces=[{input,output}/*,socket&&{input:socket,output:socket}||[]*/].flat().map(createInterface);
+ let interfaces=[{input,output}].map(createInterface);
  let entries=context.flat().flatMap(term=>compound(term)?Object.entries(term):[[term]]);
  entries=await entries.reduce(record(([field,term])=>
  control(new AbortController(),revert((resolve,reject,abortion,...interfaces)=>
