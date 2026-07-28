@@ -115,7 +115,7 @@
 ):compose(combine(testing,bundling),are(false));
  return module
 ?buffer
-(compose(Module.bind(import.meta.url),infer(...context),note.bind(2),expect(complete,5000),swap(0),globalThis.process.exit)
+(compose(Module.bind(import.meta.url),infer(...context),pass(console.log),expect(complete,5000),swap(0),globalThis.process.exit)
 ,compose(note.bind(1),swap(1),globalThis.process.exit)
 )(module)
 :revert.call
@@ -315,7 +315,8 @@
  }));
 });
  let input=entries.flatMap(({input})=>input).filter(string);
- let binding=/\.gyp$/.test(input[0]);
+ let binding=/\.gyp$|\.rs$/.test(input[0]);
+ let native=/\.rs$/.test(input[0])?wasm:make;
  let clean=pass(buffer(compose(swap(target),purge,done=>delete this[target]&&note.call(2,"purged sources of "+target+".")),note));
  if(entries.length)
  return compose.call
@@ -339,7 +340,7 @@
 ,slip(entry)
 ,binding
 ?buffer
-(compose(make,absolute,slip(command.call(import.meta.url,"fs","promises")),"rename",swap(absolute),pass(infer(note.bind(2),"bundle ready.")),clean)
+(compose(native,absolute,slip(command.call(import.meta.url,"fs","promises")),"rename",swap(absolute),pass(infer(note.bind(2),"bundle ready.")),clean)
 ,compose(clean,exit)
 )
  // not returning bundle promise after source assembly to unblock immediate resolution from source. 
@@ -466,6 +467,43 @@
  let {1:target}=binding.match(/"target_name": *"(.*)"/);
  await buffer(compose(spawn.bind(true),note),exit)("node-gyp","-C",path.join("/"),"configure","build");
  return path.join("/")+"/build/Release/"+target+".node";
+};
+
+ async function wasm(source,parts)
+{// compile a Rust crate to wasm32 (cargo) then process it through wasm-bindgen for a web-target js binding.
+ let path=source.split("/");
+ let file=path.pop();
+ let edits=parts.map(({format})=>format?.edit).filter(Boolean).reduce(merge,{});
+ if(Object.keys(edits).length)
+ await compose(edits,edit,slip(source),true,access)(await access(source,true));
+ let root,manifest;
+ for(let depth=path.length;depth>0&&!manifest;depth--)
+{root=path.slice(0,depth).join("/");
+ manifest=await access(root+"/Cargo.toml",true).catch(fail=>undefined);
+}
+ if(!manifest)
+ exit(Error("no Cargo.toml found above "+source));
+ let {1:target}=manifest.match(/name = "(.*)"/);
+ let {1:bindgen}=manifest.match(/wasm-bindgen = "=?(.*)"/);
+ await buffer(compose(spawn.bind(true),note),exit)
+ ("cargo","build","--manifest-path",root+"/Cargo.toml","--target","wasm32-unknown-unknown","--release");
+ let asset=
+ {"linux-x64":"x86_64-unknown-linux-musl","linux-arm64":"aarch64-unknown-linux-gnu"
+ ,"darwin-x64":"x86_64-apple-darwin","darwin-arm64":"aarch64-apple-darwin"
+ ,"win32-x64":"x86_64-pc-windows-msvc"
+ }[globalThis.process.platform+"-"+globalThis.process.arch];
+ let tool=root+"/wasm-bindgen";
+ await access(tool,true).catch(async fail=>
+{let archive=await fetch("https://github.com/wasm-bindgen/wasm-bindgen/releases/download/"
++bindgen+"/wasm-bindgen-"+bindgen+"-"+asset+".tar.gz").then(response=>response.arrayBuffer()).then(Buffer.from);
+ await decompress(archive,tool,"wasm-bindgen");
+ await command.call(import.meta.url,"fs","promises","chmod",tool,0o755);
+});
+ let compiled=root+"/target/wasm32-unknown-unknown/release/"+target.replace(/-/g,"_")+".wasm";
+ await buffer(compose(spawn.bind(true),note),exit)
+ (tool,compiled,"--target","web","--out-dir",root+"/pkg","--out-name","index");
+ await persist(await access(root+"/pkg/index_bg.wasm","binary"),location+"/Reizner_2017_resvg.wasm");
+ return root+"/pkg/index.js";
 };
 
  export async function access(file,encoding,content)
@@ -722,7 +760,7 @@
  export var compress=revert((revert,reject,buffer)=>
  command.call(import.meta.url,"zlib","gzip",buffer,(fail,buffer)=>fail?reject(fail):revert(buffer)));
 
- export async function decompress(source,target)
+ export async function decompress(source,target,filter)
 {let [buffer,zip,tar]=string(source)
 ?[await access(buffer,"binary"),[/\.(gz|zip)$/,/\.tar$/].map(pattern=>pattern.test(buffer))].flat()
 :[source,true];
@@ -746,11 +784,16 @@
  duplex.push(buffer),duplex)));
  let extractor=await import("./isaacs_2011_node-tar.js").then(({Parser})=>new Parser());
  let folder={};
+ let matched=[];
  let prefix="extracting ";
  let pathspace=globalThis.process.stdout.columns-prefix.length;
  await revert((resolve,reject,stream)=>observe.call(stream
 ,{entry(entry)
-{print(entry.path.slice(0,pathspace),prefix.length);
+{if(filter&&!entry.path.endsWith(filter))
+ return entry.resume();
+ print(entry.path.slice(0,pathspace),prefix.length);
+ if(filter)
+ return entry.on("data",data=>matched.push(data));
  entry.on("data",function(data){this.push(data.toString("utf-8"))}.bind(
  entry.path.match(/^(.*)\/(.*)/).slice(1).map(path=>
  path.split("/")).reduce((path,[file])=>
@@ -762,6 +805,8 @@
 :[])))
 },close(){console.log("\nextracted "+target+".");resolve(folder)}
  }))(tarstream.pipe(extractor),globalThis.process.stdout.write(prefix));
+ if(filter)
+ return persist(Buffer.concat(matched),target);
  if(target)
  return persist(Object.values(folder)[0],target);
  /*try

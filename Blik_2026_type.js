@@ -7,6 +7,8 @@
 },cast,type);
 };
 
+ export function constructor(term){return term?.constructor?.name;};
+
  export function prototype(term,limit,path=[])
 {if(path.length>limit)
  return [];
@@ -42,8 +44,8 @@
  export function functor(term){return type(term)==="function";}
  export function functional(term){return functor(term)||term?.startsWith?.("data:text/javascript;")||"FunctionDeclaration/FunctionExpression/ArrowFunctionExpression".split("/").includes(term?.type);}
  export function lambda(term){if(functor(term))term=String(term);let index=term.indexOf("=>")+1;return index&&parameters(term.slice(0,index-1));}
- export function asynchronous(term){return ["AsyncGeneratorFunction","AsyncFunction"].includes(term?.constructor?.name);}
- export function promise(term){return term?.constructor?.name==="Promise"&&functor(term.then);}
+ export function asynchronous(term){return ["AsyncGeneratorFunction","AsyncFunction"].includes(constructor(term));}
+ export function promise(term){return constructor(term)==="Promise"&&functor(term.then);}
  export function pattern(term){return term instanceof RegExp;}
  export function composed(term){return functor(term)&&term.name.includes("(");}
  export function binary(term){return type(term)==="boolean";}
@@ -51,7 +53,7 @@
  export function numeric(term){return type(term)==="number"}
  export function finite(term){return numeric(term)&&term<Infinity}
  export function compound(term){return Boolean(type(term)==="object"&&term);}
- export function simple(term){return compound(term)&&Object.hasOwn(term,"constructor")||term?.constructor?.name==="Object";}
+ export function simple(term){return compound(term)&&Object.hasOwn(term,"constructor")||constructor(term)==="Object";}
  export function basic(term){return simple(term)||array(term);}
  export function native(term){return !compound(term)||basic(term);}
  export function complex(term){return compound(term)&&!basic(term);}
@@ -101,7 +103,7 @@
 ?"\""+clip(term).replace(/\n/g,"")+"\""
 :functor(term)
 ?term.name||"functor"
-:term?.constructor?.name||term?.constructor?.constructor?.name||type(term);
+:constructor(term)||constructor(term?.constructor)||type(term);
  let eponymous=context.shift();
  let value=[String(this||""),eponymous?.name||eponymous].filter(Boolean).join("")
 +(context.length?"("+context.map(depict).join(",")+")":"");

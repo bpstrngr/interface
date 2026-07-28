@@ -21,6 +21,7 @@
  export function constant(term){return describe(function(){return term;},constant,term);};
  export function unary(term){return term;};
  export function* unit(){yield* arguments;};
+ export async function* float(){yield* arguments;};
  export function index(){return Array.from(arguments);};
  export function rank(index){if(!iterable(index))console.warn("Rank invoked on non-index. Uninduced context?");return unit.apply(null,index);}
  export function yank(index){return array(index)?index.length-1?rank(index):index[0]:index;};
@@ -94,7 +95,7 @@
  let replace=!crop&&tail-head&&functor(stack[0]);
  return infer.call
 (replace?infer.call(rank(context.slice(head,tail)),...stack):rank(stack)
-,(...stack)=>rank([context,context.splice(head,tail-head,...stack)][crop])
+,(...stack)=>yank([context,context.splice(head,tail-head,...stack)][crop])
 );
 },drop,...arguments);
 };
@@ -319,7 +320,6 @@
  return yank(context);
  let [scope]=context;
  let map=functor(term);
- if(map&&!warn.infer)console.warn(warn.infer=" Infer will be limited to dynamic access in the future.\n Use Reduce to induce/append a term dynamically.")
  let detach=string(term)&&term.startsWith("tether ")&&term.substring(7);
  let field=detach||term;
  let dynamic=map
@@ -469,7 +469,7 @@
  let status=induce(next=>next.done);
  let value=fold(induce(search("value")));
  let context=plural(this)?this:rank([this]);
- let synchronous=generator(context)&&!asynchronous(term);
+ let synchronous=generator(context)&&!(array(term)?term.some(asynchronous):asynchronous(term));
  return describe(synchronous
 ?      function*(){while(!      next(this,...arguments))yield       resolve(...arguments);}
 :async function*(){while(!await next(this,...arguments))yield await resolve(...arguments);}
