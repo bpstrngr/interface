@@ -1156,6 +1156,49 @@
 ]});
 };
 
+ export var erase=
+ {imports:
+ {"/Blik_2023_inference.js":["","compose","spill","lift","observe","match","major"]
+ ,"/Blik_2023_interface.js":["","fetch"]
+ ,"/Blik_2023_fragment.js":["","document","memory"]
+ ,"/Blik_2024_svg.js":"* as svg"
+ }
+ ,exports:{default:
+ {".message>span:first-of-type":
+ {...observe({hover({isTrusted:hover,target})
+{if(this!==target)return;
+ if(!hover)
+ return [target.firstChild.nextSibling].forEach(function remove(node){node&&remove(node.nextSibling),node?.remove();});
+ let name=this.closest(".message").querySelector(".name").textContent;
+ let author=memory("author",match({expires:major(Date.now())}));
+ if(name!==author?.name&&author?.rank!=="ranger")
+ return;
+ let [actions]=compose(document,spill,lift)({span:{class:"actions",style:"width:0",svg:
+ {role:"button",viewBox:"0 0 448 512"
+ ,...svg.effect.shadow_amber
+ ,path:{d:"M432 32H312l-9.4-18.7A24 24 0 0 0 281.1 0H166.8a23.72 23.72 0 0 0-21.4 13.3L136 32H16A16 16 0 0 0 0 48v32a16 16 0 0 0 16 16h416a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16zM53.2 467a48 48 0 0 0 47.9 45h245.8a48 48 0 0 0 47.9-45L416 128H32z"}
+ }}});
+ this.firstChild.after(actions);
+ actions.style.width="auto";
+}})
+ }
+ ,".message svg[role=button]":
+ {async click()
+{let [,resource,...source]=this.closest(".messages").dataset.source.split("/");
+ let message=this.closest(".message");
+ let {index}=message.dataset;
+ let body=JSON.stringify({[source.join("/")]:{[index]:null}});
+ let comments=await fetch("/"+resource+"?override=true",{method:"put",body});
+ if(comments.status!==200)return;
+ let style=message.querySelector("style");
+ if(style)
+ (message.nextSibling||message.previousSibling)?.append(style);
+ [message.previousSibling].forEach(function decrement(node){if(!node)return;decrement(node.previousSibling);node.dataset.index-=1;});
+ message.remove();
+}}
+ }}
+ };
+
  export function chapters(id)
 {let target=(this?.closest("body")||window.document).querySelector("#"+id);
  let fragment=target.parentNode.parentNode;
