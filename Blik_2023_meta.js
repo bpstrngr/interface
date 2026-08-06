@@ -1252,7 +1252,7 @@
  {procedure:{context:[parse("function a(b,c){let d=[0,1,2,3,4,5,6,7,8,9];let [max,hundred,characters,per,line,exceeded,by,yapping,ten,long,ish,words]=d;return d*2}"),"tacit"],route:lift,condition:when(match(" \n function a(b,c)\n{let d=[0,1,2,3,4,5,6,7,8,9];\n let [max,hundred,characters,per,line,exceeded,by,yapping,ten,long,ish,words]=d;\n return d*2;\n};\n \n"))}
  ,function:{context:[parse("function a(b,c){return b+c}"),"tacit"],route:lift,condition:when(match(" \n function a(b,c){return b+c;};\n \n"))}
  ,arrows:{context:[parse("(b,c)=>b+c"),"tacit"],route:lift,condition:when(match(" \n (b,c)=>b+c;\n \n"))}
- ,shorthands:{context:[parse("let {a,b}={a(){},b}"),"tacit"],route:lift,terms:note,condition:when(match(" \n let {a,b}={a(){},b};\n \n"))}
+ ,shorthands:{context:[parse("let {a,b}={a(){},b}"),"tacit"],route:lift,condition:when(match(" \n let {a,b}={a(){},b};\n \n"))}
  ,nesting:{context:[parse("var a=[1,{b:2}];"),"tacit"],route:lift,condition:when(match(" \n var a=[1,{b:2}];\n \n"))}
  ,control:{context:[parse("if(a>1){b=2}else{b=3}"),"tacit"],route:lift,condition:when(match(" \n if(a>1){b=2;}else{b=3;}\n \n"))}
  ,exclaim:{context:[parse("!true;"),"tacit"],route:lift,condition:when(match(" \n !true;\n \n"))}

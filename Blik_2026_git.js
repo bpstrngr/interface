@@ -1,4 +1,4 @@
- import {note,compose,slip,swap,unary,buffer,expect,record,prune,colors,exit} from "./Blik_2023_inference.js";
+ import {note,compose,slip,swap,unary,buffer,expect,record,prune,colors,exit,string} from "./Blik_2023_inference.js";
  import {prompt,print,compile,command,access,test,locate} from "./Blik_2023_interface.js";
  import {folder,url,query} from "./Blik_2023_meta.js";
  import http from "./Hilton_2018_isomorphic-git-http.js";
@@ -17,7 +17,7 @@
  let {pathname}=url(request);
  let [remote,commit,file]=pathname.split("/").slice(path.length+2);
  return scope;
-},async remotes(request,body,response)
+},async commit(request,body,response)
 {let {pathname}=url(request);
  let path=pathname.split("/").slice(3);
  return prune.call
@@ -27,9 +27,25 @@
 :!branch?compose.call({fs,dir,ref:[remote,field].join("/")},git.log,infer("reduce",record(({commit:{message,parent}})=>({message,parent}),({oid})=>oid),{}))
 :!commit?compose.call({fs,dir,ref:field},git.listFiles)
 :describe(async function(request,body,response,path)
-{let filepath=[file,field].flat().join("/");
- let {oid,object}=note(await git.readObject({fs,dir,oid:commit,filepath:"",format:"parsed"}));
- return Buffer.from(object);
+{let filepath=file.join("/")+"/"+field;
+ let {oid,object}=note(await git.readObject({fs,dir,oid:commit,filepath,format:"content"}));
+ return object;
+},file.join("/")+"/"+field)
+:value
+);
+},async tag(request,body,response)
+{let {pathname}=url(request);
+ let path=pathname.split("/").slice(3);
+ return prune.call
+(path.length?record(null,path):await compose.call(relation,remotes,infer("reduce",record(undefine,({remote})=>remote),{}))
+,([field,value],[remote,tag,commit,...file])=>!value
+?!remote?tags(field,relation)
+:!tag?compose.call(remote,relation,tags,differ(field),["ref"],record,{fs,dir},merge,git.log,infer("reduce",record(({commit:{message,parent}})=>({message,parent}),({oid})=>oid),{}))
+:!commit?compose.call({fs,dir,ref:field},git.listFiles)
+:describe(async function(request,body,response,path)
+{let filepath=file.join("/")+"/"+field;
+ let {oid,object}=note(await git.readObject({fs,dir,oid:commit,filepath,format:"content"}));
+ return object;
 },file.join("/")+"/"+field)
 :value
 );
@@ -39,8 +55,17 @@
 {return git.listRemotes({fs,dir});
 };
 
- export function branches(remote,dir)
+ export function branches(remote,dir=process.cwd())
 {return git.listBranches({fs,dir,remote});
+};
+
+ export async function tags(remote,dir=process.cwd())
+{// live per-remote tag listing (tags aren't remote-namespaced locally, so this can't be a local lookup).
+ let url=await git.getConfig({fs,dir,path:"remote."+remote+".url"});
+ let {refs:{tags={}}={}}=await git.getRemoteInfo({http,url});
+ return Object.fromEntries(Object.entries(tags)
+ .filter(([name])=>!name.endsWith("^{}"))
+ .map(([name,oid])=>[name,tags[name+"^{}"]||oid]));
 };
 
  export function files({remote},branch,dir)
@@ -89,10 +114,10 @@
  let matrix=await git.statusMatrix({fs,dir});
  let files=matrix.filter(([file,head,work])=>work!==head).map(([file])=>file);
  return files.reduce(record(async filepath=>
- {let from=await git.readBlob({fs,dir,oid:commit,filepath}).then(({blob})=>Buffer.from(blob).toString("utf8")).catch(undefine);
-  let to=await fs.promises.readFile(dir+"/"+filepath,"utf8").catch(undefine);
-  return [filepath,delta(from||"",to||"")];
- }),[]).then(Object.fromEntries);
+{let from=await git.readBlob({fs,dir,oid:commit,filepath}).then(({blob})=>Buffer.from(blob).toString("utf8")).catch(undefine);
+ let to=await fs.promises.readFile(dir+"/"+filepath,"utf8").catch(undefine);
+ return [filepath,delta(from||"",to||"")];
+}),[]).then(Object.fromEntries);
 };
 
  export async function lines(changes,context=2)
@@ -116,14 +141,8 @@
 
  export var changes=compose(diff,lines);
 
- export async function push(credentials="protocol.json",dir=process.cwd())
-{// commit whatever's changed and push HEAD to whichever remote branch it descends from.
- let matrix=await git.statusMatrix({fs,dir});
- let changes=matrix.filter(([file,head,work])=>work!==head).map(([file])=>file);
- if(!changes.length)
- return console.log(" Nothing to commit.");
- await status(matrix).then(console.log)
- let commit=await git.resolveRef({fs,dir,ref:"HEAD"});
+ export async function tracking(commit,dir=process.cwd())
+{// which remote/branch (if any) the given commit descends from.
  let remotes=await git.listRemotes({fs,dir}).then(remotes=>remotes.map(({remote})=>remote));
  let branches=await remotes.reduce(record(remote=>
  git.listBranches({fs,dir,remote}).then(branches=>
@@ -140,6 +159,21 @@
  let [remote,branch]=tracking[0].split("/");
  if(!remote||!branch)
  return exit(" No such remote branch:"+tracking[0]);
+ return [remote,branch];
+};
+
+ export async function push(credentials="protocol.json",dir=process.cwd())
+{// commit whatever's changed and push HEAD to whichever remote branch it descends from.
+ let matrix=await git.statusMatrix({fs,dir});
+ let changes=matrix.filter(([file,head,work])=>work!==head).map(([file])=>file);
+ if(!changes.length)
+ return console.log(" Nothing to commit.");
+ await status(matrix).then(console.log)
+ let commit=await git.resolveRef({fs,dir,ref:"HEAD"});
+ let upstream=await tracking(commit,dir);
+ if(!upstream)
+ return;
+ let [remote,branch]=upstream;
  let [name,email]=await authorize(dir);
  if(!name||!email)
  return console.log(" git user config missing.");
@@ -171,6 +205,28 @@
  await git.writeRef({fs,dir,ref,value:parent[0],force:true});
  await log(1,commit,dir);
  await log(1,undefined,dir);
+};
+
+ export async function tag(tag,credentials="protocol.json",dir=process.cwd())
+{// (re)tag HEAD on whichever remote branch it descends from, pushed under a shared identity.
+ ({tag}=await prompt({tag}));
+ let commit=await git.resolveRef({fs,dir,ref:"HEAD"});
+ let upstream=await tracking(commit,dir);
+ if(!upstream)
+ return;
+ let [remote]=upstream;
+ let [name,email]=await authorize(dir);
+ if(!name||!email)
+ return console.log(" git user config missing.");
+ console.log(" Tagging "+remote+" as "+tag+" by "+name+" at "+commit+".");
+ let confirmation=await prompt({"good?":undefined});
+ if(confirmation["good?"]!=="yes")
+ return console.log(" Aborting.");
+ let url=await target(remote,name,credentials,dir);
+ await git.push({fs,http,dir,url,remote,ref:"HEAD",remoteRef:"refs/tags/"+tag,delete:true}).catch(note);
+ await git.deleteTag({fs,dir,ref:tag}).catch(note);
+ await git.tag({fs,dir,ref:tag});
+ await git.push({fs,http,dir,url,remote,ref:tag,remoteRef:"refs/tags/"+tag});
 };
 
  export async function authorize(dir=process.cwd())

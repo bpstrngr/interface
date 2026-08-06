@@ -72,7 +72,7 @@
  controlled&&controller.signal.aborted?exit(controller.signal.reason)
 :plural(term)?recursion(term,past.at(-1))
 :term,reduce(lift));
- let recursion=induce(term=>each.call(term,flat));
+ var recursion=induce(term=>each.call(term,flat));
  return cede(each.call(rank(context),flat));
 };
 
@@ -93,10 +93,9 @@
  let crop=Number(stopping<starting);
  let [head,tail]=[starting,stopping].sort((past,next)=>past-next);
  let replace=!crop&&tail-head&&functor(stack[0]);
- return infer.call
-(replace?infer.call(rank(context.slice(head,tail)),...stack):rank(stack)
-,(...stack)=>yank([context,context.splice(head,tail-head,...stack)][crop])
-);
+ return reduce
+((...stack)=>yank([context,context.splice(head,tail-head,...stack)][crop])
+)(replace?infer.call(rank(context.slice(head,tail)),...stack):rank(stack));
 },drop,...arguments);
 };
 
@@ -180,6 +179,14 @@
  return defined(this)?procedure(this):describe(procedure,produce,...terms);
 };
 
+ export function loop(term)
+{return function(){return term.call(this,...arguments);};
+};
+
+ export function free(term)
+{return function(){return term(...arguments);};
+};
+
  export function bind(term,...stack)
 {return function(scope,...context){return term.call(scope,...stack,...context);};
 };
@@ -188,14 +195,9 @@
 {return function(){return term(this,...arguments);};
 };
 
- export function free(term)
-{return function(){return term(...arguments);};
-};
-
  export function pivot(term,...stack)
 {// rank dynamic context in term scope.
- // pivot is for combinators that need to unfold a plural `this` themselves (like infer or
- // buffer do, internally) while keeping that unfolded `this` separate from `stack`, their own
+ // pivot is for combinators that need stack separate from dynamic context, their own
  // closure-captured static context - term.call(scope,...stack) keeps scope and stack apart.
  // reduce can't stand in for this: reduce.apply flattens everything into one positional list,
  // so it would collapse stack into scope instead of preserving the separation.
@@ -590,13 +592,16 @@
 ,Object.fromEntries
 );
 
- export function merge(target,source,override=1)
-{// unite scopes (assign if path specified to override).
+ export function merge(target,source,override=1,recursive=1)
+{// unite scopes (at path if specified to override).
+ //console.log(...arguments)
  let assign=array(override)||string(override);
  if(assign)
- return [target,...[override].flat(),source].reduce((scope,field,index,route)=>
- route.length-index-1
-?scope[field]=route.length-index>2?scope[field]||{}:route[index+1]
+ return [target,...[override].flat(),source].reduce((scope,field,index,route
+,left=route.length-index-1)=>left
+?scope[field]=left>1?scope[field]||{}:merge(recursive?scope[field]
+:scope[field]||Reflect.construct(route[index+1]?.constructor||Object,[])
+,route[index+1],numeric(recursive)?recursive:1)
 :route[0]);
  let Group=[Set,Map].find(group=>target instanceof group);
  if(Group)
@@ -608,8 +613,7 @@
  if(extensible&&!override)
  return target.concat(source);
  // to merge array domains, pass the source as plain object. 
- let disjunct=[target,source].some((term,index,terms)=>
- construct(term)&&!simple(terms[(index+1)%2]));
+ let disjunct=construct(source);
  let opaque=disjunct||[target,source].some(term=>!compound(term));
  if(opaque)
  return [target,source][Number(Boolean(override))];
@@ -625,6 +629,22 @@
  delete target[field];
  return array(target)?[target].flat():target;
 },target);
+};
+
+ export function ring(target,source,location,relation)
+{merge(target,source,location,1);
+ relation&&merge(target,Array.from(new Set([...search.call(target,relation)||[],location[0]])),relation,1);
+ return source;
+};
+
+ export function dependency(file,field,path=[])
+{let scope=this;
+ return (
+ {[file]:path.includes(file)?{}
+:Object.entries(scope).flatMap(([peer,record])=>
+ record[field]?.includes(file)?peer:[]).map(peer=>
+ dependency.call(scope,peer,field,path.concat(file))).reduce(merge,{})
+ });
 };
 
  export function record(term,field="length")
@@ -661,7 +681,7 @@
  let offbeat=term=>buffer(compose(methodic,lift,differ(term),store),compose(store,swap(undefined)));
  let fail=compose(swap(branch),Error("not found: "+path.join("/")),"concat",infer("find",is(Error)),exit);
  let terms=path.map((term,index,path)=>infer(either
-(buffer(term,compose(store,note))
+(buffer(term,compose(store,drop(1,0,note.bind(1))))
 ,whether(has(method),offbeat(term))
 ,buffer(tether(scope[term]),store)
 ,fail
@@ -692,11 +712,14 @@
  }),this);
 };
 
- export function flatten(factor,path=[])
-{// expose factors in scope. 
- let scope=this;
- return [scope].flat().flatMap(scope=>
- [scope,...flatten.call(scope[factor],factor)]);
+ export function flatten(scope,set=new Set())
+{Object.entries(scope).forEach(([field,value])=>
+{set.add(field);
+ if(!string(value))
+ return flatten(value,set);
+ set.add(value);
+});
+ return Array.from(set);
 };
 
  export function cooccurrence(records,{field="phrases"}={})
@@ -900,7 +923,7 @@
 }.bind(scope);
 };
 
- export function exit(fail){throw is(Error)(fail)?fail:Error(fail,{reason:fail});};
+ export function exit(message,cause){throw is(Error)(message)?message:Error(message,{cause,reason:cause});};
 
  export var tests=
  {induce:{context:[sum],terms:[1,2,3,"call"],condition:when(is(5))}
@@ -912,13 +935,13 @@
 ,{context:[3],terms:[0,rank([1,2]),Function.call],condition:when(is(plural,3))}
 ,{context:[3],terms:[0,rank([1,2]),Function.call,is(plural,3),true],condition:"equal"}
 ,{context:[3],terms:[0,rank([rank([1,2])]),Function.call,is(plural,3),true],condition:"equal"}
-,{context:Array(100).fill(unit),terms:[0,rank([rank([1,2])]),Function.call,is(plural,3),false],condition:"equal",benchmark:true}
+,{context:Array(100).fill(unit),terms:[0,rank([rank([1,2])]),Function.call,is(plural,3),false],condition:"equal"}
 ],compose:
 [{context:[3],terms:[1,2,Function.call],condition:when(is(1,2,3))}
 ,{context:[3],terms:[rank([1,2]),Function.call],condition:when(is(plural,3))}
 ,{context:[3],terms:[rank([1,2]),Function.call,is(plural,3),true],condition:"equal"}
 ,{context:[3],terms:[rank([rank([1,2])]),Function.call,is(plural,3),true],condition:"equal"}
-,{context:Array(100).fill(unit),terms:[rank([rank([1,2])]),Function.call,is(plural,3),false],condition:"equal",benchmark:true}
+,{context:Array(100).fill(unit),terms:[rank([rank([1,2])]),Function.call,is(plural,3),false],condition:"equal"}
 ],infer:
  {undefined:{context:[],terms:[Function.call,collect,c=>c.length,0],condition:["equal"]}
  ,identity:{context:[],terms:[0,Function.call,0],condition:["equal"]}

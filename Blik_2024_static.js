@@ -1,5 +1,5 @@
  import {note,produce,search,merge,prune,record,remember,compose,spill,buffer,when,collect,infer,combine,wait,drop,slip,lift,differ,crop,each,swap,pass,not,compound,functor,native,exit,tether,either,whether,describe,string,pattern,major,match,has,is,are,defined,flip,heritage,extract} from "./Blik_2023_inference.js";
- import {access,persist,purge,command,list,interpret,fetch,swarm,delegate,location,listen,infrastructure} from "./Blik_2023_interface.js";
+ import {access,persist,purge,command,list,interpret,fetch,digest,swarm,delegate,location,listen,infrastructure} from "./Blik_2023_interface.js";
  import {document,hypertext,css,throttle,error,capture,defer,window} from "./Blik_2023_fragment.js";
  import {url,serialize,mime,proceduralize,sourcemap,cookie,folder,path,query,hash,parse,stylemap} from "./Blik_2023_meta.js";
  import {random} from "./Blik_2023_search.js";
@@ -50,7 +50,7 @@
  {infrastructure(){return delegate.call(swarm.loader,"infrastructure");}
  ,history(){return delegate.call(swarm.loader,"infrastructure","time");}
  ,sources(){return infrastructure();}
- ,git:prune.call(git,({1:git})=>functor(git)?compose(pass(crop(1,infer(authorize,"ranger"))),tether(git)):git)
+ ,git
  ,get:compose(combine(filesystem,routes),lift,merge)
  ,put:compose
 (drop(1),drop(2,1,buffer(JSON.parse,compose(drop(1,2),"base64",Buffer.from,"toString")))
@@ -75,7 +75,7 @@
 (note,crop(1),"get",routes=>(
  {pre:{"#text":JSON.stringify(routes,null,2)}
  ,style:{body:{background:"black",color:"white"}}
- }),"interface","svg",[],"./style",hypertext,document,spill,lift,crop(1)
+ }),{title:"interface",icon:"svg",scripts:[],styles:"./style"},hypertext,document,spill,lift,crop(1)
 ),style:compose
 (drop(),{"@font-face":{"font-family":"averia",src:"url(/Sayers_2011_averia.ttf)"}}
 ,css,["body"],record,{type:"css"},merge
@@ -112,8 +112,8 @@
  let {origin}=new URL("http"+(request.client.encrypted?"s":"")+"://"+request.headers.host);
  let base=path(request).replace(/\/?jssmap$/,"");
  let [html,source]=await Promise.all(
-[fetch(origin+"/"+base).then(response=>response.text())
-,fetch(origin+"/"+module).then(response=>response.text())
+[fetch(origin+"/"+base,{headers:request.headers}).then(response=>response.text())
+,fetch(origin+"/"+module,{headers:request.headers}).then(response=>response.text())
 ]);
  let dom=new window.DOMParser().parseFromString(html,"text/html");
  let element=dom.querySelector("style"+id);
@@ -125,6 +125,7 @@
  return {type:"json",body:JSON.stringify(await stylemap(element.textContent,literal,source,module))};
 },sourcemap
  ,vector:compose(crop(1),infer(record,["svg"]),document,spill,lift,crop(1))
+ ,inspect:compose(drop(),"http://127.0.0.1:9222/json",fetch,digest)
  ,error
  };
 
@@ -162,11 +163,12 @@
  record=[record,body,{signature,put}].reduce(merge);
  merge(records,record,name);
  await access(resource,JSON.stringify(records),true);
+ let expires=record.put+expiry;
  record=prune.call(record,([field,value])=>
  ["signature","code"].includes(field)?undefined:value,0,1);
  return merge(records
-,{cookie:{signature,path:"/",expires:new Date(record.put+expiry).toUTCString(),httponly:true,samesite:true}
- ,body:record
+,{cookie:{signature,path:"/",expires:new Date(expires).toUTCString(),httponly:true,samesite:true}
+ ,body:{...record,expires}
  },name);
 }});
 };

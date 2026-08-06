@@ -311,20 +311,21 @@
 :parse(resource,semiotics);
 };
 
- export function hypertext(body,title,favicon,scripts,styles=[])
+ export function hypertext(body,{title,icon,styles=[],scripts=[],worker="/worker/module",serviceworker="/Blik_2023_form.js/module/serviceworker/module",inspect=9222}={})
 {if(this)
  return {imports:
  {"/Blik_2023_fragment.js":["","capture","image","canvas","insert"]
- ,"/Blik_2023_inference.js":["","infer","buffer","compose","undefine"]
- ,"/Blik_2023_interface.js":["","command","socket"]
+ ,"/Blik_2023_inference.js":["","infer","buffer","compose","undefine","observe"]
+ ,"/Blik_2023_interface.js":["","command","socket","attach","commission"]
  ,"/Blik_2023_meta.js":["","url","path","query"]
  }
  ,exports:{default:
  {body:
  {load(event)
 {if(this!==event.target.body)
- // ignore propagated load events. 
+ // ignore propagated load events.
  return;
+ console.info("Document content loaded.",{readyState:document.readyState,timestamp:event.timeStamp,deferred:performance.now()-event.timeStamp,resources:performance.getEntriesByType("resource").length});
  this.querySelectorAll("[data-actions]").forEach(scope=>capture.call(scope)&&
  scope.dispatchEvent(new scope.ownerDocument.defaultView.Event("contextrestored")));
  Promise.all(["interface","inference","search","fragment","meta"].map(module=>
@@ -333,6 +334,15 @@
  !Object.hasOwn(globalThis,field))))));
  socket(window.location.origin,listen).then(socket=>
  Object.assign(window,{socket}));
+ window.worker=commission(this.dataset.worker).then(worker=>
+ window.worker=worker).catch(fail=>
+ window.worker=console.warn("failed to load "+this.dataset.worker,fail));
+ observe.call(navigator.serviceWorker,{controllerchange(){window.socket.dispatchEvent(new MessageEvent("message",{data:JSON.stringify({action:"message",message:"Updated — refresh to apply."})}));}},{once:true});
+ window.serviceworker=navigator.serviceWorker.register(this.dataset.serviceworker,{type:"module",scope:"/"}).then(registration=>
+ window.serviceworker=registration).catch(fail=>
+ window.serviceworker=console.warn("failed to load "+this.dataset.serviceworker,fail));
+ attach(this.dataset.inspect).catch(fail=>
+ console.warn("failed to attach CDP session on port "+this.dataset.inspect,fail));
 },popstate(event)
 {//note(event);this.document.forms[0]?.dispatchEvent(new Event("submit"));
 },async message(event)
@@ -341,7 +351,7 @@
  let window=this.ownerDocument.defaultView;
  let address=window.location.href;
  if(!message.room)
- message.room=[path(address),query(url(address)).source].join("/");
+ message.room=path(address);
  if(window.socket?.readyState===3)
  window.socket=await socket(window.location.origin,listen);
  window.socket.send(JSON.stringify(message));
@@ -363,27 +373,20 @@
  let activation=
  {exports:{capture,merge,heritage,dispatch,defer,prototype,type,something,defined,simple,compound,array,string,construct,instance}
  ,procedures:function()
-{capture.call(window.document.body);
- window.worker=import("/Blik_2023_interface.js").then(({commission})=>
- commission("/worker/module")).then(worker=>
- window.worker=worker).catch(fail=>
- window.worker=console.warn("failed to load /worker/module"));
- window.serviceworker=navigator.serviceWorker.register("/serviceworker/module",{type:"module"}).then(registration=>
- window.serviceworker=registration).catch(fail=>
- window.serviceworker=console.warn("failed to load /serviceworker/module: ",fail));
- if("onbeforeinstallprompt" in window)
- window.addEventListener("beforeinstallprompt",function(event){(window.installprompt=event).preventDefault();});
+{window.addEventListener("beforeinstallprompt",event=>(window.installprompt=event).preventDefault());
+ console.info("Document parsed.",{readyState:document.readyState,elapsed:performance.now(),scripts:document.scripts.length,images:document.images.length});
+ capture.call(window.document.body);
 }};
- let script=[activation,scripts].flat().flatMap(src=>
-[{type:"module",defer:true}
-,/^\./.test(src)?{src}:{"#text":string(src)?src:functor(src)?proceduralize(src):serialize(src,"module")}
-].reduce(merge));
  let [link,style]=[styles].flat().reduce((nodes,style,index)=>merge(nodes
 ,{[index=+/{|}/.test(style)]:
 [index?string(style)?{"#text":style}:style:{rel:"stylesheet",type:"text/css",href:style}
 ]})
 ,[[],[]]);
- link.push({rel:"icon",type:"image/svg+xml",href:favicon||"favicon.ico"},{rel:"manifest",href:"/manifest"})
+ link.push({rel:"icon",type:"image/svg+xml",href:icon||"favicon.ico"},{rel:"manifest",href:"/manifest"})
+ let script=[activation,scripts].flat().flatMap(src=>
+[{type:"module",defer:true}
+,/^\./.test(src)?{src}:{"#text":string(src)?src:functor(src)?proceduralize(src):serialize(src,"module")}
+].reduce(merge));
  let meta=
 [{charset:"utf-8"}
 ,{"http-equiv":"content-language",content:"en-us"}
@@ -398,6 +401,7 @@
 //,{"#text":"setInterval(done=>fetch('/authority',{method:'POST',headers:sessionStorage.getItem('authority')}).then(done=>console.log(done)),1000*60)"}
  };
  let actions=["",name,"module",hypertext.name,"module"].join("/");
+ body=merge(body,{dataset:{worker,serviceworker,inspect}});
  capture.call({body},actions);
  return {html:{lang:"en",head,body}};
 };
@@ -417,10 +421,12 @@
 ,this;
  let scope=this===this.ownerDocument.body?this.ownerDocument.defaultView:this;
  let specifiers=new Set([module].flat());
+ this.dataset.actions=JSON.stringify(Array.from(new Set([actions,module].flat())));
  let captured=capture.captured||(capture.captured=new WeakMap());
  let already=captured.get(scope)||new Set();
  if([...specifiers].every(specifier=>already.has(specifier)))
  return this;
+ console.log({["Actions defined on fragment:"]:scope});
  captured.set(scope,already.union(specifiers));
  actions=Promise.all([module].flat().map(module=>
  import(module).then(({default:module})=>module))).then(modules=>
@@ -431,7 +437,7 @@
  deferred=deferred.difference(new Set(
 [["motion","orientation","orientationabsolute"].map(sensor=>"device"+sensor)
 ,["start","run","end","cancel"].map(state=>"transition"+state)
-,"unhandledrejection","pagereveal","pageshow","beforeinstallprompt"
+,"unhandledrejection","pagereveal","pageshow","beforeinstallprompt","unload"
 ].flat().map(event=>"on"+event)));
  deferred.forEach(event=>scope.addEventListener(event.slice(2),refer,{passive:false}));
  actions.then(actions=>
@@ -458,12 +464,10 @@
  export function defer(event)
 {// preventdefault to block synchronous dispatch in favor of asynchronous action. Rescue event before destruction on block. 
  event.preventDefault();
- event=Object.fromEntries("type/target/keyCode/isTrusted/bubbles/srcElement".split("/").map(field=>
+ event=Object.fromEntries("type/target/keyCode/isTrusted/bubbles/srcElement/timeStamp".split("/").map(field=>
  [field,event[field]]));
  this.then(actions=>dispatch.call(actions,event));
- console.groupCollapsed({["captured "+event.type+" event from"]:event.target});
- console.warn(event);
- console.groupEnd();
+ console.debug({["captured "+event.type+" event from"]:[event.target,event]});
 };
 
  export async function navigate(node,sibling)
@@ -926,21 +930,20 @@
 };
 
  export var drag=observe({point({x,y,isTrusted:click,pointerId})
-{merge(this
-,{drag:click&&{x,y}
- ,style:click?{transition:"transform",transform:"translate(0px,0px)"}:{transition:"",transform:""}
- ,control:!click||this.control?this.control?.abort():new AbortController()
- });
- ({x,y}=this.getBoundingClientRect());
+{merge(this,{drag:click&&{x,y},style:{transition:"none"},control:!click||this.control?this.control?.abort():new AbortController()});
  let size=this.getBoundingClientRect();
- let {margin}=this.ownerDocument.defaultView.getComputedStyle(this),gap=parseFloat(margin)*2;
- let {width,height,divide=[width-size.width-gap,height-size.height-gap]}=this.parentNode.getBoundingClientRect();
+ [x,y]=Object.entries({x:"width",y:"height"}).map(([ext,int])=>size[ext]+size[int]/2);
+ let {width,height}=this.parentNode.getBoundingClientRect();
+ let {margin}=this.ownerDocument.defaultView.getComputedStyle(this);
+ let gap=parseFloat(margin)*2;
+ let divide=[width-size.width-gap,height-size.height-gap];
  let [left,top]=[width,height].map((range,index)=>[x,y][index]<range/2);
  if(!click)
- return [transform(this.style.transform),Object.entries({right:!left,top})].reduce(({x,y},entries)=>
- merge(this.style,{transition:"none",transform:"translate("+[x+(x<0?width:-width),-y+(y<0?height:-height)]+")"})&&
- merge(this.style,{transition:"revert"})&&
- entries.forEach(([name,state])=>this.classList.toggle(name,state)));
+ return [transform(this.style.transform),Object.entries({right:!left,top})].reduce(({x,y},invert)=>
+ merge(this.style,{transform:"translate("+invert.map(([name,state])=>
+ this.classList.contains(name)!==this.classList.toggle(name,state)).map((invert,index)=>
+ [x,y][index]+divide[index]*(invert?[x,y][index]<0?1:-1:0)).map(x=>Math.floor(x)+"px")+")"}))&&
+ merge(this.style,{transition:"transform 1s",transform:"none"});
  observe.call(this
 ,{touchmove(event){if(event.cancelable)event.preventDefault();}
  ,pointermove(event)
@@ -1288,6 +1291,16 @@
 ,(transition,node)=>Object.assign(node.style,{transition})&&node
 )(node.style.transition
 ,Object.assign(node.style,{transition:Object.keys(style).map(style=>style+" "+seconds+"s").join(","),...style})&&node);
+};
+
+ export function memory(key,condition)
+{// localStorage entry, self-evicting once condition (a preservation check) fails to match it.
+ // no localStorage server-side (SSR) - nothing to preserve there either.
+ let {localStorage}=globalThis;
+ if(!localStorage)
+ return undefined;
+ let value=JSON.parse(localStorage.getItem(key)||"null");
+ return value&&(!condition||condition(value))?value:localStorage.removeItem(key);
 };
 
  export function expand(event)

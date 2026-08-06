@@ -62,12 +62,9 @@
  let buffer=Object.assign(new FileReader()
 ,{onload:compose
 ((file,event)=>fetch(target,{method:"put",body:btoa(event.target.result)})
-,"text",combine
-(body=>fetch("/inspect?module="+this.dataset.source,{method:"put",body})
-,compose(["message"],record,{action:"broadcast",room:this.dataset.source},merge
+,"text",compose(["message"],record,{action:"broadcast",room:this.dataset.source},merge
 ,["data"],record,{bubbles:true},merge,slip("message"),collect,slip(MessageEvent)
 ,Reflect.construct,slip(this),"dispatchEvent")
-)
 )})
  buffer.readAsBinaryString(blob);
 },...observe({touch(event)
