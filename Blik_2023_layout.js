@@ -122,7 +122,7 @@
  ,"&:checked,&[aria-checked=true]":{"&:after":{content:"'✓'",color:"var(--highlight)"}}
  }
  ,"&~svg":{"margin-right":"0.5em"}
- ,"&:focus+ul":{display:"block"}
+ ,"&:focus":{"&+ul,&+span[role=list]":{display:"block"}}
  };
 
  export var theme=
@@ -150,6 +150,10 @@
  export var row={display:"inline-block",margin:"0 1em",height:"100%","list-style":"none"};
  export var column={display:"block",margin:"1em 0","list-style":"none"};
  export var shelf={position:"absolute",bottom:0,left:0,right:0,"text-align":"left"};
+ export var dropcap={"&>span":
+ {display:"inline-block","vertical-align":"middle"
+ ,"&:first-of-type":{width:"2em",height:"2em","&>img,&>svg,&>canvas":{width:"100%",height:"100%"}}
+ }};
  export var radio=
  {"border-radius":"100%","background-color":"black",transform:"scale(0.8)"
  ,"&[checked=true]":
@@ -272,3 +276,7 @@
  export var assistant={"& input":{"font-size":"20px","font-family":"inherit",color:"rgb(144,164,174)","text-align":"center",border:"none",outline:"none","background-color":"transparent"},"& *":{display:"block",margin:"auto"}};
  export var cloudflare={"#cf_alert_div>div":{background:"black !important"}};
 
+ export function reexpress(module)
+{label=module.label;
+ input=module.input;
+};

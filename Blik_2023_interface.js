@@ -1,5 +1,5 @@
  import {modular,measure,ring,produce,construct,deduce,zap,induce,stash,decide,note,collect,search,merge,prune,route,record,remember,tally,rotate,cede,unit,lift,push,sum,same,are,has,promise,pass,slip,something,observe,functor,describe,expect,control,trace,array,compound,simple,revert,rank,tether,differ,whether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,numeric,binary,basic,match,wait,string,defined,minor,compose,combine,exit,clock,major,colors,skip,flip,debug,extract,flatten} from "./Blik_2023_inference.js";
- import {file,folder,url,relate,query,cookie,path,parser,parse,sanitize,serialize,exports,reexport,mime,coordinates,records} from "./Blik_2023_meta.js";
+ import {file,folder,url,relate,query,path,parser,parse,sanitize,serialize,exports,reexport,mime,coordinates,records} from "./Blik_2023_meta.js";
 
  export var {protocol,host,pathname:address}=new URL(import.meta.url);
  export var name=file(address);
@@ -33,7 +33,7 @@
  return console.warn("Worker "+name+" not subscribed to a peer with label: "+label);
  return observe.call(swarm[label],{message,error(fail){exit(label,fail);}},false).postMessage("Worker "+name+" unsubscribed \nof commands from "+label);
 },command
- ,message({data})
+ ,message({data,source})
 {if(!Array.isArray(data))
  return console.log(data);
  let [type,id,term,...context]=data;
@@ -47,7 +47,7 @@
 ,combine
 (compose(slip("event",id),collect)
 ,compose(collect,tether(search,compose(drop(1),search(1),match({constructor:{name:either(is("ArrayBuffer"),is("MessagePort"),is("FileHandle"))}})),false,construct),Object.values)
-),slip(this),"postMessage"
+),slip(source||this),"postMessage"
 )();
 }},procedures:{async initialize()
 {var swarm={};
@@ -200,7 +200,7 @@
  return is(Error)(value)?reject(value):resume(value);
 },context.filter(either(is(ArrayBuffer),match({constructor:{name:/FileHandle|MessagePort/}})))
 ].reduce((message,transfer)=>
- observe.call(worker,{message,error:message,messageerror:message},{signal}).postMessage(context,transfer)))
+ (observe.call(worker,{message,error:message,messageerror:message},{signal}).controller?.postMessage||worker.postMessage).call(worker.controller||worker,context,transfer)))
 ,this,"command",crypto.randomUUID(),functor(term)?term.name:term,...context
 );
 };
@@ -776,14 +776,13 @@
 ?compose(gzip=>["writ","read"].map(stream=>
  gzip[stream+"able"]["get"+stream.replace(/^./,infer("toUpperCase"))+"er"]())
 ,([writable,readable])=>(writable.write(buffer),writable.close(),readable)
-,combine(infer(),"read"),[],0
-,async function read(readable,{done,value},expanded,size)
+,combine(unary,"read"),[],0,induce(async function read(readable,{done,value},expanded,size)
 {while(!done)
  expanded.push(value),size+=value.byteLength,{done,value}=await readable.read();
  return expanded.reduce((buffer,array,index,arrays)=>
  buffer.set(array,size+=arrays[index-1]?.byteLength??-size)||buffer
 ,new Uint8Array(size));
-})(new DecompressionStream("gzip"))
+}))(new DecompressionStream("gzip"))
 :revert((decompress,reject,buffer)=>
  command.bind(import.meta.url)("zlib","gunzip",buffer,(fail,buffer)=>fail?reject(fail):decompress(buffer)))(buffer);
  let tarstream=await import("stream").then(({Duplex})=>
@@ -921,22 +920,18 @@
  return require.instance(path);
 };
 
- export async function socket(address,onmessage)
-{var {protocol,host,pathname}=new URL(address);
+ export async function socket(address,window)
+{window.socket?.close();
+ var {protocol,host,pathname}=new URL(address);
  let WebSocket=globalThis.WebSocket||
  await import("./einaros_2011_ws.js").then(({default:WebSocket})=>WebSocket);
  let socket=is(WebSocket)(this)?this:new WebSocket(protocol.replace(/^http/,"ws")+"//"+host+pathname);
- return revert((resolve,reject,socket,onmessage)=>Object.assign(socket
-,{async onopen({target})
-{console.warn("Websocket open: ",target);
- let {author:name}=cookie(globalThis.window?.document?.cookie||"");
- if(name)
- this.send(JSON.stringify({action:"sign",name}));
- resolve(this);
-},onerror({target}){console.warn("Websocket not available at "+target.url);reject(target);}
+ return revert((resolve,reject,socket,window)=>Object.assign(socket
+,{onopen({target}){console.warn("Websocket open: ",target);}
+ ,onerror({target}){console.warn("Websocket not available at "+target.url);reject(target);}
  ,onclose({target}){console.warn("Websocket closed: ",target);}
- ,onmessage
- }))(socket,onmessage);
+ ,onmessage(event){window.postMessage(event.data,window.location.origin);resolve(this);}
+ }))(socket,window).then(socket=>window.socket=socket);
 };
 
  export function listen(action,message)
@@ -977,7 +972,7 @@
  if(agent.node)
  swarm.loader?await delegate.call(swarm.loader,"bust",changed):await bust(changed);
  else
- // serviceworker cache tests conditional fetch against server memory. 
+ // serviceworker cache tests conditional fetch against server memory, but only checks itself periodically. 
  await compose.call(await navigator.serviceWorker?.getRegistrations()||[]
 ,infer("forEach",registration=>
  [registration.active,registration.waiting,registration.installing].filter(Boolean).forEach(worker=>

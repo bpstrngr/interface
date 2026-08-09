@@ -148,7 +148,7 @@
 };
 
  export function induce(fold=unit,...stack)
-{// promise-agnostic inference (catamorphism - any category over Kleisli Promise). 
+{// variadic inference (catamorphism - any category over Kleisli Promise).
  function catamorphism(term)
 {return arguments.length-1?Array.from(arguments).some(promise)
 ?Promise.all(arguments).then(fold.apply.bind(fold,this))
@@ -164,6 +164,16 @@
 {return catamorphism(fold.call(this,...context));
 }),deduce,...arguments);
  return defined(this)?paramorphism(this):paramorphism;
+};
+
+ export function abduce(unfold,...stack)
+{// monadic deduction (apomorphism - Kleisli generator+promise).
+ let context=[];
+ let anamorphism=deduce
+(({done,value:next},term)=>done?term:unfold(next,context,...stack)
+,term=>context[context.push(term)-1]
+);
+ return function apomorphism(term){return anamorphism(term.next(context.at(-1)),term)};
 };
 
  export function reduce(fold=unit)

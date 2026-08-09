@@ -140,7 +140,7 @@
  return prune.call(records,([field,value],path)=>path.at(-1)==="pub"&&route.length>4
 ?compose(swap(field),pass(permit,classified),"binary",access):value);
 },put:async function(request,body)
-{let {2:name}=request.url.split("/");
+{let {2:name}=url(request.url).pathname.split("/");
  let {signature}=cookie(request.headers.cookie||"");
  body=body?await prune.call(JSON.parse(body)
 ,([field,value])=>encryption[field]?.(value)||value):{};
@@ -156,10 +156,11 @@
  let unauthorised=!signature||signature!==record.signature;
  if(!body.code&&unauthorised)
  exit(Error("invalid signature."));
+ let revoke=defined(body.signature)&&record.signature;
  let put=Date.now();
- let expiry=1000*60*60*6;
+ let expiry=revoke?0:1000*60*60*6;
  let expired=put-record?.put>expiry;
- signature=signature&&!expired?signature:random(20);
+ signature=signature&&!expired?signature:revoke?undefined:random(20);
  record=[record,body,{signature,put}].reduce(merge);
  merge(records,record,name);
  await access(resource,JSON.stringify(records),true);
@@ -167,7 +168,10 @@
  record=prune.call(record,([field,value])=>
  ["signature","code"].includes(field)?undefined:value,0,1);
  return merge(records
-,{cookie:{signature,path:"/",expires:new Date(expires).toUTCString(),httponly:true,samesite:true}
+,{cookie:
+[{signature:revoke||signature,path:"/",expires:new Date(expires).toUTCString(),httponly:true,samesite:true}
+,{author:name,path:"/",expires:new Date(expires).toUTCString(),samesite:true}
+]
  ,body:{...record,expires}
  },name);
 }});

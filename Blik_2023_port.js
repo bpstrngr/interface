@@ -324,9 +324,12 @@
 };
 
  export async function broadcast(server,actions)
-{let connection=buffer(function connection(host,peer,request)
-{Object.assign(peer
-,{author:anonymous[Math.floor(Math.random()*anonymous.length)]
+{let connection=buffer(async function connection(host,peer,request)
+{let {author:name}=cookie(request.headers.cookie||"");
+ let authorized=name&&await fetch("/author/"+name,{method:"put",headers:{cookie:request.headers.cookie}});
+ let record=authorized?.status===200&&await authorized.json();
+ Object.assign(peer
+,{author:record?extract.call(record,["name","icon"]):anonymous[Math.floor(Math.random()*anonymous.length)]
  ,connected:true
  ,interval:setInterval(time=>peer.connected
 ?merge(peer,{connected:false}).send(JSON.stringify({action:"check"}))
@@ -344,6 +347,7 @@
 },message=>peer.send(JSON.stringify(is(Error)(note(message))?{error:note.call(1,message).message}:message))
 ),host)
  });
+ peer.send(JSON.stringify({action:"message",message:"Signed in as "+peer.author.name}));
 },note.bind(1));
  let {default:{WebSocketServer}}=await import("./einaros_2011_ws.js");
  return compose

@@ -1119,9 +1119,10 @@
 );
 
  export function cookie(cookies=(this.ownerDocument||this).cookie)
-{return simple(cookies)
+{return array(cookies)?cookies.map(cookie)
+:simple(cookies)
 ?Object.entries(cookies).map(([field,value])=>field+"="+value).join(";")
-:Object.fromEntries(cookies.split(/ *; */).map(infer("split","=")));
+:Object.fromEntries(cookies.split(/ *; */).map(infer("split","=",undefined)));
 };
 
  export function file(address){return address.replace(/.*\//,"");};

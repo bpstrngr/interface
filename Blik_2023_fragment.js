@@ -1,5 +1,5 @@
  import {locate,command,recompose,delegate,agent,thread,fetch as freefetch,digest} from "./Blik_2023_interface.js";
- import {note,induce,index,describe,decide,produce,colors,wait,stagger,search,merge,prune,record,route,observe,rank,constant,rotate,deduce,lift,fold,collect,slip,spill,push,infer,either,each,pass,tether,surge,flush,buffer,differ,compose,some,flip,skip,stash,revert,combine,whether,swap,compound,something,string,basic,minor,functor,promise,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdf,when,debug,expect,generator,plural,native,clock,type,complex,heritage,prototype,expressions,cede,extract,fields,instance} from "./Blik_2023_inference.js";
+ import {note,induce,index,describe,decide,produce,colors,wait,stagger,search,merge,prune,record,route,observe,rank,constant,rotate,deduce,lift,fold,collect,slip,spill,push,infer,either,each,pass,tether,surge,flush,buffer,differ,compose,some,flip,skip,stash,revert,combine,whether,swap,compound,something,string,basic,minor,functor,promise,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdf,when,debug,expect,generator,plural,native,clock,type,complex,heritage,prototype,expressions,cede,extract,fields,instance,yank} from "./Blik_2023_inference.js";
  import {unfold} from "./Blik_2023_search.js";
  import {serialize,proceduralize,mime,data,file,relate,cookie,query} from "./Blik_2023_meta.js";
  import * as layout from "./Blik_2023_layout.js";
@@ -109,7 +109,7 @@
 ,whether(is([simple,not(has("#text"))],"style"),each([produce
 (crop(1),whether(either(has("id"),has("class")),combine
 (tether(extract,["id","class","fragment"],true)
-,swap("\n/*# sourceMappingURL=./jssmap?id=")
+,swap("\n/*# disabled-sourceMappingURL=./jssmap?id=")
 ,compose(["style"],record,qualify,infer("slice",5),encodeURIComponent),swap("&fragment="),compose(search("fragment"),encodeURIComponent),swap("*/")
 ,extract(["id","class","fragment"])
 ),{}),lift,drop(1,0,css),drop(-1,0,compose(infer("concat"),["#text"],record)),merge
@@ -311,15 +311,17 @@
 :parse(resource,semiotics);
 };
 
- export function hypertext(body,{title,icon,styles=[],scripts=[],worker="/worker/module",serviceworker="/Blik_2023_form.js/module/serviceworker/module",inspect=9222}={})
+ export function hypertext(body,{title,icon,styles=[],scripts=[],worker="/worker/module",serviceworker="/Blik_2023_form.js/module/serviceworker/module",websocket="/relay/module",inspect=9222}={})
 {if(this)
  return {imports:
  {"/Blik_2023_fragment.js":["","capture","image","canvas","insert"]
- ,"/Blik_2023_inference.js":["","infer","buffer","compose","undefine","observe"]
+ ,"/Blik_2023_inference.js":["","infer","buffer","compose","observe"]
  ,"/Blik_2023_interface.js":["","command","socket","attach","commission"]
  ,"/Blik_2023_meta.js":["","url","path","query"]
+ ,[websocket]:["actions"]
  }
- ,exports:{default:
+ ,exports:
+ {default:
  {body:
  {load(event)
 {if(this!==event.target.body)
@@ -332,44 +334,42 @@
  "/Blik_2023_"+module+".js").map(module=>import(module))).then(modules=>modules.forEach(module=>
  Object.assign(globalThis,Object.fromEntries(Object.entries(module).filter(([field])=>
  !Object.hasOwn(globalThis,field))))));
- socket(window.location.origin,listen).then(socket=>
- Object.assign(window,{socket}));
+ socket(window.location.origin,window).then(socket=>
+ socket.send(JSON.stringify({action:"join",room:path(window.location.href)})));;
  window.worker=commission(this.dataset.worker).then(worker=>
- window.worker=worker).catch(fail=>
- window.worker=console.warn("failed to load "+this.dataset.worker,fail));
- observe.call(navigator.serviceWorker,{controllerchange(){window.socket.dispatchEvent(new MessageEvent("message",{data:JSON.stringify({action:"message",message:"Updated — refresh to apply."})}));}},{once:true});
+ window.worker=worker);
  window.serviceworker=navigator.serviceWorker.register(this.dataset.serviceworker,{type:"module",scope:"/"}).then(registration=>
- window.serviceworker=registration).catch(fail=>
- window.serviceworker=console.warn("failed to load "+this.dataset.serviceworker,fail));
+ window.serviceworker=registration);
+ observe.call(navigator.serviceWorker
+,{controllerchange:update=>this.dispatchEvent(new MessageEvent("message",{data:{action:"message",message:"Updated — refresh to apply."},bubbles:true}))}
+,{once:true});
  attach(this.dataset.inspect).catch(fail=>
  console.warn("failed to attach CDP session on port "+this.dataset.inspect,fail));
 },popstate(event)
 {//note(event);this.document.forms[0]?.dispatchEvent(new Event("submit"));
 },async message(event)
-{let {data:message}=event;
- console.info("send",message);
+{if(event.source)return inbound.call(this,event);
+ let {data:message}=event;
  let window=this.ownerDocument.defaultView;
- let address=window.location.href;
  if(!message.room)
- message.room=path(address);
- if(window.socket?.readyState===3)
- window.socket=await socket(window.location.origin,listen);
+ message.room=path(window.location.href);
+ console.info("send",message);
+ if(!window.socket||window.socket.readyState===3)
+ await socket(window.location.origin,window).then(socket=>
+ window.socket.send(JSON.stringify({action:"join",room:path(window.location.href)})));
  window.socket.send(JSON.stringify(message));
 },beforeprint(event)
 {console.log(this.querySelector("#composer"),this.querySelector("#frame"));
 },afterprint(event)
 {console.log(this.querySelector("#composer"),this.querySelector("#frame"));
 }}
- }}
- ,procedures:async function()
-{var actions=await buffer(command.bind(import.meta.url),undefine)("/relay/module","default");
- function listen(event)
+ }
+ ,inbound(event)
 {let message=JSON.parse(event.data);
  if(message.action!=="check")
  console.log("receive",message);
- actions[message.action]?.call(this,message,window);
-}
-}};
+ actions[message.action]?.call(event.target.socket,message,event.target);
+}}};
  let activation=
  {exports:{capture,merge,heritage,dispatch,defer,prototype,type,something,defined,simple,compound,array,string,construct,instance}
  ,procedures:function()
@@ -401,7 +401,7 @@
 //,{"#text":"setInterval(done=>fetch('/authority',{method:'POST',headers:sessionStorage.getItem('authority')}).then(done=>console.log(done)),1000*60)"}
  };
  let actions=["",name,"module",hypertext.name,"module"].join("/");
- body=merge(body,{dataset:{worker,serviceworker,inspect}});
+ body=merge(body,{dataset:{worker,serviceworker,websocket,inspect}});
  capture.call({body},actions);
  return {html:{lang:"en",head,body}};
 };
@@ -428,6 +428,7 @@
  return this;
  console.log({["Actions defined on fragment:"]:scope});
  captured.set(scope,already.union(specifiers));
+ this.style.cursor="wait";
  actions=Promise.all([module].flat().map(module=>
  import(module).then(({default:module})=>module))).then(modules=>
  modules.reduce((past,next)=>merge(past,next,0),{}));
@@ -443,6 +444,7 @@
  actions.then(actions=>
  new Set(Object.values(actions).flatMap(Object.keys)).forEach(event=>
  scope.addEventListener(event,dispatch.bind(actions),{passive:false}))||
+ this.style.removeProperty("cursor")||
  console.groupCollapsed("\x1b[32mrouting all propagated events to actions from scope:\x1b[0m\n",{fragment:scope})||
  console.log({[this.ownerDocument.defaultView.location.origin+module]:actions})||
  console.groupEnd()).then(ready=>
@@ -516,14 +518,23 @@
  return target.dispatchEvent(new Event("blur",{bubbles:true}));
  let values=this.closest("[title]").querySelector("ul");
  let selection=Array.from(values?.querySelectorAll("li.hover")||[]);
+ let current=selection.at(-1);
  if(enter)
  return event.preventDefault()
 ,selection.length?selection.pop().click():target.dispatchEvent(new Event("submit",{bubbles:true}));
- if(values&&(updown||leftright))
- return [Array.from(values.querySelectorAll("li")),![38,39].includes(keyCode)||-1].reduce((list,step)=>compose
-(next=>selection.at(-1)?.contains(next)?[next]:[selection,unfold.call(next,({parentNode:node})=>node.closest("li"))]
-,"flat",infer("forEach",selection=>selection.classList.toggle('hover'))
-)(list.at((list.indexOf(selection.at(-1))+step)%list.length)));
+ if(values&&updown)
+ return compose(infer("querySelectorAll",":scope>li"),Array.from
+ ,infer("filter",li=>li.style.display!=="none")
+ ,list=>list.at((list.indexOf(current)+(keyCode===38?-1:1))%list.length)
+ ,pick=>[current?.classList.remove("hover"),pick?.classList.add("hover"),pick?.firstChild.scrollIntoView({block:"nearest"})]
+ )(current?current.parentNode.closest("ul"):values);
+ if(values&&leftright&&current)
+ return keyCode===39
+?["ul","ul>li"].map(node=>current.querySelector(":scope>"+node)?.classList.add("hover"))
+:current.parentNode.closest("li")&&[current,current.parentNode].forEach(node=>node.classList.remove("hover"));
+},focusout()
+{this.closest("[title]").querySelector("ul")?.querySelectorAll("li.hover").forEach(li=>
+ li.classList.remove("hover"));
 }}
  ,"[role=checkbox]":
  {click({target})
@@ -580,34 +591,29 @@
  {"&>span[title]":
  {...layout.label
  ,"&>span[name]":layout.input
- ,"&>span[role=list]":
- {position:"fixed",display:"none",padding:"0px","bottom":"6em"
- ,"max-height":"100%","max-width":"100%",overflow:"scroll"
- ,"&>span":{margin:"0.25em 0em"}
- }
  ,"& ul":
  {position:"fixed",display:"none",padding:"0px","margin-bottom":"0px","margin-left":"0.6em","max-height":"100%","max-width":"100%"
  ,"z-index":"2","text-align":"left","pointer-events":"none","list-style-type":"none"
- ,"box-sizing":"border-box",width:"inherit","overflow":"scroll"
- ,color:"var(--abyss)","font-weight":"bold"
- ,"text-shadow":Array(25).fill("var(--note) 0px 0px .25em").join()
- ,"&:hover":{display:"block"}
+ ,"box-sizing":"border-box",width:"inherit","overflow":"scroll","white-space":"nowrap"
+ ,color:"var(--abyss)","font-weight":"bold","text-shadow":Array(25).fill("var(--note) 0px 0px .25em").join()
  ,"& ul":{position:"relative",bottom:"initial","max-height":"initial","vertical-align":"top","text-align":"left"}
+ ,"&:hover,&.hover":{">li":{display:"block"}}
+ }
  ,"& li":
  {position:"relative",display:"inline-block","pointer-events":"all","padding-right":"1em","vertical-align":"top"
- ,margin:"auto",left:"0px",right:"0px","white-space":"pre","padding-left":"1em"
- ,"&:hover,&.hover":
- {"&>span":{color:"var(--highlight)"}
- ,"& ul":
- {display:"inline-block","white-space":"pre"
- ,"&:hover>li":{display:"block"}
- }
- }
+ ,margin:"auto",left:"0px",right:"0px","padding-left":"1em"
  ,"&>svg":{position:"absolute",height:"1em",left:"0px","margin-left":"0px","margin-right":"0px",transform:"scale(0.9)",fill:"var(--text)"}
+ ,"&:hover,&.hover":
+ {"&>span":{color:"var(--highlight)","white-space":"pre"}
+ ,"&>ul":{display:"inline-block"}
  }
- ,"&>li":{display:"block"}
  }
- ,"&[focused=true]":{"&>ul,&>span[role=list]":{display:"block"}}
+ ,"&>ul>li":{display:"block"}
+ // ,"&>span[role=list]":
+ // {position:"fixed",display:"none",padding:"0px","bottom":"6em"
+ // ,"max-height":"100%","max-width":"100%",overflow:"scroll"
+ // ,"&>span":{margin:"0.25em 0em"}
+ // }
  }
  }}}];
  return {role:"form",style,method,span};
@@ -930,7 +936,7 @@
 };
 
  export var drag=observe({point({x,y,isTrusted:click,pointerId})
-{merge(this,{drag:click&&{x,y},style:{transition:"none"},control:!click||this.control?this.control?.abort():new AbortController()});
+{merge(this,{drag:click&&{x,y},style:{transition:"none",cursor:click?"grabbing":"grab"},control:!click||this.control?this.control?.abort():new AbortController()});
  let size=this.getBoundingClientRect();
  [x,y]=Object.entries({x:"width",y:"height"}).map(([ext,int])=>size[ext]+size[int]/2);
  let {width,height}=this.parentNode.getBoundingClientRect();
@@ -998,7 +1004,7 @@
  ,width,height
  });
 
- export function deselect(term){return term.replace(/[^\w+-]/g,"_");};
+ export function deselect(term){return term.replace(/[^\w-]/g,char=>"_"+char.charCodeAt(0).toString(16)+"_");};
 
  export async function error(path,request)
 {when(is(Error))(this);
@@ -1120,44 +1126,8 @@
 };
 
  export async function message({icon,name,put,comment,message=comment},{length:index}={})
-{return (
- {class:"message","data-index":String(index)
- ,style:{"@scope":{":scope":
- {display:"block","text-align":"left"
- ,"&>span":
- {display:"table-cell","vertical-align":"top"
- ,"&:first-of-type":
- {"& img,& svg,& canvas[role=img]":
- {...layout.material,position:"relative",display:"inline-block","vertical-align":"middle",height:"2em",width:"2em",margin:"0 .5em","z-index":1
- ,"border-radius":"50%","background-color":"var(--isle)"
- }
- ,"& svg":{padding:".25em",width:"2em",height:"2em",overflow:"visible"}
- ,"&>span.actions":
- {...layout.material,margin:0,position:"absolute",display:"inline-block","margin-left":"-2.5em","padding-left":"2.5em","border-radius":"2em",background:"var(--isle)"
- ,"&>svg":{width:"1.5em",height:"1.5em",margin:"0","&:hover":layout.glow.amber}
- }
- }
- ,"&>span":
- {"&.title":{"white-space":"nowrap","&>span":{"&.name":{"font-weight":"bold"},"&.time":{color:"var(--isle)","&:before":{content:"' '"}}}}
- ,"&:not(.title)":{display:"block"}
- }
- }
- }}}
- ,span:
-[{canvas:await buffer
-(compose(icon&&fetch,digest,whether(is(Blob),compose(image,canvas),infer()))
-,swap({role:"img"})
-)(icon)
- }
-,{span:
-[{class:"title",span:[{class:"name","#text":name},{class:"time","#text":clock(put,"dateminute")}]}
-,{"#text":message}
-]}
-]});
-};
-
- export var erase=
- {imports:
+{if(this)
+ return {imports:
  {"/Blik_2023_inference.js":["","compose","spill","lift","observe","match","major"]
  ,"/Blik_2023_interface.js":["","fetch"]
  ,"/Blik_2023_fragment.js":["","document","memory"]
@@ -1165,11 +1135,11 @@
  }
  ,exports:{default:
  {".message>span:first-of-type":
- {...observe({hover({isTrusted:hover,target})
-{if(this!==target)return;
+ {...observe({hover({isTrusted:hover,relatedTarget})
+{if(this.contains(relatedTarget))return;
  if(!hover)
- return [target.firstChild.nextSibling].forEach(function remove(node){node&&remove(node.nextSibling),node?.remove();});
- let name=this.closest(".message").querySelector(".name").textContent;
+ return [this.querySelector(".actions")].forEach(function remove(node){node&&remove(node.nextSibling),node?.remove();});
+ let name=this.parentNode.querySelector(".name").textContent;
  let author=memory("author",match({expires:major(Date.now())}));
  if(name!==author?.name&&author?.rank!=="ranger")
  return;
@@ -1198,6 +1168,41 @@
 }}
  }}
  };
+ return (
+ {class:"message","data-index":String(index)
+ ,style:{"@scope":{":scope":
+ {display:"block","text-align":"left","white-space":"nowrap"
+ ,...[{},layout.dropcap,{"&>span":
+ {"&:first-of-type":
+ {"vertical-align":"top"
+ ,"& img,& svg,& canvas[role=img]":
+ {...layout.material,margin:0,position:"relative","z-index":1
+ ,"border-radius":"50%","background-color":"var(--isle)"
+ }
+ ,"&>span.actions":
+ {...layout.material,margin:0,position:"absolute",display:"inline-block","margin-left":"-2.5em","padding-left":"2.5em","border-radius":"2em",background:"var(--isle)","pointer-events":"none"
+ ,"&>svg":{width:"1.5em",height:"1.5em",margin:"0","pointer-events":"auto","&:hover":layout.glow.amber}
+ }
+ }
+ ,"&>span":
+ {"vertical-align":"top"
+ ,"&.title":{"white-space":"nowrap","&>span":{"&.name":{"font-weight":"bold"},"&.time":{color:"var(--isle)","&:before":{content:"' '"}}}}
+ ,"&:not(.title)":{display:"block","white-space":"normal"}
+ }
+ }}].reduce(merge)
+ }}}
+ ,span:
+[{canvas:await buffer
+(compose(icon&&fetch,digest,whether(is(Blob),compose(image,canvas),infer()))
+,swap({role:"img"})
+)(icon)
+ }
+,{span:
+[{class:"title",span:[{class:"name","#text":name},{class:"time","#text":clock(put,"dateminute")}]}
+,{"#text":message}
+]}
+]});
+};
 
  export function chapters(id)
 {let target=(this?.closest("body")||window.document).querySelector("#"+id);
