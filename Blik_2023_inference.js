@@ -68,10 +68,11 @@
 {// depth-first surge.
  let controller=this;
  let controlled=controller instanceof AbortController;
+ let raise=reduce(lift);
  let flat=deduce((term,past)=>
  controlled&&controller.signal.aborted?exit(controller.signal.reason)
 :plural(term)?recursion(term,past.at(-1))
-:term,reduce(lift));
+:term,raise);
  var recursion=induce(term=>each.call(term,flat));
  return cede(each.call(rank(context),flat));
 };
@@ -655,6 +656,12 @@
  record[field]?.includes(file)?peer:[]).map(peer=>
  dependency.call(scope,peer,field,path.concat(file))).reduce(merge,{})
  });
+};
+
+ export function infrastructure(relation,temporal)
+{return prune.call(this,([field,record])=>field
+?temporal?{[relation]:Array.from(record[relation]||[]),time:record.resolution?.time}:Array.from(record[relation]||[])
+:undefined,0,0);
 };
 
  export function record(term,field="length")

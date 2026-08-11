@@ -1,5 +1,6 @@
- import {note,produce,search,merge,prune,record,remember,compose,spill,buffer,when,collect,infer,combine,wait,drop,slip,lift,differ,crop,each,swap,pass,not,compound,functor,native,exit,tether,either,whether,describe,string,pattern,major,match,has,is,are,defined,flip,heritage,extract} from "./Blik_2023_inference.js";
- import {access,persist,purge,command,list,interpret,fetch,digest,swarm,delegate,location,listen,infrastructure} from "./Blik_2023_interface.js";
+ import {note,produce,search,merge,prune,record,remember,compose,spill,buffer,when,collect,infer,combine,wait,drop,slip,lift,differ,crop,each,swap,pass,not,compound,functor,native,exit,tether,either,whether,describe,string,pattern,major,match,has,is,are,defined,flip,heritage,extract,infrastructure} from "./Blik_2023_inference.js";
+ import {access,persist,purge,command,list,interpret,fetch,digest,swarm,delegate,location,listen} from "./Blik_2023_interface.js";
+ import {memory} from "./Blik_2023_port.js";
  import {document,hypertext,css,throttle,error,capture,defer,window} from "./Blik_2023_fragment.js";
  import {url,serialize,mime,proceduralize,sourcemap,cookie,folder,path,query,hash,parse,stylemap} from "./Blik_2023_meta.js";
  import {random} from "./Blik_2023_search.js";
@@ -47,9 +48,9 @@
 );
 
  export default
- {infrastructure(){return delegate.call(swarm.loader,"infrastructure");}
- ,history(){return delegate.call(swarm.loader,"infrastructure","time");}
- ,sources(){return infrastructure();}
+ {infrastructure(){return delegate.call(swarm.loader,["interface/modules",{"inference/tether":["inference/infrastructure",["imports"]]}]);}
+ ,history(){return delegate.call(swarm.loader,["interface/modules",{"inference/tether":["inference/infrastructure",["imports",true]]}]);}
+ ,sources(){return infrastructure.call(memory,"imports");}
  ,git
  ,get:compose(combine(filesystem,routes),lift,merge)
  ,put:compose

@@ -315,7 +315,7 @@
 {if(this)
  return {imports:
  {"/Blik_2023_fragment.js":["","capture","image","canvas","insert"]
- ,"/Blik_2023_inference.js":["","infer","buffer","compose","observe"]
+ ,"/Blik_2023_inference.js":["","infer","buffer","compose","observe","revert","note"]
  ,"/Blik_2023_interface.js":["","command","socket","attach","commission"]
  ,"/Blik_2023_meta.js":["","url","path","query"]
  ,[websocket]:["actions"]
@@ -335,13 +335,15 @@
  Object.assign(globalThis,Object.fromEntries(Object.entries(module).filter(([field])=>
  !Object.hasOwn(globalThis,field))))));
  socket(window.location.origin,window).then(socket=>
- socket.send(JSON.stringify({action:"join",room:path(window.location.href)})));;
- window.worker=commission(this.dataset.worker).then(worker=>
+ socket.send(JSON.stringify({action:"join",room:path(window.location.href)})));
+ window.worker=commission(this.dataset.worker,"page").then(worker=>
  window.worker=worker);
  window.serviceworker=navigator.serviceWorker.register(this.dataset.serviceworker,{type:"module",scope:"/"}).then(registration=>
- window.serviceworker=registration);
+ window.serviceworker=note("Service worker "+registration.active.state+" at "+registration.scope)&&
+ registration.active.state==="activated"&&registration.active.postMessage({action:"reload"})||
+ registration);
  observe.call(navigator.serviceWorker
-,{controllerchange:update=>this.dispatchEvent(new MessageEvent("message",{data:{action:"message",message:"Updated — refresh to apply."},bubbles:true}))}
+,{controllerchange(){window.postMessage(JSON.stringify({action:"message",message:"Updated — refresh to apply."}));}}
 ,{once:true});
  attach(this.dataset.inspect).catch(fail=>
  console.warn("failed to attach CDP session on port "+this.dataset.inspect,fail));
@@ -362,6 +364,9 @@
 {console.log(this.querySelector("#composer"),this.querySelector("#frame"));
 },afterprint(event)
 {console.log(this.querySelector("#composer"),this.querySelector("#frame"));
+},appinstalled(event)
+{navigator.serviceWorker.ready.then(registration=>
+ registration.active.postMessage({action:"PWAinstall"}));
 }}
  }
  ,inbound(event)

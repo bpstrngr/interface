@@ -17,24 +17,29 @@
 
  export var worker=
  {imports:
- {"/Blik_2023_inference.js":["","revert","compose","combine","drop","collect","infer","buffer","is","string","note","exit","slip","differ","observe"]
+ {"/Blik_2023_inference.js":["","revert","search","prune","match","tether","induce","compose","combine","drop","collect","infer","buffer","is","either","string","note","exit","slip","differ","observe","crop","construct","array"]
  }
  ,exports:
  {name:"anonymous"
  ,subscribe(peer,label)
-{// receive commands from ./delegate. 
+{// receive commands from ./delegate.
  if(swarm[label])
  return console.warn("Worker "+name+" already subscribed to a peer with label: "+label);
  function error(fail){console.log(...arguments);exit(label+" worker error.",fail);}
- return observe.call(swarm[label]=peer,{message,error,messageerror:error}).postMessage("Worker "+name+" subscribed \nto commands from "+label);
+ observe.call(swarm[label]=peer,{message,error,messageerror:error});
+ let notice="Worker "+name+" subscribed \nto commands from "+label;
+ return report(peer,notice),notice;
 },unsubscribe(label)
-{// stop receiving commands. 
+{// stop receiving commands.
  if(!swarm[label])
- return console.warn("Worker "+name+" not subscribed to a peer with label: "+label);
- return observe.call(swarm[label],{message,error(fail){exit(label,fail);}},false).postMessage("Worker "+name+" unsubscribed \nof commands from "+label);
+ return exit("Worker "+name+" not subscribed to a peer with label: "+label);
+ let peer=swarm[label];
+ observe.call(peer,{message,error(fail){exit(label,fail);}},false);
+ let notice="Worker "+name+" unsubscribed \nof commands from "+label;
+ return report(notice),notice;
 },command
  ,message({data,source})
-{if(!Array.isArray(data))
+{if(!array(data))
  return console.log(data);
  let [type,id,term,...context]=data;
  if(type!=="command")
@@ -47,16 +52,20 @@
 ,combine
 (compose(slip("event",id),collect)
 ,compose(collect,tether(search,compose(drop(1),search(1),match({constructor:{name:either(is("ArrayBuffer"),is("MessagePort"),is("FileHandle"))}})),false,construct),Object.values)
-),slip(source||this),"postMessage"
+),slip(source||this),report
 )();
-}},procedures:{async initialize()
+},report(peer,...message)
+{let channel=peer.controller||peer;
+ if(channel.postMessage)
+ return channel.postMessage(...message);
+ peer.clients?.matchAll({includeUncontrolled:true}).then(clients=>clients.forEach(client=>client.postMessage(...message)))
+}},procedures:{initialize()
 {var swarm={};
- var peer=this||globalThis.self||await import("worker_threads").then(({parentPort})=>parentPort);
- subscribe(peer,"default");
+ induce(peer=>subscribe(peer,"default"))(this||globalThis.self||import("worker_threads").then(({parentPort})=>parentPort));
 }}
  };
  // extract subscription commands to accept command delegation across threads. 
- export var {swarm={},subscribe,message}=worker.exports;
+ export var {swarm={},subscribe,message,report}=worker.exports;
 
  export function inherit(previous)
 {Object.assign(swarm,previous.swarm);
@@ -106,9 +115,10 @@
  //console.warn("Importing without peer module's reference in scope for \""+specifier+"\".\nWill default to \""+location+"/\" (none).");
  if(array(specifier))
  return specifier.reduce(record(compose(drop(1),crop(1),push(...context),command.bind(this))),[]);
- let {protocol,host,pathname}=url(specifier,this);
+ let {protocol,host,pathname}=new URL(specifier,this);
+ let intercepted=globalThis.process&&(loader||offload);
  let type=specifier.endsWith(".json")?"json":undefined;
- let custom=(loader||offload||type)&&prune.call(
+ let custom=(intercepted||type)&&prune.call(
  {[features.attributes||features.assertions]:
  {type,peer:swarm?.loader?this||protocol+"//"+location+"/":undefined
  // swarm.loader prunes irregular attributes, but it will not guard imports from that thread itself. 
@@ -166,21 +176,23 @@
  let thread=await compose.call
 (agent.node?import("worker_threads"):{Worker},search("Worker")
 ,[address,{type:"module",name,execArgv:agent.node?process.execArgv.filter(not(match(/^--import/))):undefined}],Reflect.construct
-,agent.node?await import("worker_threads").then(({MessageChannel})=>new MessageChannel()):{}
-,buffer(compose
-(revert(function register(resume,error,module,{port1:near,port2:far})
-{// observe channel until worker reports subscription.
- observe.call(near||module,{message({data}){note.call(2,data),resume([this,far,module]);},error,exit:error},{once:true});
-}),([near,far,module])=>far
- // supply far end of custom message channel to re-subscribe. Browsers won't have this.
-?delegate.call(near,"unsubscribe","default").then(unsubscribed=>
- delegate.call(near,"subscribe",far,peer)).then(swap(near))
-:module
-),compose("stack",exit))
+,agent.node?await import("worker_threads").then(({MessageChannel})=>new MessageChannel()):new MessageChannel(),peer
+,buffer(resubscribe,compose(note,"stack",exit))
 );
  URL.revokeObjectURL(address);
  return ephemeral?delegate.call(thread,module.name,...context):thread;
 };
+
+ export var resubscribe=compose
+(revert(function anticipate(resume,error,module,{port1:near,port2:far},peer)
+{// observe channel until worker reports default subscription.
+ observe.call(module,{message({data}){note.call(2,data),resume([this,near,far,peer]);},error,exit:error},{once:true});
+}),([module,near,far,peer])=>far
+ // supply far end of custom message channel to re-subscribe.
+?delegate.call(module,"subscribe",far,peer).then(note.bind(2)).then(subscribed=>
+ delegate.call(near,"unsubscribe","default")).then(compose(note.bind(2),swap(near)))
+:module
+);
 
  export async function delegate(term,...context)
 {// submit command to worker initialized with ./worker/procedures. 
@@ -942,12 +954,6 @@
 {action.call(this,JSON.parse(response.data),message,resume,reject);
 }},{signal}))
 ),this,message,message?infer("send",JSON.stringify(message)):infer());
-};
-
- export async function infrastructure(temporal)
-{return prune.call(modules,([field,{imports=[],resolution}])=>field
-?temporal?{imports:Array.from(imports),time:resolution?.time}:Array.from(imports)
-:undefined,0,0);
 };
 
  export function bust(file){return [file].flat().map(file=>delete modules[file]);};

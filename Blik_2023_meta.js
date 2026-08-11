@@ -1118,6 +1118,71 @@
 ,undefined)?.join("/")
 );
 
+ export function GraphXML(gexf)
+{let graph=gexf.getElementsByTagName('graph')[0];
+ let meta=gexf.getElementsByTagName('meta')[0];
+ let hasViz=Boolean(gexf.getAttribute("xmlns:viz")??gexf.getAttributeNS("xmlns","viz")??gexf.getAttribute("viz"));
+ let version=gexf.getAttribute('version')||'1.0';
+ let mode=graph.getAttribute('mode')||'static';
+ let defaultEdgetype=graph.getAttribute('defaultedgetype')||'undirected';
+ let attributes=Array.from(gexf.getElementsByTagName('attribute')).filter(node=>node.nodeName!=="#text").map(node=>(
+ {defaultValue:Array.from(node.childNodes).filter(node=>node.nodeName!=="#text")[0]?.textContent
+ ,id:node.getAttribute('id')||node.getAttribute('for')
+ ,type:node.getAttribute('type')||'string'
+ ,title:node.getAttribute('title')||''
+ }));
+ let model=Object.fromEntries(attributes.map(model=>[model.title.toLowerCase(),model.defaultValue]));
+ let nodes=Array.from(gexf.getElementsByTagName('node')).filter(node=>node.nodeName!=="#text").map(n=>(
+ {id:n.getAttribute('id'),label:n.getAttribute('label')||''
+ ,attributes:[{},model
+,Object.fromEntries(Array.from(n.getElementsByTagName('attvalue')).filter(node=>
+ node.nodeName!=="#text").map(node=>
+ Array.from(node.attributes).map(node=>node.value)).map(([field,value])=>
+ [attributes.find(model=>model.id===field),value].reduce((model,value)=>
+[model.title.toLowerCase()
+,[model.type,value].reduce((type,value)=>type==="boolean"?value===true
+:'integer/long/float/double'.split('/').includes(type)?+value:value)
+])))].reduce(merge)
+ ,viz:hasViz?
+ {color:[getFirstElementByTagNS(n,'viz','color'),"rgba"].reduce((color,fields)=>
+ color?fields.split("").map(field=>color.getAttribute(field)).filter(Boolean).reduce((color,hue,index,{length})=>
+ color+(!index?length>3?"a(":"(":",")+hue,"rgb")+")":undefined)
+ ,position:[getFirstElementByTagNS(n,'viz','position'),"xyz"].reduce((position,fields)=>
+ position?Object.fromEntries(fields.split("").map(p=>[p,+position.getAttribute(p)])):undefined)
+ ,size:[getFirstElementByTagNS(n,'viz','size')?.getAttribute('value')].map(size=>size&&Number(size)).shift()
+ ,shape:getFirstElementByTagNS(n,'viz','shape')?.getAttribute('value')
+ }:{}
+ })).map(({id,label,viz,attributes})=>({id,name:label,...viz,value:attributes}));
+ let links=Array.from(gexf.getElementsByTagName('edge')).filter(node=>node.nodeName!=="#text").map(e=>(
+ {type:defaultEdgetype||"undirected",label:'',weight:1.0
+ ,...Object.fromEntries(Array.from(e.attributes).map(node=>[node.name,node.value]).map(([field,value])=>
+ [field,field==="weight"?Number(value):value]))
+ ,viz:hasViz?
+ {shape:getFirstElementByTagNS(e,'viz','shape')?.getAttribute('value')
+ ,thickness:Number(getFirstElementByTagNS(e,'viz','thickness')?.getAttribute('value'))
+ ,color:[getFirstElementByTagNS(e,'viz','color'),"rgba"].reduce((color,fields)=>color?fields.split("").map(field=>
+ color.getAttribute(field)).filter(Boolean).reduce((color,hue,index,{length})=>
+ color+(!index?length>3?"a(":"(":",")+hue,"rgb")+")":undefined)
+ }:{}
+ }));
+ links.forEach(({source,target,weight})=>[source,target].map(name=>
+ nodes.find(({id})=>id===name)).forEach((node,index,nodes)=>merge(node
+,{[index?"source":weight?"relations":"nodes"]
+ :new (!index&&weight?Map:Set)(!index&&weight?[[nodes[(index+1)%2],weight]]:[nodes[(index+1)%2]])
+ },0)));
+ return nodes.map(node=>merge(node,Object.fromEntries(["nodes","source"].map(field=>
+ [field,node[field]?Array.from(node[field]):undefined])),1));
+ //return {nodes,edges:links,version:version,mode:mode,defaultEdgeType:defaultEdgetype
+ //,meta:meta&&{lastmodifieddate:meta.getAttribute('lastmodifieddate'),...Object.fromEntries(Array.from(meta.childNodes).filter(node=>node.nodeName!=="#text").map(child=>[child.tagName.toLowerCase(),child.textContent]))}
+ //,model:attributes
+ //};
+ function getFirstElementByTagNS(node,ns,tag)
+{return node.getElementsByTagName(ns+':'+tag)[0]||
+ node.getElementsByTagNameNS(ns,tag)[0]||
+ node.getElementsByTagName(tag)[0];
+};
+};
+
  export function cookie(cookies=(this.ownerDocument||this).cookie)
 {return array(cookies)?cookies.map(cookie)
 :simple(cookies)
