@@ -13,7 +13,7 @@
  let [{default:routes,relay,syndication,encryption,classify,classified,published,permit},{default:credentials}]=
  await [range,module].reduce(record(module=>
  string(module)?command.call(import.meta.url,module):{default:module}),[]);
- let {network,port,certification={},distinguishedname,cache}=search.call(credentials,fields);
+ let {network,port,certification={},cache}=search.call(credentials,fields);
  if(cache)
  merge(memory,await buffer(access,compose(drop(1),infer(access,{},true),"object",access))(cache,"object")||{},1);
  memory=new Proxy(memory
@@ -22,20 +22,20 @@
 },deleteProperty(target,field)
 {let deleted=delete target[field];access(cache,target,true);return deleted;
 }});
- let [[domain,[signature,certificate]=[]]=[]]=Object.entries(certification);
+ let [[domain,{key:signature,certificate,distinguishedname}={}]=[]]=Object.entries(certification);
  let [encrypted,syndicated]=await [encryption,syndication].reduce(record(required=>
  required?prompt(extract.call(credentials,Object.keys(required))):{}),[]);
  let agent=await command.call(import.meta.url,network);
- let required={"https:":{domain,signature,certificate}}[agent.globalAgent.protocol];
- ({port,domain,signature,certificate}=await prompt({port,...required}));
+ let required={"https:":{domain,signature,certificate,distinguishedname}}[agent.globalAgent.protocol];
+ ({port,domain,signature,certificate,distinguishedname}=await prompt({port,...required}));
  merge(syndication,syndicated);
- merge(certification,required&&{[domain]:[signature,certificate]});
+ merge(certification,required&&{[domain]:{key:signature,certificate,distinguishedname}});
  merge(encryption,prune.call(encrypted,([field,value])=>encrypt(value)));
  merge(globalThis,{memory,published,classified,classify});
- let certificates=await Promise.all(Object.values(certification).flat().map(compose(crop(1),slip("path","resolve"),command.bind(import.meta.url))));
+ let certificates=await Promise.all(Object.values(certification).flatMap(({key,certificate})=>[key,certificate]).map(compose(crop(1),slip("path","resolve"),command.bind(import.meta.url))));
  await classify?.(module,...certificates);
- let certifications=prune.call(certification,([domain,certificates])=>
- certify(certificates,distinguishedname,[domain]),0,0);
+ let certifications=prune.call(certification,([domain,{key,certificate,distinguishedname}])=>
+ certify([key,certificate],distinguishedname,[domain]),0,0);
  await jsdom.call(browser,agent.globalAgent.protocol+"//localhost"+":"+port);
  let memorable=bind(each,
 [when(match({status:minor(300)}))
@@ -292,7 +292,7 @@
  let {http,dns,tls}=challenges.reduce((challenges,challenge)=>merge(challenges
 ,{[challenge.type.match(/^[^-]+/)[0]]:[challenge]},0),{});
  let routes={".well-known":{"acme-challenge":http.map(({token})=>({[token]:[token,identity].join(".")})).reduce(merge)}};
- let host=await expose(routes,{network:"http",port:80},false);
+ let host=await expose({network:"http",port:80},routes,false);
  await http.reduce(record(({url})=>combine(acme,either
 (expect(compose(fetch,digest,note,combine("status","error"),whether
 (is("invalid"),compose(drop(1),JSON.stringify,Error,exit),is("valid")
