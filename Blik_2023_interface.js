@@ -1,7 +1,7 @@
  import {modular,measure,ring,produce,construct,deduce,zap,induce,stash,decide,note,collect,search,merge,prune,route,record,remember,tally,rotate,cede,unit,lift,push,sum,same,are,has,promise,pass,slip,something,observe,functor,describe,expect,control,trace,array,compound,simple,revert,rank,tether,differ,whether,either,when,each,drop,swap,crop,infer,buffer,is,not,plural,numeric,binary,basic,match,wait,string,defined,minor,compose,combine,exit,clock,major,colors,skip,flip,debug,extract,flatten} from "./Blik_2023_inference.js";
  import {file,folder,url,relate,query,path,parser,parse,sanitize,serialize,exports,reexport,mime,coordinates,records} from "./Blik_2023_meta.js";
 
- export var {protocol,host,pathname:address}=new URL(import.meta.url);
+ export var {protocol,origin,pathname:address}=new URL(import.meta.url);
  export var name=file(address);
  export var location=folder(address);
  export var remote=protocol==="http:";
@@ -15,8 +15,7 @@
  export var interpreter=agent.node&&await import("vm").then(search(["Module"]));
  export var thread=agent.node&&await import("worker_threads").then(infer("isMainThread"))?0:1;
 
- export var worker=
- {imports:
+ export var worker={imports:
  {"/Blik_2023_inference.js":["","revert","search","prune","match","tether","induce","compose","combine","drop","collect","infer","buffer","is","either","string","note","exit","slip","differ","observe","crop","construct","array"]
  }
  ,exports:
@@ -59,11 +58,13 @@
  if(channel.postMessage)
  return channel.postMessage(...message);
  peer.clients?.matchAll({includeUncontrolled:true}).then(clients=>clients.forEach(client=>client.postMessage(...message)))
-}},procedures:{initialize()
+},feature
+ },procedures:{initialize()
 {var swarm={};
+ // needed for command to infer import attributes. 
+ var features=feature(globalThis.navigator);
  induce(peer=>subscribe(peer,"default"))(this||globalThis.self||import("worker_threads").then(({parentPort})=>parentPort));
-}}
- };
+}}};
  // extract subscription commands to accept command delegation across threads. 
  export var {swarm={},subscribe,message,report}=worker.exports;
 
@@ -115,14 +116,12 @@
  //console.warn("Importing without peer module's reference in scope for \""+specifier+"\".\nWill default to \""+location+"/\" (none).");
  if(array(specifier))
  return specifier.reduce(record(compose(drop(1),crop(1),push(...context),command.bind(this))),[]);
- let {protocol,host,pathname}=new URL(specifier,this);
+ let type=features.json&&!swarm.loader&&specifier.endsWith(".json")?"json":undefined;
  let intercepted=globalThis.process&&(loader||offload);
- let type=specifier.endsWith(".json")?"json":undefined;
  let custom=(intercepted||type)&&prune.call(
- {[features.attributes||features.assertions]:
- {type,peer:swarm?.loader?this||protocol+"//"+location+"/":undefined
+ {[features.attributes||features.assertions]:{type
  // swarm.loader prunes irregular attributes, but it will not guard imports from that thread itself. 
- }
+ ,peer:swarm?.loader?this||protocol+"//"+location+"/":undefined}
  },({1:value})=>value);
  let module=import(specifier,custom);
  return infer.call(module,...context);
@@ -337,8 +336,8 @@
  }));
 });
  let input=entries.flatMap(({input})=>input).filter(string);
- let binding=/\.gyp$|\.rs$/.test(input[0]);
- let native=/\.rs$/.test(input[0])?wasm:make;
+ let [addon,rust]=[".gyp",".rs"].map(extension=>input[0].endsWith(extension));
+ let move=compose(absolute,slip(command.call(import.meta.url,"fs","promises")),"rename",swap(absolute));
  let clean=pass(buffer(compose(swap(target),purge,done=>delete this[target]&&note.call(2,"purged sources of "+target+".")),note));
  if(entries.length)
  return compose.call
@@ -358,13 +357,11 @@
 ,[]),"\n","join",slip(entry),true,access
 ))
  // perform idempotent source resolution before bundling to support re-imports. 
-,pass(parts=>!binding&&delegate.call(swarm.primary,["inference/tether interface/command","inference/undefine"],peer,entry))
+,pass(parts=>!addon&&!rust&&delegate.call(swarm.primary,["inference/tether interface/command","inference/undefine"],peer,entry))
 ,slip(entry)
-,binding
-?buffer
-(compose(native,absolute,slip(command.call(import.meta.url,"fs","promises")),"rename",swap(absolute),pass(infer(note.bind(2),"bundle ready.")),clean)
-,compose(clean,exit)
-)
+,(addon||rust)&&buffer(compose(addon?make:wasm,move),compose(clean,exit))
+,addon
+?compose(pass(infer(note.bind(2),"addon ready.")),clean)
  // not returning bundle promise after source assembly to unblock immediate resolution from source. 
 :compose(skip(buffer
 (compose(bundle,slip(absolute),true,access,pass(infer(note.bind(2),"bundle ready.")),clean)
@@ -393,7 +390,7 @@
 ?compose("arrayBuffer",Buffer.from,asset,buffer(persist,fail=>note(fail)&&access(asset)))(response)
 :produce(combine(swap("Failed to fetch "+remote+":"),"status","text"),"concat",exit)(response))),compressed=>
  compose.call({},depot,persist,swap(asset),decompress,depot,decompress,swap(asset),purge,pass(note.bind(1,"Deleted source: "))))(asset)
-:await expect(buffer(checkout,combine
+:await expect(buffer(command.bind(import.meta.url,"./Blik_2026_git.js","checkout"),combine
 (compose(crop(1),[],({stack},record)=>
  record.push(note.call(1,record.length+1+"/5 attempt to checkout "+address+": "+stack)))
 ,combine(swap(depot),buffer(purge))
@@ -492,40 +489,37 @@
 };
 
  async function wasm(source,parts)
-{// compile a Rust crate to wasm32 (cargo) then process it through wasm-bindgen for a web-target js binding.
+{// compile a Rust crate to wasm32 (cargo) then process it through wasm-bindgen for a js binding.
  let path=source.split("/");
  let file=path.pop();
  let edits=parts.map(({format})=>format?.edit).filter(Boolean).reduce(merge,{});
  if(Object.keys(edits).length)
  await compose(edits,edit,slip(source),true,access)(await access(source,true));
- let root,manifest;
- for(let depth=path.length;depth>0&&!manifest;depth--)
-{root=path.slice(0,depth).join("/");
- manifest=await access(root+"/Cargo.toml",true).catch(fail=>undefined);
-}
+ let attempts=path.map((field,index,path,base=path.slice(0,path.length-index-1))=>
+ compose(slip(base.join("/")),"concat",note,stash(infer(access,true))));
+ let [cargo,manifest]=await either(...attempts)("/Cargo.toml");
  if(!manifest)
  exit(Error("no Cargo.toml found above "+source));
  let {1:target}=manifest.match(/name = "(.*)"/);
  let {1:bindgen}=manifest.match(/wasm-bindgen = "=?(.*)"/);
  await buffer(compose(spawn.bind(true),note),exit)
- ("cargo","build","--manifest-path",root+"/Cargo.toml","--target","wasm32-unknown-unknown","--release");
+ ("cargo","build","--manifest-path",cargo,"--target","wasm32-unknown-unknown","--release");
  let asset=
  {"linux-x64":"x86_64-unknown-linux-musl","linux-arm64":"aarch64-unknown-linux-gnu"
  ,"darwin-x64":"x86_64-apple-darwin","darwin-arm64":"aarch64-apple-darwin"
  ,"win32-x64":"x86_64-pc-windows-msvc"
  }[globalThis.process.platform+"-"+globalThis.process.arch];
- let tool=root+"/wasm-bindgen";
+ let tool=relate("./wasm-bindgen",cargo);
  await access(tool,true).catch(async fail=>
 {let archive=await fetch("https://github.com/wasm-bindgen/wasm-bindgen/releases/download/"
 +bindgen+"/wasm-bindgen-"+bindgen+"-"+asset+".tar.gz").then(response=>response.arrayBuffer()).then(Buffer.from);
  await decompress(archive,tool,"wasm-bindgen");
  await command.call(import.meta.url,"fs","promises","chmod",tool,0o755);
 });
- let compiled=root+"/target/wasm32-unknown-unknown/release/"+target.replace(/-/g,"_")+".wasm";
- await buffer(compose(spawn.bind(true),note),exit)
- (tool,compiled,"--target","web","--out-dir",root+"/pkg","--out-name","index");
- await persist(await access(root+"/pkg/index_bg.wasm","binary"),location+"/Reizner_2017_resvg.wasm");
- return root+"/pkg/index.js";
+ let compiled=relate("./target/wasm32-unknown-unknown/release/"+target.replace(/-/g,"_")+".wasm",cargo);
+ await buffer(compose(spawn.bind(true),note),exit)(tool,compiled,"--target","web","--out-dir",relate("./pkg",cargo),"--out-name","index");
+ await persist(await access(relate("./pkg/index_bg.wasm",cargo),"binary"),location+"/Reizner_2017_resvg.wasm");
+ return relate("./pkg/index.js",cargo);
 };
 
  export async function access(file,encoding,content)
@@ -744,26 +738,13 @@
  return compose(each("close"),swap(Object.fromEntries(entries)),cede)(...interfaces);
 };
 
- export async function checkout(remote,target,branch,path)
-{// git clone remote branch to target, restricted to subfolder if present. (to be replaced with js-git)
- if(!/^http/.test(remote))
- return fs.cp(remote,target,{dereference:true,recursive:true}).then(copy=>branch&&spawn.call(0,"git","-C",target,"checkout",branch));
- let commit=branch.length===40&&!/[^a-z0-9]/.test(branch);
- let clone=await spawn.call(0,"git","clone","--depth=1",...path.length?["--no-checkout","--sparse","--filter=tree:0"]:[]
-,...commit?["--no-checkout","-c","remote.origin.fetch=+"+branch+":refs/remotes/origin/"+branch]:branch?["--single-branch","--branch",branch]:[]
-,remote,target);
- if(commit)
- clone=await spawn.call(0,"git","-C",target,"checkout",branch);
- if(!path.length)
- return target;
- clone=await spawn.call(0,"git","-C",target,"sparse-checkout","add",...[path.join("/").split(" ")].flat());
- if(!commit&&branch)
- clone=await spawn.call(0,"git","-C",target,"checkout",branch);
- return target;
-};
-
- export function patch(repository,patch)
-{return [patch].flat().reduce(record(patch=>spawn("git","-C",repository,"apply",patch)),[]);
+ export function patch(repository,patches)
+{return [patches].flat().reduce(record(compose
+(drop(1,2),true,access
+,command.bind(import.meta.url,"./Blik_2026_git.js","patch")
+,push(repository)
+,command.bind(import.meta.url,"./Blik_2026_git.js","apply")
+)),[]);
 };
 
  export async function shrink(log,replace)
@@ -988,7 +969,7 @@
  // timestamp suffix busts V8's own resolution cache,
  // stripped by Interface/resolve for its own record.
  return live.reduce(record(async([specifier,module,peer],index)=>
- module?.reexpress&&module.reexpress(console.log("Reexpressing "+specifier)||await command.call(peer,specifier+"?"+Date.now()))),[]);
+ module?.reexpress&&module.reexpress(console.log("Reexpressing "+specifier)||await command.call(peer,specifier+"?bust="+Date.now()))),[]);
 };
 
  export async function fetch(request,{method,body,headers}={})
@@ -998,6 +979,7 @@
  if(/^[\/\.]+/.test(address))
  address=relate(address,!this?await command.call(import.meta.url,"./Blik_2023_fragment.js","window").then(({location:{origin}})=>origin):this);
  let {protocol,host,hostname,pathname,search,port}=new URL(address);
+ merge(headers,{host});
  return revert((respond,reject,request,body)=>compose
 (infer(command.bind(import.meta.url),"request",request,function forward(response)
 {let {statusCode:status,headers}=response;
@@ -1054,9 +1036,9 @@
  if(json&&simple(body))
  body=JSON.stringify(prune.call(body,([field,value],path,trace)=>
  functor(value)?null:trace.includes(value)?path:value));
- if(json&&importing&&!features.json)
+ if(json&&importing)
  body=Buffer.from("export default "+body+";"),headers["Content-Type"]=mime("js"),js=true;
- if(browser&&js)
+ if(browser&&js&&headers["content-encoding"]!=="gzip"&&headers["Content-Encoding"]!=="gzip")
  body=await compress(body),headers["Content-Encoding"]="gzip";
  if(response?.nodeName)
  await command.bind(import.meta.url)("./Blik_2023_fragment.js","destroy",response);
@@ -1069,8 +1051,7 @@
  export async function text(json=false)
 {if(!binary(json))json=false;
  let buffer=this.body.constructor?.name==="Buffer";
- let gzip=Array(2).fill("Content-Encoding").find((field,index)=>this.headers?.get(index?field.toLowerCase():field)==="gzip");
- let text=buffer?(gzip?Buffer.from(await decompress(this.body)):this.body).toString():this.body;
+ let text=buffer?Buffer.from(await this.arrayBuffer()).toString("utf-8"):this.body;
  if(compound(text))
  return json?text:JSON.stringify(text);
  return json?JSON.parse(text):text;
@@ -1079,13 +1060,15 @@
  export async function arrayBuffer()
 {// if(simple(this.body))
  // return compose(JSON.stringify(this.body),"encode","buffer")(new TextEncoder());
- if(this.body?.constructor?.name==="Buffer")
+ let gzip=Array(2).fill("Content-Encoding").find((field,index)=>this.headers?.get(index?field.toLowerCase():field)==="gzip");
+ let body=gzip?Buffer.from(await decompress(this.body)):this.body;
+ if(body?.constructor?.name==="Buffer")
  return compose
-(new Uint8Array(new ArrayBuffer(this.body.length))
+(new Uint8Array(new ArrayBuffer(body.length))
 ,(buffer,array)=>{for(let i=0;i<array.length;i++){array[i]=buffer[i]};return array}
 ,"buffer"
-)(this.body);
- return Buffer.from(this.body??"","utf-8");
+)(body);
+ return Buffer.from(body??"","utf-8");
 };
 
  export var script=compose
@@ -1100,17 +1083,19 @@
  // read response in its specified format. 
  // Response objects may be imitated, hence not when(is(Response)). 
 (when(has(["status","text","json","headers"]))
-,whether(produce("status",not(minor(400))),produce("text",Error,exit),infer())
+,whether(produce("status",minor(400)),infer(),produce("text",Error,exit))
+,whether(match({headers:{"Content-Encoding":"gzip"}}),compose(decompress))
 ,combine(unit,produce("headers",infer("get","Content-Type"),";","split",0,infer
 ((type,xml)=>produce.call(
  {json:"json",pdf:"arrayBuffer"
  ,csv:produce("text",records),svg:produce("text",type,xml),xml:produce("text",type,xml)
  ,png:"blob",jpg:"blob",png:"blob"
  },Object.entries,infer("map",([field,value])=>[mime(field),value]),Object.fromEntries)[type]
-,(text,mime)=>command.call(import.meta.url,"./Blik_2023_fragment.js","window").then(({document,DOMParser})=>mime==="text/html"
+,function xml(text,mime)
+{command.call(import.meta.url,"./Blik_2023_fragment.js","window").then(({document,DOMParser})=>mime==="text/html"
 ?document.createRange().createContextualFragment(text)
-:new DOMParser().parseFromString(text,mime).documentElement)
-))),lift
+:new DOMParser().parseFromString(text,mime).documentElement);
+}))),lift
 ,(response,parser)=>infer.call(response,parser||"text")
 );
 

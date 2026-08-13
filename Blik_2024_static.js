@@ -114,19 +114,29 @@
  let base=path(request).replace(/\/?jssmap$/,"");
  let [html,source]=await Promise.all(
 [fetch(origin+"/"+base,{headers:request.headers}).then(response=>response.text())
-,fetch(origin+"/"+module,{headers:request.headers}).then(response=>response.text())
+,fetch(origin+"/"+module,{headers:request.headers}).then(response=>note(response).text())
 ]);
+ console.log({html,source})
  let dom=new window.DOMParser().parseFromString(html,"text/html");
  let element=dom.querySelector("style"+id);
- let ast=parse(source);
+ let ast=await parse(source);
  let [declaration]=Object.values(search.call(ast
 ,([field,value])=>(value?.type==="VariableDeclarator"||value?.type==="FunctionDeclaration")&&value.id?.name===name,true));
  let [literal]=Object.values(search.call(declaration
 ,([field,value])=>value?.type==="ObjectExpression"&&value.properties?.[0]?.key?.value==="@scope",true));
  return {type:"json",body:JSON.stringify(await stylemap(element.textContent,literal,source,module))};
+},async proxy(request,body,response,route)
+{let {domain}=query(url(request));
+ let file=route.join("/");
+ let subsequent=path(request).split("/").slice(1);
+ let data=await fetch("https://"+domain+"/"+subsequent.join("/"),{headers:request.headers}).then(response=>
+ response.headers.get("content-type")===mime("json")?response.json():response.text());
+ return record(data,subsequent);
 },sourcemap
  ,vector:compose(crop(1),infer(record,["svg"]),document,spill,lift,crop(1))
- ,inspect:compose(drop(),"http://127.0.0.1:9222/json",fetch,digest)
+ ,raster()
+{return compose(command.bind(import.meta.url),note,[],Reflect.construct)("./Yisi_2021_resvg.js");
+},inspect:compose(drop(),"http://127.0.0.1:9222/json",fetch,digest)
  ,error
  };
 

@@ -70,7 +70,7 @@
  let controlled=controller instanceof AbortController;
  let raise=reduce(lift);
  let flat=deduce((term,past)=>
- controlled&&controller.signal.aborted?exit(controller.signal.reason)
+ controlled&&controller.signal.aborted?abort(controller.signal.reason)
 :plural(term)?recursion(term,past.at(-1))
 :term,raise);
  var recursion=induce(term=>each.call(term,flat));
@@ -395,9 +395,9 @@
  export function when(...terms)
 {// demand conditions on context. 
  let condition=pass(describe(combine
-(...terms.map((term,index,terms)=>compose
+(...terms.map((term,index,terms)=>produce
 (drop(index),combine(not(term),unit),lift,(fail,...context)=>fail&&
- exit(term.name+": "+context.map(buffer(JSON.stringify,drop(1,2))).join(""))
+ abort(term.name+": "+context.map(buffer(JSON.stringify,drop(1,2))).join(""))
 ))
 ),when,...terms));
  return defined(this)?condition(this):condition;
@@ -438,25 +438,19 @@
 
  export function either(...terms)
 {if(!terms.length)
- return unit;
+ return cede;
  let valid=is([something,not(is(false)),not(is(Error))]);
- return function(...context)
-{if(defined(this))context.unshift(this);
- let scope=context.shift();
- return attempt(0);
- function attempt(index)
-{if(index===terms.length-1)
- return infer(terms[index],...context)(scope);
- return produce
-(buffer(differ(terms[index]))
-,result=>valid(result)?result:attempt(index+1)
-)(scope,...context);
-};
-};
+ return terms.reduce((past,next,index)=>
+ buffer(produce(differ(past),when(valid)),produce(drop(1),next)),abort);
 };
 
  export function whether(condition,...terms)
 {let conditions=[condition].flat();
+//  let determine=conditions.map((condition,index)=>
+//  produce(condition,when(valid),swap(index),search.bind(terms)));
+//  return produce(stash
+// (either(...determine,swap(terms[conditions.length]))
+// ),rotate(1),infer,"call");
  return function(...context)
 {if(defined(this))context.unshift(this);
  let scope=context.shift();
@@ -940,6 +934,8 @@
 }.bind(scope);
 };
 
+ export function abort(term){throw term;};
+
  export function exit(message,cause){throw is(Error)(message)?message:Error(message,{cause,reason:cause});};
 
  export var tests=
@@ -1062,15 +1058,15 @@
 ,{context:[a=>2,fail=>3],terms:[1,Function.call,2],condition:"equal"}
 ,{context:[exit],terms:[Function.call,is(Error),true],condition:"equal"}
 ],differ:
-[{context:[a=>a],terms:[buffer,1,"call",is(Error)],condition:"ok"}
+[{context:[a=>a],terms:[buffer,1,"call",tally(2)],condition:"ok"}
 ,{context:[a=>2],terms:[1,"call",2],condition:"equal"}
-,{context:[],terms:[buffer,1,Function.call,is(Error)],condition:"ok"}
+,{context:[],terms:[buffer,1,Function.call,tally(1)],condition:"ok"}
 ],either:
  {first:{context:[a=>a*2,a=>a*3],terms:[1,Function.call,2],condition:["equal"]}
  ,second:{context:[a=>false,a=>a*3],terms:[1,Function.call,3],condition:["equal"]}
  ,abscond:{context:[a=>false,drop()],terms:[1,Function.call,collect,c=>c.length,0],condition:["equal"]}
  ,identity:{context:[],terms:[null,1,Function.call,1],condition:["equal"]}
- ,neither:{context:[differ()],terms:[buffer,0,1,2,Function.call,is(Error),true],condition:["equal"]}
+ ,neither:{context:[differ()],terms:[buffer,0,1,2,Function.call,is("not(same(0,1,2)): 012",0,1,2),true],condition:["equal"]}
  ,promise:{context:[a=>false,a=>2],terms:[0,Promise.resolve(1),Function.call,2],condition:["equal"]}
  ,fail:{context:[a=>exit("b"),a=>2],terms:[0,1,Function.call,2],condition:["equal"]}
  }

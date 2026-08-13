@@ -109,7 +109,7 @@
 ,whether(is([simple,not(has("#text"))],"style"),each([produce
 (crop(1),whether(either(has("id"),has("class")),combine
 (tether(extract,["id","class","fragment"],true)
-,swap("\n/*# disabled-sourceMappingURL=./jssmap?id=")
+,swap("\n/*# sourceMappingURL=./jssmap?id=")
 ,compose(["style"],record,qualify,infer("slice",5),encodeURIComponent),swap("&fragment="),compose(search("fragment"),encodeURIComponent),swap("*/")
 ,extract(["id","class","fragment"])
 ),{}),lift,drop(1,0,css),drop(-1,0,compose(infer("concat"),["#text"],record)),merge
@@ -339,7 +339,7 @@
  window.worker=commission(this.dataset.worker,"page").then(worker=>
  window.worker=worker);
  window.serviceworker=navigator.serviceWorker.register(this.dataset.serviceworker,{type:"module",scope:"/"}).then(registration=>
- window.serviceworker=note("Service worker "+registration.active.state+" at "+registration.scope)&&
+ window.serviceworker=note.call(2,"Service worker "+registration.active.state+" at "+registration.scope)&&
  registration.active.state==="activated"&&registration.active.postMessage({action:"reload"})||
  registration);
  observe.call(navigator.serviceWorker
@@ -600,7 +600,7 @@
  {position:"fixed",display:"none",padding:"0px","margin-bottom":"0px","margin-left":"0.6em","max-height":"100%","max-width":"100%"
  ,"z-index":"2","text-align":"left","pointer-events":"none","list-style-type":"none"
  ,"box-sizing":"border-box",width:"inherit","overflow":"scroll","white-space":"nowrap"
- ,color:"var(--abyss)","font-weight":"bold","text-shadow":Array(25).fill("var(--note) 0px 0px .25em").join()
+ ,color:"var(--abyss)","font-weight":"bold","text-shadow":layout.text.outline
  ,"& ul":{position:"relative",bottom:"initial","max-height":"initial","vertical-align":"top","text-align":"left"}
  ,"&:hover,&.hover":{">li":{display:"block"}}
  }

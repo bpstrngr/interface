@@ -1,4 +1,4 @@
- import {note,compose,slip,swap,unary,buffer,expect,record,prune,colors,exit,string} from "./Blik_2023_inference.js";
+ import {note,compose,slip,swap,unary,buffer,expect,record,prune,colors,exit,string,merge} from "./Blik_2023_inference.js";
  import {prompt,print,compile,command,access,test,locate} from "./Blik_2023_interface.js";
  import {folder,url,query} from "./Blik_2023_meta.js";
  import http from "./Hilton_2018_isomorphic-git-http.js";
@@ -7,7 +7,7 @@
  import fs from "fs";
  var address=import.meta.url;
  var relation=folder(new URL(address).pathname),dir=relation;
- function onProgress(message){print(message);};
+ function onProgress(message){print(message,0);};
  function onPostCheckout(message){console.log(message);};
 
  export default
@@ -71,6 +71,18 @@
  export function files({remote},branch,dir)
 {return git.listFiles({fs,dir,ref:[remote,branch].filter(string).join("/")});
 };
+ export async function checkout(remote,target,branch,path)
+{// isomorphic-git clone remote branch to target, restricted to subfolder if present.
+ if(!/^http/.test(remote))
+ return fs.promises.cp(remote,target,{dereference:true,recursive:true}).then(copy=>branch&&git.checkout({fs,dir:target,ref:branch}));
+ let commit=branch.length===40&&!/[^a-z0-9]/.test(branch);
+ let filepaths=path.length?[path.join("/").split(" ")].flat():undefined;
+ await git.clone
+ ({fs,http,dir:target,url:remote,ref:branch||undefined,singleBranch:!!branch,depth:1,noCheckout:!!(commit||filepaths),onProgress});
+ if(commit||filepaths)
+ await git.checkout({fs,dir:target,ref:branch,filepaths,onProgress,onPostCheckout});
+ return target;
+};
  export async function check(remote,branch)
 {// pivot to tracking remote/branch, preserving files from the current one and changes to theirs.
  ({remote,branch}=await prompt({remote,branch}));
@@ -85,7 +97,7 @@
  let stash=changes.length&&await git.stash({fs,dir,op:"push"});
  await git.checkout({fs,dir,ref,onProgress,onPostCheckout});
  console.log(" New scope:\n"+await status());
- if(stash)await apply(stash,dir);
+ if(stash)await restore(stash,dir);
  console.log(" Re-merged scopes:"+await status());
  await git.statusMatrix({fs,dir}).then(matrix=>
  matrix.reduce(record(([filepath])=>
@@ -101,12 +113,28 @@
  ," "+message].join("\n")).join("\n"));
 };
 
- export function delta(a,b)
-{let [from,to]=[a,b].map(text=>text.split("\n"));
+ export function delta(source,target)
+{let [from,to]=[source,target].map(text=>text.split("\n"));
  return new onp(from,to).compose().map(({file1,file2})=>(
  {from:{start:file1[0],count:file1[1],lines:from.slice(file1[0],file1[0]+file1[1])}
  ,to:{start:file2[0],count:file2[1],lines:to.slice(file2[0],file2[0]+file2[1])}
  }));
+};
+
+ export function patch(text)
+{// parse a unified diff into diff()'s {filepath:hunks} shape.
+ let files=[...text.matchAll(/^--- .*\n\+\+\+ (?:[ab]\/)?(.*)\n((?:^(?:@@|[ +\-\\]).*\n?)*)/gm)];
+ return files.reduce((patches,[,filepath,body])=>
+ merge(patches,[...body.matchAll(/^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@.*\n((?:^[ +\-\\].*\n?)*)/gm)].map(
+ ([,fromstart,fromcount=1,tostart,tocount=1,hunk])=>
+{let lines=hunk.split("\n");
+ if(!lines.at(-1))lines.pop();
+ return {from:{start:Number(fromstart)-1,count:Number(fromcount)
+ ,lines:lines.filter(line=>line[0]!=="+").map(line=>line.slice(1))}
+ ,to:{start:Number(tostart)-1,count:Number(tocount)
+ ,lines:lines.filter(line=>line[0]!=="-").map(line=>line.slice(1))}
+ };
+}),filepath),{});
 };
 
  export async function diff(dir=process.cwd())
@@ -114,9 +142,9 @@
  let matrix=await git.statusMatrix({fs,dir});
  let files=matrix.filter(([file,head,work])=>work!==head).map(([file])=>file);
  return files.reduce(record(async filepath=>
-{let from=await git.readBlob({fs,dir,oid:commit,filepath}).then(({blob})=>Buffer.from(blob).toString("utf8")).catch(undefine);
- let to=await fs.promises.readFile(dir+"/"+filepath,"utf8").catch(undefine);
- return [filepath,delta(from||"",to||"")];
+{let source=await git.readBlob({fs,dir,oid:commit,filepath}).then(({blob})=>Buffer.from(blob).toString("utf8")).catch(undefine);
+ let target=await fs.promises.readFile(dir+"/"+filepath,"utf8").catch(undefine);
+ return [filepath,delta(source||"",target||"")];
 }),[]).then(Object.fromEntries);
 };
 
@@ -277,7 +305,7 @@
  // git stash -q --keep-index;
  await stage.reduce(record(buffer(compose(drop(1),([filepath])=>git.add({fs,dir,filepath,force:true})),undefine)),[]);
  let stash=await git.stash({fs,dir,op:"push"});
- await apply(stash,stage);
+ await restore(stash,stage);
 // for file in $(echo $stage);do
 // if [[ "$file" = *.js && -e "$file" ]];then 
  await author(stash,format);
@@ -285,17 +313,31 @@
  console.log(" Re-staged modules after compilation.");
 };
 
- export async function apply(ref,dir=process.cwd())
+ export async function restore(ref,dir=process.cwd())
 {let filepaths=await git.listFiles({fs,dir,ref});
  console.log(" Applying "+ref+" ("+filepaths.length+")");
  return git.checkout(
  {fs,dir,ref,filepaths
- // leave HEAD to show changes. 
- // do Checkout to merge scopes. 
- // do not track to remain oriented towards current. 
+ // leave HEAD to show changes.
+ // do Checkout to merge scopes.
+ // do not track to remain oriented towards current.
  ,noUpdateHead:true,noCheckout:false,track:false
  ,onProgress,onPostCheckout
  });
+};
+
+ export async function apply(diff,dir=process.cwd())
+{return Object.entries(diff).reduce(record(async([filepath,hunks])=>
+{let file=dir+"/"+filepath;
+ let cursor=0;
+ let source=(await access(file,true)).split("\n");
+ let content=hunks.flatMap(({from,to})=>
+{let before=source.slice(cursor,from.start);
+ cursor=from.start+from.count;
+ return [...before,...to.lines];
+});
+ return access(file,[...content,...source.slice(cursor)].join("\n"),true);
+}),[]);
 };
 
  export function include(ref,dir=process.cwd())

@@ -67,6 +67,7 @@
 
  export var text=
  {glow:{"text-shadow":"white 0px 0px 2px,white 0px 0px 2px",transition:"all 0.3s"}
+ ,outline:Array(25).fill("var(--note) 0px 0px .25em").join()
  };
 
  export var vignette=

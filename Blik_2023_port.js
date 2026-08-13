@@ -1,4 +1,4 @@
- import {note,ring,dependency,debug,bind,float,cede,lift,reduce,produce,deduce,match,unit,unary,sum,map,colors,search,surge,merge,prune,record,remember,route,when,stash,flip,are,functor,string,not,pattern,revert,each,clock,observe,is,has,same,minor,slip,something,compound,infer,tether,whether,collect,rank,buffer,compose,combine,either,drop,crop,swap,wait,exit,pass,binary,simple,array,expect,extract,numeric,flatten} from "./Blik_2023_inference.js";
+ import {note,ring,clone,dependency,debug,bind,float,cede,lift,reduce,produce,deduce,match,unit,unary,sum,map,colors,search,surge,merge,prune,record,remember,route,when,stash,flip,are,functor,string,not,pattern,revert,each,clock,observe,is,has,same,minor,slip,something,compound,infer,tether,whether,collect,rank,buffer,compose,combine,either,drop,crop,swap,wait,exit,pass,binary,simple,array,expect,extract,numeric,flatten} from "./Blik_2023_inference.js";
  import {arrayBuffer,delegate,swarm,command,reload,access,locate,prompt,list,fetch,digest,version,compress,feature,location} from "./Blik_2023_interface.js";
  import {encrypt} from "./Blik_2023_search.js";
  import {mime,bytes,url,relate,cookie,hash} from "./Blik_2023_meta.js";
@@ -37,24 +37,19 @@
  let certifications=prune.call(certification,([domain,{key,certificate,distinguishedname}])=>
  certify([key,certificate],distinguishedname,[domain]),0,0);
  await jsdom.call(browser,agent.globalAgent.protocol+"//localhost"+":"+port);
+ let entry=compose(combine(unbust,variant),index);
+ let retrieve=produce(combine(entry,unary),slip(memory),drop(2,0,tether(search)),when(defined),reencode);
  let memorable=bind(each,
 [when(match({status:minor(300)}))
 ,produce(infer("join","/"),slip("/"),"concat",published,permit)
 ,when(match({method:/get/i}))
 ]);
- let attributes=produce("headers",version,feature);
  let reference=produce(search(["headers","referer"]),when(string),url,"pathname","imports",collect);
  let persist=produce
-(pass(buffer(function(response,path,request)
-{return response.header.SourceMap&&compose.call
-(response.header.SourceMap,"http"+(request.client.encrypted?"s":"")+"://"+request.headers.host+request.url
-,relate,fetch,digest,({sources})=>
- sources.forEach(source=>[request.url,[new URL(source).pathname,"maps"]].reduce((map,maps)=>
- merge(memory,Array.from(new Set([...search.call(memory,maps)||[],map])),maps,1))));
-},note))
+(pass(buffer(mapsource,note))
 ,pass(produce(deduce(float,memorable),lift))
-,drop(2,1),crop(1,combine(attributes,compose("url",index),buffer(reference,drop()))),lift
-,drop(2,0,merge),slip(memory),ring
+,drop(2,1),crop(1,combine(entry,buffer(reference,drop()))),lift
+,slip(memory),ring
 );
  let response=produce
 (combine(path,unit),lift
@@ -63,7 +58,6 @@
 ,cache&&pass(buffer(persist))
 ,crop(1)
 );
- let retrieve=produce(combine("url",attributes,unary),slip(memory),drop(2,0,tether(search)),when(match),reencode);
  let respond=produce
 (drop(1),drop(1,0,stash(revert(decode,new TextDecoder("utf-8"))))
 ,combine(either(cache&&retrieve,response),unit)
@@ -84,15 +78,10 @@
 )(agent,await Object.values(certifications)[0],buffer(respond,compose(crop(1),note)));
 };
 
+ var variant=produce(search(["headers","sec-fetch-dest"]),whether(is("script"),swap("module"),swap("content")));
+
  async function monitor(server,location,scope,memory)
-{await buffer(compose
-(Object.entries,infer("reduce",record(([path,{header:{ETag}}])=>
- ETag&&compose.call(url(path,"http://localhost"),combine("pathname",swap("/hash"),"search"),lift,"concat",fetch,digest,fresh=>fresh!==ETag&&path))
-,[]),infer("filter",Boolean),when(match({length:major(0)}))
-,pass(compose(flip,"concat",note),"Wiping changed files from memory:\n")
-,infer("forEach",path=>delete memory[path])
-),note)(memory);
- console.log("Monitoring files in "+location+".");
+{console.log("Monitoring files in "+location+".");
  return command.call(import.meta.url,"fs","watch",location,tether(async function(scope,memory,event,filename)
 {if(!scope.has(filename))
  return;
@@ -121,9 +110,16 @@
 )(decodeURIComponent(methodic?"":pathname));
 };
 
+ function unbust(request)
+{// bust timestamps are for the client's own module cache only - never the server's.
+ let {pathname,searchParams:query}=new URL(request.url,"http://localhost/");
+ query.delete("bust");
+ return pathname+(query.size?"?"+query:"");
+};
+
  function decode(end,error,decoder,request,body=[])
 {let color=colors[["yellow","cyan"][Number(/get/i.test(request.method))]];
- console.log([color,clock(),"@",request.connection?.remoteAddress||"",request.url,"...",colors.steady].join(""));
+ console.log([color,clock(),"@",request.connection?.remoteAddress||"",request.url," ",request.headers["sec-fetch-dest"],colors.steady].join(""));
  return observe.call(request
 ,{data:record(data=>decoder.decode(data)).bind(body)
  ,end(){end(body.length?body.join(""):undefined);}
@@ -144,12 +140,11 @@
 ),"stack"));
 };
 
- function reencode(response,attributes,request)
-{let {content,header}=response;
- let hash=request?.headers?.["if-none-match"]
- if(hash&&hash===header.ETag)
- return {...response,content:"",status:304};
- let json=header["Content-Type"]===mime("json");
+ function reencode(response,request)
+{let hash=request?.headers?.["if-none-match"];
+ if(hash&&hash===response.headers.ETag)
+ return prune.call(response,([field,value])=>field==="content"?"":field==="status"?304:value,0,1);
+ let {content}=response;
  if(match({type:"Buffer",data:array})(content))
  content=Buffer.from(content);
  return merge(response,content,["content"]);
@@ -157,42 +152,49 @@
 
  export async function stage(response,path,request)
 {let agent=version(request.headers);
- let features=feature(agent);
  let browser="Mozilla/Chrome/Safari/AppleWebKit".split("/").some(has.bind(agent||{}));
- let direct=request.headers?.referer?.endsWith(request.url)===false;
- let importing=!direct&&request?.headers?.["sec-fetch-dest"]==="script";
- let {body:content=response,type,status,location,headers,cookie:cookies}=response||{};
+ let [specifier,peer]=[request.url,request.headers?.referer];
+ let {body:content=response,type,encoding,status,location,headers,cookie:cookies}=response||{};
  let fail=is(Error)(content);
  type=!fail&&type||headers?.["Content-Type"]||mime(content?.nodeName?.toLowerCase()||(either(simple,array)(response)?"json":path.join("/")))||mime(content.nodeName?"html":"txt");
  let [js,json]=[type===mime("js"),type===mime("json")];
  if(basic(content))
  content=JSON.stringify(content);
- if(json&&importing&&!features.json)
+ if(json&&variant(request)==="module")
+ // eliminates need for json import attribute from Browsers, like Interface/load from Node. 
  content=Buffer.from("export default "+content+";"),type=mime("js"),js=true;
  content=await encode(content);
+ if(browser&&js)
+ content=await compress(content),encoding="gzip";
  let etag=await hash(content);
  status=response?fail?500:numeric(status)?status:200:404;
- return {content,status
- ,header:JSON.parse(JSON.stringify({status
+ return {content,status,headers:clone(
+ {status,"Content-Type":type,"Content-Encoding":encoding,"ETag":etag
+ ,"Service-Worker-Allowed":js?"/":undefined
  ,"Access-Control-Allow-Origin":"*"
- //,"X-Frame-Options":"DENY"
  ,"Location":location
  ,"Set-Cookie":cookies?cookie(cookies):undefined
- ,"Content-Type":type
- ,"ETag":etag
- ,"Service-Worker-Allowed":js?"/":undefined
+ //,"X-Frame-Options":"DENY"
  ,...headers
- }))
- };
+ })};
 };
 
  export function submit(request,body,response)
-{let {content,status,header}=this;
- response?.writeHead(status,header)||request.respond(header);
+{let {content,status,headers}=this;
+ response?.writeHead(status,headers)||request.respond(headers);
  let color=colors[{200:"green",304:"magenta"}[status]||"red"];
- console.log([color,clock(),"@",request.connection?.remoteAddress||"",request.url," ",header["Content-Type"],colors.steady].join(""));
+ console.log([color,clock(),"@",request.connection?.remoteAddress||"",request.url," ",headers["Content-Type"],colors.steady].join(""));
  let target=response||request;
  return functor(content)?content(target):target.end(content);
+};
+
+ function mapsource(response,path,request)
+{return response.headers.SourceMap&&compose.call
+(response.headers.SourceMap,"http"+(request.client.encrypted?"s":"")+"://"+request.headers.host+request.url
+,relate,fetch,digest,({sources})=>
+ sources.forEach(source=>[request.url,[new URL(source).pathname,"maps"]].reduce((map,maps)=>
+ merge(memory,Array.from(new Set([...search.call(memory,maps)||[],map])),maps,1)))
+);
 };
 
  function persistence()
