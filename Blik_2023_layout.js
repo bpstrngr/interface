@@ -94,18 +94,6 @@
  {"a,span[role='link']":{"text-decoration":"none",position:"relative",color:"#0097a7"}
  };
 
- export var label=
- {position:"relative",display:"inline-block","white-space":"nowrap","vertical-align":"middle"
- ,"&:hover":
- {"&>svg":glow.white
- ,"&>input,&>span[role=textbox],&>span[role=menu]":text.glow
- }
- ,"&>svg":
- {float:"left",height:"1em","vertical-align":"middle",cursor:"pointer",overflow:"visible"
- }
- ,"&>span:not([role=textbox]):not([role=menu])":{"white-space":"nowrap"}
- };
-
  export var input=
  {display:"inline-block","text-shadow":"inherit","line-height":"1em"
  ,outline:"none",transition:"all var(--transition)"
@@ -124,6 +112,16 @@
  }
  ,"&~svg":{"margin-right":"0.5em"}
  ,"&:focus":{"&+ul,&+span[role=list]":{display:"block"}}
+ };
+
+ export var label=
+ {position:"relative",display:"inline-block","white-space":"nowrap","vertical-align":"middle"
+ ,"&>svg":{float:"left",height:"1em","vertical-align":"middle",cursor:"pointer",overflow:"visible"}
+ ,"&>span:not([role=textbox]):not([role=menu])":{"white-space":"nowrap"}
+ ,"&:hover":
+ {"&>svg":glow.white
+ ,"&>input,&>span[role=textbox],&>span[role=menu]":{...text.glow,...input["&:focus"]}
+ }
  };
 
  export var theme=
@@ -156,10 +154,7 @@
  ,"&:first-of-type":{width:"2em",height:"2em","&>img,&>svg,&>canvas":{width:"100%",height:"100%"}}
  }};
  export var ghostspan={content:"''",display:"inline-block",height:"100%","vertical-align":"middle",width:0};
- export var fields=
- {overflow:"scroll","box-sizing":"border-box","white-space":"nowrap"
- ,"&>span[role=form]":{height:"100%","&:before":ghostspan}
- };
+ export var fields={overflow:"scroll",height:"100%","box-sizing":"border-box","white-space":"nowrap","&:before":ghostspan};
  export var radio=
  {"border-radius":"100%","background-color":"black",transform:"scale(0.8)"
  ,"&[checked=true]":

@@ -46,7 +46,7 @@
 ]);
  let reference=produce(search(["headers","referer"]),when(string),url,"pathname","imports",collect);
  let persist=produce
-(pass(buffer(mapsource,note))
+(pass(buffer(mapsource))
 ,pass(produce(deduce(float,memorable),lift))
 ,drop(2,1),crop(1,combine(entry,buffer(reference,drop()))),lift
 ,slip(memory),ring
@@ -93,7 +93,9 @@
  await reload(local);
  let remote=await [file,...memory[file]?.maps||[]].map(file=>
  dependency.call(memory,file,"imports")).reduce(merge);
- Object.keys(remote).forEach(path=>delete memory[path]);
+ let stale=[Object.keys(remote),flatten(remote).filter(path=>
+ memory[path]?.content?.headers["Content-Type"]==="text/html")].flat();
+ stale.forEach(path=>delete memory[path]);
  server.clients.forEach(client=>client.readyState===1&&
  client.send(JSON.stringify({action:"bust",modules:remote})));
 },scope,memory));
@@ -156,7 +158,10 @@
  let [specifier,peer]=[request.url,request.headers?.referer];
  let {body:content=response,type,encoding,status,location,headers,cookie:cookies}=response||{};
  let fail=is(Error)(content);
- type=!fail&&type||headers?.["Content-Type"]||mime(content?.nodeName?.toLowerCase()||(either(simple,array)(response)?"json":path.join("/")))||mime(content.nodeName?"html":"txt");
+ if(!fail&&!type)
+ type=headers?.["Content-Type"]||
+ mime(content?.nodeName?.toLowerCase()||(either(simple,array)(content)?"json":is(Uint8Array)(content)&&signature(content)||path.join("/")))||
+ mime(content.nodeName?"html":"txt");
  let [js,json]=[type===mime("js"),type===mime("json")];
  if(basic(content))
  content=JSON.stringify(content);
@@ -170,10 +175,10 @@
  status=response?fail?500:numeric(status)?status:200:404;
  return {content,status,headers:clone(
  {status,"Content-Type":type,"Content-Encoding":encoding,"ETag":etag
+ ,"Set-Cookie":cookies?cookie(cookies):undefined
  ,"Service-Worker-Allowed":js?"/":undefined
  ,"Access-Control-Allow-Origin":"*"
  ,"Location":location
- ,"Set-Cookie":cookies?cookie(cookies):undefined
  //,"X-Frame-Options":"DENY"
  ,...headers
  })};
@@ -296,7 +301,7 @@
  let routes={".well-known":{"acme-challenge":http.map(({token})=>({[token]:[token,identity].join(".")})).reduce(merge)}};
  let host=await expose({network:"http",port:80},routes,false);
  await http.reduce(record(({url})=>combine(acme,either
-(expect(compose(fetch,digest,note,combine("status","error"),whether
+(expect(compose(fetch,digest,combine("status","error"),whether
 (is("invalid"),compose(drop(1),JSON.stringify,Error,exit),is("valid")
 )))
 ,compose(Error,exit)

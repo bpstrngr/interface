@@ -1014,11 +1014,15 @@
   "Yisi_2021_resvg.js":{
     "https://github.com/thx/resvg-js":{"v2.6.2":["wasm-binding.ts",{
       "syntax":"typescript",
-      "alias":{"./wasm/dist":"./Yisi_2021_resvg_binding.js"}
+      "alias":{"./wasm/dist":"./Reizner_2017_resvg_binding.js"},
+      "edit":{"import { (CustomFonts)":"import type { $1",", InitInput }":",type $1}"}
     }]}
   },
-  "Yisi_2021_resvg_binding.js":{"https://github.com/thx/resvg-js":{"v2.6.2":["src/lib.rs",{
-    "syntax":"rust",
-    "replace":{"Literal":{"index_bg.wasm":"./Reizner_2017_resvg.wasm"}}
+  "Reizner_2017_resvg_binding.js":{"https://github.com/thx/resvg-js":{"v2.6.2":["src/lib.rs",{
+    "replace":{"Literal":{"index_bg.wasm":"./Reizner_2017_resvg_binding.wasm"}},
+    "modify":{
+      "^((?:.*[\n$])*)":"import {fetch} from \"./Blik_2023_interface.js\";\n$1",
+      "(fetch\\(module_or_path\\))":"$1.then(response=>response.arrayBuffer())"
+    }
   }]}}
 }

@@ -1,5 +1,5 @@
  import {locate,command,recompose,delegate,agent,thread,fetch as freefetch,digest} from "./Blik_2023_interface.js";
- import {note,induce,index,describe,decide,produce,colors,wait,stagger,search,merge,prune,record,route,observe,rank,constant,rotate,deduce,lift,fold,collect,slip,spill,push,infer,either,each,pass,tether,surge,flush,buffer,differ,compose,some,flip,skip,stash,revert,combine,whether,swap,compound,something,string,basic,minor,functor,promise,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,pdf,when,debug,expect,generator,plural,native,clock,type,complex,heritage,prototype,expressions,cede,extract,fields,instance,yank} from "./Blik_2023_inference.js";
+ import {note,induce,index,describe,decide,produce,colors,wait,stagger,search,merge,prune,record,route,observe,rank,constant,rotate,deduce,lift,fold,collect,slip,spill,push,infer,either,each,pass,tether,surge,flush,buffer,differ,compose,some,flip,skip,stash,revert,combine,whether,swap,compound,something,string,basic,minor,functor,promise,defined,undefine,simple,iterable,exit,drop,crop,odd,same,major,binary,match,is,are,has,not,numeric,array,signature,when,debug,expect,generator,plural,native,clock,type,complex,heritage,prototype,expressions,cede,extract,fields,instance,yank} from "./Blik_2023_inference.js";
  import {unfold} from "./Blik_2023_search.js";
  import {serialize,proceduralize,mime,data,file,relate,cookie,query} from "./Blik_2023_meta.js";
  import * as layout from "./Blik_2023_layout.js";
@@ -298,7 +298,7 @@
  return resource;
  if(is(ArrayBuffer)(resource))
  resource=new Uint8Array(resource);
- if(pdf(resource))
+ if(signature(resource)==="pdf")
  return print(resource);
  if(is(Uint8Array)(resource)||resource.constructor.name==="Buffer")
  resource=new TextDecoder("utf-8").decode(resource);
@@ -1598,7 +1598,7 @@
  let context=jsons.reduce(terms,[last.context]).flatMap(term=>string(term)
 ?Array.from(term.replace(/(^(\n|,| +)|( +|,|\n)$)/g,"")).reduce(split,[""]).reverse()
 :[term]);
- let evaluate=compose(locate.bind(window.origin),push(...context),command.bind(window.origin));
+ let evaluate=compose(locate.bind(import.meta.url),push(...context),command.bind(import.meta.url));
  let fragment=await compose
 (buffer(evaluate,fail=>({span:{update:false,"#text":fail?.stack}}))
 ,each(infer(this.annotate,last.title)),cede

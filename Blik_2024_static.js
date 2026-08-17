@@ -27,7 +27,7 @@
 };
 
  let filesystem=compose
-(drop(1),path,infer("split","/"),"reverse"
+(drop(1),path,infer("split","/"),infer("slice",1),"reverse"
 ,infer("reduce",(route,file,index,path)=>(
  {[file==="get"?"files":file]:compose(combine
 (compose(swap("path","resolve",".",path.slice(index,path.at(-1)==="files"?-1:undefined).reverse().join("/")),command.bind(import.meta.url)
@@ -40,7 +40,7 @@
 );
 
  let routes=compose
-(combine(crop(1),compose(drop(1),path)),lift,flip,whether(is("get")
+(combine(crop(1),compose(drop(1),path,infer("slice",1))),lift,flip,whether(is("get")
 ,compose(drop(1),tether(prune,([field,term])=>functor(term)
 ?/[()]/.test(term.name)?term.name:serialize(term,null)
 :!native(term)?String(term):term))
@@ -94,7 +94,7 @@
 );
 },module(request,body,response,route)
 {let file=route.join("/");
- let term=path(request).replace(file+"/module","");
+ let term=path(request).slice(1).replace(file+"/module","");
  let {origin}=new URL("http"+(request.client.encrypted?"s":"")+"://"+request.headers.host);
  return compose
 (...simple(this)?["module",serialize]:["toString"],term?compose
@@ -113,10 +113,9 @@
  let {origin}=new URL("http"+(request.client.encrypted?"s":"")+"://"+request.headers.host);
  let base=path(request).replace(/\/?jssmap$/,"");
  let [html,source]=await Promise.all(
-[fetch(origin+"/"+base,{headers:request.headers}).then(response=>response.text())
-,fetch(origin+"/"+module,{headers:request.headers}).then(response=>note(response).text())
+[fetch(origin+base,{headers:request.headers}).then(response=>response.text())
+,fetch(origin+"/"+module,{headers:request.headers}).then(response=>response.text())
 ]);
- console.log({html,source})
  let dom=new window.DOMParser().parseFromString(html,"text/html");
  let element=dom.querySelector("style"+id);
  let ast=await parse(source);
@@ -133,9 +132,10 @@
  response.headers.get("content-type")===mime("json")?response.json():response.text());
  return record(data,subsequent);
 },sourcemap
- ,vector:compose(crop(1),infer(record,["svg"]),document,spill,lift,crop(1))
- ,raster()
-{return compose(command.bind(import.meta.url),note,[],Reflect.construct)("./Yisi_2021_resvg.js");
+ ,vector:compose(crop(1,compose(url,query)),flip,whether(has("fill"),merge,drop(1)),infer(record,["svg"]),document,spill,lift,crop(1))
+ ,raster(request)
+{let {width,background}=query(url(request));
+ return compose(command.bind(import.meta.url),pass(buffer("initWasm")),search("Resvg"),[this.outerHTML,{background,fitTo:width&&{mode:"width",value:width}}],Reflect.construct,"render","asPng",Buffer.from)("./Yisi_2021_resvg.js");
 },inspect:compose(drop(),"http://127.0.0.1:9222/json",fetch,digest)
  ,error
  };

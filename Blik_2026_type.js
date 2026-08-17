@@ -31,7 +31,7 @@
  {signature:/ *(async *){0,1}(function){0,1}\*{0,1} *[a-zA-Z_]* *\([\s\S]*?\)[\s\S]*?/
  ,lambda:/^(async *){0,1}(?:\([^)]*\)|[a-zA-Z_$][\w$]*)\s*=>/
  ,json:new RegExp(/[{\[]{1}(?:[,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]|".*?")+[}\]]{1}/,"mg")
- ,protocol:/^[a-z]+:/
+ ,protocol:/^[a-z]+:/,relative:/^\.+\//
  };
 
  export function type(term){return typeof term;}
@@ -85,9 +85,17 @@
 {return !odd(text.trim(),"(){}","\"'`","\\").length;
 };
 
- export function pdf(buffer)
-{if(!buffer||buffer.length<4)return false;
- return [0x25,0x50,0x44,0x46].every((code,index)=>buffer[index]===code);
+ export var magicstring=
+ {zip:[0x1f,0x8b]
+ ,pdf:[0x25,0x50,0x44,0x46]
+ ,tar:Object.fromEntries([0x75,0x73,0x74,0x61,0x72].map((byte,index)=>[257+index,byte]))
+ ,png:[0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a]
+ }
+
+ export function signature(buffer)
+{return Object.keys(magicstring).find(type=>
+ Object.entries(magicstring[type]).every(([index,byte])=>
+ buffer[index]===byte));
 };
 
  export function describe(term,...context)

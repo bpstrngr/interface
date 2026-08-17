@@ -440,8 +440,8 @@
 {if(!terms.length)
  return cede;
  let valid=is([something,not(is(false)),not(is(Error))]);
- return terms.reduce((past,next,index)=>
- buffer(produce(differ(past),when(valid)),produce(drop(1),next)),abort);
+ return describe(terms.reduce((past,next,index)=>
+ buffer(produce(differ(past),when(valid)),produce(drop(1),next)),abort),either,...terms);
 };
 
  export function whether(condition,...terms)
@@ -451,7 +451,8 @@
 //  return produce(stash
 // (either(...determine,swap(terms[conditions.length]))
 // ),rotate(1),infer,"call");
- return function(...context)
+ return describe(attempt,whether,condition,...terms);
+ function attempt(...context)
 {if(defined(this))context.unshift(this);
  let scope=context.shift();
  return test(0);

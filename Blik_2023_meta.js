@@ -132,8 +132,8 @@
  return [value,{source}].reduce(merge,{});
 }),grammar);
  let fields={Literal:"value",Identifier:"name"};
- let generic=Object.keys(replace||{}).some(type=>fields[type]);
- if(!generic)
+ let general=Object.keys(replace||{}).some(type=>fields[type]);
+ if(!general)
  replace=replace?.[Object.keys(replace).find(field=>grammar.meta.url.pathname.endsWith(field))];
  if(replace)
  grammar=prune.call(grammar,function({1:value})
@@ -1108,7 +1108,7 @@
  ,image:{jpeg:["jpg","jpeg"],"x-icon":"ico","svg+xml":"svg","":["gif","png"]}
  ,audio:{mpeg:"mp3"}
  ,font:{ttf:"ttf"}
- ,application:{xml:["gexf"],"geo+json":"geojson","":["json","pdf","xml"]}
+ ,application:{xml:["gexf"],"geo+json":"geojson","":["json","pdf","xml","wasm"]}
  }
 ,(extension,mime)=>
  Object.entries(mime).reduce((mime,[type,subtypes])=>mime||
@@ -1194,8 +1194,10 @@
  export function folder(address){return address.replace(/\/[^/]*$/,"");};
  export function relate(address,relation=import.meta.url)
 {// extend relation with address path. 
+ if(expressions.protocol.test(address))
+ return address;
  let {protocol,host,pathname:path}=url(relation);
- let relative=/^\.+\//.test(address);
+ let relative=expressions.relative.test(address);
  return protocol+"//"+host+address.split("/").reduce((path,field,index)=>
  field!==path[index]&&field!=="."
 ?path[field===".."?"pop":"splice"](relative?path.length:index,Infinity,field)&&path
@@ -1216,7 +1218,7 @@
 );
  export function path(request)
 {let address=!string(request)?"http://"+request.headers.host+request.url:request;
- return new URL(address).pathname.replace(/^\/*|\/*$/g,"");
+ return new URL(address).pathname.replace(/\/*$/g,"");
 };
 
  export var demarkup=text=>Array.from(text).map(symbol=>
