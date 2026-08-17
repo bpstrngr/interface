@@ -95,7 +95,7 @@
  };
 
  export var input=
- {display:"inline-block","text-shadow":"inherit","line-height":"1em"
+ {display:"inline-block","text-shadow":"inherit","line-height":"1em",cursor:"auto"
  ,outline:"none",transition:"all var(--transition)"
  ,"&[role=textbox],&[role=menu]":
  {"box-sizing":"border-box"

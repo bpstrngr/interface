@@ -127,7 +127,7 @@
 },async proxy(request,body,response,route)
 {let {domain}=query(url(request));
  let file=route.join("/");
- let subsequent=path(request).split("/").slice(1);
+ let subsequent=path(request).split("/").slice(2);
  let data=await fetch("https://"+domain+"/"+subsequent.join("/"),{headers:request.headers}).then(response=>
  response.headers.get("content-type")===mime("json")?response.json():response.text());
  return record(data,subsequent);
