@@ -808,6 +808,79 @@
     "edit":{"const ipv6normalize = require\\('ipv6-normalize'\\)":"function ipv6normalize(address){var _address=address.toLowerCase(),segments=_address.split(':'),length=segments.length,total=8,pos,_segments;\nif(segments[0]===''&&segments[1]===''&&segments[2]==='')segments.shift(),segments.shift();\nelse if(segments[0]===''&&segments[1]==='')segments.shift();\nelse if(segments[length-1]===''&&segments[length-2]==='')segments.pop();\nlength=segments.length;\nif(segments[length-1].indexOf('.')!==-1)total=7;\nfor(pos=0;pos<length;pos++)\nif(segments[pos]==='')break;\nif(pos<total){segments.splice(pos,1,'0000');while(segments.length<total)segments.splice(pos,0,'0000');length=segments.length;}\nfor(var i=0;i<total;i++){_segments=segments[i].split('');for(var j=0;j<3;j++)if(_segments[0]==='0'&&_segments.length > 1)_segments.splice(0,1);else break;segments[i]=_segments.join('');}\nvar best=-1,_best=0,_current=0,current=-1,inzeroes=false;\nfor(i=0;i<total;i++)if(inzeroes)if(segments[i]==='0')_current+=1;else{inzeroes=false;if(_current>_best)best=current,_best=_current;}else if(segments[i]==='0')\ninzeroes=true,current=i,_current=1;\nif(_current>_best)best=current,_best=_current;\nif(_best>1)segments.splice(best, _best, '');\nlength=segments.length;\nvar result='';\nif(segments[0]==='')result=':';\nfor(i in segments)result+=segments[i]+(i===length-1?'':':');\nif(segments[length-1]==='')result+=':';\nreturn result;}"}
   }]}},
   "Reinman_2011_nodemailer_shared.js":{"https://github.com/nodemailer/nodemailer":{"v6.9.15":["lib/shared/index.js",{"syntax":"commonjs"}]}},
+  "Reinman_2011_mailparser.js":{
+    "https://github.com/polygonplanet/encoding.js": {"2.2.0": [{"syntax":"commonjs"}]},
+    "https://github.com/mathiasbynens/he": {"v1.2.0": [{"syntax":"commonjs"}]},
+    "https://github.com/html-to-text/node-html-to-text": {"9.0.5": [{"alias":{
+      "@selderee/plugin-htmlparser2": "./Reinman_2011_mailparser/9/src/hp2-builder.ts",
+      "deepmerge-ts": "./Reinman_2011_mailparser/10/src/index.ts",
+      "dom-serializer": "./Reinman_2011_mailparser/11/src/index.ts",
+      "htmlparser2": "./Reinman_2011_mailparser/12/src/index.ts",
+      "selderee": "./Reinman_2011_mailparser/13/packages/selderee/src/selderee.js"
+    },"edit":{"@html-to-text/base/src":"../../base/src","@html-to-text/base":"../../base/src"}}]},
+    "https://github.com/markdown-it/linkify-it": {"5.0.2": [{"syntax":"typescript"}]},
+    "https://github.com/zone-eu/mailsplit": {"v5.4.15": [{"syntax":"commonjs","alias":{
+      "libbase64": "./Reinman_2011_mailparser/7/lib/libbase64.js",
+      "libmime": "./Reinman_2011_mailparser/8/lib/libmime.js",
+      "libqp": "./Reinman_2011_mailparser/8/lib/libqp.js"
+    }}]},
+    "https://github.com/stephenmathieson/node-tlds": {"fa5cc188e27503ee67787a274436bfe1a3af46a4": [{"syntax":"json"}]},
+    "https://github.com/nodemailer/libmime": {"v5.4.2": [{"syntax":"commonjs","alias":{
+      "encoding-japanese":"./Reinman_2011_mailparser/0/encoding.js",
+      "libbase64": "./Reinman_2011_mailparser/7/lib/libbase64.js",
+      "libqp": "./Reinman_2011_mailparser/8/lib/libqp.js",
+      "iconv-lite":"./ashtuchkin_2012_iconv_lite.js"
+    }}]},
+    "https://github.com/nodemailer/libbase64": {"v1.3.0": [{"syntax":"commonjs"}]},
+    "https://github.com/nodemailer/libqp": {"v2.1.1":[{"syntax":"commonjs"}]},
+    "https://github.com/mxxii/selderee/packages/plugin-htmlparser2": {"73572d039e13dafda9fa0154b91bb452c8817bc9": [{"syntax":"typescript","alias":{
+      "leac": "./Reinman_2011_mailparser/15/src/leac.ts",
+      "peberminta": "./Reinman_2011_mailparser/16/src/core.ts"
+    }}]},
+    "https://github.com/RebeccaStevens/deepmerge-ts": {"v7.1.5": [{"syntax":"typescript"}]},
+    "https://github.com/cheeriojs/dom-serializer": {"v3.0.0": [{"syntax":"typescript","alias":{
+          "entities": "./Reinman_2011_mailparser/18/src/index.ts",
+          "domelementtype": "./Reinman_2011_mailparser/19/src/index.ts",
+          "domhandler": "./Reinman_2011_mailparser/20/src/index.ts"
+    },"edit":{"\\.js\";":".ts\";"}}]},
+    "https://github.com/fb55/htmlparser2": {"v10.1.0": [{"syntax":"typescript",
+      "edit":{"\\.js\";":".ts\";"},
+      "alias":{
+          "domutils": "./Reinman_2011_mailparser/17/src/index.ts",
+          "entities": "./Reinman_2011_mailparser/18/src/index.ts",
+          "domelementtype": "./Reinman_2011_mailparser/19/src/index.ts",
+          "domhandler": "./Reinman_2011_mailparser/20/src/index.ts"
+      }
+    }]},
+    "https://github.com/mxxii/selderee/packages/selderee": {"73572d039e13dafda9fa0154b91bb452c8817bc9": [{"syntax":"typescript","alias":{
+      "parseley": "./Reinman_2011_mailparser/14/src/parseley.ts"
+    }}]},
+    "https://github.com/mxxii/parseley": {"v0.13.1": [{"syntax":"typescript"}]},
+    "https://github.com/mxxii/leac": {"v0.7.0": [{"syntax":"typescript"}]},
+    "https://github.com/mxxii/peberminta": {"v0.10.0": [{"syntax":"typescript"}]},
+    "https://github.com/fb55/domutils": {"v4.0.2": [{"syntax":"typescript","alias":{
+      "dom-serializer": "./Reinman_2011_mailparser/11/src/index.ts",
+      "domelementtype": "./Reinman_2011_mailparser/19/src/index.ts",
+      "domhandler": "./Reinman_2011_mailparser/20/src/index.ts"
+    },"edit":{"\\.js\";":".ts\";"}}]},
+    "https://github.com/fb55/entities": {"v8.0.0": [{"syntax":"typescript","edit":{"\\.js\";":".ts\";"}}]},
+    "https://github.com/fb55/domelementtype": {"v3.0.0": [{"syntax":"typescript"}]},
+    "https://github.com/fb55/domhandler": {"v6.0.0": [{"syntax":"typescript","alias":{
+      "domelementtype": "./Reinman_2011_mailparser/20/src/index.ts"
+    },"edit":{"\\.js\";":".ts\";"}}]},
+    "https://github.com/nodemailer/mailparser":{"v3.9.15":["index.js",{"syntax":"commonjs","alias":{
+      "encoding-japanese":"./Reinman_2011_mailparser/0/encoding.js",
+      "he":"./Reinman_2011_mailparser/1/he.js",
+      "html-to-text":"./Reinman_2011_mailparser/2/packages/html-to-text/src/html-to-text.js",
+      "linkify-it":"./Reinman_2011_mailparser/3/src/index.ts",
+      "mailsplit":"./Reinman_2011_mailparser/4/index.js",
+      "tlds":"./Reinman_2011_mailparser/5/index.json",
+      "libmime":"./Reinman_2011_mailparser/6/lib/libmime.js",
+      "iconv-lite":"./ashtuchkin_2012_iconv_lite.js",
+      "nodemailer":"./Reinman_2011_nodemailer_shared.js",
+      "punycode.js":"./Bynens_2011_punycode.js"
+    }}]}
+  },
   "Lee_2015_base32.js":{"https://github.com/speakeasyjs/base32.js":{"v0.1.0":["index.js",{"syntax":"commonjs"}]}},
   "mrdoob_2010_three.js":{"https://github.com/mrdoob/three.js/src":{"r175":["src/Three.js"]}},
   "mrdoob_2019_svgrenderer.js":{"https://github.com/mrdoob/three.js/examples/jsm":{"r175":["examples/jsm/renderers/SVGRenderer.js","examples/jsm/loaders/SVGLoader.js",{"alias":{"three":"./mrdoob_2010_three.js"}}]}},

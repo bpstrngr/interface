@@ -5,6 +5,7 @@
  import {browser,jsdom} from "./Blik_2023_fragment.js";
  import {animal} from "./Blik_2024_svg.js";
  import {files,remotes} from "./Blik_2026_git.js";
+ import {open as email} from "./Blik_2025_email.js";
  export var memory={};
 
  export async function expose(protocol,range,suspend=true)
@@ -13,7 +14,7 @@
  let [{default:routes,relay,syndication,encryption,classify,classified,published,permit},{default:credentials}]=
  await [range,module].reduce(record(module=>
  string(module)?command.call(import.meta.url,module):{default:module}),[]);
- let {network,port,certification={},cache}=search.call(credentials,fields);
+ let {network,port,certification={},cache,mail}=search.call(credentials,fields);
  if(cache)
  merge(memory,await buffer(access,compose(drop(1),infer(access,{},true),"object",access))(cache,"object")||{},1);
  memory=new Proxy(memory
@@ -32,11 +33,18 @@
  merge(certification,required&&{[domain]:{key:signature,certificate,distinguishedname}});
  merge(encryption,prune.call(encrypted,([field,value])=>encrypt(value)));
  merge(globalThis,{memory,published,classified,classify});
+ let address=await compose.call
+(import.meta.url,"os","networkInterfaces",tether(command),Object.values,"flat"
+,infer("find",match({family:'IPv4',internal:false})),"address"
+);
  let certificates=await Promise.all(Object.values(certification).flatMap(({key,certificate})=>[key,certificate]).map(compose(crop(1),slip("path","resolve"),command.bind(import.meta.url))));
  await classify?.(module,...certificates);
- let certifications=prune.call(certification,([domain,{key,certificate,distinguishedname}])=>
- certify([key,certificate],distinguishedname,[domain]),0,0);
- await jsdom.call(browser,agent.globalAgent.protocol+"//localhost"+":"+port);
+ prune.call(certification,([domain,certification])=>
+ domain==="localhost"?merge(certification,{altnames:["127.0.0.1",address]},0):certification,0,0);
+ let certifications=await prune.call(certification,function([domain,{key,certificate,distinguishedname,altnames}],{length})
+{return length?arguments[0][1]:certify([key,certificate],distinguishedname,[domain,...altnames||[]]);
+},0,1);
+ await jsdom.call(browser,agent.globalAgent.protocol+"//"+address+":"+port);
  let entry=compose(combine(unbust,variant),index);
  let retrieve=produce(combine(entry,unary),slip(memory),drop(2,0,tether(search)),when(defined),reencode);
  let memorable=bind(each,
@@ -68,14 +76,15 @@
  return compose
 ("createServer",port
 ,revert((proceed,cancel,host,port)=>host.listen(port,infer(proceed)))
-,...Object.entries(certifications).map(([domain,certification])=>
+,...Object.entries(certifications).map(([domain,{key,cert}])=>
  // for self-signed certificates, assign them to the NODE_EXTRA_CA_CERTS option.
- pass(compose(domain,certification,lift,"addContext")))
+ pass(compose(domain,{key,cert},lift,"addContext")))
 ,pass(host=>note.call(2,[host._connectionKey||port," open"].join("")))
 ,pass(produce(relay,broadcast,location,scope,memory,cache,monitor))
+,mail&&pass(compose(swap(null),address,mail,certifications,email))
 ,revert((close,error,channel)=>observe.call(channel,{close,error})&&suspend||close(channel))
 ,cede
-)(agent,await Object.values(certifications)[0],buffer(respond,compose(crop(1),note)));
+)(agent,extract.call(await Object.values(certifications)[0],["key","cert"]),buffer(respond,compose(crop(1),note)));
 };
 
  var variant=produce(search(["headers","sec-fetch-dest"]),whether(is("script"),swap("module"),swap("content")));
@@ -220,23 +229,22 @@
  let [key,cert]=await Promise.all(certification.map(certificate=>
  cede(buffer(access,swap(null))(path.resolve(location,certificate),true))));
  if([key,cert].every(Boolean))
- return {key,cert};
+ return {key,cert,altnames};
  note("creating "+certification+"...");
  let {default:forge}=await import("./digitalbazaar_2013_nodeforge.js");
  let method=altnames.includes("localhost")?selfsign:authorize;
  let encryption=forge.rsa.generateKeyPair(2048);
- [key,cert]=await method.call(forge,encryption,distinguishedname,duration);
+ [key,cert]=await method.call(forge,encryption,distinguishedname,duration,altnames);
  [key,cert]=await certification.reduce(record((certification,index)=>compose.call
 (path.resolve(location,certification),[key,cert][index],true,access,true,access
 )),[]);
- return {key,cert};
+ return {key,cert,altnames};
 };
 
- async function selfsign({privateKey,publicKey},distinguishedname,duration)
+ async function selfsign({privateKey,publicKey},distinguishedname,duration,altnames=[])
 {// self-signed certificate. 
  let authority=Object.entries(distinguishedname).map(([key,value])=>(
  {[key.match(/^[A-Z]{2}$/)?"shortName":"name"]:key,value}));
- let altnames={name:"subjectAltName",altNames:[{type:2,value:"localhost"},{type:7,ip:"127.0.0.1"}]};//,{type:6,value:"https://"+distinguishedname.commonName}]};
  let certificate=this.pki.createCertificate();
  let asn1=await command.bind(import.meta.url)("crypto","randomBytes",19).then(infer("toString","hex"));
  Object.assign(certificate,{publicKey,serialNumber:"01"+asn1});
@@ -245,7 +253,9 @@
  certificate.setSubject(authority);
  certificate.setIssuer(authority);
  certificate.setExtensions(
-[altnames
+[{name:"subjectAltName",altNames:altnames.map(altname=>
+ [altname,/(\d+\.){3}/.test(altname)].reduce((altname,ip)=>(
+ {type:ip?7:2,[ip?"ip":"value"]:altname})))}//,{type:6,value:"https://"+distinguishedname.commonName}]}
 ,{name:"keyUsage",keyCertSign:true,digitalSignature:true,nonRepudiation:true,keyEncipherment:true,dataEncipherment:true}
 ,{name:"extKeyUsage",serverAuth:true,clientAuth:true,codeSigning:true,emailProtection:true,timeStamping:true}
 ,{name:"nsCertType",client:true,server:true,email:true,objsign:true,sslCA:true,emailCA:true,objCA:true}

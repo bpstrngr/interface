@@ -71,6 +71,7 @@
  export function files({remote},branch,dir)
 {return git.listFiles({fs,dir,ref:[remote,branch].filter(string).join("/")});
 };
+
  export async function checkout(remote,target,branch,path)
 {// isomorphic-git clone remote branch to target, restricted to subfolder if present.
  if(!/^http/.test(remote))
@@ -83,6 +84,7 @@
  await git.checkout({fs,dir:target,ref:branch,filepaths,onProgress,onPostCheckout});
  return target;
 };
+
  export async function check(remote,branch)
 {// pivot to tracking remote/branch, preserving files from the current one and changes to theirs.
  ({remote,branch}=await prompt({remote,branch}));
@@ -93,6 +95,7 @@
  let matrix=await git.statusMatrix({fs,dir});
  await matrix.reduce(record(buffer(compose(drop(1),([filepath])=>git.add({fs,dir,filepath,force:true})),undefine)),[]);
  console.log(" Merged scopes:\n"+await status());
+ let [name,email]=await authorize(dir);
  let changes=matrix.filter(([file,head,work])=>work!==head).map(([file])=>file);
  let stash=changes.length&&await git.stash({fs,dir,op:"push"});
  await git.checkout({fs,dir,ref,onProgress,onPostCheckout});

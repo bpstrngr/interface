@@ -146,10 +146,7 @@
  {get:async function(request)
 {let route=request?.url?.split("/")||request||[];
  let create=whether(compose("code",is("ENOENT")),compose(drop(1),"{}",true,access,"object",access),exit);
- let records=await buffer(compose("object",access),create)(resource);
- records=prune.call(records,([field,value])=>request&&["signature","code"].includes(field)?undefined:value,0,2);
- return prune.call(records,([field,value],path)=>path.at(-1)==="pub"&&route.length>4
-?compose(swap(field),pass(permit,classified),"binary",access):value);
+ return buffer(compose("object",access),create)(resource);
 },put:async function(request,body)
 {let {2:name}=url(request.url).pathname.split("/");
  let {signature}=cookie(request.headers.cookie||"");
