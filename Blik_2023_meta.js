@@ -1,4 +1,4 @@
- import {note,label,flip,any,induce,something,undefine,when,lift,crop,debug,whether,extract,wait,sum,pass,drop,swap,match,infer,either,buffer,observe,compose,combine,revert,collect,rank,compound,tether,slip,string,numeric,functor,is,not,native,basic,simple,iterable,array,lambda,imperative,defined,composed,odd,exit,expect,prototype,colors,stash,expressions,search,merge,prune,route,record,functional,each,spill,decide,push,minor,modular} from "./Blik_2023_inference.js";
+ import {note,unit,label,flip,any,induce,something,undefine,when,lift,crop,debug,whether,extract,wait,sum,pass,drop,swap,match,infer,either,buffer,observe,compose,combine,revert,collect,rank,compound,tether,slip,string,numeric,functor,is,not,native,basic,simple,iterable,array,lambda,imperative,defined,composed,odd,exit,expect,prototype,colors,stash,expressions,search,merge,prune,route,record,functional,each,spill,decide,push,minor,modular} from "./Blik_2023_inference.js";
  import {location,load,relevant,command} from "./Blik_2023_interface.js";
  import {random} from "./Blik_2023_search.js";
  let address=new URL(import.meta.url).pathname;
@@ -44,7 +44,7 @@
 :"./Simon_2025_acorn_typescript.js"
 ,options.source?.endsWith(".d.ts")
 ].reduce((parser,types)=>
- import(parser).then(({default:plugin})=>
+ import(parser).then(({tsPlugin,default:plugin=tsPlugin})=>
  Parser.extend(plugin({dts:types}))));
  else if(!/xtuc_2020_acorn_importattributes/.test(options.source))
  // the typescript plugin includes support for importattributes. 
@@ -1239,10 +1239,6 @@
  return next;
 };
 
- var stylemapsource="let composer={span:{style:[{\"@scope\":{\":scope\":{color:\"red\"}}}]}}";
- var stylemapliteral=Object.values(search.call(await parse(stylemapsource)
-,({1:value})=>value?.type==="ObjectExpression"&&value.properties?.[0]?.key?.value==="@scope",true))[0];
-
  export const tests=
  {parse:
 [{empty:{context:[""],terms:["type","Program"],condition:"equal"}
@@ -1313,7 +1309,12 @@
  {context:[{0:[[0,0,0,0]],2:[[1,0,1,0]]}],condition:when(match("AAAA;;CACA"))}
 ]
  ,stylemap:
-[{context:["@scope{:scope{color:red}}",stylemapliteral,stylemapsource,"test.js"],condition:when(match({version:3,sources:["test.js"],names:[]}))}
+[{context:["let composer={span:{style:[{\"@scope\":{\":scope\":{color:\"red\"}}}]}}"],route:
+[combine
+(compose(parse,tether(search,({1:value})=>value?.type==="ObjectExpression"&&value.properties?.[0]?.key?.value==="@scope",true),Object.values,0)
+,unit
+),lift,slip("@scope{:scope{color:red}}"),"test.js"
+],condition:when(match({version:3,sources:["test.js"],names:[]}))}
 ]
  ,hash:
 [{context:["a"],condition:when(match(/^[0-9a-f]{64}$/))}
