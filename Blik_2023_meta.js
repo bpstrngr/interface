@@ -38,8 +38,14 @@
  let {Parser}=await import("./haverbeke_2012_acorn.js");
  let typescript=syntax==="typescript";
  if(typescript)
- Parser=await import("./tyrealhu_2023_acorn_typescript.js").then(({default:plugin})=>
- Parser.extend(plugin({dts:options.source?.endsWith(".d.ts")})));
+ Parser=await 
+[options.source.startsWith(folder(import.meta.url)+"/Simon_2025_acorn_typescript")
+?"./tyrealhu_2023_acorn_typescript.js"
+:"./Simon_2025_acorn_typescript.js"
+,options.source?.endsWith(".d.ts")
+].reduce((parser,types)=>
+ import(parser).then(({default:plugin})=>
+ Parser.extend(plugin({dts:types}))));
  else if(!/xtuc_2020_acorn_importattributes/.test(options.source))
  // the typescript plugin includes support for importattributes. 
  Parser=await import("./xtuc_2020_acorn_importattributes.js").then(({importAttributes:plugin})=>

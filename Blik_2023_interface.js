@@ -68,11 +68,6 @@
  // extract subscription commands to accept command delegation across threads. 
  export var {swarm={},subscribe,message,report}=worker.exports;
 
- export function inherit(previous)
-{Object.assign(swarm,previous.swarm);
- Object.assign(modules,previous.modules);
-};
-
  export var authors=["Blik"];
  export var years=[2019,new Date().getFullYear()].reduce((min,max)=>
  Array.from({length:max-min},(year,index)=>max-index));
@@ -92,19 +87,31 @@
  export var [sources]=await locate("sources.json");
  export var importmap=await Module.call(import.meta.url,sources,"default");
  export var inspection={scope:{}};
+ var precedent=compose("resolution",collect,slip(modules),tether(search));
+ var modulepath=when(is([match(/^[\/\.]/),not(match(RegExp(sources+"$")))]));
+ var format=compose
+(combine(unit,compose(swap(importmap),Object.keys)),lift,(source,sources)=>
+ sources.find(field=>source.startsWith([location,field.replace(/\.js$|\.node$/,"/")].join("/")))||"module",["format"],record
+);
+ var shortcircuit=compose
+(combine(unit,either(compose("url",url,"pathname",decodeURI,modulepath,format),swap({}))),lift,merge
+,{shortCircuit:true},merge
+,stash(compose(drop(),push(Date),[],Reflect.construct,"getTime",["time"],record)),merge
+);
 
  let {timestamp:reimported}=query(import.meta.url);
  if(agent.node&&!agent.virtual&&!remote&&!thread&&!loader&&!reimported)
  // --import flag offloads loader commands to separate thread unlike
  // --loader, where context is available directly on the primary thread.
- // a timestamp query indicates a cache-busting reimport of an already-running
- // incarnation, which must not redo this setup.
  offload
 ?await register(address).then(async function initialize(loader)
 {// reciprocate subscription to commands from loader thread. 
+ let samethread=loader.constructor.name==="ModuleHooks";
+ if(!samethread)
  subscribe(loader,"loader");
  if(!inspected)return;
  let {debugPort:port}=globalThis.process;
+ if(swarm.loader)
  await delegate.call(loader,"inspect",port+1).catch(note);
  await inspect(port).catch(note);
  await attach(port).catch(note);
@@ -117,7 +124,7 @@
  if(array(specifier))
  return specifier.reduce(record(compose(drop(1),crop(1),push(...context),command.bind(this))),[]);
  let type=features.json&&!swarm.loader&&specifier.endsWith(".json")?"json":undefined;
- let intercepted=globalThis.process&&(loader||offload);
+ let intercepted=agent.node&&(loader||offload);
  let custom=(intercepted||type)&&prune.call(
  {[features.attributes||features.assertions]:{type
  // swarm.loader prunes irregular attributes, but it will not guard imports from that thread itself. 
@@ -202,7 +209,7 @@
 ,revert((resume,reject,{signal},worker,...context)=>
  // listen until worker emits request id. 
 [function response({target,data,message}={})
-{if(message)console.log(...arguments)
+{if(message)console.log(...arguments);
  let ephemeral=!Object.values(swarm).includes(target);
  if(ephemeral)target.terminate();
  let [type,id,value]=data||[];
@@ -226,29 +233,17 @@
  //await segmentation();
 };
 
- var precedent=compose("resolution",collect,slip(modules),tether(search));
- var modulepath=when(is([match(/^[\/\.]/),not(match(RegExp(sources+"$")))]));
- var format=compose
-(combine(unit,compose(swap(importmap),Object.keys)),lift,(source,sources)=>
- sources.find(field=>source.startsWith([location,field.replace(/\.js$|\.node$/,"/")].join("/")))||"module",["format"],record
-);
- var shortcircuit=compose
-(combine(unit,either(compose("url",url,"pathname",decodeURI,modulepath,format),swap({}))),lift,merge
-,{shortCircuit:true},merge
-,stash(compose(drop(),push(Date),[],Reflect.construct,"getTime",["time"],record)),merge
-);
-
  export async function resolve(specifier,context,next)
 {// import module from specifier, infer context if provided. 
  // yield url for each import if --loader/import specified. 
- let interception=next?.name==="nextResolve";
+ let interception=next?.name==="nextResolve"||next?.name==="nextStep";
  if(!interception)
  throw Error("calling resolve directly is deprecated. Use command instead.");
  let {importAssertions:assertions,importAttributes:attributes=assertions}=context||{};
  let peer=attributes?.peer||context?.parentURL;
  if(!peer)
  // delegate primary import to primary thread to infer command line context. 
- return thread&&swarm.primary?delegate.call(swarm.primary,"inference"):inference();
+ return swarm.primary?delegate.call(swarm.primary,"inference"):inference();
  if(attributes?.peer)
  // clone immutable context without custom attributes ({peer} overrides parentURL for commands).
  context=prune.call(context,([field,value])=>({peer:undefined}[field]||value));
@@ -263,9 +258,9 @@
  // stamp suffix makes Node ignore precedents in its own record.
  let stamped=/^[\/\.]/.test(specifier)?(path,context)=>next(path+suffix,context):next;
  return precedent.resolution=precedent.resolution||compose
-(buffer(stamped,buffer(compose(extend,["url"],record,redact),compose(note.bind(1),redact,exit)))
+(buffer(stamped,buffer(compose(extend,["url"],record),compose(note.bind(1),redact,exit)))
 ,shortcircuit,slip(modules),[relative,"resolution"],relation!=="/"&&[relation,"imports"],induce(ring)
-,pass(compose(swap(colors.yellow+"export:"+colors.cyan+relative+colors.yellow+" to:"+colors.gray+relation+colors.steady),console.log))
+,pass(compose(swap(colors.yellow+"export:"+colors.cyan+relative+colors.yellow+" to:"+colors.gray+relation+colors.steady),console.debug))
 ,cede
 )(absolute,context);
 };
@@ -292,7 +287,7 @@
 {return {ERR_MODULE_NOT_FOUND:!immediate?alias:describe(buffer
 (tether(acquire),buffer(compose
 (drop(1),whether(is(unary,match(/\.js$/)),compose(drop(1,2),prepend),compose(drop(1,2),extend))
-),compose(crop(2),exit))),"recover",source)
+),compose(crop(2),fail,exit))),"recover",source)
  ,ERR_UNSUPPORTED_DIR_IMPORT:immediate&&extend
  }[fail.code]||exit(fail);
 };
@@ -301,7 +296,7 @@
 {return ["","/index"].flatMap(path=>
  ["","js","ts","jsx","tsx","d.ts"].map(extension=>
  absolute+path+(extension?".":"")+extension)).reduce((file,source)=>
- file.catch(fail=>access(source).then(file=>source))
+ file.catch(fail=>access(source).then(file=>file.isDirectory()?abort(file):source))
 ,Promise.reject());
 };
 
@@ -337,15 +332,16 @@
  {target,remote,branch,input:[input].flat()
  }));
 });
- let input=entries.flatMap(({input})=>input).filter(string);
- let [addon,rust]=[".gyp",".rs"].map(extension=>input[0].endsWith(extension));
+ let input=entries.flatMap(({input},index)=>
+ [input].flat().map(input=>[String(index),input])).filter(([index,input])=>string(input));
+ let [addon,rust]=[".gyp",".rs"].map(extension=>input[0][1].endsWith(extension));
  let move=compose(absolute,slip(command.call(import.meta.url,"fs","promises")),"rename",swap(absolute));
  let clean=pass(buffer(compose(swap(target),purge,done=>delete this[target]&&note.call(2,"purged sources of "+target+".")),note));
  if(entries.length)
  return compose.call
-(path.resolve(location,target,entries[0].remote
-?!input.some((input,index)=>index||/\/$/.test(input))
-?"0/"+input.find(string):"reexports.js":"")
+(path.resolve(location,target,...entries[0].remote
+?input.length<2&&!/\/$/.test(input[0][1])
+?input[0]:["reexports.js"]:[])
  // target entry indicates source resolution available for re-import. 
 ,entry=>this[target]=this[target]||compose.call
 (target,pass(target=>note.call(2,"Collecting source of \""+relative+"\" for "+peer+"..."))
@@ -359,7 +355,10 @@
 ,[]),"\n","join",slip(entry),true,access
 ))
  // perform idempotent source resolution before bundling to support re-imports. 
-,pass(parts=>!addon&&!rust&&delegate.call(swarm.primary,["inference/tether interface/command","inference/undefine"],peer,entry))
+,pass(parts=>!addon&&!rust
+?note.call(3,"Importing source entry of \""+relative+"\" to access before bundling \nfor "+peer+": "+peer)&&swarm.primary
+?delegate.call(swarm.primary,["inference/tether interface/command","inference/undefine"],peer,entry)
+:command.call(peer,entry):null)
 ,slip(entry)
 ,(addon||rust)&&buffer(addon?make:combine(wasm,drop(1)),compose(note,clean,exit))
 ,lift,induce(addon
@@ -368,7 +367,7 @@
 :compose(skip(buffer
 (compose(bundle,slip(absolute),true,access,pass(infer(note.bind(2),"bundle ready.")),clean)
 ,compose(clean,exit)
-)),rust?crop(1):swap(entry),pass(note.bind(3,"Accessing source entry of \""+relative+"\" for "+peer+":\n "))))
+)),rust?crop(1):swap(entry),pass(note.bind(3,"Imported source entry of \""+relative+"\" \nfor "+peer+": "))))
 )
 );
 };
@@ -887,7 +886,8 @@
 };
 
  export function purge(path)
-{if(!path.includes(location))throw Error("Refusing to purge outside of location: "+path);
+{return;
+ if(!path.includes(location))throw Error("Refusing to purge outside of location: "+path);
  return compose.call(command.call(import.meta.url,"fs","promises"),infer("rm",path,{recursive:true,force:true}),swap(path));
 };
 

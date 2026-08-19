@@ -619,8 +619,10 @@
  if(extensible&&!override)
  return target.concat(source);
  // to merge array domains, pass the source as plain object. 
- let disjunct=construct(source);
- let opaque=disjunct||[target,source].some(term=>!compound(term));
+ let disjunct=[target,source].some((term,index,terms)=>
+ construct(term)&&!simple(terms[(index+1)%2]));
+ let distinct=override&&construct(source)&&simple(target);
+ let opaque=disjunct||distinct||[target,source].some(term=>!compound(term));
  if(opaque)
  return [target,source][Number(Boolean(override))];
  return Object.entries(source).reduce(function(target,[field,next])
