@@ -1324,19 +1324,19 @@
 [{context:[{exports:{sum:"data:text/javascript;function sum(a,b){return a+b;}"}},"module"],condition:when(match(" export function sum(a,b){return a+b;}\n"))}
 ,{context:[{exports:{sum(a,b){return a+b;}}},"module"],condition:when(match(" export function sum(a,b){return a+b;}\n"))}
 ],tacit:
- {procedure:{context:[parse("function a(b,c){let d=[0,1,2,3,4,5,6,7,8,9];let [max,hundred,characters,per,line,exceeded,by,yapping,ten,long,ish,words]=d;return d*2}"),"tacit"],route:lift,condition:when(match(" \n function a(b,c)\n{let d=[0,1,2,3,4,5,6,7,8,9];\n let [max,hundred,characters,per,line,exceeded,by,yapping,ten,long,ish,words]=d;\n return d*2;\n};\n \n"))}
- ,function:{context:[parse("function a(b,c){return b+c}"),"tacit"],route:lift,condition:when(match(" \n function a(b,c){return b+c;};\n \n"))}
- ,arrows:{context:[parse("(b,c)=>b+c"),"tacit"],route:lift,condition:when(match(" \n (b,c)=>b+c;\n \n"))}
- ,shorthands:{context:[parse("let {a,b}={a(){},b}"),"tacit"],route:lift,condition:when(match(" \n let {a,b}={a(){},b};\n \n"))}
- ,nesting:{context:[parse("var a=[1,{b:2}];"),"tacit"],route:lift,condition:when(match(" \n var a=[1,{b:2}];\n \n"))}
- ,control:{context:[parse("if(a>1){b=2}else{b=3}"),"tacit"],route:lift,condition:when(match(" \n if(a>1){b=2;}else{b=3;}\n \n"))}
- ,exclaim:{context:[parse("!true;"),"tacit"],route:lift,condition:when(match(" \n !true;\n \n"))}
- ,ternary:{context:[parse("a?1:2;"),"tacit"],route:lift,condition:when(match(" \n a?1:2;\n \n"))}
- ,members:{context:[parse("import.meta.url;"),"tacit"],route:lift,condition:when(match(" \n import.meta.url;\n \n"))}
- ,imports:{context:[parse("import a,{b} from \"mod\";"),"tacit"],route:lift,condition:when(match(" \n import a,{b} from \"mod\";\n \n"))}
- ,exports:{context:[parse("export {a} from \"mod\";"),"tacit"],route:lift,condition:when(match(" \n export {a} from \"mod\";\n \n"))}
- ,exportall:{context:[parse("export * as ns from \"mod\";"),"tacit"],route:lift,condition:when(match(" \n export * as ns from \"mod\";\n \n"))}
- ,exportdefault:{context:[parse("export default function(){}"),"tacit"],route:lift,condition:when(match(" \n export default function (){};\n \n"))}
+ {procedure:{context:["function a(b,c){let d=[0,1,2,3,4,5,6,7,8,9];let [max,hundred,characters,per,line,exceeded,by,yapping,ten,long,ish,words]=d;return d*2}"],route:[parse,"tacit"],condition:when(match(" \n function a(b,c)\n{let d=[0,1,2,3,4,5,6,7,8,9];\n let [max,hundred,characters,per,line,exceeded,by,yapping,ten,long,ish,words]=d;\n return d*2;\n};\n \n"))}
+ ,function:{context:["function a(b,c){return b+c}"],route:[parse,"tacit"],condition:when(match(" \n function a(b,c){return b+c;};\n \n"))}
+ ,arrows:{context:["(b,c)=>b+c"],route:[parse,"tacit"],condition:when(match(" \n (b,c)=>b+c;\n \n"))}
+ ,shorthands:{context:["let {a,b}={a(){},b}"],route:[parse,"tacit"],condition:when(match(" \n let {a,b}={a(){},b};\n \n"))}
+ ,nesting:{context:["var a=[1,{b:2}];"],route:[parse,"tacit"],condition:when(match(" \n var a=[1,{b:2}];\n \n"))}
+ ,control:{context:["if(a>1){b=2}else{b=3}"],route:[parse,"tacit"],condition:when(match(" \n if(a>1){b=2;}else{b=3;}\n \n"))}
+ ,exclaim:{context:["!true;"],route:[parse,"tacit"],condition:when(match(" \n !true;\n \n"))}
+ ,ternary:{context:["a?1:2;"],route:[parse,"tacit"],condition:when(match(" \n a?1:2;\n \n"))}
+ ,members:{context:["import.meta.url;"],route:[parse,"tacit"],condition:when(match(" \n import.meta.url;\n \n"))}
+ ,imports:{context:["import a,{b} from \"mod\";"],route:[parse,"tacit"],condition:when(match(" \n import a,{b} from \"mod\";\n \n"))}
+ ,exports:{context:["export {a} from \"mod\";"],route:[parse,"tacit"],condition:when(match(" \n export {a} from \"mod\";\n \n"))}
+ ,exportall:{context:["export * as ns from \"mod\";"],route:[parse,"tacit"],condition:when(match(" \n export * as ns from \"mod\";\n \n"))}
+ ,exportdefault:{context:["export default function(){}"],route:[parse,"tacit"],condition:when(match(" \n export default function (){};\n \n"))}
  }}
  ,domain:
 [{context:[function(){when(string)}],condition:when(infer(Object.is,string))}
