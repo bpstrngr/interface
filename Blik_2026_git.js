@@ -76,8 +76,8 @@
 {// isomorphic-git clone remote branch to target, restricted to subfolder if present.
  if(!/^http/.test(remote))
  return fs.promises.cp(remote,target,{dereference:true,recursive:true}).then(copy=>branch&&git.checkout({fs,dir:target,ref:branch}));
- let commit=branch.length===40&&!/[^a-z0-9]/.test(branch);
- let filepaths=path.length?[path.join("/").split(" ")].flat():undefined;
+ let commit=branch?.length===40&&!/[^a-z0-9]/.test(branch);
+ let filepaths=path?.length?[path.join("/").split(" ")].flat():undefined;
  await git.clone
  ({fs,http,dir:target,url:remote,ref:branch||undefined,singleBranch:!!branch,depth:1,noCheckout:!!(commit||filepaths),onProgress});
  if(commit||filepaths)

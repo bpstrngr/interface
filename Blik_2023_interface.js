@@ -390,7 +390,7 @@
  compose.call(remote,buffer(expect(fetch,0,5),compose(remote,note,exit)),response=>response.status===200
 ?compose("arrayBuffer",Buffer.from,asset,buffer(persist,fail=>note(fail)&&access(asset)))(response)
 :produce(combine(swap("Failed to fetch "+remote+":"),"status","text"),"concat",exit)(response))),compressed=>
- compose.call({},depot,persist,swap(asset),decompress,depot,decompress,swap(asset),purge,pass(note.bind(1,"Deleted source: "))))(asset)
+ compose.call({},depot,persist,swap(asset),depot,decompress,swap(asset),purge,pass(note.bind(1,"Deleted source: "))))(asset)
 :await expect(buffer(command.bind(import.meta.url,"./Blik_2026_git.js","checkout"),combine
 (compose(crop(1),[],({stack},record)=>
  record.push(note.call(1,record.length+1+"/5 attempt to checkout "+address+": "+stack)))
