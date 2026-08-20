@@ -499,6 +499,7 @@
   "Bynens_2016_potential_customelementname.js":{"https://github.com/mathiasbynens/is-potential-custom-element-name":{"v1.0.1":["index.js",{"syntax":"commonjs"}]}},
   "dperini_2017_nwsapi.js":{"https://github.com/dperini/nwsapi":{"8d71cdfcdeb85800d7c0578476e8bca31d36285b":["src/nwsapi.js",{"syntax":"commonjs"}]}},
   "Boehm_2014_entities_decode.js":{"https://github.com/fb55/entities/src":{"v4.4.0":["src/decode.ts",{"edit":{"from \"(.*?)\\.js\"":"from \"$1.ts\""}}]}},
+  "Boehm_2014_entities_decode_8.js":{"https://github.com/fb55/entities/src":{"v8.0.0":["src/decode.ts",{"edit":{"from \"(.*?)\\.js\"":"from \"$1.ts\""}}]}},
   "Boehm_2014_entities_escape.js":{"https://github.com/fb55/entities/src/escape.ts":{"v4.4.0":["src/escape.ts"]}},
   "inikulin_2013_parse5.js":{"https://github.com/inikulin/parse5/packages/parse5":{"v7.1.2":["packages/parse5/lib/index.ts",{
     "alias":{
@@ -851,7 +852,7 @@
       "edit":{"\\.js\";":".ts\";"},
       "alias":{
           "domutils": "./Reinman_2011_mailparser/16/src/index.ts",
-          "entities": "./Reinman_2011_mailparser/17/src/index.ts",
+          "entities/decode": "./Boehm_2014_entities_decode_8.js",
           "domelementtype": "./Reinman_2011_mailparser/18/src/index.ts",
           "domhandler": "./Reinman_2011_mailparser/19/src/index.ts"
       }
