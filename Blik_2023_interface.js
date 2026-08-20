@@ -346,7 +346,7 @@
 ,entry=>this[target]=this[target]||compose.call
 (target,pass(target=>note.call(2,"Collecting source of \""+relative+"\" for "+peer+"..."))
 ,buffer(purge),swap(entries)
-,buffer(infer("reduce",record(assemble),[]),compose(clean,exit))
+,buffer(infer("reduce",record(assemble),[]),compose(note.bind(1),clean,exit))
  // temporary re-export of all namespaces for multientry bundle. 
 ,pass(/reexports\.js$/.test(entry)&&compose
 (infer("flatMap",({source})=>source)
@@ -356,7 +356,7 @@
 ))
  // perform idempotent source resolution before bundling to support re-imports. 
 ,pass(parts=>!addon&&!rust
-?note.call(3,"Importing source entry of \""+relative+"\" to access before bundling \nfor "+peer+": "+peer)&&swarm.primary
+?note.call(3,"Importing source entry of \""+relative+"\" to access before \nbundling for "+peer+": \n"+entry)&&swarm.primary
 ?delegate.call(swarm.primary,["inference/tether interface/command","inference/undefine"],peer,entry)
 :command.call(peer,entry):null)
 ,slip(entry)
@@ -367,7 +367,7 @@
 :compose(skip(buffer
 (compose(bundle,slip(absolute),true,access,pass(infer(note.bind(2),"bundle ready.")),clean)
 ,compose(clean,exit)
-)),rust?crop(1):swap(entry),pass(note.bind(3,"Imported source entry of \""+relative+"\" \nfor "+peer+": "))))
+)),rust?crop(1):swap(entry),pass(note.bind(3,"Imported source entry of \""+relative+"\" \nfor "+peer+": \n"))))
 )
 );
 };
@@ -375,10 +375,10 @@
  async function assemble({remote,branch,input,target},index,{length}={})
 {let path=await import("path");
  if(!remote)return input.map(input=>string(input)?path.join(target,input):input);
- let [protocol,host,author,name,...route]=remote?.match(/(.*:\/\/)(.*)/).slice(1).reduce((protocol,address)=>
- [protocol,...address.split("/")])||[];
+ let {protocol,host,pathname}=new URL(remote);
+ let [,author,name,...route]=decodeURI(pathname).split("/");
  let compressed=route[0]==="tarball"||!["github.com"].some(host.includes.bind(host));
- let address=protocol+[host,author,name,...compressed?route:[]].join("/");
+ let [address,...filter]=(protocol+["","",host,author,name,...compressed?route:[]].join("/")).split(" ");
  let depot=path.join(target,String(index))+"/";
  let asset=depot.replace(/\/$/,".tar.gz");
  let local=await access(depot,false).catch(fail=>false);
@@ -387,10 +387,10 @@
  // download. 
  compressed
 ?await compose(buffer(access,fail=>
- compose.call(remote,buffer(expect(fetch,0,5),compose(remote,note,exit)),response=>response.status===200
+ compose.call(address,buffer(expect(fetch,0,5),compose(remote,note,exit)),response=>response.status===200
 ?compose("arrayBuffer",Buffer.from,asset,buffer(persist,fail=>note(fail)&&access(asset)))(response)
 :produce(combine(swap("Failed to fetch "+remote+":"),"status","text"),"concat",exit)(response))),compressed=>
- compose.call({},depot,persist,swap(asset),depot,decompress,swap(asset),purge,pass(note.bind(1,"Deleted source: "))))(asset)
+ compose.call({},depot,persist,swap(asset),pass(infer(decompress,depot,filter)),purge,pass(note.bind(1,"Deleted source: "))))(asset)
 :await expect(buffer(command.bind(import.meta.url,"./Blik_2026_git.js","checkout"),combine
 (compose(crop(1),[],({stack},record)=>
  record.push(note.call(1,record.length+1+"/5 attempt to checkout "+address+": "+stack)))
@@ -758,9 +758,10 @@
  export var compress=revert((revert,reject,buffer)=>
  command.call(import.meta.url,"zlib","gzip",buffer,(fail,buffer)=>fail?reject(fail):revert(buffer)));
 
- export async function decompress(source,target,filter)
+ export async function decompress(source,target,filter=[])
 {let buffer=string(source)?await access(source,"binary"):source;
  let zip=signature(buffer)==="zip";
+ filter=[filter].flat();
  if(zip)
  buffer=await(globalThis.DecompressionStream
 ?compose(gzip=>["writ","read"].map(stream=>
@@ -784,14 +785,12 @@
  let extractor=await import("./isaacs_2011_node-tar.js").then(({Parser})=>new Parser());
  let matched=[];
  let prefix="extracting ";
- let pathspace=globalThis.process.stdout.columns-prefix.length;
+ let pathspace=(globalThis.process.stdout.columns??100)-prefix.length;
  let folder=await revert((resolve,reject,stream,folder)=>observe.call(stream
 ,{entry(entry)
-{if(filter&&!entry.path.endsWith(filter))
+{if(filter?.length&&!filter.some(filter=>entry.path.includes(filter)))
  return entry.resume();
- print(entry.path.slice(0,pathspace),prefix.length);
- if(filter)
- return entry.on("data",data=>matched.push(data));
+ (swarm.primary?delegate.bind(swarm.primary,"print"):print)(entry.path.slice(0,pathspace),prefix.length);
  entry.on("data",function(data){this.push(data.toString("utf-8"))}.bind(
  entry.path.match(/^(.*)\/(.*)/).slice(1).map(path=>
  path.split("/")).reduce((path,[file])=>
@@ -803,20 +802,8 @@
 :[])))
 },close(){console.log("\nextracted "+target+".");resolve(folder)}
  }))(tarstream.pipe(extractor),{},globalThis.process.stdout.write(prefix));
- if(filter)
- return persist(Buffer.concat(matched),target);
  if(target)
  return persist(Object.values(folder)[0],target);
- /*try
-{file=fs.createReadStream(file);
- console.log(...arguments)
- output=fs.createWriteStream(output);
- return new Promise((resolve,reject)=>
- file.pipe(zlib.createGunzip()).pipe(output).on("finish",fail=>
- fail?reject(fail):resolve(output)));
-}catch(fail)
-{return note(fail);
-}*/
 };
 
  export function print(message,indent=0)
@@ -886,8 +873,7 @@
 };
 
  export function purge(path)
-{return;
- if(!path.includes(location))throw Error("Refusing to purge outside of location: "+path);
+{if(!path.includes(location))throw Error("Refusing to purge outside of location: "+path);
  return compose.call(command.call(import.meta.url,"fs","promises"),infer("rm",path,{recursive:true,force:true}),swap(path));
 };
 

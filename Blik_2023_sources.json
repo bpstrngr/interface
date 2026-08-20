@@ -1005,7 +1005,7 @@
     "alias":{"ws":"./Cardaci_2013_devtools_interface/0/lib/websocket-wrapper.js"},
     "detach":["http","https","dns"]
   }]}},
-  "Hilton_2017_isomorphic-git.js":{"https://github.com/isomorphic-git/isomorphic-git/tarball/v1.38.4":["src/index.js",{"alias":{
+  "Hilton_2017_isomorphic-git.js":{"https://github.com/isomorphic-git/isomorphic-git/tarball/v1.38.4 /src/":["src/index.js",{"alias":{
     "async-lock": "./Schouten_2015_async-lock.js",
     "clean-git-ref": "./White_2016_clean-gitref.js",
     "crc-32": "./Sheets_2014_crc32.js",
@@ -1091,7 +1091,7 @@
     "https://github.com/angus-c/just/packages/function-debounce": {"just-debounce-it@3.0.1": []},
     "https://github.com/angus-c/just/packages/function-once": {"just-once@2.0.1": []}
   },
-  "Hilton_2018_isomorphic-git-http.js":{"https://github.com/isomorphic-git/isomorphic-git/tarball/v1.38.4":["src/http/node/index.js",{"detach":["../../typedefs-http.js"],"alias":{"simple-get":"./Feross_2014_simpleget.js"}}]},
+  "Hilton_2018_isomorphic-git-http.js":{"https://github.com/isomorphic-git/isomorphic-git/tarball/v1.38.4 /src/http/":["src/http/node/index.js",{"detach":["../../typedefs-http.js"],"alias":{"simple-get":"./Feross_2014_simpleget.js"}}]},
   "Ruizok_2021_perfect-freehand.js":{"https://github.com/steveruizok/perfect-freehand/packages/perfect-freehand/src":{"v1.2.3":["packages/perfect-freehand/src/index.ts"]}},
   "Yisi_2021_resvg.js":{
     "https://github.com/thx/resvg-js":{"v2.6.2":["wasm-binding.ts",{
