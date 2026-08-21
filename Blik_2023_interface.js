@@ -968,7 +968,6 @@
  if(/^[\/\.]+/.test(address))
  address=relate(address,!this?await command.call(import.meta.url,"./Blik_2023_fragment.js","window").then(({location:{origin}})=>origin):this);
  let {protocol,host,hostname,pathname,search,port}=new URL(address);
- merge(headers,{host});
  if(protocol==="file:")
  return access(pathname,"binary").then(body=>
  stage({body,status:200,headers,type:mime(pathname)},address));
@@ -992,8 +991,7 @@
  ,close:infer("destroy")
  }),body,"end"
 )(request.agent.protocol.replace(/:/,"")))(
- {host,hostname,path:pathname+search,port
- ,headers:{origin:[protocol,host].join("//"),...headers}
+ {path:pathname+search,port,headers
  ,method:method||request?.method?.toUpperCase()||"GET"
  ,agent:await peer(protocol.replace(/:/,""))
  },body||request.body);

@@ -41,7 +41,9 @@
  prune.call(certification,([domain,certification])=>
  domain==="localhost"?merge(certification,{altnames:["127.0.0.1",address]},0):certification,0,0);
  let certifications=await prune.call(certification,function([domain,{key,certificate,distinguishedname,altnames}],{length})
-{return length?arguments[0][1]:certify([key,certificate],distinguishedname,[domain,...altnames||[]]);
+{return length?arguments[0][1]:certify([key,certificate],distinguishedname,[domain,...altnames||[]]).then(certification=>
+ command.call(import.meta.url,"tls","createSecureContext",certification).then(context=>
+ merge(certification,{context})));
 },0,1);
  await jsdom.call(browser,agent.globalAgent.protocol+"//"+address+":"+port);
  let entry=compose(combine(unbust,variant),index);
@@ -75,15 +77,19 @@
  return compose
 ("createServer",port
 ,revert((proceed,cancel,host,port)=>host.listen(port,infer(proceed)))
-,...Object.entries(certifications).map(([domain,{key,cert}])=>
- // for self-signed certificates, assign them to the NODE_EXTRA_CA_CERTS option.
- pass(compose(domain,{key,cert},lift,"addContext")))
+,...Object.entries(certifications).map(([domain,{key,cert,context}])=>
+ // self-signed certificates need assigment to external NODE_EXTRA_CA_CERTS context too.
+ pass(compose(domain,context,lift,"addContext")))
 ,pass(host=>note.call(2,[host._connectionKey||port," open"].join("")))
 ,pass(produce(relay,broadcast,location,scope,memory,cache,monitor))
 ,mail&&pass(compose(swap(null),address,mail,certifications,command.bind(import.meta.url,"./Blik_2025_email.js","open")))
 ,revert((close,error,channel)=>observe.call(channel,{close,error})&&suspend||close(channel))
 ,cede
-)(agent,extract.call(await Object.values(certifications)[0],["key","cert"]),buffer(respond,compose(crop(1),note)));
+)(agent,merge(extract.call(await Object.values(certifications)[0],["key","cert"]),{SNICallback}),buffer(respond,compose(crop(1),note)));
+ function SNICallback(domain,context)
+{context(null,Object.entries(certifications).find(([hostname,{altnames}])=>
+ [hostname,altnames].flat().includes(domain))?.[1].context||null);
+};
 };
 
  var variant=produce
@@ -96,7 +102,7 @@
 
  async function monitor(server,location,scope,memory)
 {console.log("Monitoring files in "+location+".");
- return command.call(import.meta.url,"fs","watch",location,tether(async function(scope,memory,event,filename)
+ return command.call(import.meta.url,"fs","watch",location,buffer(tether(async function(scope,memory,event,filename)
 {if(!scope.has(filename))
  return;
  console.warn("File "+event+": "+filename);
@@ -112,7 +118,7 @@
  stale.forEach(path=>delete memory[path]);
  server.clients.forEach(client=>client.readyState===1&&
  client.send(JSON.stringify({action:"bust",modules:remote})));
-},scope,memory));
+},scope,memory),note));
 };
 
  function path(request)

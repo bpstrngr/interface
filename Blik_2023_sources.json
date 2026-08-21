@@ -821,7 +821,11 @@
       "htmlparser2": "./Reinman_2011_mailparser/11/src/index.ts",
       "selderee": "./Reinman_2011_mailparser/12/packages/selderee/src/selderee.ts",
       "deepmerge":"./Fisher_2012_deepmerge.js"
-    },"edit":{"@html-to-text\\/base\\/src":"../../base/src","@html-to-text\\/base":"../../base/src"}}]},
+    },"edit":{
+      "@html-to-text\\/base\\/src":"../../base/src",
+      "@html-to-text\\/base":"../../base/src",
+      "html-to-text.js":{"(export) \\{":"$1 default {","(convert) as (htmlToText)":"$2:$1"}
+    },"comment":"Named exports edited to default export, since mailparser's commonjs is importing it with bad practice as CJS has no inherent notion of named exports and their live binding in modules."}]},
     "https://github.com/markdown-it/linkify-it": {"5.0.2": [{"syntax":"typescript","alias":{
       "uc.micro":"./Reinman_2011_mailparser/21/index.mjs"
     }}]},
