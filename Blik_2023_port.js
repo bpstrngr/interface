@@ -90,7 +90,7 @@
 (search({headers:["sec-fetch-dest","accept"]}),rank,whether(either
 (is("script",accept=>!accept?.includes("application/json"))
 // Form's service worker expresses script destination with fetch Accept header.
-,is("empty",accept=>accept.includes("text/javascript"))
+,is("empty",accept=>accept?.includes("text/javascript"))
 ),swap("module"),swap("content"))
 );
 
