@@ -5,7 +5,6 @@
  import {browser,jsdom} from "./Blik_2023_fragment.js";
  import {animal} from "./Blik_2024_svg.js";
  import {files,remotes} from "./Blik_2026_git.js";
- import {open as email} from "./Blik_2025_email.js";
  export var memory={};
 
  export async function expose(protocol,range,suspend=true)
@@ -81,13 +80,19 @@
  pass(compose(domain,{key,cert},lift,"addContext")))
 ,pass(host=>note.call(2,[host._connectionKey||port," open"].join("")))
 ,pass(produce(relay,broadcast,location,scope,memory,cache,monitor))
-,mail&&pass(compose(swap(null),address,mail,certifications,email))
+,mail&&pass(compose(swap(null),address,mail,certifications,command.bind(import.meta.url,"./Blik_2025_email.js","open")))
 ,revert((close,error,channel)=>observe.call(channel,{close,error})&&suspend||close(channel))
 ,cede
 )(agent,extract.call(await Object.values(certifications)[0],["key","cert"]),buffer(respond,compose(crop(1),note)));
 };
 
- var variant=produce(search(["headers","sec-fetch-dest"]),whether(is("script"),swap("module"),swap("content")));
+ var variant=produce
+(search({headers:["sec-fetch-dest","accept"]}),rank,whether(either
+(is("script",accept=>!accept?.includes("application/json"))
+// Form's service worker expresses script destination with fetch Accept header.
+,is("empty",accept=>accept.includes("text/javascript"))
+),swap("module"),swap("content"))
+);
 
  async function monitor(server,location,scope,memory)
 {console.log("Monitoring files in "+location+".");
