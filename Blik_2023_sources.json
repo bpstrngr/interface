@@ -813,7 +813,13 @@
   "Reinman_2011_nodemailer_shared.js":{"https://github.com/nodemailer/nodemailer":{"v6.9.15":["lib/shared/index.js",{"syntax":"commonjs"}]}},
   "Reinman_2011_nodemailer_addressparser.js":{"https://github.com/nodemailer/nodemailer/lib/addressparser":{"v6.9.15":["lib/addressparser/index.js",{"syntax":"commonjs"}]}},
   "Reinman_2011_mailparser.js":{
-    "https://github.com/polygonplanet/encoding.js": {"2.2.0": [{"syntax":"commonjs"}]},
+    "https://github.com/polygonplanet/encoding.js": {"2.2.0": [{
+      "syntax":"commonjs",
+      "edit":{
+        "util.js":{"var (config = require\\('\\.\\/config'\\))":"var config;!async function(){$1}()"}
+      },
+      "comment":"circular commonjs require scoped to produce dynamic import."
+    }]},
     "https://github.com/mathiasbynens/he": {"v1.2.0": [{"syntax":"commonjs"}]},
     "https://github.com/html-to-text/node-html-to-text": {"9.0.5": [{"alias":{
       "@selderee/plugin-htmlparser2": "./Reinman_2011_mailparser/9/packages/plugin-htmlparser2/src/hp2-builder.ts",

@@ -729,8 +729,15 @@
  let entries=context.flat().flatMap(term=>compound(term)?Object.entries(term):[[term]]);
  entries=await entries.reduce(record(([field,term])=>
  control(new AbortController(),revert((resolve,reject,abortion,...interfaces)=>
- term?resolve(term):interfaces.forEach(infer("question",field+":"
-,combine(compose(swap(abortion),"abort"),resolve)))),...interfaces).then(term=>
+ term?resolve(term):interfaces.forEach(function read(line,index)
+{if(numeric(index))
+ line.write("field:\n");
+ observe.call(line,{line(line)
+{line.length
+?read(line,[numeric(index)?[]:index,line].flat())
+:resolve([numeric(index)?[]:index,line].flat().join("\n"));
+}},{once:true});
+})),...interfaces).then(term=>
  [field,term]))
 ,[]);
  return compose(each("close"),swap(Object.fromEntries(entries)),cede)(...interfaces);

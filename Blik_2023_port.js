@@ -82,7 +82,7 @@
  pass(compose(domain,context,lift,"addContext")))
 ,pass(host=>note.call(2,[host._connectionKey||port," open"].join("")))
 ,pass(produce(relay,broadcast,location,scope,memory,cache,monitor))
-,mail&&pass(compose(swap(null),address,mail,certifications,command.bind(import.meta.url,"./Blik_2025_email.js","open")))
+,mail&&pass(compose(swap(address),mail,certifications,command.bind(import.meta.url,"./Blik_2025_email.js","open")))
 ,revert((close,error,channel)=>observe.call(channel,{close,error})&&suspend||close(channel))
 ,cede
 )(agent,merge(extract.call(await Object.values(certifications)[0],["key","cert"]),{SNICallback}),buffer(respond,compose(crop(1),note)));

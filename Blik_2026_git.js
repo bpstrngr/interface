@@ -103,8 +103,7 @@
  if(stash)await restore(stash,dir);
  console.log(" Re-merged scopes:"+await status());
  await git.statusMatrix({fs,dir}).then(matrix=>
- matrix.reduce(record(([filepath])=>
- git.resetIndex({fs,dir,filepath})),[]));
+ matrix.reduce(record(([filepath])=>unstage(filepath)),[]));
  note(" Unstaged changes.");
 };
 
@@ -140,10 +139,12 @@
 }),filepath),{});
 };
 
- export async function diff(dir=process.cwd())
+ export async function diff(staged,dir=process.cwd())
 {let commit=await git.resolveRef({fs,dir,ref:"HEAD"});
- let matrix=await git.statusMatrix({fs,dir});
- let files=matrix.filter(([file,head,work])=>work!==head).map(([file])=>file);
+ staged=parseInt(staged)||staged;
+ let files=staged&&!numeric(staged)?[staged].flat():await git.statusMatrix({fs,dir}).then(matrix=>
+ matrix.filter(([file,head,work,stage])=>
+ work!==head&&(staged?staged<2?stage===work:stage!==work:true)).map(([file])=>file));
  return files.reduce(record(async filepath=>
 {let source=await git.readBlob({fs,dir,oid:commit,filepath}).then(({blob})=>Buffer.from(blob).toString("utf8")).catch(undefine);
  let target=await fs.promises.readFile(dir+"/"+filepath,"utf8").catch(undefine);
@@ -151,8 +152,8 @@
 }),[]).then(Object.fromEntries);
 };
 
- export async function lines(changes,context=2)
-{return Object.entries(changes).reduce(record(async ([filepath,hunks])=>
+ export async function lines(changes,context=1)
+{return Object.entries(changes).reduce(record(async function([filepath,hunks])
 {let source=await access(filepath,"utf8").then(text=>text.split("\n"));
  let cursor=0;
  let text=hunks.map(({from,to},index)=>
@@ -193,6 +194,18 @@
  return [remote,branch];
 };
 
+ export function stage(filepath,dir=process.cwd())
+{if(!filepath)
+ return git.statusMatrix({fs,dir}).then(matrix=>
+ matrix.filter(([file,head,work])=>
+ work!==head).map(([file])=>file)).then(changes=>
+ changes.length
+?changes.reduce(record(buffer(compose(drop(1),file=>stage(file)),undefine)),[])
+:console.log(" Nothing to commit."));
+ return git.add({fs,dir,filepath,force:true}).then(stage=>
+ console.log("staged file: "+filepath));
+};
+
  export async function push(credentials="protocol.json",dir=process.cwd())
 {// commit whatever's changed and push HEAD to whichever remote branch it descends from.
  let matrix=await git.statusMatrix({fs,dir});
@@ -208,16 +221,13 @@
  let [name,email]=await authorize(dir);
  if(!name||!email)
  return console.log(" git user config missing.");
- console.log(" Committing "+commit+" to "+remote+"/"+branch+" as "+name+" of "+email+".");
+ console.log(" Committing to "+remote+"/"+branch+" as "+name+" of "+email+".");
  let confirmation=await prompt({"good?":undefined});
  if(confirmation["good?"]!=="yes")
  return console.log(" Aborting.");
  let url=await target(remote,name,credentials);
- await changes.reduce(record(buffer(compose(drop(1),filepath=>git.add({fs,dir,filepath,force:true})),undefine)),[]);
- let {message}=await prompt({message:undefined});
- if(!message)
- return console.log(" Aborting.");
- let head=await git.commit({fs,dir,message,author:{name,email}});
+ await stage(undefined,dir);
+ let head=await commit(message);
  await expect
 (buffer(git.push,(fail,options)=>note(fail)&&
  prompt({"force?":undefined}).then(confirmation=>
@@ -225,6 +235,19 @@
 )({fs,http,dir,url,remote,ref:head,remoteRef:"refs/heads/"+branch});
  await git.fetch({fs,http,remote,dir}).then(note);
  await log(2,undefined,dir);
+};
+
+ export async function commit(dir=process.cwd())
+{let {message}=await prompt({message:undefined});
+ if(!message)
+ return console.log(" Aborting.");
+ return console. log(message)
+ message=message.replace("^[\"\' ]*|[\"\' ]*$","");
+ let [name,email]=await authorize(dir);
+ if(!name||!email)
+ return console.log(" git user config missing.");
+ return git.commit({fs,dir,message,author:{name,email}}).then(commit=>
+ log(1).then(log=>console.log(log)||commit));
 };
 
  export async function amend(dir=process.cwd())
@@ -271,13 +294,14 @@
 {let history=await log(1);
  matrix=matrix||await git.statusMatrix({fs,dir:process.cwd()});
  let width=Math.max(...matrix.map(([name])=>name.length));
- return history+"\n"+matrix.sort(([,past],[,next])=>past<next?-1:1).map(([name,head,work,stage])=>
+ return matrix.sort(([,past],[,next])=>past<next?-1:1).reduce(record(async([name,head,work,stage])=>
 [colors[work?work===stage?"green":"yellow":"red"]+name+" ".repeat(width-name.length),
-[["       ","tracked"][head]
+["",["       ","tracked"][head]
 ,["X"," ","*"][work]
 ,["X"," ","+","*"][stage]
+,...work!==head?await diff(name).then(diff=>diff[name][0].to).then(({start,lines})=>["["+start+"]",lines[0].slice(0,10)+"..."]):[]
 ].join(" ")+colors.steady
-].join("")).join("\n");
+].join("")),[]).then(status=>history+"\n"+status.join("\n"));
 };
 
  export async function scope(matrix,record="head",delta=1)
