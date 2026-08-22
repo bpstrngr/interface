@@ -730,12 +730,13 @@
  entries=await entries.reduce(record(([field,term])=>
  control(new AbortController(),revert((resolve,reject,abortion,...interfaces)=>
  term?resolve(term):interfaces.forEach(function read(line,index)
-{if(numeric(index))
- line.write("field:\n");
- observe.call(line,{line(line)
-{line.length
-?read(line,[numeric(index)?[]:index,line].flat())
-:resolve([numeric(index)?[]:index,line].flat().join("\n"));
+{if(!array(index))
+ line.write(field+":\n");
+ observe.call(line,{line(next)
+{let linebreak=index.at?.(-1).length;
+ next.length||linebreak
+?read(line,[array(index)?index:[],next].flat())
+:resolve([array(index)?index.slice(0,linebreak?undefined:-1):[],next||[]].flat().join("\n"));
 }},{once:true});
 })),...interfaces).then(term=>
  [field,term]))

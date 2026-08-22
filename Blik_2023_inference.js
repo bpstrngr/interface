@@ -862,7 +862,7 @@
  return Object.fromEntries(entries);
  let {ResizeObserver:resize,MutationObserver:mutate}=this?.ownerDocument?.defaultView||{};
  let constructor={resize,mutate};
- let method=["EventListener".replace(/^/,register?'add':'remove'),"on"].find(has.bind(this));
+ let method=["EventListener".replace(/^/,register?'add':'remove'),register.once?"once":"on"].find(has.bind(this));
  return entries.reduce((scope,[event,action])=>constructor[event]
 ?action
 ?compose.call(constructor[event],[action],Reflect.construct,combine

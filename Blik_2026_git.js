@@ -156,17 +156,21 @@
 {return Object.entries(changes).reduce(record(async function([filepath,hunks])
 {let source=await access(filepath,"utf8").then(text=>text.split("\n"));
  let cursor=0;
+ let gutter=String(Math.max(...hunks.map(({to:{start}})=>start))+1).length+1;
  let text=hunks.map(({from,to},index)=>
 {let limit=hunks[index+1]?.to.start??source.length;
- let before=source.slice(Math.max(cursor,to.start-context),to.start).map(line=>" "+line);
- cursor=Math.min(to.start+to.count+context,limit);
- let after=source.slice(to.start+to.count,cursor).map(line=>" "+line);
+ let [before,after]=[Math.max(cursor,to.start-context),to.start+to.count].map((line,after)=>
+ (after?cursor=Math.min(to.start+to.count+context,limit):true)&&
+ source.slice(line,after?cursor:to.start).map((line,index)=>
+ colors.dim+(to.start+(after?to.count+1:0)+index)
++" ".repeat(gutter-String(to.start+(after?to.count+1:0)+index).length)
++line+colors.steady));
  return [...before
-,...from.lines.map(line=>colors.red+"-"+line+colors.steady)
-,...to.lines.map(line=>colors.green+"+"+line+colors.steady)
+,...from.lines.map(line=>colors.red+"-"+" ".repeat(gutter-1)+line+colors.steady)
+,...to.lines.map(line=>colors.green+"+"+" ".repeat(gutter-1)+line+colors.steady)
 ,...after
 ].join("\n");
-}).join("\n"+colors.dim+"..."+colors.steady+"\n");
+}).join("\n\n");
  return [colors.steady+colors.bright+colors.underscore+filepath+colors.steady,text];
 }),[]).then(diff=>diff.flat().join("\n\n"));
 };
@@ -181,7 +185,7 @@
  branches.map(branch=>remote+"/"+branch))),[]).then(branches=>branches.flat());
  let tracking=await branches.reduce(record(ref=>
  git.resolveRef({fs,dir,ref}).then(tip=>tip===commit||
- git.isDescendent({fs,dir,oid:tip,ancestor:commit})).then(tracking=>
+ git.isDescendent({fs,dir,oid:commit,ancestor:tip})).then(tracking=>
  tracking?ref:undefined)),[]).then(refs=>refs.filter(Boolean));
  if(!tracking.length)
  return console.log(" Not descendent of any remote branch.");
@@ -208,26 +212,28 @@
 
  export async function push(credentials="protocol.json",dir=process.cwd())
 {// commit whatever's changed and push HEAD to whichever remote branch it descends from.
- let matrix=await git.statusMatrix({fs,dir});
- let changes=matrix.filter(([file,head,work])=>work!==head).map(([file])=>file);
- if(!changes.length)
- return console.log(" Nothing to commit.");
- await status(matrix).then(console.log)
- let commit=await git.resolveRef({fs,dir,ref:"HEAD"});
- let upstream=await tracking(commit,dir);
+ let head=await git.resolveRef({fs,dir,ref:"HEAD"});
+ let upstream=await tracking(head,dir);
  if(!upstream)
  return;
  let [remote,branch]=upstream;
+ let tip=await git.resolveRef({fs,dir,ref:[remote,branch].join("/")});
+ let ahead=tip!==head;
+ let matrix=await git.statusMatrix({fs,dir});
+ let changes=matrix.filter(([file,head,work])=>work!==head).map(([file])=>file);
+ await status(matrix).then(console.log);
+ if(!changes.length&&!ahead)
+ return console.log(" Nothing to commit.");
  let [name,email]=await authorize(dir);
  if(!name||!email)
  return console.log(" git user config missing.");
- console.log(" Committing to "+remote+"/"+branch+" as "+name+" of "+email+".");
+ console.log((ahead?" Pushing "+head:" Committing "+changes.length)+" to "+remote+"/"+branch+" as "+name+" ("+email+").");
  let confirmation=await prompt({"good?":undefined});
  if(confirmation["good?"]!=="yes")
  return console.log(" Aborting.");
+ if(!ahead)
+ head=await stage(undefined,dir).then(staged=>commit(dir));
  let url=await target(remote,name,credentials);
- await stage(undefined,dir);
- let head=await commit(message);
  await expect
 (buffer(git.push,(fail,options)=>note(fail)&&
  prompt({"force?":undefined}).then(confirmation=>
@@ -241,8 +247,6 @@
 {let {message}=await prompt({message:undefined});
  if(!message)
  return console.log(" Aborting.");
- return console. log(message)
- message=message.replace("^[\"\' ]*|[\"\' ]*$","");
  let [name,email]=await authorize(dir);
  if(!name||!email)
  return console.log(" git user config missing.");
@@ -299,7 +303,8 @@
 ["",["       ","tracked"][head]
 ,["X"," ","*"][work]
 ,["X"," ","+","*"][stage]
-,...work!==head?await diff(name).then(diff=>diff[name][0].to).then(({start,lines})=>["["+start+"]",lines[0].slice(0,10)+"..."]):[]
+,...work!==head?await diff(name).then(diff=>diff[name][0]).then(({from,to:{start,lines}})=>
+ ["["+(lines[0]?"":"-")+start+"]",(lines[0]||from.lines[0]).slice(0,15)+"..."]):[]
 ].join(" ")+colors.steady
 ].join("")),[]).then(status=>history+"\n"+status.join("\n"));
 };
