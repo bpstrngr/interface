@@ -736,7 +736,7 @@
 {let linebreak=index.at?.(-1).length;
  next.length||linebreak
 ?read(line,[array(index)?index:[],next].flat())
-:resolve([array(index)?index.slice(0,linebreak?undefined:-1):[],next||[]].flat().join("\n"));
+:resolve(note({[field]:[array(index)?index.slice(0,linebreak?undefined:-1):[],next||[]].flat().join("\n")})[field]);
 }},{once:true});
 })),...interfaces).then(term=>
  [field,term]))

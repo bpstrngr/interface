@@ -261,8 +261,9 @@
  return console.log(" No parent to amend onto.");
  let ref=await git.currentBranch({fs,dir,fullname:true})||"HEAD";
  await git.writeRef({fs,dir,ref,value:parent[0],force:true});
- await log(1,commit,dir);
- await log(1,undefined,dir);
+ console.log(" Re-staged last commit:");
+ await log(1,commit,dir).then(console.log);
+ await log(1,undefined,dir).then(console.log);
 };
 
  export async function tag(tag,credentials="protocol.json",dir=process.cwd())
