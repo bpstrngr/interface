@@ -1,8 +1,8 @@
- import {note,produce,search,merge,prune,record,remember,compose,spill,buffer,when,collect,infer,combine,wait,drop,slip,lift,differ,crop,each,swap,pass,not,compound,functor,native,exit,tether,either,whether,describe,string,pattern,major,match,has,is,are,defined,flip,heritage,extract,infrastructure} from "./Blik_2023_inference.js";
+ import {note,debug,produce,search,merge,prune,record,remember,compose,spill,buffer,when,collect,infer,combine,wait,drop,slip,lift,differ,crop,each,swap,pass,not,compound,functor,native,exit,tether,either,whether,describe,string,pattern,major,match,has,is,are,defined,flip,heritage,extract,infrastructure} from "./Blik_2023_inference.js";
  import {access,persist,purge,command,list,interpret,fetch,digest,swarm,delegate,location,listen} from "./Blik_2023_interface.js";
  import {memory} from "./Blik_2023_port.js";
  import {document,hypertext,css,throttle,error,capture,defer,window} from "./Blik_2023_fragment.js";
- import {url,serialize,mime,proceduralize,sourcemap,cookie,folder,path,query,hash,parse,stylemap} from "./Blik_2023_meta.js";
+ import {url,relate,serialize,mime,proceduralize,sourcemap,cookie,folder,path,query,hash,parse,stylemap} from "./Blik_2023_meta.js";
  import {random} from "./Blik_2023_search.js";
  import git,{syndication} from "./Blik_2026_git.js";
  export {syndication};
@@ -56,11 +56,11 @@
  ,put:compose
 (drop(1),drop(2,1,buffer(JSON.parse,compose(drop(1,2),"base64",Buffer.from,"toString")))
 ,pass(buffer(compose(each(
-[compose(path,slip("path","resolve","./"),command.bind(import.meta.url),published,true,permit)
+[compose(path,slip("."),"concat",import.meta.url,relate,url,"pathname",published,true,permit)
 ,compose(Object.keys,"length",when(major(0)))
 ]),lift),compose(drop(1),infer(authorize,"ranger"))))
 ,combine
-(compose(path,slip("path","resolve","./"),command.bind(import.meta.url),pass(permit,classified))
+(compose(path,slip("."),"concat",import.meta.url,relate,url,"pathname",pass(permit,classified))
 ,drop(1,2)
 ,compose(url,query,buffer(differ("override"),swap(undefined)),is(true))
 ),lift
@@ -70,7 +70,7 @@
 ),lift
 ,true,access,true,combine
 (compose(access,buffer(JSON.parse,drop(1)))
-,compose(crop(1),slip("path","relative","./"),command.bind(import.meta.url),"/","split")
+,compose(crop(1),"/","split",infer("slice",1))
 ),lift,record
 ),interface:compose
 (note,crop(1),"get",routes=>(
@@ -155,7 +155,7 @@
  let credentials=extract.call(body,Object.keys(encryption));
  let anonymous=!signature&&!Object.keys(credentials).length;
  if(anonymous)
- exit(Error("missing "+Object.keys(credentials)+" or signature for "+name));
+ exit(Error("missing "+Object.keys(encryption)+" or signature for "+name));
  let records=await this.get();
  let record=search.call(records,name);
  let mismatch=record&&Object.entries(credentials).find(([field,value])=>value!==record[field])?.[0];

@@ -177,25 +177,35 @@
 
  export var changes=compose(diff,lines);
 
- export async function tracking(commit,dir=process.cwd())
+ export async function trace(commit,dir=process.cwd())
 {// which remote/branch (if any) the given commit descends from.
  let remotes=await git.listRemotes({fs,dir}).then(remotes=>remotes.map(({remote})=>remote));
  let branches=await remotes.reduce(record(remote=>
  git.listBranches({fs,dir,remote}).then(branches=>
  branches.map(branch=>remote+"/"+branch))),[]).then(branches=>branches.flat());
- let tracking=await branches.reduce(record(ref=>
- git.resolveRef({fs,dir,ref}).then(tip=>tip===commit||
- git.isDescendent({fs,dir,oid:commit,ancestor:tip})).then(tracking=>
- tracking?ref:undefined)),[]).then(refs=>refs.filter(Boolean));
+ let tracks=await branches.reduce(record(ref=>
+ git.resolveRef({fs,dir,ref}),ref=>ref),{})
+ let ahead=await Object.entries(tracks).reduce(record(([ref,ancestor])=>ancestor===commit||
+ git.isDescendent({fs,dir,oid:commit,ancestor}).then(ahead=>
+ ahead?ref:undefined)),[]).then(refs=>refs.filter(Boolean));
+ let behind=!ahead.length&&await Object.entries(tracks).reduce(record(([ref,oid])=>
+ git.isDescendent({fs,dir,oid,ancestor:commit}).then(behind=>
+ behind?ref:undefined)),[]).then(refs=>refs.filter(Boolean));
+ let tracking=[ahead,behind||[]].flat();
  if(!tracking.length)
- return console.log(" Not descendent of any remote branch.");
+ return console.log(" Not connected to any remote branch.")
  if(tracking.length>1)
- console.log(" Upstream branches:\n"+tracking.map((branch,index)=>[index+1,branch].join(" ")).join("\n"))
-,tracking.splice(0,undefined,await prompt({branch:undefined}).then(({branch})=>tracking[branch-1]||branch));
- let [remote,branch]=tracking[0].split("/");
+ ahead.length&&console.log(" Ahead of branches:\n"+ahead.map((branch,index)=>
+ [index+1,branch].join(" ")).join("\n"))
+ behind&&console.log(" Behind branches:\n"+behind.map((branch,index)=>
+ [ahead.length+index+1,branch].join(" ")).join("\n"))
+,tracking.splice(0,undefined,await prompt({branch:undefined}).then(({branch})=>
+ tracking[branch-1]||branch));
+ let ref=tracking[0];
+ let [remote,branch]=ref.split("/");
  if(!remote||!branch)
  return exit(" No such remote branch:"+tracking[0]);
- return [remote,branch];
+ return [remote,branch,ahead.includes(ref)];
 };
 
  export function stage(filepath,dir=process.cwd())
@@ -213,25 +223,25 @@
  export async function push(credentials="protocol.json",dir=process.cwd())
 {// commit whatever's changed and push HEAD to whichever remote branch it descends from.
  let head=await git.resolveRef({fs,dir,ref:"HEAD"});
- let upstream=await tracking(head,dir);
- if(!upstream)
+ let track=await trace(head,dir);
+ if(!track)
  return;
- let [remote,branch]=upstream;
+ let [remote,branch,ahead]=track;
  let tip=await git.resolveRef({fs,dir,ref:[remote,branch].join("/")});
- let ahead=tip!==head;
+ let detached=ahead&&tip!==head;
  let matrix=await git.statusMatrix({fs,dir});
  let changes=matrix.filter(([file,head,work])=>work!==head).map(([file])=>file);
  await status(matrix).then(console.log);
- if(!changes.length&&!ahead)
+ if(!changes.length&&!detached)
  return console.log(" Nothing to commit.");
  let [name,email]=await authorize(dir);
  if(!name||!email)
  return console.log(" git user config missing.");
- console.log((ahead?" Pushing "+head:" Committing "+changes.length)+" to "+remote+"/"+branch+" as "+name+" ("+email+").");
+ console.log((detached?" Pushing "+head:" Committing "+changes.length)+" to "+remote+"/"+branch+" as "+name+" ("+email+").");
  let confirmation=await prompt({"good?":undefined});
  if(confirmation["good?"]!=="yes")
  return console.log(" Aborting.");
- if(!ahead)
+ if(!detached)
  head=await stage(undefined,dir).then(staged=>commit(dir));
  let url=await target(remote,name,credentials);
  await expect
