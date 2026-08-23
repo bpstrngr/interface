@@ -99,12 +99,9 @@
  let changes=matrix.filter(([file,head,work])=>work!==head).map(([file])=>file);
  let stash=changes.length&&await git.stash({fs,dir,op:"push"});
  await git.checkout({fs,dir,ref,onProgress,onPostCheckout});
- console.log(" New scope:\n"+await status());
  if(stash)await restore(stash,dir);
- console.log(" Re-merged scopes:"+await status());
- await git.statusMatrix({fs,dir}).then(matrix=>
- matrix.reduce(record(([filepath])=>unstage(filepath)),[]));
- note(" Unstaged changes.");
+ await unstage();
+ console.log(" New scope:\n"+await status());
 };
 
  export async function log(depth,ref,dir=process.cwd())
@@ -139,10 +136,10 @@
 }),filepath),{});
 };
 
- export async function diff(staged,dir=process.cwd())
-{let commit=await git.resolveRef({fs,dir,ref:"HEAD"});
- staged=parseInt(staged)||staged;
- let files=staged&&!numeric(staged)?[staged].flat():await git.statusMatrix({fs,dir}).then(matrix=>
+ export async function diff(filter,ref="HEAD",dir=process.cwd())
+{let commit=await git.resolveRef({fs,dir,ref});
+ let staged=parseInt(filter);
+ let files=defined(filter)&&isNaN(staged)?[filter].flat():await git.statusMatrix({fs,dir}).then(matrix=>
  matrix.filter(([file,head,work,stage])=>
  work!==head&&(staged?staged<2?stage===work:stage!==work:true)).map(([file])=>file));
  return files.reduce(record(async filepath=>
@@ -184,9 +181,10 @@
  git.listBranches({fs,dir,remote}).then(branches=>
  branches.map(branch=>remote+"/"+branch))),[]).then(branches=>branches.flat());
  let tracks=await branches.reduce(record(ref=>
- git.resolveRef({fs,dir,ref}),ref=>ref),{})
- let ahead=await Object.entries(tracks).reduce(record(([ref,ancestor])=>ancestor===commit||
- git.isDescendent({fs,dir,oid:commit,ancestor}).then(ahead=>
+ git.resolveRef({fs,dir,ref}),ref=>ref),{});
+ let ahead=await Object.entries(tracks).reduce(record(([ref,ancestor])=>
+ ancestor===commit?ref
+:git.isDescendent({fs,dir,oid:commit,ancestor}).then(ahead=>
  ahead?ref:undefined)),[]).then(refs=>refs.filter(Boolean));
  let behind=!ahead.length&&await Object.entries(tracks).reduce(record(([ref,oid])=>
  git.isDescendent({fs,dir,oid,ancestor:commit}).then(behind=>
@@ -217,7 +215,19 @@
 ?changes.reduce(record(buffer(compose(drop(1),file=>stage(file)),undefine)),[])
 :console.log(" Nothing to commit."));
  return git.add({fs,dir,filepath,force:true}).then(stage=>
- console.log("staged file: "+filepath));
+ console.log(" Staged file: "+filepath));
+};
+
+ export function unstage(filepath,dir=process.cwd())
+{if(!filepath)
+ return git.statusMatrix({fs,dir}).then(matrix=>
+ matrix.filter(([file,head,work])=>
+ work!==head).map(([file])=>file)).then(changes=>
+ changes.length
+?changes.reduce(record(buffer(compose(drop(1),file=>unstage(file)),undefine)),[])
+:console.log(" Nothing to commit."));
+ return git.resetIndex({fs,dir,filepath,force:true}).then(stage=>
+ console.log(" Unstaged file: "+filepath));
 };
 
  export async function push(credentials="protocol.json",dir=process.cwd())
