@@ -1,4 +1,4 @@
- import {note,ring,clone,dependency,debug,bind,float,cede,lift,reduce,produce,deduce,match,unit,unary,sum,map,colors,search,surge,merge,prune,record,remember,route,when,stash,flip,are,functor,string,not,pattern,revert,each,clock,observe,is,has,same,minor,slip,something,compound,infer,tether,whether,collect,rank,buffer,compose,combine,either,drop,crop,swap,wait,exit,pass,binary,simple,array,expect,extract,numeric,flatten} from "./Blik_2023_inference.js";
+ import {note,ring,clone,dependency,debug,bind,float,cede,lift,reduce,produce,deduce,match,unit,unary,sum,map,colors,search,surge,merge,prune,record,route,when,stash,flip,are,functor,string,not,pattern,revert,each,clock,observe,is,has,same,minor,slip,something,compound,infer,tether,whether,collect,rank,buffer,compose,combine,either,drop,crop,swap,wait,exit,pass,binary,simple,array,expect,extract,numeric,flatten} from "./Blik_2023_inference.js";
  import {arrayBuffer,delegate,swarm,command,reload,access,locate,prompt,list,fetch,digest,version,compress,feature,location} from "./Blik_2023_interface.js";
  import {encrypt} from "./Blik_2023_search.js";
  import {mime,bytes,url,relate,cookie,hash} from "./Blik_2023_meta.js";
@@ -10,7 +10,7 @@
  export async function expose(protocol,range,suspend=true)
 {({range,protocol}=await prompt({range,protocol}));
  let [module,...fields]=string(protocol)?await locate(protocol):[protocol];
- let [{default:routes,relay,syndication,encryption,classify,classified,published,permit},{default:credentials}]=
+ let [{default:routes,relay,syndication,encryption,signature,classify,classified,published,permit},{default:credentials}]=
  await [range,module].reduce(record(module=>
  string(module)?command.call(import.meta.url,module):{default:module}),[]);
  let {network,port,certification={},cache,mail}=search.call(credentials,fields);
@@ -22,30 +22,32 @@
 },deleteProperty(target,field)
 {let deleted=delete target[field];access(cache,target,true);return deleted;
 }});
- let [[domain,{key:signature,certificate,distinguishedname}={}]=[]]=Object.entries(certification);
- let [encrypted,syndicated]=await [encryption,syndication].reduce(record(required=>
+ let [[domain,{key,certificate,distinguishedname}={}]=[]]=Object.entries(certification);
+ let [encrypted,syndicated,signatures]=await [encryption,syndication,signature].reduce(record(required=>
  required?prompt(extract.call(credentials,Object.keys(required))):{}),[]);
- let agent=await command.call(import.meta.url,network);
- let required={"https:":{domain,signature,certificate,distinguishedname}}[agent.globalAgent.protocol];
- ({port,domain,signature,certificate,distinguishedname}=await prompt({port,...required}));
- merge(syndication,syndicated);
- merge(certification,required&&{[domain]:{key:signature,certificate,distinguishedname}});
+ let required={https:{domain,key,certificate,distinguishedname}}[network];
+ ({port,domain,key,certificate,distinguishedname}=await prompt({port,...required}));
+ // encryption/syndication are hashes, signatures/certification are asymmetric pairs from own/peer origin. 
  merge(encryption,prune.call(encrypted,([field,value])=>encrypt(value)));
+ merge(syndication,syndicated);
+ merge(signature,await prune.call(signatures,([field,value])=>certify(value).then(({key})=>key)));
+ merge(certification,required&&{[domain]:{key,certificate,distinguishedname}});
  merge(globalThis,{memory,published,classified,classify});
  let address=await compose.call
 (import.meta.url,"os","networkInterfaces",tether(command),Object.values,"flat"
 ,infer("find",match({family:'IPv4',internal:false})),"address"
 );
- let certificates=await Promise.all(Object.values(certification).flatMap(({key,certificate})=>[key,certificate]).map(compose(crop(1),slip("path","resolve"),command.bind(import.meta.url))));
- await classify?.(module,...certificates);
+ let resolve=compose(drop(1,2),slip("path","resolve"),command.bind(import.meta.url));
+ await classify?.(module,...await Object.values([signatures,certification].reduce(merge,{})).flatMap(({key,certificate})=>
+ [key,certificate]).reduce(record(resolve),[]));
  prune.call(certification,([domain,certification])=>
  domain==="localhost"?merge(certification,{altnames:["127.0.0.1",address]},0):certification,0,0);
  let certifications=await prune.call(certification,function([domain,{key,certificate,distinguishedname,altnames}],{length})
-{return length?arguments[0][1]:certify([key,certificate],distinguishedname,[domain,...altnames||[]]).then(certification=>
+{return length?arguments[0][1]:certify({key,certificate},distinguishedname,[domain,...altnames||[]]).then(certification=>
  command.call(import.meta.url,"tls","createSecureContext",certification).then(context=>
  merge(certification,{context})));
 },0,1);
- await jsdom.call(browser,agent.globalAgent.protocol+"//"+address+":"+port);
+ await jsdom.call(browser,network+"://"+address+":"+port);
  let entry=compose(combine(unbust,variant),index);
  let retrieve=produce(combine(entry,unary),slip(memory),drop(2,0,tether(search)),when(defined),reencode);
  let memorable=bind(each,
@@ -74,6 +76,7 @@
 );
  let scope=new Set(await remotes(location).then(remotes=>remotes.reduce(record(remote=>
  files(remote,"stable",location)),[])).then(files=>files.flat()));
+ let agent=await command.call(import.meta.url,network);
  return compose
 ("createServer",port
 ,revert((proceed,cancel,host,port)=>host.listen(port,infer(proceed)))
@@ -82,7 +85,7 @@
  pass(compose(domain,context,lift,"addContext")))
 ,pass(host=>note.call(2,[host._connectionKey||port," open"].join("")))
 ,pass(produce(relay,broadcast,location,scope,memory,cache,monitor))
-,mail&&pass(compose(swap(address),mail,certifications,command.bind(import.meta.url,"./Blik_2025_email.js","open")))
+,mail&&pass(compose(swap("0.0.0.0"),mail,certifications,command.bind(import.meta.url,"./Blik_2025_email.js","open")))
 ,revert((close,error,channel)=>observe.call(channel,{close,error})&&suspend||close(channel))
 ,cede
 )(agent,merge(extract.call(await Object.values(certifications)[0],["key","cert"]),{SNICallback}),buffer(respond,compose(crop(1),note)));
@@ -235,18 +238,20 @@
  async function certify(certification,distinguishedname,altnames,duration=1)
 {if(!certification)
  return [];
- let [path,url]=await command.bind(import.meta.url)(["path","url"]);
+ let [path,url]=await command.call(import.meta.url,["path","url"]);
  let location=path.dirname(url.fileURLToPath(import.meta.url));
- let [key,cert]=await Promise.all(certification.map(certificate=>
+ let [key,cert]=await Promise.all(Object.values(certification).map(certificate=>
  cede(buffer(access,swap(null))(path.resolve(location,certificate),true))));
  if([key,cert].every(Boolean))
  return {key,cert,altnames};
- note("creating "+certification+"...");
+ note("creating "+JSON.stringify(certification)+"...");
  let {default:forge}=await import("./digitalbazaar_2013_nodeforge.js");
- let method=altnames.includes("localhost")?selfsign:authorize;
  let encryption=forge.rsa.generateKeyPair(2048);
- [key,cert]=await method.call(forge,encryption,distinguishedname,duration,altnames);
- [key,cert]=await certification.reduce(record((certification,index)=>compose.call
+ [key,cert]=distinguishedname
+?await (altnames.includes("localhost")?selfsign:authorize).call(forge,encryption,distinguishedname,duration,altnames)
+:Object.entries(encryption).map(([name,value])=>
+ forge.pki[name+"ToPem"](value));
+ [key,cert]=await Object.values(certification).reduce(record((certification,index)=>compose.call
 (path.resolve(location,certification),[key,cert][index],true,access,true,access
 )),[]);
  return {key,cert,altnames};
